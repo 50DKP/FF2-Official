@@ -1,0 +1,15 @@
+============================
+Boss' abilities plugin
+"rage_overlay"
+============================
+
+rage_overlay - Boss gets a weapon. Like a CBS' bow rage, but you set a weapon
+	0 - slot of ability (def.0)
+		-1 - When Boss lost life (if he has over 1)
+		>>0 - Rage<<
+		1 - Brave Jump
+		2 - Demopan's charge of targe, projectiles etc
+		3 - Weighdown
+		4...7 - Not used.
+	1 - path to overlay ("root" is \tf\materials\)
+	2 - duration (def.6)

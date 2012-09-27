@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "freak_fortress_2\billy\jigsaw_hair"
+	"$bumpmap"     "freak_fortress_2\billy\jigsaw_hair_normal"
+	"$translucent" 1
+	"$nocull" 1
+}

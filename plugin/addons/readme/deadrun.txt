@@ -1,0 +1,17 @@
+============================
+Boss' abilities plugin
+"deadrun"
+============================
+
+This is passive abilities. Boss should not do something to start or stop it:
+
+deadrun_lines - enables keys:
+					"sound_move" (starts when Boss don't moving 12 seconds)
+					"sound_spy_invis" (starts when Boss killed (with trap) spy, but spy still alive with his Dead Ringer)
+					"sound_kill_spy" (starts when Boss killed (with trap) invisible spy)
+					"sound_kspree" (starts when Boss killed (with trap) 4 or over enemies)
+deadrun_no_damage - players can hurt and knockback this boss.
+deadrun_no_any_damage - makes boss invulnerable. No ANY damage, no ANY knockback etc. From world and console too.
+deadrun_no_hud - only for this boss: blocks all FF2's HUD texts and other messages.
+deadrun_no_hud_for_all - for all: blocks all FF2's HUD texts and other messages.
+deadrun_block_buildables - blocks Engineer's buildables.

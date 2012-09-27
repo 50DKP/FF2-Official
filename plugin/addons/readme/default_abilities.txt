@@ -1,0 +1,42 @@
+============================
+Boss' abilities plugin
+"default_abilities"
+============================
+	*Argument 0 - Ability Slot
+		-1 - When Boss lost life (if he has over 1)
+		0 - Rage
+		1 - Brave Jump
+		2 - Demopan's charge of targe, projectiles etc
+		3 - Weighdown
+		4...7 - Not used.
+======
+Rages
+======
+rage_uber - Uber-rage.
+	1 - Duration (def 5.0)
+rage_stun - Stun Rage
+	1 - Duration (def 5.0)
+rage_stunsg - Stun SGs
+	1 - Duration (def 7.0)
+rage_preventtaunt - Do not taunt until rage
+
+rage_instant_teleport - (Unused ability) Instant teleport to random enemy.
+
+======
+Charges (slot 2 or 3)
+======
+
+charge_bravejump - Brave Jump
+	1 - Seconds to charge to 100% (def 1.5)
+	2 - Seconds to reload (def 5.0)
+	3 - Force multiplier (def 1.0)
+charge_teleport - Teleport to random enemy.
+	1 - Seconds to charge to 100% (def 1.5)
+	2 - Seconds to reload (def 5.0)
+	3 - Teleporter effect ("")
+charge_weightdown - Weightdown
+
+======
+Special Abilities
+======
+special_dissolve - Vagineer's Dissolve

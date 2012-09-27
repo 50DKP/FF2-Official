@@ -1,0 +1,7 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "freak_fortress_2\billy\jigsaw_holster"
+	"$bumpmap"     "freak_fortress_2\billy\jigsaw_holster_normal"
+	"$nocull" "1"
+	"$no_draw" "1" // Change "0" --> "1" to disable the holster.
+}

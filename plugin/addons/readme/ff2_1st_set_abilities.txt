@@ -1,0 +1,38 @@
+============================
+Boss' abilities plugin
+"ff2_1st_set_abilities"
+============================
+	*Argument 0 - Ability Slot
+		-1 - When Boss lost life (if he has over 1)
+		0 - Rage
+		1 - Brave Jump
+		2 - Demopan's charge of targe, projectiles etc
+		3 - Weighdown
+		4...7 - Not used.
+
+======
+Rages
+======
+rage_cloneattack - Seeldier's attack of the clones
+	1 - clones looks like a boss (def 1)
+	2 - clones' attack mode (def 2)
+		0 - nothing
+		1 - melee
+		2 - all weapons
+rage_tradespam - Demopan's Trade Spam
+rage_cbs_bowrage - CBS's bow rage
+rage_explosive_dance - Seeman's Explosive Dance
+	1 - sound (def "")
+rage_matrix_attack - Ninja Spy's slo-mo attack
+	1 - sound
+	2 - model of rocket
+	
+======
+Special Abilities
+======
+special_democharge - DemoCharge
+special_dropprop - Killed players drops physics prop
+	1 - model
+	2 - life duration
+	3 - remove player's ragdoll
+special_cbs_multimelee - Brutal Sniper's multiple melee

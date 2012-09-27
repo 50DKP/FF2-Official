@@ -1,0 +1,27 @@
+============================
+Boss' abilities plugin
+"special_noanims"
+============================
+
+special_noanims - Disable animations of Boss' model
+	1 - Custom Model Rotates (def.0)
+	
+rage_new_weapon - Boss gets a weapon. Like a CBS' bow rage, but you set a weapon
+	0 - slot of ability (def.0)
+		-1 - When Boss lost life (if he has over 1)
+		>>0 - Rage<<
+		1 - Brave Jump
+		2 - Demopan's charge of targe, projectiles etc
+		3 - Weighdown
+		4...7 - Not used.
+	1 - weapon's classname
+	2 - weapon's index
+	3 - weapon's attributes
+	4 - weapon's slot
+		0 - primary
+		1 - secondary
+		2 - melee
+		3 - pda
+		4 - spy's watches
+	5 - weapon's ammo
+	6 - force switch to this weapon (0/1)
