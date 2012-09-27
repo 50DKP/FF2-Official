@@ -14,14 +14,16 @@ enum SoundExcept
 
 enum FF2AbilityType
 {
-	FF2AbilityRage,
-	FF2AbilityMove,
-	FF2AbilityCharge,
-	FF2AbilityWeighdown,
-	FF2AbilityCustom1,
-	FF2AbilityCustom2,
-	FF2AbilityCustom3,
-	FF2AbilityCustom4,
+	FF2AbilityFakeDeath = -1,
+	FF2AbilityRage = 0,
+	FF2AbilityMove = 1,
+	FF2AbilityCharge = 2,
+	FF2AbilityWeighdown = 3,
+	FF2AbilityCustom1 = 4,
+	FF2AbilityCustom2 = 5,
+	FF2AbilityCustom3 = 6,
+	FF2AbilityCustom4 = 7,
+	FF2AbilityBackstab = 8,
 };
 
 enum FF2AbilityMode
@@ -331,7 +333,7 @@ forward Action:FF2_OnAbility( index, const String:plugin_name[], const String:ab
 funcenum FF2_Ability
 {
 	/**
-	 * Called when an ability is fired.
+	 * Runs when Boss uses ability (stun rage,jump,uber rage etc)
 	 * 
 	 * @param index 	Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
 	 * @return		    Plugin_Stop in PreAbility will prevent Ability;
@@ -339,7 +341,8 @@ funcenum FF2_Ability
 	Action:public( index ),
 	
 	/**
-	 * Called when an ability is fired.
+	 * Runs when Boss uses ability (stun rage,jump,uber rage etc)
+	 * Called each 0.2 seconds for charge abilities
 	 * 
 	 * @param index 	Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
 	 * @param action	Action of ability (for slot=1 or 2)
@@ -352,7 +355,7 @@ funcenum FF2_Ability
 	Action:public( index, action ),
 	
 	/**
-	 * Called when an ability is fired.
+	 * Runs when Boss uses ability (stun rage,jump,uber rage etc)
 	 * 
 	 * @param index 	Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
 	 * @noreturn
@@ -360,7 +363,8 @@ funcenum FF2_Ability
 	public( index ),
 
 	/**
-	 * Called when an ability is fired.
+	 * Runs when Boss uses ability (stun rage,jump,uber rage etc)
+	 * Called each 0.2 seconds for charge abilities
 	 * 
 	 * @param index 	Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
 	 * @param action	Action of ability (for slot=1 or 2)
@@ -397,6 +401,91 @@ funcenum FF2_Ability
 
 //native FF2_GetMySubpluginName(String:name[], maxlength);
 
+/**
+ * Register a boss ability, including slot number and argument types for arg1 and higher
+ * (i.e. Param_Cell, Param_Float, or Param_String)
+ * This should be done in OnAllPluginsLoaded.
+ * 
+ * @error if incorrect ParamTypes are used.  This only supports Cell, Float, and String.
+ * @noreturn
+ */
+native FF2_RegisterAbility(String:abilityName[], defaultSlot=0, ParamType:...);
+
+/**
+ * Unregister a boss ability.
+ * 
+ * @noreturn
+ */
+native FF2_UnregisterAbility(String:abilityName[]);
+
+/**
+ * Unregister all abilities registered to this subplugin
+ * This should be done in OnPluginEnd.
+ * 
+ * @noreturn
+ */
+native FF2_UnregisterAllAbilities();
+
+/**
+ * Check if a named ability has been registered
+ * 
+ * @return true if ability is registered
+ */
+native bool:FF2_IsAbilityRegistered(String:abilityName[]);
+
+/**
+ * Hook a previously registered ability
+ *
+ * @noreturn
+ */
+native FF2_HookAbility(String:abilityName[], FF2_Ability:callback, FF2AbilityMode:mode=FF2AbilityMode_Normal);
+
+/**
+ * Unhook a previously registered ability
+ * 
+ * @noreturn
+ */
+native FF2_UnhookAbility(String:abilityName[], FF2_Ability:callback, FF2AbilityMode:mode=FF2AbilityMode_Normal);
+
+/**
+ * Unhook all abilities this plugin has hooked.
+ * 
+ * This MUST be called in OnPluginEnd if you hooked any abilities.
+ * (SourceMod gives plugins no way of knowing when other plugins are unloaded)
+ */
+native FF2_UnhookAllAbilities();
+
+/**
+ * Wrapper around EmitSoundToAll that uses the FF2 sound exception system
+ * 
+ * @param exceptiontype	Which type of sound this is.
+ * @param sample		Sound file name relative to the "sounds" folder.
+ * @param entity		Entity to emit from.
+ * @param channel		Channel to emit with.
+ * @param level			Sound level.
+ * @param flags			Sound flags.
+ * @param volume		Sound volume.
+ * @param pitch			Sound pitch.
+ * @param speakerentity	Unknown.
+ * @param origin		Sound origin.
+ * @param dir			Sound direction.
+ * @param updatePos		Unknown (updates positions?)
+ * @param soundtime		Alternate time to play sound for.
+ * @noreturn
+ */
+native FF2_EmitSoundToAllExcept(SoundExcept:exceptiontype = SoundExcept_Music,
+				const String:sample[],
+				entity = SOUND_FROM_PLAYER,
+				channel = SNDCHAN_AUTO,
+				level = SNDLEVEL_NORMAL,
+				flags = SND_NOFLAGS,
+				Float:volume = SNDVOL_NORMAL,
+				pitch = SNDPITCH_NORMAL,
+				speakerentity = -1,
+				const Float:origin[3] = NULL_VECTOR,
+				const Float:dir[3] = NULL_VECTOR,
+				bool:updatePos = true,
+				Float:soundtime = 0.0);
 
 /**
  * Begins when Boss hurts by pit, sawblade etc.
@@ -458,38 +547,6 @@ forward Action:FF2_OnLoadCharacterSet( CharSetNum, String:CharSetName[] );
  *							if you want to change CharSetNum, then set CharSetName to null string ("").
  */
 forward Action:FF2_OnLoadCharacterSetEx(String:CharSetName[] );
-
-/**
- * Wrapper around EmitSoundToAll that uses the FF2 sound exception system
- * 
- * @param exceptiontype	Which type of sound this is.
- * @param sample		Sound file name relative to the "sounds" folder.
- * @param entity		Entity to emit from.
- * @param channel		Channel to emit with.
- * @param level			Sound level.
- * @param flags			Sound flags.
- * @param volume		Sound volume.
- * @param pitch			Sound pitch.
- * @param speakerentity	Unknown.
- * @param origin		Sound origin.
- * @param dir			Sound direction.
- * @param updatePos		Unknown (updates positions?)
- * @param soundtime		Alternate time to play sound for.
- * @noreturn
- */
-native FF2_EmitSoundToAllExcept(SoundExcept:exceptiontype = SoundExcept_Music,
-				const String:sample[],
-				entity = SOUND_FROM_PLAYER,
-				channel = SNDCHAN_AUTO,
-				level = SNDLEVEL_NORMAL,
-				flags = SND_NOFLAGS,
-				Float:volume = SNDVOL_NORMAL,
-				pitch = SNDPITCH_NORMAL,
-				speakerentity = -1,
-				const Float:origin[3] = NULL_VECTOR,
-				const Float:dir[3] = NULL_VECTOR,
-				bool:updatePos = true,
-				Float:soundtime = 0.0);
 
 public SharedPlugin:__pl_FF2 =
 {
