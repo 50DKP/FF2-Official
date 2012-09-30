@@ -26,9 +26,11 @@
 
 enum FF2Stats
 {
-	FF2Stat_Damage=0,
+	FF2Stat_UserId=0,
+	FF2Stat_Damage,
 	FF2Stat_Healing,
-	FF2Stat_Lifelength
+	FF2Stat_Lifelength,
+	FF2Stat_Points,
 };
 
 
@@ -59,9 +61,13 @@ new Handle:g_Array_Bosses;
 // Damage and healing done by non-bosses
 // Note that damage done by targets being healed by medigun are
 // counted as damage
-new g_CurrentStats[MAXPLAYERS][FF2Stats];
+new g_CurrentStats[MAXPLAYERS+1][FF2Stats];
 
-new g_CurrentBosses[MAXPLAYERS];
+new Handle:g_Trie_StatPlayers;
+new Handle:g_Array_StatPlayersKeys;
+
+new g_CurrentBossCount;
+new g_CurrentBosses[MAXPLAYERS]; // Do NOT change this to MAXPLAYERS+1
 
 // The array is the keys to the map
 new Handle:g_Array_AbilityList;
@@ -78,6 +84,7 @@ new g_RoundStartTime;
 
 new g_CurrentRound;
 new TFTeam:g_BossTeam = TFTeam_Blue;
+new TFTeam:g_OtherTeam = TFTeam_Red;
 
 public Plugin:myinfo = 
 {
@@ -105,6 +112,9 @@ public OnPluginStart()
 	g_Array_AbilityList = CreateArray(cells);
 	g_Trie_AbilityMap = CreateTrie();
 	
+	g_Trie_StatPlayers = CreateTrie();
+	g_Array_StatPlayersKeys = CreateArray();
+	
 	g_Cvar_ArenaQueue = FindConVar("tf_arena_use_queue");
 	g_Cvar_UnbalanceLimit = FindConVar("mp_teams_unbalance_limit");
 	g_Cvar_Autobalance = FindConVar("mp_autobalance");
@@ -117,7 +127,6 @@ public OnPluginStart()
 	g_Cvar_FirstRound = CreateConVar("ff2_first_round", "0", "Should first round be FF2? Set to 0 for normal arena", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_Cvar_Announce = CreateConVar("ff2_announce", "120", "How often in seconds should we advertise information about FF2? Set to 0 to hide", FCVAR_NONE, true, 0.0);
 	g_Cvar_Crits = CreateConVar("ff2_crits", "0", "Can bosses get crits?", FCVAR_NONE, true, 0.0, true, 1.0);
-	
 	
 }
 
@@ -148,10 +157,13 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 
 bool:IsBoss(client)
 {
-	for (new i = 1; i <= MaxClients; i++)
+	for (new i = 0; i  < g_CurrentBossCount; i++)
 	{
-		
+		if (g_CurrentBosses[i] == client)
+			return true;
 	}
+	
+	return false;
 }
 
 /**
@@ -178,6 +190,25 @@ public Event_ArenaRoundStart(Handle:event, const String:name[], bool:dontBroadca
 {
 	g_RoundStartTime = GetTime();
 	// TODO fix boss here
+	
+	ClearArray(g_Array_StatPlayersKeys);
+	ClearTrie(g_Trie_StatPlayers);
+	
+	for (new i = 1; i <= MaxClients; i++)
+	{
+		new statsCount = _:FF2Stats; // To bypass a warning
+
+		if (IsClientInGame(i) && TFTeam:GetClientTeam(i) == g_OtherTeam)
+		{
+			decl String:sUserId[6];
+			IntToString(GetClientUserId(i), sUserId, sizeof(sUserId));
+			
+			new stats[statsCount];
+			SetTrieArray(g_Trie_StatPlayers, sUserId, stats, statsCount);
+			PushArrayString(g_Array_StatPlayersKeys, sUserId);
+			
+		}
+	}
 }
 
 public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
@@ -240,15 +271,44 @@ public Action:Event_ArenaWinPanel(Handle:event, const String:name[], bool:dontBr
 	
 	new TFTeam:winner = TFTeam:GetEventInt(event, "winning_team");
 	
-	new startPoint;
+	new currentPlayer;
 	if (winner == g_BossTeam)
 	{
-		startPoint = 4;
+		currentPlayer = 4;
 	}
 	else
 	{
-		startPoint = 1;
+		currentPlayer = 1;
 	}
+
+	for (new i = 0; i < 3; i++)
+	{
+		decl String:player[9]; // in format "player_1"
+		decl String:player_damage[16]; // in format "player_1_damage"
+		decl String:player_healing[17]; // in format "player_1_healing"
+		decl String:player_lifetime[17]; // in format "player_1_lifetime"
+		decl String:player_kills[14]; // in format "player_1_kills"
+		
+		Format(player, sizeof(player), "%s%d", "player_", currentPlayer);
+		
+		Format(player_damage, sizeof(player_damage), "%s%s", player, "_damage");
+		Format(player_healing, sizeof(player_healing), "%s%s", player, "_healing");
+		Format(player_lifetime, sizeof(player_lifetime), "%s%s", player, "_lifetime");
+		Format(player_kills, sizeof(player_kills), "%s%s", player, "_kills");
+		
+		new client = GetArrayCell(top, i);
+		
+		// TODO Fix these values
+		SetEventInt(event, player, g_CurrentStats[client][FF2Stat_UserId]);
+		SetEventInt(event, player_damage, g_CurrentStats[client][FF2Stat_Damage]);
+		SetEventInt(event, player_healing, g_CurrentStats[client][FF2Stat_Healing]);
+		SetEventInt(event, player_lifetime, g_CurrentStats[client][FF2Stat_Lifelength]);
+		SetEventInt(event, player_kills, g_CurrentStats[client][FF2Stat_Points]);
+		
+		currentPlayer++;
+	}
+	
+	return Plugin_Changed;
 }
 
 public Event_Player_Healed(Handle:event, const String:name[], bool:dontBroadcast)
