@@ -8,6 +8,7 @@
 //And author of VS Saxton Hale Mode
 
 #include <sourcemod>
+#include <sdktools>
 #include <tf2>
 #include <tf2_stocks>
 #include <tf2items>
@@ -24,6 +25,8 @@
 
 #pragma semicolon 1
 
+#define SET_AND_BOSS_LENGTH 64
+
 enum FF2Stats
 {
 	FF2Stat_UserId=0,
@@ -33,16 +36,30 @@ enum FF2Stats
 	FF2Stat_Points,
 };
 
+// FF2 status
+// ------------------------
+new String:g_ConfigPath[PLATFORM_MAX_PATH];
+// These will be set as maps change.  Enabled and FirstRound correspond to cvars
+// Enabled is directly affected by g_bFF2Map
+// Setting active while not setting enabled is a bug
+new bool:g_bEnabled;
+new bool:g_bFirstRound;
+new bool:g_bFF2Map;
+new bool:g_bActive;
+// ------------------------
 
 // Valve Cvars
+// ------------------------
 new Handle:g_Cvar_ArenaQueue;
 new Handle:g_Cvar_UnbalanceLimit;
 new Handle:g_Cvar_Autobalance;
 new Handle:g_Cvar_FirstBlood;
 new Handle:g_Cvar_ForceCamera;
 new Handle:g_Cvar_Medieval;
+// ------------------------
 
 // Our Cvars
+// ------------------------
 new Handle:g_Cvar_Enabled;
 new Handle:g_Cvar_FirstRound;
 new Handle:g_Cvar_PointType;
@@ -53,38 +70,51 @@ new Handle:g_Cvar_Crits;
 new Handle:g_Cvar_ShortCircuit;
 new Handle:g_Cvar_Countdown;
 new Handle:g_Cvar_SpecForceBoss;
+// ------------------------
+
+// All boss sets.
+// ------------------------
+new Handle:g_Array_BossSets;
+// ------------------------
 
 // Current set and its bosses
-new String:g_CurrentBossSet[64];
+// ------------------------
+new String:g_CurrentBossSet[SET_AND_BOSS_LENGTH];
 new Handle:g_Array_Bosses;
+// ------------------------
 
+// Available boss abilities
+// ------------------------
+// The array is the keys to the map
+new Handle:g_Array_AbilityList;
+new Handle:g_Trie_AbilityMap;
+// ------------------------
+
+// Boss Tracking Variables
+// ------------------------
+new g_CurrentBossCount;
+// Client ID of current bosses, based on boss index
+new g_CurrentBosses[MAXPLAYERS]; // Do NOT change this to MAXPLAYERS+1
+// Stores handles to KeyValues for bosses currently in play, based on boss index
+new Handle:g_KeyValues_CurrentBosses[MAXPLAYERS]; // Do NOT change this to MAXPLAYERS+1
+// ------------------------
+
+// Player data
+// ------------------------
 // Damage and healing done by non-bosses
 // Note that damage done by targets being healed by medigun are
 // counted as damage
 new g_CurrentStats[MAXPLAYERS+1][FF2Stats];
-
-new Handle:g_Trie_StatPlayers;
-new Handle:g_Array_StatPlayersKeys;
-
-new g_CurrentBossCount;
-new g_CurrentBosses[MAXPLAYERS]; // Do NOT change this to MAXPLAYERS+1
-
-// The array is the keys to the map
-new Handle:g_Array_AbilityList;
-new Handle:g_Trie_AbilityMap;
-
-//new Handle:g_CurrentBosses;
-
-// These will be set as maps change.  The first is a cvar check, the second a map check.
-new bool:g_bEnabled;
-new bool:g_bFirstRound;
-new bool:g_bFF2Map;
-
-new g_RoundStartTime;
-
-new g_CurrentRound;
+new g_PlayersRemaining;
 new TFTeam:g_BossTeam = TFTeam_Blue;
-new TFTeam:g_OtherTeam = TFTeam_Red;
+new TFTeam:g_OtherTeam = TFTeam_Red; // We're lazy
+// ------------------------
+
+// Map status
+// ------------------------
+new g_RoundStartTime;
+new g_CurrentRound;
+// ------------------------
 
 public Plugin:myinfo = 
 {
@@ -107,13 +137,12 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
-	new cells = ByteCountToCells(64);
+	new cells = ByteCountToCells(SET_AND_BOSS_LENGTH);
+	g_Array_BossSets = CreateArray(cells);
 	g_Array_Bosses = CreateArray(cells);
 	g_Array_AbilityList = CreateArray(cells);
 	g_Trie_AbilityMap = CreateTrie();
 	
-	g_Trie_StatPlayers = CreateTrie();
-	g_Array_StatPlayersKeys = CreateArray();
 	
 	g_Cvar_ArenaQueue = FindConVar("tf_arena_use_queue");
 	g_Cvar_UnbalanceLimit = FindConVar("mp_teams_unbalance_limit");
@@ -123,19 +152,61 @@ public OnPluginStart()
 	g_Cvar_Medieval = FindConVar("tf_medieval");
 	
 	CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 version", FCVAR_DONTRECORD | FCVAR_NOTIFY);
-	g_Cvar_Enabled = CreateConVar("ff2_enabled", "1", "Enable Freak Fortress 2? If you want to control this from another plugin, remove it from this config file", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_Cvar_Enabled = CreateConVar("ff2_enabled", "1", "Enable Freak Fortress 2? If you want to control this from another plugin, comment out the ff2_enabled line in the config file", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_Cvar_FirstRound = CreateConVar("ff2_first_round", "0", "Should first round be FF2? Set to 0 for normal arena", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_Cvar_Announce = CreateConVar("ff2_announce", "120", "How often in seconds should we advertise information about FF2? Set to 0 to hide", FCVAR_NONE, true, 0.0);
 	g_Cvar_Crits = CreateConVar("ff2_crits", "0", "Can bosses get crits?", FCVAR_NONE, true, 0.0, true, 1.0);
+	//g_Cvar_Countdown = CreateConVar("ff2_countdown", "", "", FCVAR_NONE, true, 60.0);
+	//g_Cvar_PointAlive = CreateConVar("ff2_point_alive", "5", "", FCVAR_NONE, true, 0.0, true, 1.0);
+	//g_Cvar_PointDelay = CreateConVar("ff2_point_delay", "60", "", FCVAR_NONE, true, 60.0);
+	//g_Cvar_PointType = CreateConVar("ff2_point_type", "0", "", FCVAR_NONE, true, 0.0, true, 1.0);
+	//g_Cvar_ShortCircuit = CreateConVar("ff2_shortcircuit_stun", "2", "", FCVAR_NONE, true, 0.0);
+	//g_Cvar_SpecForceBoss = CreateConVar("ff2_spec_forceboss", "0", "", FCVAR_NONE, true, 0.0, true, 1.0);
+
 	
+	BuildPath(Path_SM, g_ConfigPath, PLATFORM_MAX_PATH, "configs/freak_fortress_2");
+}
+
+public OnMapStart()
+{
+	g_bFF2Map = false;
+	
+	decl String:mapName[64];
+	GetCurrentMap(mapName, sizeof(mapName));
+	
+	decl String:mapConfig[PLATFORM_MAX_PATH];
+	Format(mapConfig, PLATFORM_MAX_PATH, "%s/%s", g_ConfigPath, "maps.cfg");
+	
+	new Handle:fh = OpenFile(mapConfig, "r");
+	
+	// Get the map prefix
+	new pos = FindCharInString(mapName, '_');
+	decl String:mapPrefix[10]; // 10 is arbitrary, but it had to be longer than "deathrun"
+	strcopy(mapPrefix, (pos < sizeof(mapPrefix) ? pos : sizeof(mapPrefix)), mapName);
+	
+	while (!IsEndOfFile(fh))
+	{
+		decl String:line[10];
+		ReadFileLine(fh, line, sizeof(line));
+		TrimString(line);
+		if (StrEqual(mapPrefix, line, false))
+		{
+			g_bFF2Map = true;
+			break;
+		}
+	}
+	CloseHandle(fh);
 }
 
 public OnConfigsExecuted()
 {
-	// These bools can't be changed mid-map, sorry.
-	g_bEnabled = GetConVarBool(g_Cvar_Enabled); 
-	g_bFirstRound = GetConVarBool(g_Cvar_FirstRound);
 	g_CurrentRound = 0;
+
+	// These values are read once to prevent issues mid-map
+	g_bEnabled = g_bFF2Map && GetConVarBool(g_Cvar_Enabled);
+	g_bActive = false;
+
+	g_bFirstRound = GetConVarBool(g_Cvar_FirstRound);
 	
 	if (g_bEnabled && g_bFirstRound)
 	{
@@ -146,7 +217,7 @@ public OnConfigsExecuted()
 
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
-	if (!GetConVarBool(g_Cvar_Crits) && IsBoss(client))
+	if (g_bActive && !GetConVarBool(g_Cvar_Crits) && IsBoss(client))
 	{
 		result = false;
 		return Plugin_Changed;
@@ -157,6 +228,9 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 
 bool:IsBoss(client)
 {
+	if (!g_bActive)
+		return false;
+	
 	for (new i = 0; i  < g_CurrentBossCount; i++)
 	{
 		if (g_CurrentBosses[i] == client)
@@ -168,18 +242,26 @@ bool:IsBoss(client)
 
 /**
  * Called before players can move
- * Initial boss setup here.
+ * Initial boss selection here.
  */
 public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	g_CurrentRound++;
-	
-	if (!g_bEnabled)
+	if (!g_bEnabled || !g_bFF2Map)
 		return;
+
+	g_CurrentRound++;
 	
 	if (g_CurrentRound == 1 && !g_bFirstRound)
 		return;
-	
+
+	for (new i = 1; i <= MaxClients; i++)
+	{
+		for (new j = 0; j < _:FF2Stats; j++)
+		{
+			g_CurrentStats[i][j] = 0;
+		}
+	}
+
 }
 
 /**
@@ -188,25 +270,20 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
  */
 public Event_ArenaRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
+	if (!g_bEnabled || !g_bFF2Map)
+		return;
+
+	g_PlayersRemaining = GetTeamClientCount(_:g_OtherTeam);
+	
 	g_RoundStartTime = GetTime();
 	// TODO fix boss here
 	
-	ClearArray(g_Array_StatPlayersKeys);
-	ClearTrie(g_Trie_StatPlayers);
-	
 	for (new i = 1; i <= MaxClients; i++)
 	{
-		new statsCount = _:FF2Stats; // To bypass a warning
-
 		if (IsClientInGame(i) && TFTeam:GetClientTeam(i) == g_OtherTeam)
 		{
-			decl String:sUserId[6];
-			IntToString(GetClientUserId(i), sUserId, sizeof(sUserId));
-			
-			new stats[statsCount];
-			SetTrieArray(g_Trie_StatPlayers, sUserId, stats, statsCount);
-			PushArrayString(g_Array_StatPlayersKeys, sUserId);
-			
+			new userId = GetClientUserId(i);
+			g_CurrentStats[i][FF2Stat_UserId] = userId;
 		}
 	}
 }
@@ -218,11 +295,6 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		ChangeValveCvars();
 	}
 	
-	for (new i = 1; i <= MaxClients; i++)
-	{
-		
-	}
-
 }
 
 public Action:Event_ArenaWinPanel(Handle:event, const String:name[], bool:dontBroadcast)
@@ -324,6 +396,7 @@ public Event_Player_Healed(Handle:event, const String:name[], bool:dontBroadcast
  */
 PrepareFF2()
 {
+	g_bActive = true;
 	ChangeValveCvars();
 }
 
@@ -347,13 +420,72 @@ public ResetData()
 	}
 }
 
-public PrecacheBoss(String:bossname[])
+public GetCharacterSets()
 {
-	//TODO
+	ClearArray(g_Array_BossSets);
+	new Handle:characterKv = OpenCharacterKv();
 	
+	do
+	{
+		decl String:charSet[SET_AND_BOSS_LENGTH];
+		KvGetString(characterKv, NULL_STRING, charSet, sizeof(charSet));
+		if (!StrEqual(charSet, ""))
+		{
+			PushArrayString(g_Array_BossSets, charSet);
+		}
+	} while (KvGotoNextKey(characterKv);
+
+	CloseHandle(characterKv);
 }
 
-public LoadBoss(client, String:bossName[])
+public bool:DownloadBossSet(String:setName[])
+{
+	new Handle:characterKv = OpenCharacterKv();
+	
+	if (!KvJumpToKey(characterKv, setName) || !KvGotoFirstSubKey(characterKv, false))
+	{
+		return false;
+	}
+	
+	do
+	{
+		decl String:bossName[SET_AND_BOSS_LENGTH];
+		KvGetString(characterKv, NULL_STRING, bossName, SET_AND_BOSS_LENGTH);
+		if (!StrEqual(bossName, ""))
+		{
+			decl String:bossFile[PLATFORM_MAX_PATH];
+			Format(bossFile, PLATFORM_MAX_PATH, "%s/%s.%s", g_ConfigPath, bossName, ".cfg");
+			// We have the boss name
+			new Handle:bossKv = CreateKeyValues("Character");
+			if (!FileToKeyValues(bossKv, bossFile))
+			{
+				CloseHandle(bossKv);
+				continue;
+			}
+			
+			// TODO Load the various sections
+		}
+	} while (KvGotoNextKey(characterKv, false));
+	
+	CloseHandle(characterKv);
+}
+
+public Handle:OpenCharacterKv()
+{
+	decl String:characterFile[PLATFORM_MAX_PATH];
+	Format(characterFile, PLATFORM_MAX_PATH, "%s/%s", g_ConfigPath, "characters.cfg");
+	
+	new Handle:characterKv = CreateKeyValues("Boss Sets");
+	if (!FileToKeyValues(characterKv, characterFile))
+	{
+		CloseHandle(characterKv);
+		SetFailState("Could not locate boss character set file: %s", characterFile);
+	}
+
+	return characterKv;
+}
+
+public Handle:LoadBoss(client, String:bossName[])
 {
 	//TODO
 	
