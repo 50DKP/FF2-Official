@@ -3,7 +3,7 @@ Boss' abilities plugin
 "rage_overlay"
 ============================
 
-rage_overlay - Boss gets a weapon. Like a CBS' bow rage, but you set a weapon
+rage_overlay - Temporarily block players' screens with an overlay
 	0 - slot of ability (def.0)
 		-1 - When Boss lost life (if he has over 1)
 		>>0 - Rage<<

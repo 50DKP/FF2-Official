@@ -15,13 +15,14 @@ rage_new_weapon - Boss gets a weapon. Like a CBS' bow rage, but you set a weapon
 		3 - Weighdown
 		4...7 - Not used.
 	1 - weapon's classname
-	2 - weapon's index
-	3 - weapon's attributes
+	2 - weapon's item definition index
+	3 - weapon's attributes (Format is "attribute ; value ; attribute2 ; value2")
 	4 - weapon's slot
 		0 - primary
-		1 - secondary
+		1 - secondary / Sapper
 		2 - melee
-		3 - pda
-		4 - spy's watches
+		3 - Construction PDA (Engineer) / Disguise Kit (Spy)
+		4 - Destruction PDA (Engineer) / Watches (Spy)
+		5 - Builder (Engineer, required to make Construction PDA/Destruction PDA work)
 	5 - weapon's ammo
 	6 - force switch to this weapon (0/1)

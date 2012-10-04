@@ -1,14 +1,14 @@
-//Add this lines into tf\addons\sourcemod\configs\freak_fortress_2\characters.cfg
+//Add these lines into tf\addons\sourcemod\configs\freak_fortress_2\characters.cfg
 //to add Billy as dead run boss.
 "Dead Run"
 {
 	"1" "billy"
 	"hidden" "1"
 }
-//This character set is hidden and it can not be selected by vote, but deadrun.ff2 will change charset to THIS on deadrun maps.
+//This character set is hidden and can not be selected by vote, but deadrun.ff2 will change charset to THIS on deadrun maps.
 
-//If you wanna use FF2 for dead run, and not anymore:
-//1)Add this lines into tf\addons\sourcemod\configs\freak_fortress_2\maps.cfg
+//If you wanna use FF2 for dead run, and nothing else:
+//1)Replace the contents of tf\addons\sourcemod\configs\freak_fortress_2\maps.cfg with these lines
 dr_
 vsh_dr_
 deadrun_ 

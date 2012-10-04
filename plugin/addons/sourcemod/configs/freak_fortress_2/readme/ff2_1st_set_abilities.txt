@@ -3,7 +3,7 @@ Boss' abilities plugin
 "ff2_1st_set_abilities"
 ============================
 	*Argument 0 - Ability Slot
-		-1 - When Boss lost life (if he has over 1)
+		-1 - When Boss loses life (if he has over 1)
 		0 - Rage
 		1 - Brave Jump
 		2 - Demopan's charge of targe, projectiles etc
@@ -19,7 +19,7 @@ rage_cloneattack - Seeldier's attack of the clones
 		0 - nothing
 		1 - melee
 		2 - all weapons
-rage_tradespam - Demopan's Trade Spam
+rage_tradespam - Demopan's Trade Spam, use rage_overlay for other bosses
 rage_cbs_bowrage - CBS's bow rage
 rage_explosive_dance - Seeman's Explosive Dance
 	1 - sound (def "")
