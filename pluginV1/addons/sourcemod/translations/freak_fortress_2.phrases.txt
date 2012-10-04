@@ -1,0 +1,311 @@
+"Phrases"
+{
+	"needmoreplayers"
+	{
+		"en"	"Freak Fortress 2 is currently disabled. More players are required."
+	}
+	"type_ff2_to_open_menu"
+	{
+		"en"	"Type {olive}/ff2{default} in chat to open the menu"
+	}
+	"nextmap_ff2"
+	{
+		"#format" "{1:s}"
+		"en"	"The gamemode will be {olive}Freak Fortress 2{default} on {olive}{1}{default}"
+	}
+	"wait_hp"
+	{
+		"#format" "{1:i},{2:s}"
+		"en"  "You cannot check the boss' hp right now. Wait {1} more second(s). Last known hp value was {2}"
+	}
+	"damage"
+	{
+		"#format" "{1:i}"
+		"en"	"Dmg dealt by you - {1}"
+	}
+	"point_enable"
+	{
+		"#format" "{1:i}"
+		"en"  "Only {1} player(s) left alive, the control point has been unlocked!"
+	}
+	"top_3"
+	{
+		"en"	"Most damage dealt by"
+	}
+	"uber-charge"
+	{
+		"en"	"Ubercharge rate"
+	}
+	"health"
+	{
+		"#format" "{1:i},{2:i}"
+		"en"	"Health: {1} out of {2}"
+	}
+	"do_rage"
+	{
+		"en"	"Perform a taunt to activate your \"RAGE\" ability!"
+	}
+	"rage_meter"
+	{
+		"#format" "{1:i}"
+		"en"	"Rage is {1} percent ready"
+	}
+	"super_duper_jump"
+	{
+		"en"	"Super Duper jump is ready!"
+	}
+	"teleport_status"
+	{
+		"#format" "{1:i}"
+		"en"	"Teleportation is {1} percent ready. When at 100 percent look up and stand up."
+	}
+	"jump_status"
+	{
+		"#format" "{1:i}"
+		"en"	"Jump charge is {1} percent. Look upwards and stand up for jump"
+	}
+	"teleport_status_2"
+	{
+		"#format" "{1:i}"
+		"en"	"Teleportation will be avaliable in {1} second(s)."
+	}
+	"jump_status_2"
+	{
+		"#format" "{1:i}"
+		"en"	"Super Jump will be avaliable in {1} second(s)."
+	}
+	"help_scout"
+	{
+		"en"	"The Crit-a-Cola grants criticals instead of minicrits.\nThe Fan O' War removes 5pct rage on hit.\nPistols gain minicrits.\nThe Candycane drops a health pack on hit."
+	}
+	"help_soldier"
+	{
+		"en"	"The Battalion's Backup fills its meter when hit. Its buff causes nearby teammates to take very little damage.\nThe Half-Zatoichi heals 35HP on hit and can overheal to +25 and its honorbound is removed on hit.\nBoot weapons reduce fall damage.\nAll guns minicrit Boss in midair.\nThe Direct Hit crits at times when it would minicrit.\nThe Reserve Shooter has faster weapon switch and a small damage buff.\nThe Mantreads create greater rocketjumps."
+	}
+	"help_pyro"
+	{
+		"en"	"Postal Pummeler and skins uses stats of Fire Axe.\nThe Flare Gun is replaced by the MegaDetonator.\nAirblasting the boss builds rage and lengthens the Vagineer's uber."
+	}
+	"help_demo"
+	{
+		"en"	"The shields block one hit from Boss.\nUsing the shields grants criticals.\nEyelander/reskins gain heads on hit.\nThe Half-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit."
+	}
+	"help_heavy"
+	{
+		"en"	"Natascha, the KGB, and the Fists of Steel are replaced with the\nMinigun, Gloves of Running, and Fists, respectively.\nThe Gloves of Running are quite quick but cause you to lose more health.\nThe Holiday Punch will remove any stun on you if you hit Boss while stunned."
+	}
+	"help_eggineer"
+	{
+		"en"	"All maps have only small ammo packs.\nThe Frontier Justice gains crits only while your sentry is targetting Boss.\nThe Eureka Effect is disabled for now."
+	}
+	"help_medic"
+	{
+		"en"	"Charge: Kritz+Uber. Charge starts at 40 percent.\nCharge lasts for 150 percent after activation.\nSyringe Guns: on hit: +5 to ubercharge, overdose's speed effect.\nCrossbow: 100 percent crits, +150pct damage, +10 uber on hit."
+	}
+	"help_sniper"
+	{
+		"en"	"All your weapons have critical hits.\nJarate removes 8pct rage.\nBack-equipped weapons are replaced with SMG.\nDefault Sniper Rifle causes Boss to glow. Glow time scales with charge."
+	}
+	"help_spie"
+	{
+		"en"	"Backstab does about 10 percent of Boss' max health.\nCloaknDagger replaced with normal watch.\nAll revolvers minicrit.\nYour Eternal Reward backstabs will disguise you.\nKunai backstabs will get you a health bonus."
+	}
+	"help_melee"
+	{
+		"en"	"All melee weapons (except the Spy knives) deal critical hits.\nUse /ff2 menu to disable this notifications."
+	}
+	"thequeue"
+	{
+		"en"	"Boss Queue"
+	}
+	"menu_1"
+	{
+		"en"	"Whats up?"
+	}
+	"menu_2"
+	{
+		"en"	"Investigate the boss('s) current health level (/ff2hp)"
+	}
+	"menu_3"
+	{
+		"en"	"Help about FF2 (/ff2help)."
+	}
+	"menu_4"
+	{
+		"en"	"Whats new? (/ff2new)."
+	}
+	"menu_5"
+	{
+		"en"	"Queue points"
+	}
+	"menu_6"
+	{
+		"en"	"Exit"
+	}
+	"whatsnew"
+	{
+		"#format" "{1:s},{2:s}"
+		"en"	"Whats new in v.{1} from {2}"
+	}
+	"help_mode"
+	{
+		"en"	"===Freak Fortress 2===\nOne (or more) players become one of the Bosses.\nWhile the other players have to defeat them."
+	}
+	"older"
+	{
+		"en"	"Display older"
+	}
+	"noolder"
+	{
+		"en"	"No older versions avaliable"
+	}
+	"newer"
+	{
+		"en"	"Display newer"
+	}
+	"nonewer"
+	{
+		"en"	"No newer versions avaliable"
+	}
+	"menu_7"
+	{
+		"en"	"Changes to my class in FF2 (/ff2classinfo)" //shows info about whats changed in your character class by ff2 plugin
+	}
+	"damage_fx"
+	{
+		"#format" "{1:i}"
+		"en"	"You dealt {1} damage in this round"
+	}
+	"scores"
+	{
+		"#format" "{1:i}"
+		"en"	"You earned {1} points in this round"
+	}
+	"ff2_start"
+	{
+		"#format" "{1:N},{2:s},{3:i},{4:s}"
+		"en"	"{1} became\n {2}\n with {3}{4} hp"
+	}
+	"ff2_hp"
+	{
+		"#format" "{1:s},{2:i},{3:i},{4:s}"
+		"en"	"Current {1}'s hp amout is {2} of {3}{4}"
+	}
+	"ff2_alive"
+	{
+		"#format" "{1:s},{2:i},{3:i},{4:s}"
+		"en"	"{1} left with {2} of {3}{4} hp left."
+	}
+	"select_charset"
+	{
+		"en"    "Please vote for character pack in nextmap."
+	}
+	"your_points"
+	{
+		"#format" "{1:i}"
+		"en"    "Your queue point(s) is {1}."
+	}
+	"add_points"
+	{
+		"#format" "{1:i}"
+		"en"    "You earned {1} queue point(s)."
+	}
+	"to0"
+	{
+		"en"	"set to 0"
+	}	
+	"to0_title"
+	{
+		"en"	"Do you really want to set your queue points to 0?"
+	}	
+	"to0_title_admin"
+	{
+		"#format" "{1:N}"
+		"en"	"Do you really want to set {1}'s queue points to 0?"
+	}	
+	"to0_done"
+	{
+		"en"	"Now you have {olive}0{default} queue points"
+	}
+	"to0_done_admin"
+	{
+		"#format" "{1:N}"
+		"en"	"Now {olive}{1}{default} have {olive}0{default} queue points"
+	}
+	"to0_done_by_admin"
+	{
+		"#format" "{1:N}"
+		"en"	"{olive}{1}{default} set your queue points to {olive}0{default}"
+	}
+	"to0_near"
+	{
+		"en"	"You will become the Boss soon. Type {olive}/ff2next{default} to make sure."
+	}
+	"first_round"
+	{
+		"en"	"Waiting for players to finish loading. Gamemode will be arena for this round"//waiting for players to load and playing common arena for the first round
+	}
+	"used_weighdown"
+	{
+		"en"	"You have used weighdown!"
+	}
+	"ff2_music"
+	{
+		"#format" "{1:s}"
+		"en"	"Freak Fortress 2 Boss' music is {1} now"
+	}
+	"ff2_voice"
+	{
+		"#format" "{1:s}"
+		"en"	"FF2 monolologues: {1}."
+	}
+	"ff2_voice2"
+	{
+		"en"	"Other sounds will be playing, but very quietly."
+	}
+	"menu_8"
+	{
+		"en"	"Toggle music (/ff2music)"
+	}
+	"menu_9"
+	{
+		"en"	"Toggle monolologues (/ff2voice)"
+	}
+	"menu_9a"
+	{
+		"en"	"Toggle info about changes of classes in FF2"
+	}
+	"ff2_classinfo"
+	{
+		"#format" "{1:s}"
+		"en"	"Info about changes of classes in FF2: {1}"
+	}
+	"ff2_last_update"
+	{
+		"#format" "{1:s},{2:s}"
+		"en"	"Whats new in v.{olive}{1}{default} at {olive}{2}{default}? Type {olive}/ff2new{default}."
+	}
+	"charge_status"
+	{
+		"#format" "{1:i}"
+		"en"	"Charge is {1} percent ready. When at 100 percent and unpress charge button."
+	}
+	"nextmap_charset"
+	{
+		"#format" "{1:s},{2:s}"
+		"en"	"There will be {2} character pack in {1} map."
+	}
+	"ff2_buttons_reload"
+	{
+		"en"	"Press RELOAD button to use ability!"
+	}
+	"ff2_buttons_rmb"
+	{
+		"en"	"Press right mouse button to use ability!"
+	}
+	"ff2_lives_left"
+	{
+		"#format" "{1:s},{2:i}"
+		"en"	"{1} lost 1 life! There is {2} more!"
+	}
+}
