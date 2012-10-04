@@ -42,7 +42,8 @@ AskPluginLoad_VSH()
 
 public Native_VSHIsVSHMap(Handle:plugin, numParams)
 {
-	new result=false;
+	return IsFF2Map();
+/*	new result=false;
 	new result2=result;
 
 	new Action:act = Plugin_Continue;
@@ -51,7 +52,7 @@ public Native_VSHIsVSHMap(Handle:plugin, numParams)
 	Call_Finish(act);
 	if (act==Plugin_Changed)
 		result=result2;		
-	return result;
+	return result;*/
 }
 
 public Native_VSHIsEnabled(Handle:plugin, numParams)
