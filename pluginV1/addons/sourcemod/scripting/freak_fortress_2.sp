@@ -15,14 +15,17 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <tf2_stocks>
-#include <colors>
+#include <morecolors>
 #include <tf2items>
 #include <clientprefs>
+#undef REQUIRE_EXTENSIONS
+#tryinclude <steamtools>
+#define REQUIRE_EXTENSIONS
 
 #define ME 2048
 #define MAXSPECIALS 64
 #define MAXRANDOMS 16
-#define PLUGIN_VERSION "1.06h"
+#define PLUGIN_VERSION "1.07"
 
 #define SOUNDEXCEPT_MUSIC 0
 #define SOUNDEXCEPT_VOICE 1
@@ -31,6 +34,10 @@
 #define HEALTHBAR_PROPERTY "m_iBossHealthPercentageByte"
 #define HEALTHBAR_MAX 255
 #define MONOCULUS "eyeball_boss"
+
+#if defined _steamtools_included
+new bool:steamtools = false;
+#endif
 
 new chkFirstHale;
 new bool:b_allowBossChgClass = false;
@@ -48,6 +55,7 @@ new MusicIndex;
 
 new Damage[MAXPLAYERS + 1];
 new curHelp[MAXPLAYERS + 1];	
+new uberTarget[MAXPLAYERS + 1];
 
 #define FF2FLAG_UBERREADY				(1 << 1)		//Used when medic says "I'm charged!"
 #define FF2FLAG_ISBUFFED				(1 << 2)		//Used when soldier uses backup's buff.
@@ -58,6 +66,8 @@ new curHelp[MAXPLAYERS + 1];
 #define FF2FLAG_ALLOWSPAWNINBOSSTEAM	(1 << 7)		//Used to allow spawn players in Boss' team.
 #define FF2FLAG_USEBOSSTIMER			(1 << 8)		//Used to prevent Boss' timer.
 #define FF2FLAG_USINGABILITY			(1 << 9)		//Used to prevent Boss' hints about abilities buttons.
+#define FF2FLAG_CLASSHELPED				(1 << 10)
+#define FF2FLAG_HASONGIVED				(1 << 11)
 #define FF2FLAGS_SPAWN				~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & FF2FLAG_USEBOSSTIMER & ~FF2FLAG_USINGABILITY
 new FF2flags[MAXPLAYERS + 1];
 
@@ -77,6 +87,7 @@ new shortname[MAXPLAYERS+1];			//new SerPointsToZeroTarget[MAXPLAYERS+1];
 
 new timeleft;
 
+new Handle:cvarVersion;
 new Handle:cvarPointDelay;
 new Handle:cvarAnnounce;
 new Handle:cvarEnabled;
@@ -88,6 +99,8 @@ new Handle:cvarFirstRound;
 new Handle:cvarCircuitStun;
 new Handle:cvarSpecForceBoss;
 new Handle:cvarUseCountdown;
+new Handle:cvarEnableEurekaEffect;
+new Handle:cvarForceBossTeam;
 
 new Handle:cvarHealthBar;
 
@@ -134,6 +147,7 @@ new tf_arena_use_queue;
 new mp_teams_unbalance_limit;
 new tf_arena_first_blood;
 new mp_forcecamera;
+new Float:tf_scout_hype_pep_max;
 new Handle:cvarNextmap;
 new bool:isSubPluginsEnabled;
 
@@ -157,7 +171,11 @@ static const String:ff2versiontitles[][] = 		//the last line of this is what det
 	"1.06e",
 	"1.06f",
 	"1.06g",
-	"1.06h"	
+	"1.06h",
+	"1.7",
+	"1.7",
+	"1.7",
+	"1.7"
 };
 
 static const String:ff2versiondates[][] = 
@@ -176,7 +194,11 @@ static const String:ff2versiondates[][] =
 	"24 Aug 2012",
 	"5 Sep 2012",
 	"5 Sep 2012",
-	"6 Sep 2012"	
+	"6 Sep 2012",
+	"8 Oct 2012",
+	"8 Oct 2012",
+	"8 Oct 2012",
+	"8 Oct 2012"
 };
 
 static const maxversion = (sizeof(ff2versiontitles) - 1);
@@ -239,6 +261,9 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	RegPluginLibrary("freak_fortress_2");
 	
 	AskPluginLoad_VSH();
+#if defined _steamtools_included
+	MarkNativeAsOptional("Steam_SetGameDescription");
+#endif
 	return APLRes_Success;
 }
 
@@ -246,7 +271,7 @@ public OnPluginStart()
 {
 	LogMessage("=== Freak Fortress 2 Initializing - v.%s === ",ff2versiontitles[maxversion]);
 
-	new Handle:cvarVersion = CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_DONTRECORD);
+	cvarVersion = CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_DONTRECORD);
 	cvarPointType = CreateConVar("ff2_point_type", "0", "Select condition to enable point (0 - alive players, 1 - time)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarPointDelay = CreateConVar("ff2_point_delay", "6", "Addition (for each player) delay before point's activation.", FCVAR_PLUGIN);
 	cvarAliveToEnable = CreateConVar("ff2_point_alive", "5", "Enable control points when there are X people left alive.", FCVAR_PLUGIN);
@@ -257,6 +282,8 @@ public OnPluginStart()
 	cvarCircuitStun = CreateConVar("ff2_circuit_stun", "2", "0 to disable Short Circuit stun, > 0 to make it stun Boss for x seconds", FCVAR_PLUGIN, true, 0.0);
 	cvarUseCountdown = CreateConVar("ff2_countdown", "120", "Seconds of deathly countdown (begins when only 1 enemy lefts)", FCVAR_PLUGIN);
 	cvarSpecForceBoss = CreateConVar("ff2_spec_force_boss", "0", "Spectators are allowed in Boss' queue.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarEnableEurekaEffect = CreateConVar("ff2_enable_eureka", "0", "1- allow Eureka Effect, else disallow", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarForceBossTeam = CreateConVar("ff2_force_team", "0", "0- Use plugin logic, 1- random team, 2- red, 3- blue", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	
 	cvarHealthBar = CreateConVar("ff2_health_bar", "1", "Show boss health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0); // Added by Powerlord
 	HookConVarChange(cvarHealthBar, HealthbarEnableChanged);
@@ -300,6 +327,8 @@ public OnPluginStart()
 	RegConsoleCmd("ff2_voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("ff2_resetpoints", ResetQueuePointsCmd);
 	RegConsoleCmd("ff2resetpoints", ResetQueuePointsCmd);
+	RegAdminCmd("ff2_resetqueuepoints", ResetQueuePointsCmd, 0);
+	RegAdminCmd("ff2_resetq", ResetQueuePointsCmd, 0);
 	
 	RegConsoleCmd("hale", FF2Panel);
 	RegConsoleCmd("hale_hp", Command_GetHPCmd);
@@ -316,7 +345,8 @@ public OnPluginStart()
 	RegConsoleCmd("hale_voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("hale_resetpoints", ResetQueuePointsCmd);
 	RegConsoleCmd("haleresetpoints", ResetQueuePointsCmd);
-	
+	RegAdminCmd("hale_resetqueuepoints", ResetQueuePointsCmd, 0);
+	RegAdminCmd("hale_resetq", ResetQueuePointsCmd, 0);
 	RegConsoleCmd("nextmap", NextMapCmd);
 	RegConsoleCmd("say", SayCmd);
 	RegConsoleCmd("say_team", SayCmd);
@@ -327,6 +357,10 @@ public OnPluginStart()
 	AddCommandListener(DoTaunt, "use_action_slot_item_server");
 	AddCommandListener(DoSuicide, "explode");  
 	AddCommandListener(DoSuicide, "kill");  
+	AddCommandListener(Destroy, "destroy");
+
+	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable CP. Only with ff2_point_type = 0");
+	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable CP. Only with ff2_point_type = 0");
 
 	RegAdminCmd("ff2_special", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Call a special to next round.");
 	RegAdminCmd("ff2_addpoints", Command_Points, ADMFLAG_CHEATS, "ff2_addpoints < target > < points > - Add queue points to user.");
@@ -335,6 +369,14 @@ public OnPluginStart()
 	RegAdminCmd("ff2_stop_music", Command_StopMusic, ADMFLAG_CHEATS, "Stop any currently playing Boss music.");
 	RegAdminCmd("ff2_charset", Command_CharSet, ADMFLAG_CHEATS, "Stop any currently playing Boss music.");
 	RegAdminCmd("ff2_reload_subplugins", Command_ReloadSubPlugins, ADMFLAG_RCON, "Reload FF2's subplugins.");
+
+	RegAdminCmd("hale_select", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Call a special to next round.");
+	RegAdminCmd("hale_special", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Call a special to next round.");
+	RegAdminCmd("hale_addpoints", Command_Points, ADMFLAG_CHEATS, "ff2_addpoints < target > < points > - Add queue points to user.");
+	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable CP. Only with ff2_point_type = 0");
+	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable CP. Only with ff2_point_type = 0");
+	RegAdminCmd("hale_stop_music", Command_StopMusic, ADMFLAG_CHEATS, "Stop any currently playing Boss music.");
+
 	AutoExecConfig(true, "FreakFortress2");
 
 	FF2Cookies = RegClientCookie("ff2_cookies_mk2", "", CookieAccess_Protected);
@@ -356,7 +398,55 @@ public OnPluginStart()
 
 	LoadTranslations("freak_fortress_2.phrases");
 	LoadTranslations("common.phrases");
-	AddNormalSoundHook(HookSound); 	
+	AddNormalSoundHook(HookSound);
+	AddMultiTargetFilter("@hale", BossTargetFilter, "all current Bosses", false);
+	AddMultiTargetFilter("@!hale", BossTargetFilter, "all non-Boss players", false);
+	AddMultiTargetFilter("@boss", BossTargetFilter, "all current Bosses", false);
+	AddMultiTargetFilter("@!boss", BossTargetFilter, "all non-Boss players", false);
+#if defined _steamtools_included
+	steamtools = LibraryExists("SteamTools");
+#endif
+
+}
+
+public bool:BossTargetFilter(const String:pattern[], Handle:clients)
+{
+	new bool:non = StrContains(pattern, "!", false) != -1;
+	for (new client = 1; client <= MaxClients; client++)
+	{
+		if (IsValidClient(client) && FindValueInArray(clients, client) == -1)
+		{
+			if (Enabled && IsBoss(client))
+			{
+				if (!non)
+				{
+					PushArrayCell(clients, client);
+				}
+			}
+			else if (non)
+			{
+				PushArrayCell(clients, client);
+			}
+		}
+	}
+
+	return true;
+}
+
+public OnLibraryAdded(const String:name[])
+{
+#if defined _steamtools_included
+	if (strcmp(name, "SteamTools", false) == 0)
+		steamtools = true;
+#endif
+}
+
+public OnLibraryRemoved(const String:name[])
+{
+#if defined _steamtools_included
+	if (strcmp(name, "SteamTools", false) == 0)
+		steamtools = false;
+#endif
 }
 
 public OnConfigsExecuted()
@@ -369,6 +459,55 @@ public OnConfigsExecuted()
 	AliveToEnable = GetConVarInt(cvarAliveToEnable);
 	BossCrits = GetConVarBool(cvarCrits);
 	circuitStun = GetConVarFloat(cvarCircuitStun);
+	
+	if (IsFF2Map() && GetConVarBool(cvarEnabled))
+	{
+		tf_arena_use_queue = GetConVarInt(FindConVar("tf_arena_use_queue"));
+		mp_teams_unbalance_limit = GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
+		tf_arena_first_blood = GetConVarInt(FindConVar("tf_arena_first_blood"));
+		mp_forcecamera = GetConVarInt(FindConVar("mp_forcecamera"));
+		tf_scout_hype_pep_max = GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
+		
+		SetConVarInt(FindConVar("tf_arena_use_queue"),0);
+		SetConVarInt(FindConVar("mp_teams_unbalance_limit"),0);
+		SetConVarInt(FindConVar("tf_arena_first_blood"),0);
+		SetConVarInt(FindConVar("mp_forcecamera"),0);
+		SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), 100.0);
+#if defined _steamtools_included
+		if (steamtools)
+		{
+			decl String:gameDesc[64];
+			Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", ff2versiontitles[maxversion]);
+			Steam_SetGameDescription(gameDesc);
+		}
+#endif
+		Enabled = true;
+		Enabled2 = true;
+		
+		new Float:time = Announce;
+		if (time > 1.0)
+		{
+			CreateTimer(time, Timer_Announce,_, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+		}
+		
+		CheckToChangeMapDoors();
+
+		MapHasMusic(true);
+		EnableSubPlugins();
+		AddToDownload();
+		strcopy(FF2CharSetStr,2,"");
+		isSubPluginsEnabled=false;
+		
+		bMedieval = FindEntityByClassname(-1, "tf_logic_medieval")!= -1 || bool:GetConVarInt(FindConVar("tf_medieval"));
+		
+		// For healthbar
+		FindHealthBar();
+	}
+	else
+	{
+		Enabled = false;
+		Enabled2 = false;
+	}
 }
 
 public OnMapStart()
@@ -377,50 +516,16 @@ public OnMapStart()
 	MusicTimer = INVALID_HANDLE;
 	RoundCounter = 0;
 	doorchecktimer = INVALID_HANDLE;
-	if (!IsFF2Map() || !GetConVarBool(cvarEnabled))
-	{
-		Enabled2 = false;
-		Enabled = false;
-	}
-	else 
-	{
-		MapHasMusic(true);
-		for (new i = 0;  i <= MaxClients; i++)
-		{
-			FF2flags[i] = 0;
-			Incoming[i] = -1;
-		}
-		for (new i = 0; i < MAXSPECIALS; i++)
-		{
-			BossKV[i] = INVALID_HANDLE;
-		}
-		Enabled = true;
-		Enabled2 = true;
-		EnableSubPlugins();
-		AddToDownload();
-		strcopy(FF2CharSetStr,2,"");
-		isSubPluginsEnabled=false;
-		tf_arena_use_queue = GetConVarInt(FindConVar("tf_arena_use_queue"));
-		mp_teams_unbalance_limit = GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
-		tf_arena_first_blood = GetConVarInt(FindConVar("tf_arena_first_blood"));
-		mp_forcecamera = GetConVarInt(FindConVar("mp_forcecamera"));
-
-		SetConVarInt(FindConVar("tf_arena_use_queue"),0);
-		SetConVarInt(FindConVar("mp_teams_unbalance_limit"),0);
-		SetConVarInt(FindConVar("tf_arena_first_blood"),0);
-		SetConVarInt(FindConVar("mp_forcecamera"),0);
-		new Float:time = Announce;
-		if (time > 1.0)
-		{
-			CreateTimer(time, Timer_Announce,_, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-		}
-		CheckToChangeMapDoors();
-	}
 	RoundCount = 0;
-	bMedieval = FindEntityByClassname(-1, "tf_logic_medieval")!= -1 || bool:GetConVarInt(FindConVar("tf_medieval"));
-	
-	// For healthbar
-	FindHealthBar();
+	for (new i = 0;  i <= MaxClients; i++)
+	{
+		FF2flags[i] = 0;
+		Incoming[i] = -1;
+	}
+	for (new i = 0; i < MAXSPECIALS; i++)
+	{
+		BossKV[i] = INVALID_HANDLE;
+	}
 }
 
 public OnMapEnd()
@@ -431,8 +536,27 @@ public OnMapEnd()
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"),mp_teams_unbalance_limit);
 		SetConVarInt(FindConVar("tf_arena_first_blood"),tf_arena_first_blood);
 		SetConVarInt(FindConVar("mp_forcecamera"),mp_forcecamera);
+		SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), tf_scout_hype_pep_max);
+#if defined _steamtools_included
+		if (steamtools)
+		{
+			Steam_SetGameDescription("Team Fortress");
+		}
+#endif
 		DisableSubPlugins();
+
+		if (MusicTimer != INVALID_HANDLE)
+		{
+			KillTimer(MusicTimer);
+			MusicTimer = INVALID_HANDLE;
+		}
+
 	}
+}
+
+public OnPluginEnd()
+{
+	OnMapEnd();
 }
 
 public AddToDownload()
@@ -643,9 +767,29 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if (convar == cvarEnabled)
 	{
 		if (StringToInt(newValue))
+		{
 			Enabled2 = true;
+#if defined _steamtools_included
+			if (steamtools)
+			{
+				decl String:gameDesc[64];
+				Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", ff2versiontitles[maxversion]);
+				Steam_SetGameDescription(gameDesc);
+			}
+#endif
+		}
 		else
+		{
 			Enabled2 = false;
+#if defined _steamtools_included
+			if (steamtools)
+			{
+				decl String:gameDesc[64];
+				Format(gameDesc, sizeof(gameDesc), "Team Fortress");
+				Steam_SetGameDescription(gameDesc);
+			}
+#endif
+		}
 	}
 }
 
@@ -685,8 +829,7 @@ public Action:Timer_Announce(Handle:hTimer)
 }
 
 
-
-public Action:OnGetGameDescription(String:gameDesc[64])
+/* public Action:OnGetGameDescription(String:gameDesc[64])
 {
 	if (Enabled)
 	{
@@ -694,42 +837,63 @@ public Action:OnGetGameDescription(String:gameDesc[64])
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
-}
+} */
 
-stock bool:IsFF2Map()
+stock bool:IsFF2Map(bool:forceRecalc = false)
 {
-	decl String:s[PLATFORM_MAX_PATH];
-	GetCurrentMap(currentmap, sizeof(currentmap));
-	if (FileExists("bNextMapToFF2"))
-		return true;
-	BuildPath(Path_SM, s, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
-	if (!FileExists(s))
+	static bool:found = false;
+	static bool:isFF2Map = false;
+
+	if (forceRecalc)
 	{
-		LogError("[FF2] Unable to find %s, disabling plugin.", s);
-		return false;
+		isFF2Map = false;
+		found = false;
 	}
-	new Handle:fileh = OpenFile(s, "r");
-	if (fileh == INVALID_HANDLE)
+	if (!found)
 	{
-		LogError("[FF2] Error reading maps from %s, disabling plugin.", s);
-		return false;
-	}
-	new pingas = 0;
-	while (ReadFileLine(fileh, s, sizeof(s)) && (pingas < 100))
-	{
-		pingas++;
-		if (pingas == 100)
-			LogError("[FF2] Breaking infinite loop when trying to check the map.");
-		Format(s, strlen(s)-1, s);
-		if (strncmp(s, "//", 2, false) == 0) continue;
-		if ((StrContains(currentmap, s, false) == 0) || (StrContains(s, "all", false) == 0))
+		decl String:s[PLATFORM_MAX_PATH];
+		GetCurrentMap(currentmap, sizeof(currentmap));
+		if (FileExists("bNextMapToFF2"))
 		{
-			CloseHandle(fileh);
+			isFF2Map = true;
+			found = true;
 			return true;
 		}
+		BuildPath(Path_SM, s, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
+		if (!FileExists(s))
+		{
+			LogError("[FF2] Unable to find %s, disabling plugin.", s);
+			isFF2Map = false;
+			found = true;
+			return false;
+		}
+		new Handle:fileh = OpenFile(s, "r");
+		if (fileh == INVALID_HANDLE)
+		{
+			LogError("[FF2] Error reading maps from %s, disabling plugin.", s);
+			isFF2Map = false;
+			found = true;
+			return false;
+		}
+		new pingas = 0;
+		while (ReadFileLine(fileh, s, sizeof(s)) && (pingas < 100))
+		{
+			pingas++;
+			if (pingas == 100)
+				LogError("[FF2] Breaking infinite loop when trying to check the map.");
+			Format(s, strlen(s)-1, s);
+			if (strncmp(s, "//", 2, false) == 0) continue;
+			if ((StrContains(currentmap, s, false) == 0) || (StrContains(s, "all", false) == 0))
+			{
+				CloseHandle(fileh);
+				isFF2Map = true;
+				found = true;
+				return true;
+			}
+		}
+		CloseHandle(fileh);
 	}
-	CloseHandle(fileh);
-	return false;
+	return isFF2Map;
 }
 
 stock bool:MapHasMusic(bool:forceRecalc = false)	//SAAAAAARGE
@@ -788,7 +952,16 @@ stock bool:CheckToChangeMapDoors()
 
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (!GetConVarBool(cvarEnabled)) Enabled2 = false;
+	if (!GetConVarBool(cvarEnabled))
+	{
+#if defined _steamtools_included
+		if (Enabled2 && steamtools)
+		{
+			Steam_SetGameDescription("Team Fortress");
+		}
+#endif
+		Enabled2 = false;
+	}
 	Enabled = Enabled2;
 	if (!Enabled)
 		return Plugin_Continue;
@@ -798,17 +971,24 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	DrawGameTimer = INVALID_HANDLE;
 	
 	new bool:bBluBoss;
-	if (!StrContains(currentmap, "vsh_") || !StrContains(currentmap, "zf_")) bBluBoss = true;
-	else
+	new convarsetting = GetConVarInt(cvarForceBossTeam);
+	switch (convarsetting)
 	{
-		if (RoundCounter >= 3 && GetRandomInt(0, 1))
+		case 3: bBluBoss = true;
+		case 2: bBluBoss = false;
+		case 1: bBluBoss = GetRandomInt(0, 1) == 1;
+		default:
 		{
-			bBluBoss = (BossTeam != 3);
-			RoundCounter = 0;
+			if (!StrContains(currentmap, "vsh_") || !StrContains(currentmap, "zf_")) bBluBoss = true;
+			else if (RoundCounter >= 3 && GetRandomInt(0, 1))
+			{
+				bBluBoss = (BossTeam != 3);
+				RoundCounter = 0;
+			}
+			else bBluBoss = (BossTeam == 3);
 		}
-		else
-			bBluBoss = (BossTeam == 3);
 	}
+	
 	if (bBluBoss)
 	{
 		new score1 = GetTeamScore(OtherTeam);
@@ -831,6 +1011,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	for (new ionplay = 1;  ionplay <= MaxClients;  ionplay++)
 	{
 		Damage[ionplay] = 0;
+		uberTarget[ionplay] = -1;
 		if (IsValidClient(ionplay))
 		{
 			if (GetClientTeam(ionplay) > _:TFTeam_Spectator) playing++;
@@ -1138,8 +1319,13 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	new isAliveBosses = 0;
 	for (new i = 0; i <= MaxClients; i++)
 	{
-		if (IsValidClient(Boss[i]) && IsPlayerAlive(Boss[i]))
-			isAliveBosses = i;
+		GlowTimer[i] = 0.0;
+		if (IsValidClient(Boss[i]))
+		{
+			SetEntProp(Boss[i], Prop_Send, "m_bGlowEnabled", 0);
+			if (IsPlayerAlive(Boss[i]))
+				isAliveBosses = i;
+		}
 		if (BossInfoTimer[i][0] != INVALID_HANDLE)
 		{
 			KillTimer(BossInfoTimer[i][0]);
@@ -1230,7 +1416,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			ShowHudText(i, -1, "%s\n%t:\n1)%i - %s\n2)%i - %s\n3)%i - %s\n\n%t\n%t",s,"top_3",Damage[top[0]],s0,Damage[top[1]],s1,Damage[top[2]],s2,"damage_fx",Damage[i],"scores",RoundFloat(Damage[i]/600.0));
 		}
 	}
-	CalcQueuePoints();
+	CreateTimer(3.0, Timer_CalcQueuePoints, _, TIMER_FLAG_NO_MAPCHANGE);		//CalcQueuePoints
 	
 	UpdateHealthBar();
 
@@ -1240,12 +1426,16 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 public Action:Timer_NineThousand(Handle:timer)
 {
 	EmitSoundToAll("saxton_hale/9000.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, false, 0.0);
-	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, false, 0.0);
+	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, false, 0.0);
 	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, false, 0.0);
 	return Plugin_Continue;
 }
 
-CalcQueuePoints()
+public Action:Timer_CalcQueuePoints(Handle:timer)
+{
+	CalcQueuePoints();
+}
+stock CalcQueuePoints()
 {
 	decl j, damage;
 	botqueuepoints += 5;
@@ -1271,7 +1461,7 @@ CalcQueuePoints()
 					add_points2[i]=add_points[i];
 				}
 			}
-			else
+			else if (!IsFakeClient(i) && (GetClientTeam(i) > _:TFTeam_Spectator || SpecForceBoss))
 			{
 				add_points[i]=10;
 				add_points2[i]=10;
@@ -1857,13 +2047,31 @@ public Action:checkFirstHale(Handle:timer,any:i)
 
 public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefinitionIndex, &Handle:hItem)
 {
-	if (!Enabled2) return Plugin_Continue;
-	if (hItem != INVALID_HANDLE) return Plugin_Continue;
+	if (!Enabled) return Plugin_Continue;
+	//if (hItem != INVALID_HANDLE) return Plugin_Continue;
 	switch (iItemDefinitionIndex)
 	{
+		case 39, 351:
+		{
+			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "25 ; 0.5 ; 207 ; 1.33 ; 144 ; 1.0 ; 58 ; 3.2", true);
+			if (hItemOverride != INVALID_HANDLE)
+			{
+				hItem = hItemOverride;
+				return Plugin_Changed;
+			}
+		}
+		case 40:
+		{
+			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "165 ; 1.0");
+			if (hItemOverride != INVALID_HANDLE)
+			{
+				hItem = hItemOverride;
+				return Plugin_Changed;
+			}
+		}
 		case 648:
 		{
-			new Handle:hItemOverride = PrepareItemHandle(_, _, "279 ;  2.0");
+			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "279 ; 2.0");
 			if (hItemOverride != INVALID_HANDLE)
 			{
 				hItem = hItemOverride;
@@ -1872,7 +2080,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 444:
 		{
-			new Handle:hItemOverride = PrepareItemHandle(_, _, "58 ;  2.0");
+			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "58 ; 1.5");
 			if (hItemOverride != INVALID_HANDLE)
 			{
 				hItem = hItemOverride;
@@ -1881,7 +2089,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 220:
 		{
-			new Handle:hItemOverride = PrepareItemHandle(_, _, "328 ;  1.0", true);
+			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "328 ; 1.0", true);
 			if (hItemOverride != INVALID_HANDLE)
 			{
 				hItem = hItemOverride;
@@ -1890,7 +2098,8 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 226:
 		{
-			new Handle:hItemOverride = PrepareItemHandle(_, _, "140 ;  15.0");
+//			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "116 ; 4.0", true);
+			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "140 ; 10.0");
 			if (hItemOverride != INVALID_HANDLE)
 			{
 				hItem = hItemOverride;
@@ -1899,7 +2108,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 305:
 		{
-			new Handle:hItemOverride = PrepareItemHandle(_, _, "17 ;  0.1 ;  2 ;  2.5");
+			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "17 ; 0.1 ; 2 ; 1.2"); // ; 266 ; 1.0");
 			if (hItemOverride != INVALID_HANDLE)
 			{
 				hItem = hItemOverride;
@@ -1908,7 +2117,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 56:
 		{
-			new Handle:hItemOverride = PrepareItemHandle(_, _, "2 ;  1.5");
+			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "2 ; 1.5");
 			if (hItemOverride != INVALID_HANDLE)
 			{
 				hItem = hItemOverride;
@@ -1917,16 +2126,25 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 38, 457:
 		{
-			new Handle:hItemOverride = PrepareItemHandle(_, _, "", true);
+			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "", true);
 			if (hItemOverride != INVALID_HANDLE)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
 			}
 		}
+//		case 132, 266, 482:
+//		{
+//			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "202 ; 0.5 ; 125 ; -15", true);
+//			if (hItemOverride != INVALID_HANDLE)
+//			{
+//				hItem = hItemOverride;
+//				return Plugin_Changed;
+//			}
+//		}
 		case 43, 239:
 		{
-			new Handle:hItemOverride = PrepareItemHandle(_, 239, "107 ;  1.5 ;  1 ;  0.5 ;  128 ;  1 ;  191 ;  -7", true);
+			new Handle:hItemOverride = PrepareItemHandle(hItem, _, 239, "107 ; 1.5 ; 1 ; 0.5 ; 128 ; 1 ; 191 ; -7", true);
 			if (hItemOverride != INVALID_HANDLE)
 			{
 				hItem = hItemOverride;
@@ -1935,19 +2153,20 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 415:
 		{
-			new Handle:hItemOverride = PrepareItemHandle(_, _, "265 ;  99999.0 ;  178 ;  0.6 ;  2 ;  1.1 ;  3 ;  0.5", true);
+			new Handle:hItemOverride = PrepareItemHandle(hItem, _, _, "265 ; 99999.0 ; 178 ; 0.6 ; 2 ; 1.1 ; 3 ; 0.5", true);
 			if (hItemOverride != INVALID_HANDLE)
 			{
 				hItem = hItemOverride;
 				return Plugin_Changed;
 			}
 		}
+//		case 526:
 	}
 	if (TF2_GetPlayerClass(client) == TFClass_Soldier && (strncmp(classname, "tf_weapon_rocketlauncher", 24, false) == 0 || strncmp(classname, "tf_weapon_shotgun", 17, false) == 0))
 	{
 		new Handle:hItemOverride;
-		if (iItemDefinitionIndex == 127) hItemOverride = PrepareItemHandle(_, _, "265 ;  99999.0 ;  179 ;  1.0");
-		else hItemOverride = PrepareItemHandle(_, _, "265 ;  99999.0");
+		if (iItemDefinitionIndex == 127) hItemOverride = PrepareItemHandle(hItem, _, _, "265 ; 99999.0 ; 179 ; 1.0");
+		else hItemOverride = PrepareItemHandle(hItem, _, _, "265 ; 99999.0");
 		if (hItemOverride != INVALID_HANDLE)
 		{
 			hItem = hItemOverride;
@@ -1975,15 +2194,46 @@ public Action:Timer_NoHonorBound(Handle:timer, any:userid)
 		}
 	}
 }
-stock Handle:PrepareItemHandle(String:name[] = "",index = -1, const String:att[] = "", bool:dontpreserve = false)
+stock Handle:PrepareItemHandle(Handle:hItem, String:name[] = "", index = -1, const String:att[] = "", bool:dontpreserve = false)
 {
+	static Handle:hWeapon;
+	new addattribs = 0;
+
 	new String:weaponAttribsArray[32][32];
-	new attribCount = ExplodeString(att, " ;  ", weaponAttribsArray, 32, 32);
+	new attribCount = ExplodeString(att, " ; ", weaponAttribsArray, 32, 32);
 
 	new flags = OVERRIDE_ATTRIBUTES;
 	if (!dontpreserve) flags |= PRESERVE_ATTRIBUTES;
-
-	new Handle:hWeapon = TF2Items_CreateItem(flags);
+	if (hWeapon == INVALID_HANDLE) hWeapon = TF2Items_CreateItem(flags);
+	else TF2Items_SetFlags(hWeapon, flags);
+//	new Handle:hWeapon = TF2Items_CreateItem(flags);	//INVALID_HANDLE;
+	if (hItem != INVALID_HANDLE)
+	{
+		addattribs = TF2Items_GetNumAttributes(hItem);
+		if (addattribs > 0)
+		{
+			for (new i = 0; i < 2 * addattribs; i += 2)
+			{
+				new bool:dontAdd = false;
+				new attribIndex = TF2Items_GetAttributeId(hItem, i);
+				for (new z = 0; z < attribCount+i; z += 2)
+				{
+					if (StringToInt(weaponAttribsArray[z]) == attribIndex)
+					{
+						dontAdd = true;
+						break;
+					}
+				}
+				if (!dontAdd)
+				{
+					IntToString(attribIndex, weaponAttribsArray[i+attribCount], 32);
+					FloatToString(TF2Items_GetAttributeValue(hItem, i), weaponAttribsArray[i+1+attribCount], 32);
+				}
+			}
+			attribCount += 2 * addattribs;
+		}
+		CloseHandle(hItem);	//probably returns false but whatever
+	}
 
 	if (name[0] != '\0')
 	{
@@ -1995,12 +2245,11 @@ stock Handle:PrepareItemHandle(String:name[] = "",index = -1, const String:att[]
 		flags |= OVERRIDE_ITEM_DEF;
 		TF2Items_SetItemIndex(hWeapon, index);
 	}
-
 	if (attribCount > 0)
 	{
-		TF2Items_SetNumAttributes(hWeapon, attribCount/2);
+		TF2Items_SetNumAttributes(hWeapon, (attribCount/2));
 		new i2 = 0;
-		for (new i = 0;  i < attribCount;  i+= 2)
+		for (new i = 0; i < attribCount && i < 32; i += 2)
 		{
 			TF2Items_SetAttribute(hWeapon, i2, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
 			i2++;
@@ -2521,6 +2770,7 @@ public OnClientPutInServer(client)
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
 	Damage[client] = 0;
+	uberTarget[client] = -1;
 	if (!AreClientCookiesCached(client)) return ;
 	new String:s[24];
 	GetClientCookie(client, FF2Cookies, s,24);
@@ -2917,6 +3167,27 @@ stock OnlyScoutsLeft()
 	return true;
 }
 
+public Action:Destroy(client, const String:command[], argc)
+{
+	if (!Enabled || IsBoss(client))
+		return Plugin_Continue;
+	if (IsValidClient(client) && TF2_GetPlayerClass(client) == TFClass_Engineer && TF2_IsPlayerInCondition(client, TFCond_Taunting) && GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee) == 589)
+		return Plugin_Handled;
+	return Plugin_Continue;
+}
+stock GetIndexOfWeaponSlot(client, slot)
+{
+	new weapon = GetPlayerWeaponSlot(client, slot);
+	return (weapon > MaxClients && IsValidEntity(weapon) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+}
+public TF2_OnConditionRemoved(client, TFCond:condition)
+{
+	if (TF2_GetPlayerClass(client) == TFClass_Scout && condition == TFCond_CritHype)
+	{
+		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);	//recalc their speed
+	}
+}
+
 public Action:DoTaunt(client, const String:command[], argc)
 {
 	if (!Enabled)
@@ -2929,6 +3200,9 @@ public Action:DoTaunt(client, const String:command[], argc)
 			if (!IsBoss(client))
 				return Plugin_Continue;
 	}
+	if (TF2_IsPlayerInCondition(client, TFCond_Taunting))
+		return Plugin_Handled;
+	
 	new index = GetBossIndex(client);
 	if (index == -1 || !Boss[index] || !IsValidEdict(Boss[index]))
 		return Plugin_Continue;
@@ -4548,9 +4822,10 @@ stock IsBoss(client)
 
 DoOverlay(client,const String:overlay[])
 {	
-	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & (~FCVAR_CHEAT));
+	new iFlags = GetCommandFlags("r_screenoverlay");
+	SetCommandFlags("r_screenoverlay", iFlags & ~FCVAR_CHEAT);
 	ClientCommand(client, "r_screenoverlay \"%s\"", overlay);
-	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
+	SetCommandFlags("r_screenoverlay", iFlags);
 }
 public FF2PanelH(Handle:menu, MenuAction:action, param1, param2)
 {
