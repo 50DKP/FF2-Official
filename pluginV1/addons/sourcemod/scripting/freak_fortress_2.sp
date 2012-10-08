@@ -5149,9 +5149,9 @@ stock FindVersionData(Handle:panel, versionindex)
 	{
 		case 19: // 1.07 beta
 		{
-			DrawPanelText(panel, "22) [Dev] Prevent boss rage from being activated if the boss is already taunting or is dead.");
-			DrawPanelText(panel, "23) [Dev] Cache the result of the newer backstab detection");
-			DrawPanelText(panel, "24) [Dev] Reworked Medic damage code slightly");
+			DrawPanelText(panel, "23) [Dev] Prevent boss rage from being activated if the boss is already taunting or is dead.");
+			DrawPanelText(panel, "24) [Dev] Cache the result of the newer backstab detection");
+			DrawPanelText(panel, "25) [Dev] Reworked Medic damage code slightly");
 		}
 		
 		case 18: // 1.07 beta
@@ -5159,9 +5159,10 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "17) [Server] The Boss queue now accepts negative points.");
 			DrawPanelText(panel, "18) [Server] Bosses can be forced to a specific team using the new ff2_force_team cvar.");
 			DrawPanelText(panel, "19) [Server] Eureka Effect can now be enabled using the new ff2_enable_eureka cvar");
-			DrawPanelText(panel, "20) [Dev] Fixed an issue where FF2 was trying to read cvars before config files were executed.");
+			DrawPanelText(panel, "20) [Server] Bosses models and sounds are now precached the first time they are loaded.");
+			DrawPanelText(panel, "21) [Dev] Fixed an issue where FF2 was trying to read cvars before config files were executed.");
 			DrawPanelText(panel, "   This change should also make the game a little more multi-mod friendly.");
-			DrawPanelText(panel, "21) [Dev] Fixed OnLoadCharacterSet not being fired. This should fix the deadrun plugin.");
+			DrawPanelText(panel, "22) [Dev] Fixed OnLoadCharacterSet not being fired. This should fix the deadrun plugin.");
 			DrawPanelText(panel, "Continued on next page");
 		}
 		
