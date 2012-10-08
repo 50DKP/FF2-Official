@@ -25,7 +25,7 @@
 #define ME 2048
 #define MAXSPECIALS 64
 #define MAXRANDOMS 16
-#define PLUGIN_VERSION "1.07"
+#define PLUGIN_VERSION "1.07 beta"
 
 #define SOUNDEXCEPT_MUSIC 0
 #define SOUNDEXCEPT_VOICE 1
@@ -172,10 +172,11 @@ static const String:ff2versiontitles[][] = 		//the last line of this is what det
 	"1.06f",
 	"1.06g",
 	"1.06h",
-	"1.7",
-	"1.7",
-	"1.7",
-	"1.7"
+	"1.7 beta",
+	"1.7 beta",
+	"1.7 beta",
+	"1.7 beta",
+	"1.7 beta"
 };
 
 static const String:ff2versiondates[][] = 
@@ -198,6 +199,7 @@ static const String:ff2versiondates[][] =
 	"8 Oct 2012",
 	"8 Oct 2012",
 	"8 Oct 2012",
+	"8 Oct 2012",
 	"8 Oct 2012"
 };
 
@@ -211,11 +213,18 @@ new Handle:OnMusic;
 new Handle:OnTriggerHurt;
 new Handle:OnSpecialSelected;
 new Handle:OnAddQueuePoints;
+new Handle:OnLoadCharacterSet;
 
 new bool:bBlockVoice[MAXSPECIALS];
 new Float:BossSpeed[MAXSPECIALS];
 new Float:BossRageDamage[MAXSPECIALS];
 new String:ChancesString[64];
+
+enum LoadType
+{
+	LoadType_Download,
+	LoadType_Precache,
+}
 
 public Plugin:myinfo = {
 	name = "Freak Fortress 2",
@@ -257,7 +266,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	OnTriggerHurt = CreateGlobalForward("FF2_OnTriggerHurt",ET_Hook,Param_Cell,Param_Cell,Param_FloatByRef);
 	OnSpecialSelected = CreateGlobalForward("FF2_OnSpecialSelected",ET_Hook,Param_Cell,Param_CellByRef,Param_String);
 	OnAddQueuePoints = CreateGlobalForward("FF2_OnAddQueuePoints",ET_Hook,Param_Array);
-	
+	OnLoadCharacterSet = CreateGlobalForward("FF2_OnLoadCharacterSet",ET_Hook,Param_CellByRef,Param_String);
+
 	RegPluginLibrary("freak_fortress_2");
 	
 	AskPluginLoad_VSH();
@@ -571,10 +581,48 @@ public AddToDownload()
 	}
 	new Handle:Kv = CreateKeyValues("");
 	FileToKeyValues(Kv, s);
-	for (new i=0; i <FF2CharSet; i++)
-		KvGotoNextKey(Kv);
-	KvGotoFirstSubKey(Kv);
-	KvGetSectionName(Kv, s, 64);
+	
+	new NumOfCharSet = FF2CharSet;
+	new Action:act = Plugin_Continue;	
+	Call_StartForward(OnLoadCharacterSet);
+	Call_PushCellRef(NumOfCharSet);
+	decl String:charset[42];
+	strcopy(charset, 42, FF2CharSetStr);
+	Call_PushStringEx(charset, 42, 0, SM_PARAM_COPYBACK);
+	Call_Finish(act);
+	if (act == Plugin_Changed)
+	{
+		new i = -1;
+		if (charset[0])
+		{
+			KvRewind(Kv);
+			for(i = 0 ; ; i++)
+			{
+				KvGetSectionName(Kv, s, 64);
+				if (!strcmp(s,charset,false))
+				{
+					FF2CharSet = i;
+					strcopy(FF2CharSetStr, PLATFORM_MAX_PATH, charset);
+					KvGotoFirstSubKey(Kv);
+					break;
+				}
+				if (!KvGotoNextKey(Kv))
+				{
+					i = -1;
+					break;
+				}
+			}
+		}
+		if (i == -1)
+		{
+			FF2CharSet = NumOfCharSet;
+			for (i=0; i <FF2CharSet; i++)
+				KvGotoNextKey(Kv);
+			KvGotoFirstSubKey(Kv);
+			KvGetSectionName(Kv, FF2CharSetStr, 64);
+		}
+	}
+	
 	for (new i=1; i<MAXSPECIALS; i++)
 	{
 		IntToString(i,i_str,4);
@@ -675,6 +723,7 @@ public LoadCharacter(const String:character[])
 	while (KvGotoNextKey(BossKV[Specials]))
 	{	
 		KvGetSectionName(BossKV[Specials], s3, 64);
+		
 		if (!strcmp(s3,"download"))
 		{
 			for(i = 1; ; i++)
@@ -684,17 +733,6 @@ public LoadCharacter(const String:character[])
 				if (!s[0])
 					break;
 				AddFileToDownloadsTable(s);
-			}
-		}
-		else if (!strcmp(s3,"mod_precache"))
-		{	
-			for(i = 1; ; i++)
-			{
-				IntToString(i,s2,4);
-				KvGetString(BossKV[Specials], s2, s, PLATFORM_MAX_PATH);
-				if (!s[0])
-					break;
-				PrecacheModel(s,true);
 			}
 		}
 		else if (!strcmp(s3,"mod_download"))
@@ -726,19 +764,47 @@ public LoadCharacter(const String:character[])
 				AddFileToDownloadsTable(s2);
 			}
 		}
-		else if (!StrContains(s3,"sound_") || !strcmp(s3,"catch_phrase"))
+	}
+	Specials++;
+}
+
+public PrecacheCharacter(characterIndex)
+{
+	decl String:s[PLATFORM_MAX_PATH];
+	decl String:s2[PLATFORM_MAX_PATH];
+	decl String:s3[64];
+	//BuildPath(Path_SM,s,PLATFORM_MAX_PATH,"configs/freak_fortress_2/characters.cfg");
+
+	KvRewind(BossKV[characterIndex]);
+	KvGotoFirstSubKey(BossKV[characterIndex]);
+	
+	while (KvGotoNextKey(BossKV[characterIndex]))
+	{	
+		KvGetSectionName(BossKV[characterIndex], s3, 64);
+
+		if (!strcmp(s3,"mod_precache"))
 		{	
-			for(i = 1; ; i++)
+			for(new i = 1; ; i++)
 			{
 				IntToString(i,s2,4);
-				KvGetString(BossKV[Specials], s2, s, PLATFORM_MAX_PATH);
+				KvGetString(BossKV[characterIndex], s2, s, PLATFORM_MAX_PATH);
+				if (!s[0])
+					break;
+				PrecacheModel(s,true);
+			}
+		}
+		else if (!StrContains(s3,"sound_") || !strcmp(s3,"catch_phrase"))
+		{	
+			for(new i = 1; ; i++)
+			{
+				IntToString(i,s2,4);
+				KvGetString(BossKV[characterIndex], s2, s, PLATFORM_MAX_PATH);
 				if (!s[0])
 					break;
 				PrecacheSound(s,true);
 			}
 		}
 	}
-	Specials++;
 }
 
 public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[])
@@ -3259,7 +3325,7 @@ public Action:DoTaunt(client, const String:command[], argc)
 			if (!IsBoss(client))
 				return Plugin_Continue;
 	}
-	if (TF2_IsPlayerInCondition(client, TFCond_Taunting))
+	if (!IsPlayerAlive(client) || TF2_IsPlayerInCondition(client, TFCond_Taunting))
 		return Plugin_Handled;
 	
 	new index = GetBossIndex(client);
@@ -4711,13 +4777,16 @@ public bool:PickSpecial(index,index2)
 				if (!strcmp(s,s2))
 				{
 					Special[index] = j; 	
+					PrecacheCharacter(Special[index]);
 					return true;
 				}
 			}
 		}		
 		Special[index]=SpecialNum;
+		PrecacheCharacter(Special[index]);
 		return true;
 	}
+	PrecacheCharacter(Special[index]);
 	return true;
 }
 
@@ -5078,6 +5147,58 @@ stock FindVersionData(Handle:panel, versionindex)
 {
 	switch (versionindex)
 	{
+		case 19: // 1.07 beta
+		{
+			DrawPanelText(panel, "22) [Dev] Prevent boss rage from being activated if the boss is already taunting or is dead.");
+			DrawPanelText(panel, "23) [Dev] Cache the result of the newer backstab detection");
+			DrawPanelText(panel, "24) [Dev] Reworked Medic damage code slightly");
+		}
+		
+		case 18: // 1.07 beta
+		{
+			DrawPanelText(panel, "17) [Server] The Boss queue now accepts negative points.");
+			DrawPanelText(panel, "18) [Server] Bosses can be forced to a specific team using the new ff2_force_team cvar.");
+			DrawPanelText(panel, "19) [Server] Eureka Effect can now be enabled using the new ff2_enable_eureka cvar");
+			DrawPanelText(panel, "20) [Dev] Fixed an issue where FF2 was trying to read cvars before config files were executed.");
+			DrawPanelText(panel, "   This change should also make the game a little more multi-mod friendly.");
+			DrawPanelText(panel, "21) [Dev] Fixed OnLoadCharacterSet not being fired. This should fix the deadrun plugin.");
+			DrawPanelText(panel, "Continued on next page");
+		}
+		
+		case 17: // 1.07 beta
+		{
+			DrawPanelText(panel, "11) [Players] Heatmaker gains Focus on hit (varies by charge)");
+			DrawPanelText(panel, "12) [Players] Crusader's Crossbow damage has been adjusted to compensate for its speed increase.");
+			DrawPanelText(panel, "13) [Players] Cozy Camper now gives you an SMG as well, but it has no crits and reduced damage.");
+			DrawPanelText(panel, "14) [Players] Bosses get short defense buff after rage");
+			DrawPanelText(panel, "15) [Server] Now attempts to integrate tf2items config");
+			DrawPanelText(panel, "16) [Server] Changing the game description now requires Steam Tools");
+			DrawPanelText(panel, "Continued on next page");
+		}
+		
+		case 16: // 1.07 beta
+		{
+			DrawPanelText(panel, "7) [Players] Removed crits from sniper rifles, now do 2.9x damage");
+			DrawPanelText(panel, "   Sydney Sleeper does 2.4x damage, 2.9x if boss's rage is >90pct");
+			DrawPanelText(panel, "   Minicrit- less damage, more knockback");
+			DrawPanelText(panel, "8) [Players] Baby Face's Blaster will fill boost normally, but will hit 100 and drain+minicrits.");
+			DrawPanelText(panel, "9) [Players] Phlogistinator Pyros are invincible while activating the crit-boost taunt.");
+			DrawPanelText(panel, "10) [Players] Can't Eureka+destroy dispenser to insta-teleport");
+			DrawPanelText(panel, "Continued on next page");
+		}
+		
+		case 15: // 1.07 beta
+		{
+			DrawPanelText(panel, "1) [Players] Backstabs now prevent Spies from attacking with their revolvers for 2 seconds.");
+			DrawPanelText(panel, "2) [Players] Reworked the crit code a bit. Should be more reliable.");
+			DrawPanelText(panel, "3) [Players] Help panel should stop repeatedly popping up on round start.");
+			DrawPanelText(panel, "4) [Players] Backstab disguising should be smoother/less obvious");
+			DrawPanelText(panel, "5) [Players] Scaled sniper rifle glow time a bit better");
+			DrawPanelText(panel, "6) [Players] Fixed Dead Ringer spy death icon");
+			DrawPanelText(panel, "Continued on next page");
+			
+		}
+		
 		case 14: // 1.06h
 		{
 		    DrawPanelText(panel, "1) [Players] Remove MvM powerup_bottle on Bosses. (RavensBro)");
