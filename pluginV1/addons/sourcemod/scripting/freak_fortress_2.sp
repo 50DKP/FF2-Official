@@ -172,11 +172,11 @@ static const String:ff2versiontitles[][] = 		//the last line of this is what det
 	"1.06f",
 	"1.06g",
 	"1.06h",
-	"1.7 beta",
-	"1.7 beta",
-	"1.7 beta",
-	"1.7 beta",
-	"1.7 beta"
+	"1.07 beta",
+	"1.07 beta",
+	"1.07 beta",
+	"1.07 beta",
+	"1.07 beta"
 };
 
 static const String:ff2versiondates[][] = 
@@ -219,12 +219,6 @@ new bool:bBlockVoice[MAXSPECIALS];
 new Float:BossSpeed[MAXSPECIALS];
 new Float:BossRageDamage[MAXSPECIALS];
 new String:ChancesString[64];
-
-enum LoadType
-{
-	LoadType_Download,
-	LoadType_Precache,
-}
 
 public Plugin:myinfo = {
 	name = "Freak Fortress 2",
@@ -790,7 +784,7 @@ public PrecacheCharacter(characterIndex)
 				KvGetString(BossKV[characterIndex], s2, s, PLATFORM_MAX_PATH);
 				if (!s[0])
 					break;
-				PrecacheModel(s,true);
+				PrecacheModel(s);
 			}
 		}
 		else if (!StrContains(s3,"sound_") || !strcmp(s3,"catch_phrase"))
@@ -801,7 +795,7 @@ public PrecacheCharacter(characterIndex)
 				KvGetString(BossKV[characterIndex], s2, s, PLATFORM_MAX_PATH);
 				if (!s[0])
 					break;
-				PrecacheSound(s,true);
+				PrecacheSound(s);
 			}
 		}
 	}
