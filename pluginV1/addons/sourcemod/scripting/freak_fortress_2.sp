@@ -25,7 +25,7 @@
 #define ME 2048
 #define MAXSPECIALS 64
 #define MAXRANDOMS 16
-#define PLUGIN_VERSION "1.07 beta"
+#define PLUGIN_VERSION "1.07 beta 2"
 
 #define SOUNDEXCEPT_MUSIC 0
 #define SOUNDEXCEPT_VOICE 1
@@ -4046,7 +4046,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					EmitSoundToClient(client,"player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, _, NULL_VECTOR, false, 0.0);
 					EmitSoundToClient(attacker,"player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, _, NULL_VECTOR, false, 0.0);
 					new Float:NextAttackTime=GetGameTime()+2.0;
-					SetEntPropFloat(attacker, Prop_Send, "m_flNextPrimaryAttack", NextAttackTime);
+					SetEntPropFloat(attacker, Prop_Send, "m_flNextAttack", NextAttackTime);
 					if (!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
 						PrintCenterText(attacker,"You backstabbed him!");
 					if (!(FF2flags[client] & FF2FLAG_HUDDISABLED))
@@ -4074,10 +4074,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					new invis_watch=GetPlayerWeaponSlot(attacker, TFWeaponSlot_PDA);
 					new iw_index = (IsValidEntity(invis_watch) && invis_watch > MaxClients ? GetEntProp(invis_watch, Prop_Send, "m_iItemDefinitionIndex") : -1);
 					if (iw_index==59)	//Dead Ringer						
-					{
-						SetEntPropFloat(attacker, Prop_Send, "m_flNextAttack", NextAttackTime);
 						SetEntPropFloat(attacker, Prop_Send, "m_flStealthNextChangeTime", NextAttackTime);
-					}
 					else if (wepindex == 356)
 					{
 						new health = GetClientHealth(attacker) + 100;
@@ -5149,53 +5146,52 @@ stock FindVersionData(Handle:panel, versionindex)
 	{
 		case 19: // 1.07 beta
 		{
-			DrawPanelText(panel, "23) [Dev] Prevent boss rage from being activated if the boss is already taunting or is dead.");
-			DrawPanelText(panel, "24) [Dev] Cache the result of the newer backstab detection");
-			DrawPanelText(panel, "25) [Dev] Reworked Medic damage code slightly");
+			DrawPanelText(panel, "22) [Dev] Prevent boss rage from being activated if the boss is already taunting or is dead.");
+			DrawPanelText(panel, "23) [Dev] Cache the result of the newer backstab detection");
+			DrawPanelText(panel, "24) [Dev] Reworked Medic damage code slightly");
 		}
 		
 		case 18: // 1.07 beta
 		{
-			DrawPanelText(panel, "17) [Server] The Boss queue now accepts negative points.");
-			DrawPanelText(panel, "18) [Server] Bosses can be forced to a specific team using the new ff2_force_team cvar.");
-			DrawPanelText(panel, "19) [Server] Eureka Effect can now be enabled using the new ff2_enable_eureka cvar");
-			DrawPanelText(panel, "20) [Server] Bosses models and sounds are now precached the first time they are loaded.");
-			DrawPanelText(panel, "21) [Dev] Fixed an issue where FF2 was trying to read cvars before config files were executed.");
+			DrawPanelText(panel, "16) [Server] The Boss queue now accepts negative points.");
+			DrawPanelText(panel, "17) [Server] Bosses can be forced to a specific team using the new ff2_force_team cvar.");
+			DrawPanelText(panel, "18) [Server] Eureka Effect can now be enabled using the new ff2_enable_eureka cvar");
+			DrawPanelText(panel, "19) [Server] Bosses models and sounds are now precached the first time they are loaded.");
+			DrawPanelText(panel, "20) [Dev] Fixed an issue where FF2 was trying to read cvars before config files were executed.");
 			DrawPanelText(panel, "   This change should also make the game a little more multi-mod friendly.");
-			DrawPanelText(panel, "22) [Dev] Fixed OnLoadCharacterSet not being fired. This should fix the deadrun plugin.");
+			DrawPanelText(panel, "21) [Dev] Fixed OnLoadCharacterSet not being fired. This should fix the deadrun plugin.");
 			DrawPanelText(panel, "Continued on next page");
 		}
 		
 		case 17: // 1.07 beta
 		{
-			DrawPanelText(panel, "11) [Players] Heatmaker gains Focus on hit (varies by charge)");
-			DrawPanelText(panel, "12) [Players] Crusader's Crossbow damage has been adjusted to compensate for its speed increase.");
-			DrawPanelText(panel, "13) [Players] Cozy Camper now gives you an SMG as well, but it has no crits and reduced damage.");
-			DrawPanelText(panel, "14) [Players] Bosses get short defense buff after rage");
-			DrawPanelText(panel, "15) [Server] Now attempts to integrate tf2items config");
-			DrawPanelText(panel, "16) [Server] Changing the game description now requires Steam Tools");
+			DrawPanelText(panel, "10) [Players] Heatmaker gains Focus on hit (varies by charge)");
+			DrawPanelText(panel, "11) [Players] Crusader's Crossbow damage has been adjusted to compensate for its speed increase.");
+			DrawPanelText(panel, "12) [Players] Cozy Camper now gives you an SMG as well, but it has no crits and reduced damage.");
+			DrawPanelText(panel, "13) [Players] Bosses get short defense buff after rage");
+			DrawPanelText(panel, "14) [Server] Now attempts to integrate tf2items config");
+			DrawPanelText(panel, "15) [Server] Changing the game description now requires Steam Tools");
 			DrawPanelText(panel, "Continued on next page");
 		}
 		
 		case 16: // 1.07 beta
 		{
-			DrawPanelText(panel, "7) [Players] Removed crits from sniper rifles, now do 2.9x damage");
+			DrawPanelText(panel, "6) [Players] Removed crits from sniper rifles, now do 2.9x damage");
 			DrawPanelText(panel, "   Sydney Sleeper does 2.4x damage, 2.9x if boss's rage is >90pct");
 			DrawPanelText(panel, "   Minicrit- less damage, more knockback");
-			DrawPanelText(panel, "8) [Players] Baby Face's Blaster will fill boost normally, but will hit 100 and drain+minicrits.");
-			DrawPanelText(panel, "9) [Players] Phlogistinator Pyros are invincible while activating the crit-boost taunt.");
-			DrawPanelText(panel, "10) [Players] Can't Eureka+destroy dispenser to insta-teleport");
+			DrawPanelText(panel, "7) [Players] Baby Face's Blaster will fill boost normally, but will hit 100 and drain+minicrits.");
+			DrawPanelText(panel, "8) [Players] Phlogistinator Pyros are invincible while activating the crit-boost taunt.");
+			DrawPanelText(panel, "9) [Players] Can't Eureka+destroy dispenser to insta-teleport");
 			DrawPanelText(panel, "Continued on next page");
 		}
 		
 		case 15: // 1.07 beta
 		{
-			DrawPanelText(panel, "1) [Players] Backstabs now prevent Spies from attacking with their revolvers for 2 seconds.");
-			DrawPanelText(panel, "2) [Players] Reworked the crit code a bit. Should be more reliable.");
-			DrawPanelText(panel, "3) [Players] Help panel should stop repeatedly popping up on round start.");
-			DrawPanelText(panel, "4) [Players] Backstab disguising should be smoother/less obvious");
-			DrawPanelText(panel, "5) [Players] Scaled sniper rifle glow time a bit better");
-			DrawPanelText(panel, "6) [Players] Fixed Dead Ringer spy death icon");
+			DrawPanelText(panel, "1) [Players] Reworked the crit code a bit. Should be more reliable.");
+			DrawPanelText(panel, "2) [Players] Help panel should stop repeatedly popping up on round start.");
+			DrawPanelText(panel, "3) [Players] Backstab disguising should be smoother/less obvious");
+			DrawPanelText(panel, "4) [Players] Scaled sniper rifle glow time a bit better");
+			DrawPanelText(panel, "5) [Players] Fixed Dead Ringer spy death icon");
 			DrawPanelText(panel, "Continued on next page");
 			
 		}
