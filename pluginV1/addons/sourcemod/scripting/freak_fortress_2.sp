@@ -25,7 +25,7 @@
 #define ME 2048
 #define MAXSPECIALS 64
 #define MAXRANDOMS 16
-#define PLUGIN_VERSION "1.07 beta 3"
+#define PLUGIN_VERSION "1.07 beta 4"
 
 #define SOUNDEXCEPT_MUSIC 0
 #define SOUNDEXCEPT_VOICE 1
@@ -172,11 +172,12 @@ static const String:ff2versiontitles[][] = 		//the last line of this is what det
 	"1.06f",
 	"1.06g",
 	"1.06h",
-	"1.07 beta",
-	"1.07 beta",
-	"1.07 beta",
-	"1.07 beta",
-	"1.07 beta"
+	"1.07 beta 1",
+	"1.07 beta 1",
+	"1.07 beta 1",
+	"1.07 beta 1",
+	"1.07 beta 1",
+	"1.07 beta 4"
 };
 
 static const String:ff2versiondates[][] = 
@@ -200,7 +201,8 @@ static const String:ff2versiondates[][] =
 	"8 Oct 2012",
 	"8 Oct 2012",
 	"8 Oct 2012",
-	"8 Oct 2012"
+	"8 Oct 2012",
+	"11 Oct 2012"
 };
 
 static const maxversion = (sizeof(ff2versiontitles) - 1);
@@ -528,7 +530,11 @@ public OnMapStart()
 	}
 	for (new i = 0; i < MAXSPECIALS; i++)
 	{
-		BossKV[i] = INVALID_HANDLE;
+		if (BossKV[i] != INVALID_HANDLE)
+		{
+			CloseHandle(BossKV[i]);
+			BossKV[i] = INVALID_HANDLE;
+		}
 	}
 }
 
@@ -1110,6 +1116,14 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		}
 		return Plugin_Continue;
 	}
+	
+	for (new i = 1; i <= MaxClients; i++)
+	{
+		if (!IsValidClient(i)) continue;
+		if (!IsPlayerAlive(i)) continue;
+		if (!(FF2flags[i] & FF2FLAG_HASONGIVED)) TF2_RespawnPlayer(i);
+	}
+
 	Enabled = true;
 	EnableSubPlugins();
 
@@ -2414,14 +2428,14 @@ public Action:checkItems(Handle:hTimer,any:client)
 				weapon = SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
 				SetAmmo(client, 1, 24);
 			}
-			case 39, 351:
-			{
-				if (GetEntProp(weapon, Prop_Send, "m_iEntityQuality") != 10)
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-					weapon = SpawnWeapon(client, "tf_weapon_flaregun", 39, 5, 10, "25 ; 0.5 ; 207 ; 1.33 ; 144 ; 1.0 ; 58 ; 3.2");
-				}
-			}
+//			case 39, 351:
+//			{
+//				if (GetEntProp(weapon, Prop_Send, "m_iEntityQuality") != 10)
+//				{
+//					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+//					weapon = SpawnWeapon(client, "tf_weapon_flaregun", 39, 5, 10, "25 ; 0.5 ; 207 ; 1.33 ; 144 ; 1.0 ; 58 ; 3.2");
+//				}
+//			}
 		}
 	}
 	if (IsValidEntity(FindPlayerBack(client, { 57 , 231 }, 2)))
@@ -2918,7 +2932,9 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	else
 		CreateTimer(0.1, checkItems, client);
 		
-	FF2flags[client] = FF2FLAGS_SPAWN;
+	//FF2flags[client] = FF2FLAGS_SPAWN;
+	FF2flags[client] &= ~(FF2FLAG_UBERREADY | FF2FLAG_ISBUFFED | FF2FLAG_TALKING | FF2FLAG_ALLOWSPAWNINBOSSTEAM | FF2FLAG_USINGABILITY | FF2FLAG_CLASSHELPED);
+	FF2flags[client] |= FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
 }
 
@@ -2951,6 +2967,15 @@ public Action:ClientTimer(Handle:hTimer)
 			new weapon = GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 			if (weapon <= MaxClients || !IsValidEntity(weapon) || !GetEdictClassname(weapon, wepclassname, sizeof(wepclassname))) strcopy(wepclassname, sizeof(wepclassname), "");
 			new bool:validwep = (strncmp(wepclassname, "tf_wea", 6, false) == 0);
+			if (TF2_IsPlayerInCondition(client, TFCond_Cloaked))
+			{
+				if (GetClientCloakIndex(client) == 59)
+				{
+					if (TF2_IsPlayerInCondition(client, TFCond_DeadRingered)) TF2_RemoveCondition(client, TFCond_DeadRingered);
+				}
+				else TF2_AddCondition(client, TFCond_DeadRingered, 0.3);
+			}
+//			if (TF2_IsPlayerInCondition(client, TFCond_DefenseBuffed)) TF2_AddCondition(client, TFCond_Ubercharged, 0.3);
 			new index = (validwep ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 			if (class == TFClass_Medic)
 			{
@@ -3156,6 +3181,9 @@ public Action:BossTimer(Handle:hTimer)
 			TF2_RemoveCondition(Boss[index],TFCond_Jarated);
 		if (TF2_IsPlayerInCondition(Boss[index], TFCond_MarkedForDeath))
 			TF2_RemoveCondition(Boss[index], TFCond_MarkedForDeath);
+		if (TF2_IsPlayerInCondition(Boss[index], TFCond:42) && TF2_IsPlayerInCondition(Boss[index], TFCond_Dazed))
+			TF2_RemoveCondition(Boss[index], TFCond_Dazed);
+
 		SetEntPropFloat(Boss[index], Prop_Data, "m_flMaxspeed", BossSpeed[Special[index]]+0.7*(100-BossHealth[index]*100/BossLivesMax[index]/BossHealthMax[index]));
 		if (BossHealth[index] <= 0 && IsPlayerAlive(Boss[index]))
 			BossHealth[index] = 1;
@@ -3898,16 +3926,22 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 						}
 					}
-					case 14, 201, 230, 402, 526, 664, 752:
+					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908:
 					{
-						if ((wepindex == 14 || wepindex == 201 || wepindex == 664) && FF2RoundState == 2)
+						switch (wepindex)	//cleaner to read than if wepindex == || wepindex == || etc
 						{
-							new Float:chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
-							new Float:time = (GlowTimer[index] > 10 ? 1.0 : 2.0);
-							time += (GlowTimer[index] > 10 ? (GlowTimer[index] > 20 ? 1 : 2) : 4)*(chargelevel/100);
-							SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
-							GlowTimer[index]+= RoundToCeil(time);
-							if (GlowTimer[index] > 30.0) GlowTimer[index] = 30.0;
+							case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908:
+							{
+								if (FF2RoundState != 2)
+								{
+									new Float:chargelevel = (IsValidEntity(weapon) && weapon > MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
+									new Float:time = (GlowTimer[index] > 10 ? 1.0 : 2.0);
+									time += (GlowTimer[index] > 10 ? (GlowTimer[index] > 20 ? 1 : 2) : 4)*(chargelevel/100);
+									SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
+									GlowTimer[index] += RoundToCeil(time);
+									if (GlowTimer[index] > 30.0) GlowTimer[index] = 30.0;
+								}
+							}
 						}
 						if (wepindex == 752 && FF2RoundState != 2)
 						{
@@ -4169,6 +4203,16 @@ public Action:Timer_CheckBuffRage(Handle:timer, any:userid)
 	}
 }
 
+stock GetClientCloakIndex(client)
+{
+	if (!IsValidClient(client, false)) return -1;
+	new wep = GetPlayerWeaponSlot(client, 4);
+	if (!IsValidEntity(wep)) return -1;
+	new String:classname[64];
+	GetEntityClassname(wep, classname, sizeof(classname));
+	if (strncmp(classname, "tf_wea", 6, false) != 0) return -1;
+	return GetEntProp(wep, Prop_Send, "m_iItemDefinitionIndex");
+}
 stock SpawnSmallHealthPackAt(client, ownerteam = 0)
 {
 	if (!IsValidClient(client, false) || !IsPlayerAlive(client)) return;
@@ -4684,7 +4728,10 @@ public bool:PickSpecial(index,index2)
 		Special[index] = Incoming[index];
 		Incoming[index] = -1;
 		if (Special[index] != -1)
+		{
+			PrecacheCharacter(Special[index]);
 			return true;
+		}
 		new chances[MAXSPECIALS];
 		new chances_index;
 		new String:s_chances[MAXSPECIALS*2][8];
@@ -4814,6 +4861,7 @@ public HintPanelH(Handle:menu, MenuAction:action, param1, param2)
 {
 	if (!IsValidClient(param1)) return;
 	if (action == MenuAction_Select || (action == MenuAction_Cancel && param2 == MenuCancel_Exit)) FF2flags[param1] |= FF2FLAG_CLASSHELPED;
+	
 	return;
 }
 
@@ -5138,6 +5186,14 @@ stock FindVersionData(Handle:panel, versionindex)
 {
 	switch (versionindex)
 	{
+		case 20: // 1.07 beta
+		{
+			DrawPanelText(panel, "1) [Players] Dead Ringers have no cloak defense buff. Normal cloaks do.");
+			DrawPanelText(panel, "2) [Players] Fixed Sniper Rifle reskin behavior");
+			DrawPanelText(panel, "3) [Players] Boss has small amount of stun resistance after rage");
+			DrawPanelText(panel, "4) [Players] Various bugfixes and changes 1.7.0 beta 1");
+		}
+		
 		case 19: // 1.07 beta
 		{
 			DrawPanelText(panel, "22) [Dev] Prevent boss rage from being activated if the boss is already taunting or is dead.");
@@ -5610,6 +5666,11 @@ public NextmapPanelH(Handle:menu, MenuAction:action, param1, param2)
 		if (!IsVoteInProgress())
 			VoteMenu(menu, clients,param1, 1,9001);
 	}
+	else if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
+	
 	return;
 }
 
