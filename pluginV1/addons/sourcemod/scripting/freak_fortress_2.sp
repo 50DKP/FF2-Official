@@ -25,7 +25,7 @@
 #define ME 2048
 #define MAXSPECIALS 64
 #define MAXRANDOMS 16
-#define PLUGIN_VERSION "1.07 beta 4"
+#define PLUGIN_VERSION "1.07 beta 5"
 
 #define SOUNDEXCEPT_MUSIC 0
 #define SOUNDEXCEPT_VOICE 1
@@ -588,12 +588,12 @@ public AddToDownload()
 	Call_PushCellRef(NumOfCharSet);
 	decl String:charset[42];
 	strcopy(charset, 42, FF2CharSetStr);
-	Call_PushStringEx(charset, 42, 0, SM_PARAM_COPYBACK);
+	Call_PushStringEx(charset, 42, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_Finish(act);
 	if (act == Plugin_Changed)
 	{
 		new i = -1;
-		if (charset[0])
+		if (strlen(charset))
 		{
 			KvRewind(Kv);
 			for(i = 0 ; ; i++)
@@ -621,6 +621,13 @@ public AddToDownload()
 			KvGotoFirstSubKey(Kv);
 			KvGetSectionName(Kv, FF2CharSetStr, 64);
 		}
+		PrintToChatAll("[FF2] DEBUG: A plugin overrode the character set.  New set: %s", charset);
+	}
+	
+	KvRewind(Kv);
+	for (new i = 0; i < FF2CharSet; i++)
+	{
+		KvGotoNextKey(Kv);
 	}
 	
 	for (new i=1; i<MAXSPECIALS; i++)
