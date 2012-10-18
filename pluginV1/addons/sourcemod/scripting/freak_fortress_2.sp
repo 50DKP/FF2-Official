@@ -177,7 +177,8 @@ static const String:ff2versiontitles[][] = 		//the last line of this is what det
 	"1.07 beta 1",
 	"1.07 beta 1",
 	"1.07 beta 1",
-	"1.07 beta 4"
+	"1.07 beta 4",
+	"1.07 beta 5"
 };
 
 static const String:ff2versiondates[][] = 
@@ -202,7 +203,8 @@ static const String:ff2versiondates[][] =
 	"8 Oct 2012",
 	"8 Oct 2012",
 	"8 Oct 2012",
-	"11 Oct 2012"
+	"11 Oct 2012",
+	"18 Oct 2012"
 };
 
 static const maxversion = (sizeof(ff2versiontitles) - 1);
@@ -1195,7 +1197,13 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			KvGetString(BossKV[Special[i-1]], "companion", s, 64);
 			if (StrEqual(s,""))
 				break;
-			Boss[i] = FindBosses(see);
+			
+			new tempBoss = FindBosses(see);
+			if (!IsValidClient(tempBoss))
+				break;
+			
+			Boss[i] = tempBoss;
+			
 			if (PickSpecial(i,i-1))
 			{
 				KvRewind(BossKV[Special[i]]);
@@ -5193,7 +5201,15 @@ stock FindVersionData(Handle:panel, versionindex)
 {
 	switch (versionindex)
 	{
-		case 20: // 1.07 beta
+		case 21: // 1.07 beta 4
+		{
+			DrawPanelText(panel, "1) [Dev] Fixed issue with character sets not working.");
+			DrawPanelText(panel, "2) [Dev] Improved IsValidClient replay check");
+			DrawPanelText(panel, "3) [Dev] IsValidClient is now called when loading companion bosses");
+			DrawPanelText(panel, "   This should prevent GetEntProp issues with m_iClass");
+		}
+		
+		case 20: // 1.07 beta 4
 		{
 			DrawPanelText(panel, "1) [Players] Dead Ringers have no cloak defense buff. Normal cloaks do.");
 			DrawPanelText(panel, "2) [Players] Fixed Sniper Rifle reskin behavior");
@@ -5215,7 +5231,7 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "18) [Server] Eureka Effect can now be enabled using the new ff2_enable_eureka cvar");
 			DrawPanelText(panel, "19) [Server] Bosses models and sounds are now precached the first time they are loaded.");
 			DrawPanelText(panel, "20) [Dev] Fixed an issue where FF2 was trying to read cvars before config files were executed.");
-			DrawPanelText(panel, "   This change should also make the game a little more multi-mod friendly.");
+			DrawPanelText(panel, "    This change should also make the game a little more multi-mod friendly.");
 			DrawPanelText(panel, "21) [Dev] Fixed OnLoadCharacterSet not being fired. This should fix the deadrun plugin.");
 			DrawPanelText(panel, "Continued on next page");
 		}
@@ -5648,18 +5664,8 @@ stock IsValidClient(client, bool:replaycheck = true)
 	if (GetEntProp(client, Prop_Send, "m_bIsCoaching")) return false;
 	if (replaycheck)
 	{
-		decl String:adminname[32];
-	//	decl String:auth[32];
-		decl String:name[32];
-		new AdminId:admin;
-		GetClientName(client, name, sizeof(name));
-	//	GetClientAuthString(client, auth, sizeof(auth));
-		if (strcmp(name, "replay", false) == 0 && IsFakeClient(client)) return false;
-		if ((admin = GetUserAdmin(client)) != INVALID_ADMIN_ID)
-		{
-			GetAdminUsername(admin, adminname, sizeof(adminname));
-			if (strcmp(adminname, "Replay", false) == 0 || strcmp(adminname, "SourceTV", false) == 0) return false;
-		}
+		if (IsClientSourceTV(client) || IsClientReplay(client))
+			return false;
 	}
 	return true;
 }
