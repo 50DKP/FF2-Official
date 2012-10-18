@@ -4,16 +4,20 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <tf2_stocks>
-#include <colors>
+#include <morecolors>
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-#define MB 3
+// #define MB 5
 #define ME 2048
+
+#define PLUGIN_VERSION "1.07 beta 5"
 
 public Plugin:myinfo = {
 	name = "Freak Fortress 2: Default Abilities",
 	author = "RainBolt Dash",
+	description = "FF2: Common abilities used by all bosses",
+	version = PLUGIN_VERSION,
 };
 
 new Handle:OnHaleJump = INVALID_HANDLE;
@@ -22,8 +26,8 @@ new Handle:OnHaleWeighdown = INVALID_HANDLE;
 
 new Handle:jumpHUD;
 
-new bool:bEnableSuperDuperJump[MB];
-new Float:UberRageCount[MB];
+new bool:bEnableSuperDuperJump[MAXPLAYERS+1];
+new Float:UberRageCount[MAXPLAYERS+1];
 new BossTeam=_:TFTeam_Blue;
 
 new Handle:cvarOldJump = INVALID_HANDLE;
@@ -50,7 +54,7 @@ public OnPluginStart2()
 
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	for(new i=0;i<MB;i++)
+	for(new i=0;i<MaxClients;i++)
 	{
 		bEnableSuperDuperJump[i]=false;
 		UberRageCount[i]=0.0;

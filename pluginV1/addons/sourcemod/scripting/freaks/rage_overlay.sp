@@ -12,9 +12,13 @@
 
 new BossTeam=_:TFTeam_Blue;
 
+#define PLUGIN_VERSION "1.07 beta 5"
+
 public Plugin:myinfo = {
 	name = "Freak Fortress 2: rage_overlay",
 	author = "Jery0987, RainBolt Dash",
+	description = "FF2: Ability that covers all living, non-boss team players screens with an image",
+	version = PLUGIN_VERSION,
 };
 
 public OnPluginStart2()

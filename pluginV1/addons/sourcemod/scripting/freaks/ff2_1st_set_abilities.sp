@@ -4,16 +4,20 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <tf2_stocks>
-#include <colors>
+#include <morecolors>
 #include <tf2items>
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
 #define ME 2048
 
+#define PLUGIN_VERSION "1.07 beta 5"
+
 public Plugin:myinfo = {
 	name = "Freak Fortress 2: Abilities of 1st set",
 	author = "RainBolt Dash",
+	description = "FF2: Abilities used by Seeldier, Seeman, Demopan, and Ninja Spy",
+	version = PLUGIN_VERSION,
 };
 
 #define FLAG_ONSLOMO			(1<<0)
