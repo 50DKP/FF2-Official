@@ -883,7 +883,7 @@ public Action:Timer_Announce(Handle:hTimer)
 			}
 			case 3:
 			{
-				CPrintToChatAll("{default} === Freak Fortress 2 v.%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default} edit by {olive}RavensBro{default}) === ",ff2versiontitles[maxversion]);
+				CPrintToChatAll("{default} === Freak Fortress 2 v.%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) === ",ff2versiontitles[maxversion]);
 			}
 			case 4:
 			{
@@ -4107,8 +4107,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					decl String:s[PLATFORM_MAX_PATH];
 					if (RandomSound("sound_stabbed",s,PLATFORM_MAX_PATH,index))
 					{
-						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE,s, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[0], _, NULL_VECTOR, false, 0.0);
-						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE,s,_, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[0], _, NULL_VECTOR, false, 0.0);
+						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE,s, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[index], _, NULL_VECTOR, false, 0.0);
+						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE,s,_, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[index], _, NULL_VECTOR, false, 0.0);
 					}
 					SetEventInt(stabevent, "weaponid", TF_WEAPON_KNIFE);
 					FireEvent(stabevent);
