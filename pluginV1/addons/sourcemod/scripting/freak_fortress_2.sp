@@ -180,7 +180,8 @@ static const String:ff2versiontitles[][] = 		//the last line of this is what det
 	"1.07 beta 1",
 	"1.07 beta 1",
 	"1.07 beta 4",
-	"1.07 beta 5"
+	"1.07 beta 5",
+	"1.07 beta 6"
 };
 
 static const String:ff2versiondates[][] = 
@@ -206,7 +207,8 @@ static const String:ff2versiondates[][] =
 	"8 Oct 2012",
 	"8 Oct 2012",
 	"11 Oct 2012",
-	"18 Oct 2012"
+	"18 Oct 2012",
+	"9 Nov 2012"
 };
 
 static const maxversion = (sizeof(ff2versiontitles) - 1);
@@ -5204,7 +5206,14 @@ stock FindVersionData(Handle:panel, versionindex)
 {
 	switch (versionindex)
 	{
-		case 21: // 1.07 beta 4
+		case 22: // 1.07 beta 6
+		{
+			DrawPanelText(panel, "1) [Dev] Fixed issue with sound hook not stopping sound when sound_block_vo was in use");
+			DrawPanelText(panel, "2) [Dev] If ff2_charset was used, don't run the character set vote");
+			DrawPanelText(panel, "3) [Dev] If a vote is already running, Character set vote will retry every 5 seconds or until map changes ");
+		}
+		
+		case 21: // 1.07 beta 5
 		{
 			DrawPanelText(panel, "1) [Dev] Fixed issue with character sets not working.");
 			DrawPanelText(panel, "2) [Dev] Improved IsValidClient replay check");
