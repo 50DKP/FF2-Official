@@ -25,7 +25,7 @@
 #define ME 2048
 #define MAXSPECIALS 64
 #define MAXRANDOMS 16
-#define PLUGIN_VERSION "1.07 beta 5"
+#define PLUGIN_VERSION "1.07 beta 6"
 
 #define SOUNDEXCEPT_MUSIC 0
 #define SOUNDEXCEPT_VOICE 1
@@ -150,6 +150,8 @@ new mp_forcecamera;
 new Float:tf_scout_hype_pep_max;
 new Handle:cvarNextmap;
 new bool:isSubPluginsEnabled;
+
+new bool:isCharSetSelected = false;
 
 // Healthbar-related things
 new g_healthBar = -1;
@@ -623,7 +625,6 @@ public AddToDownload()
 			KvGotoFirstSubKey(Kv);
 			KvGetSectionName(Kv, FF2CharSetStr, 64);
 		}
-		PrintToChatAll("[FF2] DEBUG: A plugin overrode the character set.  New set: %s", charset);
 	}
 	
 	KvRewind(Kv);
@@ -647,6 +648,7 @@ public AddToDownload()
 	PrecacheSound("vo/announcer_am_capincite03.wav", true);
 	PrecacheSound("weapons/barret_arm_zap.wav", true);
 	PrecacheSound("vo/announcer_ends_2min.wav", true);
+	isCharSetSelected = false;
 }
 
 EnableSubPlugins(bool:forse = false)
@@ -2850,6 +2852,7 @@ public Action:Command_CharSet(client, args)
 	}
 	CloseHandle(Kv);
 	FF2CharSet=i;
+	isCharSetSelected = true;
 	return Plugin_Handled;
 }
 
@@ -5603,7 +5606,7 @@ public Action:HookSound(clients[64], &numClients, String:sample[PLATFORM_MAX_PAT
 	if (!StrContains(sample,"vo") && !(FF2flags[Boss[index]] & FF2FLAG_TALKING))
 	{
 		if (bBlockVoice[Special[index]])
-			return Plugin_Handled;
+			return Plugin_Stop;
 		decl String:sample2[PLATFORM_MAX_PATH];
 		if (RandomSound("catch_phrase",sample2,PLATFORM_MAX_PATH,index))
 		{
@@ -5699,6 +5702,7 @@ public NextmapPanelH2(Handle:menu,num_votes,num_clients,const client_info[][2],n
 	GetConVarString(cvarNextmap,nextmap,42);
 	strcopy(FF2CharSetStr,42,mode[StrContains(mode," ")+1]);
 	CPrintToChatAll("%t","nextmap_charset",nextmap,FF2CharSetStr);
+	isCharSetSelected = true;
 }
 
 public CvarChangeNextmap(Handle:convar, const String:oldValue[], const String:newValue[])
@@ -5707,9 +5711,14 @@ public CvarChangeNextmap(Handle:convar, const String:oldValue[], const String:ne
 }
 
 public Action:Timer_CvarChangeNextmap(Handle:hTimer)
-{		
-	if (IsVoteInProgress())
+{
+	if (isCharSetSelected)
 		return Plugin_Continue;
+	if (IsVoteInProgress())
+	{
+		CreateTimer(5.0,Timer_CvarChangeNextmap, _, TIMER_FLAG_NO_MAPCHANGE);
+		return Plugin_Continue;
+	}
 	new Handle:dVoteMenu = CreateMenu(NextmapPanelH, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(dVoteMenu, "%t","select_charset");
 	SetVoteResultCallback(dVoteMenu, NextmapPanelH2);
