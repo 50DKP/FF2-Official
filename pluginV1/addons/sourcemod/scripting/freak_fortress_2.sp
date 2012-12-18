@@ -25,7 +25,7 @@
 #define ME 2048
 #define MAXSPECIALS 64
 #define MAXRANDOMS 16
-#define PLUGIN_VERSION "1.07 beta 6"
+#define PLUGIN_VERSION "1.07"
 
 #define SOUNDEXCEPT_MUSIC 0
 #define SOUNDEXCEPT_VOICE 1
@@ -103,6 +103,7 @@ new Handle:cvarEnableEurekaEffect;
 new Handle:cvarForceBossTeam;
 
 new Handle:cvarHealthBar;
+new Handle:cvarAllowSpectators;
 
 new Handle:FF2Cookies;		// "queue_points music monologues classinfo rmb_help reload_help"
 /*
@@ -181,7 +182,8 @@ static const String:ff2versiontitles[][] = 		//the last line of this is what det
 	"1.07 beta 1",
 	"1.07 beta 4",
 	"1.07 beta 5",
-	"1.07 beta 6"
+	"1.07 beta 6",
+	"1.07"
 };
 
 static const String:ff2versiondates[][] = 
@@ -208,7 +210,8 @@ static const String:ff2versiondates[][] =
 	"8 Oct 2012",
 	"11 Oct 2012",
 	"18 Oct 2012",
-	"9 Nov 2012"
+	"9 Nov 2012",
+	"14 Dec 2012"
 };
 
 static const maxversion = (sizeof(ff2versiontitles) - 1);
@@ -298,6 +301,9 @@ public OnPluginStart()
 	cvarForceBossTeam = CreateConVar("ff2_force_team", "0", "0- Use plugin logic, 1- random team, 2- red, 3- blue", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	
 	cvarHealthBar = CreateConVar("ff2_health_bar", "1", "Show boss health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0); // Added by Powerlord
+	
+	cvarAllowSpectators = FindConVar("mp_allowspectators");
+	
 	HookConVarChange(cvarHealthBar, HealthbarEnableChanged);
 
 	HookEvent("player_changeclass", OnChangeClass);
@@ -370,6 +376,7 @@ public OnPluginStart()
 	AddCommandListener(DoSuicide, "explode");  
 	AddCommandListener(DoSuicide, "kill");  
 	AddCommandListener(Destroy, "destroy");
+	// AddCommandListener(DoJoinTeam, "jointeam"); // To be implemented and tested in 1.08
 
 	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable CP. Only with ff2_point_type = 0");
 	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable CP. Only with ff2_point_type = 0");
@@ -2003,7 +2010,7 @@ EquipBoss(index)
 		{
 			KvGetString(BossKV[Special[index]], "name",s, 64);
 			KvGetString(BossKV[Special[index]], "attributes",s2, 128);
-			Format(s2,128,"68 ; 2 ; 2 ; 3.0 ; 259 ; 1 ; 269 ; 1 ; %s",s2);
+			Format(s2,128,"68 ; 2 ; 2 ; 3.0 ; 259 ; 1 ; %s",s2);
 			new BossWeapon = SpawnWeapon(Boss[index],s,KvGetNum(BossKV[Special[index]], "index"),101,5,s2);
 			if (!KvGetNum(BossKV[Special[index]], "show",0))
 				SetEntProp(BossWeapon, Prop_Send, "m_iWorldModelIndex", -1);
@@ -2046,6 +2053,7 @@ public Action:MakeBoss(Handle:hTimer,any:index)
 		SetEntProp(Boss[index], Prop_Send, "m_lifeState", 0);
 		TF2_RespawnPlayer(Boss[index]);
 		b_allowBossChgClass = false;
+		TF2_RemovePlayerDisguise(Boss[index]);
 	}
 	if (!IsPlayerAlive(Boss[index]))
 	{
@@ -2422,6 +2430,12 @@ public Action:checkItems(Handle:hTimer,any:client)
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 					SpawnWeapon(client, "tf_weapon_syringegun_medic", 17, 1, 10, "17 ; 0.05 ; 144 ; 1");
 				}
+			}
+			
+			case 656:
+			{
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
+				SpawnWeapon(client, "tf_weapon_fists", 5, 1, 0, "");
 			}
 		}
 	}
@@ -2807,6 +2821,8 @@ public Action:Command_Points(client, args)
 
 	for (new i = 0;  i < target_count;  i++)
 	{
+		if (IsClientSourceTV(target_list[i]) || IsClientReplay(target_list[i]))
+			continue;
 		SetClientQueuePoints(target_list[i],GetClientQueuePoints(target_list[i])+points);
 		LogAction(client, target_list[i], "\"%L\" added %d queue points to \"%L\"", client, points, target_list[i]);
 		ReplyToCommand(client, "[FF2] Added %d queue points to %s", points, target_name);
@@ -3438,6 +3454,63 @@ public Action:DoSuicide(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
+public Action:DoJoinTeam(client, const String:command[], argc)
+{
+	if (!Enabled)
+		return Plugin_Continue;
+	
+	if (RoundCount == 0 && GetConVarBool(cvarFirstRound))
+		return Plugin_Continue;
+	
+	if (argc == 0)
+		return Plugin_Continue;
+	
+	decl String:teamString[10];
+	GetCmdArg(1, teamString, sizeof(teamString));
+	
+	new team = _:TFTeam_Unassigned;
+	
+	if (StrEqual(teamString, "red", false))
+	{
+		team = _:TFTeam_Red;
+	}
+	else if (StrEqual(teamString, "blue", false))
+	{
+		team = _:TFTeam_Blue;
+	}
+	else if (StrEqual(teamString, "auto", false))
+	{
+		team = OtherTeam;
+	}
+	else if (StrEqual(teamString, "spectator", false))
+	{
+		if (GetConVarBool(cvarAllowSpectators))
+			team = _:TFTeam_Spectator;
+		else
+			team = OtherTeam;
+	}
+	
+	if (team == BossTeam)
+		team = OtherTeam;
+	
+	if (team > _:TFTeam_Unassigned)
+		ChangeClientTeam(client, team);
+
+	switch (team)
+	{
+		case TFTeam_Red:
+		{
+			ShowVGUIPanel(client, "class_red");
+		}
+		
+		case TFTeam_Blue:
+		{
+			ShowVGUIPanel(client, "class_blue");
+		}
+	}
+	
+	return Plugin_Handled;
+}
 
 public Action:event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -5206,6 +5279,14 @@ stock FindVersionData(Handle:panel, versionindex)
 {
 	switch (versionindex)
 	{
+		case 23: // 1.07
+		{
+			DrawPanelText(panel, "1) [Players] Holiday Punch is now replaced by Fists");
+			DrawPanelText(panel, "2) [Players] Bosses will have any disguises removed on round start");
+			DrawPanelText(panel, "3) [Players] Bosses can no longer see all players health, as it wasn't working any more");
+			DrawPanelText(panel, "4) [Server] ff2_addpoints no longer targets SourceTV or replay");
+		}
+		
 		case 22: // 1.07 beta 6
 		{
 			DrawPanelText(panel, "1) [Dev] Fixed issue with sound hook not stopping sound when sound_block_vo was in use");
