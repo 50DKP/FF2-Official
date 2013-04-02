@@ -2953,6 +2953,11 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 		b_BossChgClassDetected = false;
 	}
 	
+	if (GetBossIndex(client)!=-1 && FF2RoundState==0)
+	{
+		TF2_RemoveAllWeapons(client);
+	}	
+	
 	if ((FF2RoundState != 1 || !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM)))
 	{
 		if (!(FF2flags[client] & FF2FLAG_HASONGIVED))
