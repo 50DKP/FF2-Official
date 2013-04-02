@@ -74,18 +74,21 @@ Rage_NewWeapon(index,const String:ability_name[])
 	if (FF2_GetAbilityArgument(index,this_plugin_name,ability_name, 6))
 		SetEntPropEnt(Boss, Prop_Send, "m_hActiveWeapon", weapon);
 	new ammo=FF2_GetAbilityArgument(index,this_plugin_name,ability_name, 5);
+	new clip=FF2_GetAbilityArgument(index,this_plugin_name,ability_name, 7);
 	if (ammo>0)
-		SetAmmo(Boss, weapon, ammo);
+		SetAmmo(Boss, weapon, ammo, clip);
 }
 
-stock SetAmmo(client, weapon, ammo)
+stock SetAmmo(client, weapon, ammo, clip)
 {
 	if (IsValidEntity(weapon))
 	{
-		SetEntProp(weapon, Prop_Send, "m_iClip1", 0);
-		new iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
-		new iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
-		SetEntData(client, iAmmoTable+iOffset, ammo, 4, true);
+		SetEntProp(weapon, Prop_Send, "m_iClip1", clip);
+		//new iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
+		new iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1);
+		SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, iOffset);
+		//new iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
+		//SetEntData(client, iAmmoTable+iOffset, ammo, 4, true);
 	}
 }
 

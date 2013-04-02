@@ -13,7 +13,10 @@ rage_new_weapon - Boss gets a weapon. Like a CBS' bow rage, but you set a weapon
 		1 - Brave Jump
 		2 - Demopan's charge of targe, projectiles etc
 		3 - Weighdown
-		4...7 - Not used.
+		4 - Killed player (not used for sounds)
+		5 - Boss killed (not used for sounds)
+		6 - Boss backstabbed (not used for sounds)
+		7..9 - Not used.
 	1 - weapon's classname
 	2 - weapon's item definition index
 	3 - weapon's attributes (Format is "attribute ; value ; attribute2 ; value2")
