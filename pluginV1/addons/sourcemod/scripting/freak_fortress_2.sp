@@ -2031,7 +2031,7 @@ EquipBoss(index)
 		{
 			KvGetString(BossKV[Special[index]], "name",s, 64);
 			KvGetString(BossKV[Special[index]], "attributes",s2, 128);
-			Format(s2,128,"68 ; 2 ; 2 ; 3.0 ; 259 ; 1 ; %s",s2);
+			Format(s2,128,"68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; %s",s2);
 			new BossWeapon = SpawnWeapon(Boss[index],s,KvGetNum(BossKV[Special[index]], "index"),101,5,s2);
 			if (!KvGetNum(BossKV[Special[index]], "show",0))
 			{
@@ -2510,7 +2510,7 @@ public Action:checkItems(Handle:hTimer,any:client)
 		index = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch (index)
 		{
-			case 331, 656:
+			case 331:
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 				weapon = SpawnWeapon(client, "tf_weapon_fists", 5, 1, 6, "");
@@ -2697,11 +2697,11 @@ public Action:event_uberdeployed(Handle:event, const String:name[], bool:dontBro
 			GetEdictClassname(medigun, s, sizeof(s));
 			if (!strcmp(s,"tf_weapon_medigun"))
 			{
-				TF2_AddCondition(client,TFCond_HalloweenCritCandy,0.5);
+				TF2_AddCondition(client,TFCond_HalloweenCritCandy,0.5, client);
 				new target = GetHealingTarget(client);
 				if (IsValidClient(target, false) && IsPlayerAlive(target))
 				{
-					TF2_AddCondition(target, TFCond_HalloweenCritCandy, 0.5);
+					TF2_AddCondition(target, TFCond_HalloweenCritCandy, 0.5, client);
 					uberTarget[client] = target;
 				}
 				else uberTarget[client] = -1;
@@ -4439,8 +4439,8 @@ stock SpawnSmallHealthPackAt(client, ownerteam = 0)
 public Action:Timer_StopTickle(Handle:timer, any:userid)
 {
 	new client = GetClientOfUserId(userid);
-	if (!IsValidClient(client) || !IsPlayerAlive(client) || !TF2_IsPlayerInCondition(client, TFCond_Taunting)) return;
-	TF2_RemoveCondition(client, TFCond_Taunting);
+	if (!IsValidClient(client) || !IsPlayerAlive(client)) return;
+	if (!GetEntProp(client, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(client, Prop_Send, "m_hHighFivePartner"))) TF2_RemoveCondition(client, TFCond_Taunting);
 }
 
 stock IncrementHeadCount(client)

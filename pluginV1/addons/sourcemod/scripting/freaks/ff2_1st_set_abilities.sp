@@ -10,8 +10,9 @@
 #include <freak_fortress_2_subplugin>
 
 #define ME 2048
+#define CBS_MAX_ARROWS 9
 
-#define PLUGIN_VERSION "1.07 beta 5"
+#define PLUGIN_VERSION "1.06 beta 1"
 
 public Plugin:myinfo = {
 	name = "Freak Fortress 2: Abilities of 1st set",
@@ -316,8 +317,19 @@ Rage_UseBow(index)
 {
 	new Boss=GetClientOfUserId(FF2_GetBossUserId(index));
 	TF2_RemoveWeaponSlot(Boss, TFWeaponSlot_Primary);
-	SetEntPropEnt(Boss, Prop_Send, "m_hActiveWeapon", SpawnWeapon(Boss, "tf_weapon_compound_bow", 56, 100, 5, "6 ; 0.5 ; 37 ; 0.0"));
-	SetAmmo(Boss, TFWeaponSlot_Primary,9);
+	SetEntPropEnt(Boss, Prop_Send, "m_hActiveWeapon", SpawnWeapon(Boss, "tf_weapon_compound_bow", 1005, 100, 5, "6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19"));
+	new TFTeam:team = (FF2_GetBossTeam() == _:TFTeam_Blue ? TFTeam_Red : TFTeam_Blue);
+	
+	new RedAlivePlayers = 0;
+	for (new i = 1; i <= MaxClients; ++i)
+	{
+		if (IsClientInGame(i) && TFTeam:GetClientTeam(i) == team && IsPlayerAlive(i))
+		{
+			++RedAlivePlayers;
+		}
+	}
+	
+	SetAmmo(Boss, TFWeaponSlot_Primary, ((RedAlivePlayers >= CBS_MAX_ARROWS) ? CBS_MAX_ARROWS : RedAlivePlayers));
 }
 
 

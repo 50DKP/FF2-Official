@@ -17,6 +17,7 @@
 #define PROJECTILE		"model_projectile_replace"
 #define OBJECTS			"spawn_many_objects_on_kill"
 #define OBJECTS_DEATH	"spawn_many_objects_on_death"
+#define NOHOLD			""
 
 #define PLUGIN_VERSION "1.08"
 
@@ -60,6 +61,18 @@ public OnPluginStart2()
 	CloseHandle(hGameConf);
 	
 	HookEvent("player_death", event_player_death);
+}
+
+public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vec[3], Float:angles[3], &weapon, &subtype, &cmdnum, &tickcount, &seed, mouse[2])
+{
+	if (!FF2_IsFF2Enabled())
+	{
+		return Plugin_Continue;
+	}
+	new index = FF2_GetBossIndex(client) > -1)
+	if (index > -1 && FF2_HasAbility(index, this_plugin_name, ""))
+	{
+	}
 }
 
 public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
