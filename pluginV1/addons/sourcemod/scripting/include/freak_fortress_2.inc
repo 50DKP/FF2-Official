@@ -16,6 +16,24 @@
 #endif
 #define _FF2_included
 
+enum FF2Ability
+{
+	FF2Ability_Any = -100,
+	FF2Ability_FakeDeath = -1,
+	FF2Ability_Rage = 0,
+	FF2Ability_BraveJump = 1,
+	FF2Ability_Charge = 2,
+	FF2Ability_Weighdown = 3,
+	FF2Ability_KilledPlayer = 4,
+	FF2Ability_Died = 5,
+	FF2Ability_Backstabbed = 6,
+}
+
+#define FF2_CHARGE_OTHER 0
+#define FF2_CHARGE_RAGE 0
+#define FF2_CHARGE_WEIGHDOWN 1
+#define FF2_CHARGE_TELEPORT 1
+
 /**
  * Is Freak Fortress enabled?
  *
@@ -123,9 +141,10 @@ native Float:FF2_GetRageDist( index = 0 , const String:plugin_name[]="", const S
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
  * @param plugin_name	Name of plugin with this ability
  * @param ability_name 	Name of ability 
+ * @param ability		Ability slot
  * @return				true if Boss has this ability. false is hasn't
  */
-native bool:FF2_HasAbility( index, const String:plugin_name[], const String:ability_name[] );
+native bool:FF2_HasAbility( index, const String:plugin_name[], const String:ability_name[], FF2Ability:ability = FF2Ability_Any );
 
 /**
  * Is Boss has ability?
@@ -156,7 +175,7 @@ native FF2_DoAbility(index, const String:plugin_name[], const String:ability_nam
  * @param defvalue 		Returns if argument is not defined
  * @return				Value of argument
  */
-native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:ability_name[], argument, deflavue = 0 );
+native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:ability_name[], argument, deflavue = 0, FF2Ability:ability = FF2Ability_Any );
 
 /**
  * Gets float argument of ability
@@ -168,7 +187,7 @@ native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:a
  * @param defvalue 		Returns if argument is not defined
  * @return				Value of argument
  */
-native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], const String:ability_name[], argument, Float:deflavue = 0.0);
+native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], const String:ability_name[], argument, Float:deflavue = 0.0, FF2Ability:ability = FF2Ability_Any );
 
 /**
  * Gets string argument of ability
@@ -181,7 +200,7 @@ native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], con
  * @param bufferlen		Length of buffer string
  * @noreturn
  */
-native FF2_GetAbilityArgumentString( index, const String:plugin_name[], const String:ability_name[], argument, String:buffer[], bufferlen);
+native FF2_GetAbilityArgumentString( index, const String:plugin_name[], const String:ability_name[], argument, String:buffer[], bufferlen, FF2Ability:ability = FF2Ability_Any );
 
 /**
  * Starts random boss' sound from his config file

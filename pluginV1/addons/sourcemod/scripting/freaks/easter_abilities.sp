@@ -69,10 +69,12 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vec[3], Float:ang
 	{
 		return Plugin_Continue;
 	}
-	new index = FF2_GetBossIndex(client) > -1)
+	new index = FF2_GetBossIndex(client) > -1;
 	if (index > -1 && FF2_HasAbility(index, this_plugin_name, ""))
 	{
 	}
+	
+	return Plugin_Continue;
 }
 
 public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
@@ -99,7 +101,7 @@ public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 		new skin = FF2_GetAbilityArgument(index, this_plugin_name, OBJECTS, 3, 0);
 		new count = FF2_GetAbilityArgument(index, this_plugin_name, OBJECTS, 4, 14);
 		new Float:distance = FF2_GetAbilityArgumentFloat(index, this_plugin_name, OBJECTS, 5, 30.0);
-		SpawnManyAmmoPacks(client, model, skin, count, distance);
+		SpawnManyObjects(classname, client, model, skin, count, distance);
 		return;
 	}
 
@@ -223,12 +225,12 @@ stock AttachProjectileModel(entity, String:strModel[], String:strAnim[] = "")
 	return -1;
 }
 
-stock SpawnManyHealthPacks(client, String:model[], skin=0, num=14, Float:offsz = 30.0)
+stock SpawnManyHealthPacks()
 {
 	SpawnManyObjects("tf_health_kit", client, model, skin, num, offsz);
 }
 
-stock SpawnManyAmmoPacks(client, String:model[], skin=0, num=14, Float:offsz = 30.0)
+stock SpawnManyAmmoPacks()
 {
 	SpawnManyObjects("tf_ammo_pack", client, model, skin, num, offsz);
 }
