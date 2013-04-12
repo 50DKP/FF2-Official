@@ -79,7 +79,7 @@ Rage_NewWeapon(index,const String:ability_name[])
 		SetAmmo(Boss, weapon, ammo, clip);
 }
 
-stock SetAmmo(client, weapon, ammo, clip)
+stock SetAmmo(client, weapon, ammo, clip=0)
 {
 	if (IsValidEntity(weapon))
 	{

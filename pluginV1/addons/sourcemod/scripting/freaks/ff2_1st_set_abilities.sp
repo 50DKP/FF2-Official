@@ -317,7 +317,8 @@ Rage_UseBow(index)
 {
 	new Boss=GetClientOfUserId(FF2_GetBossUserId(index));
 	TF2_RemoveWeaponSlot(Boss, TFWeaponSlot_Primary);
-	SetEntPropEnt(Boss, Prop_Send, "m_hActiveWeapon", SpawnWeapon(Boss, "tf_weapon_compound_bow", 1005, 100, 5, "6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19"));
+	new weapon = SpawnWeapon(Boss, "tf_weapon_compound_bow", 1005, 100, 5, "6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19");
+	SetEntPropEnt(Boss, Prop_Send, "m_hActiveWeapon", weapon);
 	new TFTeam:team = (FF2_GetBossTeam() == _:TFTeam_Blue ? TFTeam_Red : TFTeam_Blue);
 	
 	new RedAlivePlayers = 0;
@@ -329,7 +330,7 @@ Rage_UseBow(index)
 		}
 	}
 	
-	SetAmmo(Boss, TFWeaponSlot_Primary, ((RedAlivePlayers >= CBS_MAX_ARROWS) ? CBS_MAX_ARROWS : RedAlivePlayers));
+	SetAmmo(Boss, weapon, ((RedAlivePlayers >= CBS_MAX_ARROWS) ? CBS_MAX_ARROWS : RedAlivePlayers));
 }
 
 
@@ -705,14 +706,17 @@ stock SpawnWeapon(client,String:name[],index,level,qual,String:att[])
 	return entity;
 }
 
-stock SetAmmo(client, slot, ammo)
+stock SetAmmo(client, weapon, ammo, clip=0)
 {
-	new weapon = GetPlayerWeaponSlot(client, slot);
 	if (IsValidEntity(weapon))
 	{
-		new iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
-		new iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
-		SetEntData(client, iAmmoTable+iOffset, ammo, 4, true);
+		if (clip)
+			SetEntProp(weapon, Prop_Send, "m_iClip1", clip);
+		//new iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
+		new iOffset = GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1);
+		SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, iOffset);
+		//new iAmmoTable = FindSendPropInfo("CTFPlayer", "m_iAmmo");
+		//SetEntData(client, iAmmoTable+iOffset, ammo, 4, true);
 	}
 }
 

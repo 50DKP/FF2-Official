@@ -816,6 +816,18 @@ public PrecacheCharacter(characterIndex)
 				PrecacheModel(s);
 			}
 		}
+		else if (!strcmp(s3, "sound_bgm"))
+		{
+			for (new i = 1; ; i++)
+			{
+				Format(s2, sizeof(s2), "%s%d", "path", i);
+				
+				KvGetString(BossKV[characterIndex], s2, s, PLATFORM_MAX_PATH);
+				if (!s[0])
+					break;
+				PrecacheSound(s);
+			}
+		}
 		else if (!StrContains(s3,"sound_") || !strcmp(s3,"catch_phrase"))
 		{	
 			for(new i = 1; ; i++)
