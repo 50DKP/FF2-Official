@@ -11,7 +11,7 @@
 // #define MB 5
 #define ME 2048
 
-#define PLUGIN_VERSION "1.07 beta 5"
+#define PLUGIN_VERSION "1.08 beta 1"
 
 public Plugin:myinfo = {
 	name = "Freak Fortress 2: Default Abilities",
@@ -398,7 +398,7 @@ Charge_OnTeleporter(const String:ability_name[],index,slot,action)
 					collisionvec[2] = 62.0;
 					SetEntPropVector(Boss, Prop_Send, "m_vecMaxs", collisionvec);
 					SetEntProp(Boss, Prop_Send, "m_bDucked", 1);
-					SetEntityFlags(Boss, FL_DUCKING);
+					SetEntityFlags(Boss, GetEntityFlags(Boss) | FL_DUCKING);
 					CreateTimer(0.2, Timer_StunBoss,index, TIMER_FLAG_NO_MAPCHANGE);
 				}
 				else TF2_StunPlayer(Boss, (bEnableSuperDuperJump ? 4.0 : 2.0), 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
