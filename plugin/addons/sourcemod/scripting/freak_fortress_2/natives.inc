@@ -50,7 +50,7 @@ CreateFF2Natives()
 	CreateNative("FF2_GetBossSpecial", Native_GetBossSpecial);
 	CreateNative("FF2_GetBossCharge", Native_GetBossCharge);
 	CreateNative("FF2_SetBossCharge", Native_SetBossCharge);
-	CreateNative("FF2_GetClientDamage", Native_GetClientHealing);
+	CreateNative("FF2_GetClientHealing", Native_GetClientHealing);
 	CreateNative("FF2_GetRageDist", Native_GetRageDist);
 	CreateNative("FF2_HasAbility", Native_HasAbility);
 	CreateNative("FF2_HasAbilityEx", Native_HasAbilityEx);

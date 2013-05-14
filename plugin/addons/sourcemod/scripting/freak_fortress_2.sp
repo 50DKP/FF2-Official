@@ -11,7 +11,9 @@
 #include <sdktools>
 #include <tf2>
 #include <tf2_stocks>
+#include <tf2_morestocks>
 #include <tf2items>
+#include <tf2attributes>
 #include <sdkhooks>
 #include <morecolors>
 
@@ -57,6 +59,13 @@ new Handle:g_Cvar_FirstBlood;
 new Handle:g_Cvar_ForceCamera;
 new Handle:g_Cvar_Medieval;
 // ------------------------
+
+// Valve Cvar Old Values
+new bool:g_OldArenaQueue;
+new g_OldUnbalUnbalanceLimit;
+new bool:g_OldAutobalance;
+new bool:g_OldFirstBlood;
+// No Medieval here as it doesn't take effect until map change
 
 // Our Cvars
 // ------------------------
@@ -105,6 +114,8 @@ new Handle:g_KeyValues_CurrentBosses[MAXPLAYERS]; // Do NOT change this to MAXPL
 // Note that damage done by targets being healed by medigun are
 // counted as damage
 new g_CurrentStats[MAXPLAYERS+1][FF2Stats];
+new g_OldHealing[MAXPLAYERS+1];
+
 new g_PlayersRemaining;
 new TFTeam:g_BossTeam = TFTeam_Blue;
 new TFTeam:g_OtherTeam = TFTeam_Red; // We're lazy
@@ -142,8 +153,7 @@ public OnPluginStart()
 	g_Array_Bosses = CreateArray(cells);
 	g_Array_AbilityList = CreateArray(cells);
 	g_Trie_AbilityMap = CreateTrie();
-	
-	
+
 	g_Cvar_ArenaQueue = FindConVar("tf_arena_use_queue");
 	g_Cvar_UnbalanceLimit = FindConVar("mp_teams_unbalance_limit");
 	g_Cvar_Autobalance = FindConVar("mp_autobalance");
@@ -196,6 +206,11 @@ public OnMapStart()
 		}
 	}
 	CloseHandle(fh);
+	
+	for (new i = 1; i <= MaxClients; ++i)
+	{
+		g_OldHealing[i] = 0;
+	}
 }
 
 public OnConfigsExecuted()
@@ -213,6 +228,11 @@ public OnConfigsExecuted()
 		PrepareFF2();
 		ChangeValveCvars();
 	}
+}
+
+public OnClientDisconnect_Post(client)
+{
+	g_OldHealing[client] = 0;
 }
 
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
@@ -294,28 +314,37 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		ChangeValveCvars();
 	}
-	
 }
 
 public Action:Event_ArenaWinPanel(Handle:event, const String:name[], bool:dontBroadcast)
 {
+	if (!g_bEnabled)
+	{
+		return Plugin_Continue;
+	}
+
 	new Handle:top = CreateArray();
 	//new top[3];
 	
-	for (new i = 1; i < MaxClients; i++)
+	for (new i = 1; i < MaxClients; ++i)
 	{
 		if (!IsBoss(i))
 		{
 			new damage = g_CurrentStats[i][FF2Stat_Damage];
+			g_CurrentStats[i][FF2Stat_Healing] = TF2_GetRoundScoreData(i, TF2Score_HealPoints);
+
+			/*
 			if (damage == 0)
 			{
 				continue;
 			}
+			*/
+			
 			
 			new size = GetArraySize(top);
-
+			
 			new insertPoint = -1;
-
+			
 			for (new j = 0; j < 3; j++)
 			{
 				if (size == j)
@@ -383,14 +412,6 @@ public Action:Event_ArenaWinPanel(Handle:event, const String:name[], bool:dontBr
 	return Plugin_Changed;
 }
 
-public Event_Player_Healed(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	new client = GetClientOfUserId(GetEventInt(event, "healer"));
-	new amount = GetEventInt(event, "amount");
-	
-	g_CurrentStats[client][FF2Stat_Healing] += amount;
-}
-
 /**
  * Prepare the next round for FF2
  */
@@ -433,7 +454,7 @@ public GetCharacterSets()
 		{
 			PushArrayString(g_Array_BossSets, charSet);
 		}
-	} while (KvGotoNextKey(characterKv);
+	} while (KvGotoNextKey(characterKv));
 
 	CloseHandle(characterKv);
 }
@@ -468,6 +489,7 @@ public bool:DownloadBossSet(String:setName[])
 	} while (KvGotoNextKey(characterKv, false));
 	
 	CloseHandle(characterKv);
+	return true;
 }
 
 public Handle:OpenCharacterKv()
