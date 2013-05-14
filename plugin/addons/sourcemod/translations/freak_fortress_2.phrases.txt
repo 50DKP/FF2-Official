@@ -26,7 +26,7 @@
 	"point_enable"
 	{
 		"#format" "{1:i}"
-		"en"  "Only {1} player(s) left alive, the control point has been unlocked!"
+		"en"  "Only {1} player(s) left, the control point has been unlocked!"
 	}
 	"top_3"
 	{
@@ -76,19 +76,19 @@
 	}
 	"help_scout"
 	{
-		"en"	"The Crit-a-Cola grants criticals instead of minicrits.\nThe Fan O' War removes 5pct rage on hit.\nPistols gain minicrits.\nThe Candycane drops a health pack on hit."
+		"en"	"The Crit-a-Cola grants crits instead of minicrits.\nThe Fan O' War removes 5% rage on hit.\nPistols gain minicrits.\nThe Candy Cane drops a health pack on hit."
 	}
 	"help_soldier"
 	{
-		"en"	"The Battalion's Backup fills its meter when hit. Its buff causes nearby teammates to take very little damage.\nThe Half-Zatoichi heals 35HP on hit and can overheal to +25 and its honorbound is removed on hit.\nBoot weapons reduce fall damage.\nAll guns minicrit Boss in midair.\nThe Direct Hit crits at times when it would minicrit.\nThe Reserve Shooter has faster weapon switch and a small damage buff.\nThe Mantreads create greater rocketjumps."
+		"en"	"The Battalion's Backup fills its meter when hit. Damage is heavily reduced to nearby players while active.\nThe Half-Zatoichi heals 35HP on hit, overheals to +25, and honorbound is removed on hit.\nBoots reduce fall damage and Mantreads create greater rocketjumps.\nAll guns minicrit Boss in midair (Direct Hit gets crits), and the Reserve Shooter has faster weapon switch and a small damage buff."
 	}
 	"help_pyro"
 	{
-		"en"	"Postal Pummeler and skins uses stats of Fire Axe.\nThe Flare Gun is replaced by the MegaDetonator.\nAirblasting the boss builds rage and lengthens the Vagineer's uber."
+		"en"	"Postal Pummeler and skins uses stats of Fire Axe.\nThe Flare Gun is replaced by the Mega Detonator.\nAirblasting the boss builds rage and lengthens the Vagineer's uber."
 	}
 	"help_demo"
 	{
-		"en"	"The shields block one hit from Boss.\nUsing the shields grants criticals.\nEyelander/reskins gain heads on hit.\nThe Half-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit."
+		"en"	"The shields block one hit from the Boss.\nUsing the shields grants criticals.\nEyelander/reskins gain heads on hit.\nThe Half-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit."
 	}
 	"help_heavy"
 	{
@@ -96,19 +96,19 @@
 	}
 	"help_eggineer"
 	{
-		"en"	"All maps have only small ammo packs.\nThe Frontier Justice gains crits only while your sentry is targetting Boss.\nThe Eureka Effect is disabled for now."
+		"en"	"All maps have only small ammo packs.\nThe Frontier Justice gains crits only while your sentry is targetting Boss."
 	}
 	"help_medic"
 	{
-		"en"	"Charge: Kritz+Uber. Charge starts at 40 percent.\nCharge lasts for 150 percent after activation.\nSyringe Guns: on hit: +5 to ubercharge, overdose's speed effect.\nCrossbow: 100 percent crits, +150pct damage, +10 uber on hit."
+		"en"	"Charge: Kritz+Uber. Charge starts at 40 percent.\nCharge lasts for 150 percent after activation.\nSyringe Gun: on hit: +5% ubercharge, has Overdose's speed effect.\nCrossbow: Always crits, +150% damage, +10% uber on hit."
 	}
 	"help_sniper"
 	{
-		"en"	"All your weapons have critical hits.\nJarate removes 8pct rage.\nBack-equipped weapons are replaced with SMG.\nDefault Sniper Rifle causes Boss to glow. Glow time scales with charge."
+		"en"	"All your weapons have critical hits.\nJarate removes 8% rage.\nBack-equipped weapons are replaced with SMG.\nDefault Sniper Rifle causes Boss to glow. Glow time scales with charge."
 	}
 	"help_spie"
 	{
-		"en"	"Backstab does about 10 percent of Boss' max health.\nCloaknDagger replaced with normal watch.\nAll revolvers minicrit.\nYour Eternal Reward backstabs will disguise you.\nKunai backstabs will get you a health bonus."
+		"en"	"Backstab does about 10 percent of Boss's max health.\nCloak and Dagger replaced with normal watch.\nAll revolvers minicrit.\nYour Eternal Reward/Wanga Prick backstabs will disguise you instantly.\nKunai backstabs will give you a health bonus."
 	}
 	"help_melee"
 	{
@@ -124,7 +124,7 @@
 	}
 	"menu_2"
 	{
-		"en"	"Investigate the boss('s) current health level (/ff2hp)"
+		"en"	"Investigate the boss's current health level (/ff2hp)"
 	}
 	"menu_3"
 	{
@@ -189,7 +189,7 @@
 	"ff2_hp"
 	{
 		"#format" "{1:s},{2:i},{3:i},{4:s}"
-		"en"	"Current {1}'s hp amout is {2} of {3}{4}"
+		"en"	"Current {1}'s hp amount is {2} of {3}{4}"
 	}
 	"ff2_alive"
 	{
@@ -198,7 +198,7 @@
 	}
 	"select_charset"
 	{
-		"en"    "Please vote for character pack in nextmap."
+		"en"    "Please vote for the character set for next map."
 	}
 	"your_points"
 	{
@@ -243,7 +243,7 @@
 	}
 	"first_round"
 	{
-		"en"	"Waiting for players to finish loading. Gamemode will be arena for this round"//waiting for players to load and playing common arena for the first round
+		"en"	"Waiting for players to finish loading. Gamemode will be arena for this round"  //Waiting for players to load and playing common arena for the first round
 	}
 	"used_weighdown"
 	{
@@ -288,12 +288,12 @@
 	"charge_status"
 	{
 		"#format" "{1:i}"
-		"en"	"Charge is {1} percent ready. When at 100 percent and unpress charge button."
+		"en"	"Charge is {1} percent ready. When at 100 percent let go of the charge button."
 	}
 	"nextmap_charset"
 	{
 		"#format" "{1:s},{2:s}"
-		"en"	"There will be {2} character pack in {1} map."
+		"en"	"There will be {2} character set in {1} map."
 	}
 	"ff2_buttons_reload"
 	{
@@ -306,6 +306,11 @@
 	"ff2_lives_left"
 	{
 		"#format" "{1:s},{2:i}"
-		"en"	"{1} lost 1 life! There is {2} more!"
+		"en"	"{1} lost 1 life! There are {2} more!"
+	}
+	"ff2_life_left"
+	{
+		"#format" "{1:s},{2:i}"
+		"en"	"{1} lost 1 life! There is 1 more!"
 	}
 }

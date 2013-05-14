@@ -14,16 +14,19 @@ enum SoundExcept
 
 enum FF2AbilityType
 {
-	FF2AbilityFakeDeath = -1,
-	FF2AbilityRage = 0,
-	FF2AbilityMove = 1,
-	FF2AbilityCharge = 2,
-	FF2AbilityWeighdown = 3,
-	FF2AbilityCustom1 = 4,
-	FF2AbilityCustom2 = 5,
-	FF2AbilityCustom3 = 6,
-	FF2AbilityCustom4 = 7,
-	FF2AbilityBackstab = 8,
+	FF2Ability_Any = -100,
+	FF2Ability_FakeDeath = -1,
+	FF2Ability_Rage = 0,
+	FF2Ability_BraveJump = 1,
+	FF2Ability_Charge = 2,
+	FF2Ability_Weighdown = 3,
+	FF2Ability_Custom1 = 4,
+	FF2Ability_Custom2 = 5,
+	FF2Ability_Custom3 = 6,
+	FF2Ability_Custom4 = 7,
+	FF2Ability_KilledPlayer = 8,
+	FF2Ability_Died = 9,
+	FF2Ability_Backstab = 10,
 };
 
 enum FF2AbilityMode
@@ -92,6 +95,22 @@ native FF2_GetBossTeam();
  * @return		    		true if Special exists, false if not
  */
 native bool:FF2_GetBossSpecial( index = 0, String:buffer[], bufferlen, isNumOfSpecial = 0);
+
+/**
+ * Gets number of lives of current Boss
+ *
+ * @param index 		Index of boss (0 for normal boss, 1 or higher for companion bosses)
+ * @return		    	Lives of Boss
+ */
+native FF2_GetBossLives( index = 0 );
+
+/**
+ * Gets max lives of current Boss
+ *
+ * @param index 		Index of boss (0 for normal boss, 1 or higher for companion bosses)
+ * @return		    	Max Lives of Boss
+ */
+native FF2_GetBossMaxLives( index = 0 );
 
 /**
  * Gets Health of current Boss
@@ -170,7 +189,7 @@ native bool:FF2_HasAbility( index, const String:plugin_name[], const String:abil
 native bool:FF2_HasAbilityEx( index, const String:ability_name[] );
 
 /**
- * Is Boss has ability?
+ * Force a boss to do an ability
  *
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
  * @param plugin_name	Name of plugin with this ability
@@ -198,7 +217,7 @@ native FF2_DoAbility(index, const String:plugin_name[], const String:ability_nam
  * @param defvalue 		Returns if argument is not defined
  * @return				Value of argument
  */
-native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:ability_name[], argument, deflavue = 0 );
+native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:ability_name[], argument, defvalue = 0 );
 
 /**
  * Gets float argument of ability
@@ -210,7 +229,7 @@ native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:a
  * @param defvalue 		Returns if argument is not defined
  * @return				Value of argument
  */
-native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], const String:ability_name[], argument, Float:deflavue = 0.0);
+native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], const String:ability_name[], argument, Float:defvalue = 0.0);
 
 /**
  * Gets string argument of ability
