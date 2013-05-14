@@ -80,7 +80,7 @@
 	}
 	"help_soldier"
 	{
-		"en"	"The Battalion's Backup fills its meter when hit.  Damage is heavily reduced to nearby players while active.\nThe Half-Zatoichi heals 35HP on hit, overheals to +25, and honorbound is removed on hit.\nBoots reduce fall damage and Mantreads create greater rocketjumps.\nAll guns minicrit Boss in midair (Direct Hit gets crits), and the Reserve Shooter has faster weapon switch and a small damage buff."
+		"en"	"The Battalion's Backup fills its meter when hit. Damage is heavily reduced to nearby players while active.\nThe Half-Zatoichi heals 35HP on hit, overheals to +25, and honorbound is removed on hit.\nBoots reduce fall damage and Mantreads create greater rocketjumps.\nAll guns minicrit Boss in midair (Direct Hit gets crits), and the Reserve Shooter has faster weapon switch and a small damage buff."
 	}
 	"help_pyro"
 	{
@@ -124,7 +124,7 @@
 	}
 	"menu_2"
 	{
-		"en"	"Investigate the boss('s) current health level (/ff2hp)"
+		"en"	"Investigate the boss's current health level (/ff2hp)"
 	}
 	"menu_3"
 	{
@@ -198,7 +198,7 @@
 	}
 	"select_charset"
 	{
-		"en"    "Please vote for character pack in nextmap."
+		"en"    "Please vote for the character set for next map."
 	}
 	"your_points"
 	{
@@ -288,12 +288,12 @@
 	"charge_status"
 	{
 		"#format" "{1:i}"
-		"en"	"Charge is {1} percent ready. When at 100 percent and unpress charge button."
+		"en"	"Charge is {1} percent ready. When at 100 percent let go of the charge button."
 	}
 	"nextmap_charset"
 	{
 		"#format" "{1:s},{2:s}"
-		"en"	"There will be {2} character pack in {1} map."
+		"en"	"There will be {2} character set in {1} map."
 	}
 	"ff2_buttons_reload"
 	{
@@ -306,6 +306,11 @@
 	"ff2_lives_left"
 	{
 		"#format" "{1:s},{2:i}"
-		"en"	"{1} lost 1 life! There is {2} more!"
+		"en"	"{1} lost 1 life! There are {2} more!"
+	}
+	"ff2_life_left"
+	{
+		"#format" "{1:s},{2:i}"
+		"en"	"{1} lost 1 life! There is 1 more!"
 	}
 }
