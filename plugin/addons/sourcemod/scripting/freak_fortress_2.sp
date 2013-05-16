@@ -23,7 +23,12 @@
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 
+#define TARGET_RED "@red"
+#define TARGET_BLU "@blue"
+
 #define PLUGIN_VERSION "2.0 alpha"
+
+#define MAXBOSSES 128
 
 #pragma semicolon 1
 
@@ -37,6 +42,15 @@ enum FF2Stats
 	FF2Stat_Lifelength,
 	FF2Stat_Points,
 };
+
+enum BossFlags
+{
+	BossFlags_AllowAmmoPickup = (1 << 0),
+	BossFlags_AllowHealthPickup = (1 << 1)
+}
+
+// Boss flags are loaded from boss configs
+new g_BossFlags[MAXPLAYERS+1];
 
 // FF2 status
 // ------------------------
@@ -89,7 +103,7 @@ new Handle:g_Array_BossSets;
 // Current set and its bosses
 // ------------------------
 new String:g_CurrentBossSet[SET_AND_BOSS_LENGTH];
-new Handle:g_Array_Bosses;
+new Handle:g_Array_Bosses; // adt_array of KeyValues handles of all bosses in the current set
 // ------------------------
 
 // Available boss abilities
@@ -99,6 +113,7 @@ new Handle:g_Array_AbilityList;
 new Handle:g_Trie_AbilityMap;
 // ------------------------
 
+
 // Boss Tracking Variables
 // ------------------------
 new g_CurrentBossCount;
@@ -107,6 +122,11 @@ new g_CurrentBosses[MAXPLAYERS]; // Do NOT change this to MAXPLAYERS+1
 // Stores handles to KeyValues for bosses currently in play, based on boss index
 new Handle:g_KeyValues_CurrentBosses[MAXPLAYERS]; // Do NOT change this to MAXPLAYERS+1
 // ------------------------
+
+new g_BossesMaxHealth[MAXPLAYERS] = { 1, ... };
+new g_BossesMaxLives[MAXPLAYERS] = { 1, ... };
+new g_BossesHealth[MAXPLAYERS] = { 1, ... };
+new g_BossesLives[MAXPLAYERS] = { 1, ... };
 
 // Player data
 // ------------------------
@@ -138,6 +158,12 @@ public Plugin:myinfo =
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
+	if (GetFeatureStatus(FeatureType_Capability, "SDKHook_DmgCustomInOTD") != FeatureStatus_Available)
+	{
+		strcopy(error, err_max, "SDKHooks 2.1 or newer is required");
+		return APLRes_Failure;
+	}
+
 	RegPluginLibrary("freak_fortress_2");
 
 	CreateFF2Natives();
@@ -173,8 +199,21 @@ public OnPluginStart()
 	//g_Cvar_ShortCircuit = CreateConVar("ff2_shortcircuit_stun", "2", "", FCVAR_NONE, true, 0.0);
 	//g_Cvar_SpecForceBoss = CreateConVar("ff2_spec_forceboss", "0", "", FCVAR_NONE, true, 0.0, true, 1.0);
 
+	HookConVarChange(g_Cvar_ArenaQueue, CvarChange_ForceFalse);
+	HookConVarChange(g_Cvar_Autobalance, CvarChange_ForceFalse);
+	SetConVarInt(g_Cvar_UnbalanceLimit, CvarChange_ForceZero);
+	HookConVarChange(g_Cvar_FirstBlood, CvarChange_ForceFalse);
+	//SetConVarInt(g_Cvar_ForceCamera, CvarChange_ForceZero);
 	
 	BuildPath(Path_SM, g_ConfigPath, PLATFORM_MAX_PATH, "configs/freak_fortress_2");
+}
+
+public OnAllPluginsLoaded()
+{
+	if (GetFeatureStatus(FeatureType_Capability, "SDKHook_DmgCustomInOTD") != FeatureStatus_Available)
+	{
+		SetFailState("SDKHooks version out of date");
+	}
 }
 
 public OnMapStart()
@@ -184,28 +223,39 @@ public OnMapStart()
 	decl String:mapName[64];
 	GetCurrentMap(mapName, sizeof(mapName));
 	
-	decl String:mapConfig[PLATFORM_MAX_PATH];
-	Format(mapConfig, PLATFORM_MAX_PATH, "%s/%s", g_ConfigPath, "maps.cfg");
-	
-	new Handle:fh = OpenFile(mapConfig, "r");
-	
 	// Get the map prefix
 	new pos = FindCharInString(mapName, '_');
 	decl String:mapPrefix[10]; // 10 is arbitrary, but it had to be longer than "deathrun"
 	strcopy(mapPrefix, (pos < sizeof(mapPrefix) ? pos : sizeof(mapPrefix)), mapName);
 	
-	while (!IsEndOfFile(fh))
+	decl String:mapConfig[PLATFORM_MAX_PATH];
+	Format(mapConfig, PLATFORM_MAX_PATH, "%s/%s", g_ConfigPath, "maps.cfg");
+	
+	new Handle:fh = OpenFile(mapConfig, "r");
+	
+	if (fh == INVALID_HANDLE)
 	{
-		decl String:line[10];
-		ReadFileLine(fh, line, sizeof(line));
-		TrimString(line);
-		if (StrEqual(mapPrefix, line, false))
+		LogError("Could not open %s, falling back to defaults", mapConfig);
+		if (StrEqual(mapPrefix, "vsh", false) || StrEqual(mapPrefix, "arena", false))
 		{
 			g_bFF2Map = true;
-			break;
 		}
 	}
-	CloseHandle(fh);
+	else
+	{
+		while (!IsEndOfFile(fh))
+		{
+			decl String:line[10];
+			ReadFileLine(fh, line, sizeof(line));
+			TrimString(line);
+			if (StrEqual(mapPrefix, line, false))
+			{
+				g_bFF2Map = true;
+				break;
+			}
+		}
+		CloseHandle(fh);
+	}
 	
 	for (new i = 1; i <= MaxClients; ++i)
 	{
@@ -221,6 +271,11 @@ public OnConfigsExecuted()
 	g_bEnabled = g_bFF2Map && GetConVarBool(g_Cvar_Enabled);
 	g_bActive = false;
 
+	g_OldArenaQueue = GetConVarBool(g_Cvar_ArenaQueue);
+	g_OldUnbalUnbalanceLimit = GetConVarInt(g_Cvar_UnbalanceLimit);
+	g_OldAutobalance = GetConVarBool(g_Cvar_Autobalance);
+	g_OldFirstBlood = GetConVarBool(g_Cvar_FirstBlood);
+
 	g_bFirstRound = GetConVarBool(g_Cvar_FirstRound);
 	
 	if (g_bEnabled && g_bFirstRound)
@@ -228,6 +283,112 @@ public OnConfigsExecuted()
 		PrepareFF2();
 		ChangeValveCvars();
 	}
+}
+
+public OnClientConnected(client)
+{
+	SDKHook(client, SDKHook_StartTouch, Hook_StartTouch);
+	SDKHook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
+}
+
+// This combines with bossflags to make it so bosses can't pick up health or ammo by default
+public Action:Hook_StartTouch(entity, other)
+{
+	if (!g_bEnabled || !IsValidEntity(entity) || !IsValidEntity(other) || entity < 0 || entity > MaxClients
+		|| !IsBoss(entity) || other <= MaxClients)
+	{
+		return Plugin_Continue;
+	}
+	
+	new classname[64];
+	GetEntityClassname(other, classname, sizeof(classname));
+	
+	// Ammo
+	if (g_BossFlags[entity] & BossFlags_AllowAmmoPickup != BossFlags_AllowAmmoPickup)
+	{
+		// Boss isn't allowed to pick up ammo packs
+		if (StrEqual(classname, "item_ammopack_full") || StrEqual(classname, "item_ammopack_medium")
+			|| StrEqual(classname, "item_ammopack_small") || StrEqual(classname, "tf_ammo_pack"))
+		{
+			return Plugin_Stop;
+		}
+	}
+	
+	// Health
+	if (g_BossFlags[entity] & BossFlags_AllowHealthPickup != BossFlags_AllowHealthPickup)
+	{
+		if (StrEqual(classname, "item_healthkit_full") || StrEqual(classname, "item_healthkit_medium") 
+			|| StrEqual(classname, "item_healthkit_small"))
+		{
+			return Plugin_Stop;
+		}
+	}
+	
+	return Plugin_Continue;
+}
+
+public Action:Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype, &weapon,
+	Float:damageForce[3], Float:damagePosition[3], damagecustom)
+{
+	if (victim < 0 || victim > MaxClients || attacker < 0 || attacker > MaxClients)
+	{
+		return Plugin_Continue;
+	}
+	
+	new bossIndex = GetBossIndex(victim);
+	if (bossIndex == -1)
+	{
+		// Player took damage
+	}
+	else
+	{
+		// Boss took damage
+		switch (damagecustom)
+		{
+			case TF_CUSTOM_BACKSTAB:
+			{
+				// We're rounding up here to prevent issues where the knife takes 11 backstabs to kill a boss
+				damage = RoundToCeil((g_BossesMaxHealth * g_BossesMaxLives) / 10.0);
+				
+				//
+				//
+			}
+			
+			case TF_CUSTOM_BOOTS_STOMP:
+			{
+				damage = 1000;
+				damagetype &= ~DMG_CRIT;
+				return Plugin_Changed;
+			}
+			
+			case TF_CUSTOM_HEADSHOT, TF_CUSTOM_HEADSHOT_DECAPITATION:
+			{
+				
+			}
+			
+			case TF_CUSTOM_TELEFRAG:
+			{
+				
+			}
+			
+			default:
+			{
+				
+			}
+		}
+		
+	}
+	
+	
+}
+
+public Event_PostInventoryApplication(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if (!g_bEnabled)
+	{
+		return;
+	}
+
 }
 
 public OnClientDisconnect_Post(client)
@@ -248,16 +409,40 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 
 bool:IsBoss(client)
 {
+	return (GetBossIndex(client) != -1);
+}
+
+GetBossIndex(client)
+{
 	if (!g_bActive)
-		return false;
-	
-	for (new i = 0; i  < g_CurrentBossCount; i++)
 	{
-		if (g_CurrentBosses[i] == client)
-			return true;
+		return -1;
 	}
 	
-	return false;
+	for (new i = 0; i < g_CurrentBossCount; ++i)
+	{
+		if (g_CurrentBosses[i] == client)
+		{
+			return i;
+		}
+	}
+	
+	return -1;
+}
+
+GetBossMaxHealth(bossIndex)
+{
+	
+}
+
+GetBossMaxLives(bossIndex)
+{
+	
+}
+
+PrintToNonBosses(const String:message, ...)
+{
+	
 }
 
 /**
@@ -276,6 +461,7 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 
 	for (new i = 1; i <= MaxClients; i++)
 	{
+		g_BossFlags[i] = 0;
 		for (new j = 0; j < _:FF2Stats; j++)
 		{
 			g_CurrentStats[i][j] = 0;
@@ -428,6 +614,32 @@ ChangeValveCvars()
 	SetConVarInt(g_Cvar_UnbalanceLimit, 0);
 	SetConVarBool(g_Cvar_FirstBlood, false);
 	SetConVarInt(g_Cvar_ForceCamera, 0);
+}
+
+public CvarChange_ForceFalse(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	if (!g_bEnabled)
+	{
+		return;
+	}
+	
+	if (GetConVarBool(convar))
+	{
+		SetConVarBool(convar, false);
+	}
+}
+
+public CvarChange_ForceZero(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	if (!g_Cvar_Enabled)
+	{
+		return;
+	}
+	
+	if (!GetConVarInt(convar))
+	{
+		SetConVarInt(convar, 0);
+	}
 }
 
 public ResetData()
