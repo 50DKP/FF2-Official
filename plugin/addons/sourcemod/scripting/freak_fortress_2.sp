@@ -26,6 +26,8 @@
 #define TARGET_RED "@red"
 #define TARGET_BLU "@blue"
 
+#define SOUND_SHIELD_ZAP "player/spy_shield_break.wav"
+
 #define PLUGIN_VERSION "2.0 alpha"
 
 #define MAXBOSSES 128
@@ -43,11 +45,30 @@ enum FF2Stats
 	FF2Stat_Points,
 };
 
-enum BossFlags
+enum FF2WeaponSpecials
 {
-	BossFlags_AllowAmmoPickup = (1 << 0),
-	BossFlags_AllowHealthPickup = (1 << 1)
+	FF2WeaponSpecial_PreventDamage,
+	FF2WeaponSpecial_RemoveOnDamage,
+	FF2WeaponSpecial_JarateOnChargedHit,
+	
 }
+
+#define BOSSFLAG_NONE 0
+#define BOSSFLAG_ALLOWHEALTHPICKUP (1 << 0)
+#define BOSSFLAG_ALLOWAMMOPICKUP (1 << 1)
+
+
+// Weapon Special Abilities
+
+new String:WeaponSpecials[][] = {
+	"drop health pack on kill",
+	"glow on scoped hit",
+	"prevent damage",
+	"remove on damage"
+};
+
+// Weapon stats
+
 
 // Boss flags are loaded from boss configs
 new g_BossFlags[MAXPLAYERS+1];
@@ -300,11 +321,11 @@ public Action:Hook_StartTouch(entity, other)
 		return Plugin_Continue;
 	}
 	
-	new classname[64];
+	new String:classname[64];
 	GetEntityClassname(other, classname, sizeof(classname));
 	
 	// Ammo
-	if (g_BossFlags[entity] & BossFlags_AllowAmmoPickup != BossFlags_AllowAmmoPickup)
+	if (g_BossFlags[entity] & BOSSFLAG_ALLOWAMMOPICKUP != BOSSFLAG_ALLOWAMMOPICKUP)
 	{
 		// Boss isn't allowed to pick up ammo packs
 		if (StrEqual(classname, "item_ammopack_full") || StrEqual(classname, "item_ammopack_medium")
@@ -315,7 +336,7 @@ public Action:Hook_StartTouch(entity, other)
 	}
 	
 	// Health
-	if (g_BossFlags[entity] & BossFlags_AllowHealthPickup != BossFlags_AllowHealthPickup)
+	if (g_BossFlags[entity] & BOSSFLAG_ALLOWHEALTHPICKUP != BOSSFLAG_ALLOWHEALTHPICKUP)
 	{
 		if (StrEqual(classname, "item_healthkit_full") || StrEqual(classname, "item_healthkit_medium") 
 			|| StrEqual(classname, "item_healthkit_small"))
@@ -339,47 +360,73 @@ public Action:Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &d
 	if (bossIndex == -1)
 	{
 		// Player took damage
+		if (IsBoss(attacker))
+		{
+			if (TF2_GetPlayerClass(victim) == TFClass_DemoMan)
+			{
+				// Break any demoshields they have
+				new entity = -1;
+				while ((entity = FindEntityByClassname(entity, "tf_wearable_demoshield")) != -1)
+				{
+					if (victim == GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
+					{
+						AcceptEntityInput(entity, "Kill");
+						
+						new Float:victimPos[3];
+						GetClientAbsOrigin(victim, victimPos);
+						
+						EmitSoundToAll(SOUND_SHIELD_ZAP, victim, SNDCHAN_ITEM, _, _, 130);
+						
+						damage = 0.0;
+						return Plugin_Changed;
+					}
+				}
+			}
+		} // if (IsBoss(attacker))
 	}
 	else
 	{
 		// Boss took damage
-		switch (damagecustom)
+		if (!IsBoss(attacker))
 		{
-			case TF_CUSTOM_BACKSTAB:
+			switch (damagecustom)
 			{
-				// We're rounding up here to prevent issues where the knife takes 11 backstabs to kill a boss
-				damage = RoundToCeil((g_BossesMaxHealth * g_BossesMaxLives) / 10.0);
+				case TF_CUSTOM_BACKSTAB:
+				{
+					// We're rounding up here to prevent issues where the knife takes 11 backstabs to kill a boss
+					damage = (g_BossesMaxHealth[bossIndex] * g_BossesMaxLives[bossIndex]) / 10.0;
+					
+					// Both users need to be informed
+					
+					return Plugin_Changed;
+				}
 				
-				//
-				//
-			}
-			
-			case TF_CUSTOM_BOOTS_STOMP:
-			{
-				damage = 1000;
-				damagetype &= ~DMG_CRIT;
-				return Plugin_Changed;
-			}
-			
-			case TF_CUSTOM_HEADSHOT, TF_CUSTOM_HEADSHOT_DECAPITATION:
-			{
+				case TF_CUSTOM_BOOTS_STOMP:
+				{
+					damage = 1000.0;
+					damagetype &= ~DMG_CRIT;
+					return Plugin_Changed;
+				}
 				
-			}
-			
-			case TF_CUSTOM_TELEFRAG:
-			{
+				case TF_CUSTOM_HEADSHOT, TF_CUSTOM_HEADSHOT_DECAPITATION:
+				{
+					
+				}
 				
-			}
-			
-			default:
-			{
+				case TF_CUSTOM_TELEFRAG:
+				{
+					
+				}
 				
+				default:
+				{
+					
+				}
 			}
-		}
-		
+		} // if (!IsBoss(attacker))
 	}
 	
-	
+	return Plugin_Continue;
 }
 
 public Event_PostInventoryApplication(Handle:event, const String:name[], bool:dontBroadcast)
