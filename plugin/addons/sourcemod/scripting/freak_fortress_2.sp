@@ -53,6 +53,15 @@ enum FF2WeaponSpecials
 	
 }
 
+enum FF2WeaponModType
+{
+	FF2WeaponMod_AddAttrib,
+	FF2WeaponMod_RemoveAttrib,
+	FF2WeaponMod_Replace,
+	FF2WeaponMod_OnHit,
+	FF2WeaponMod_OnTakeDamage,
+}
+
 #define BOSSFLAG_NONE 0
 #define BOSSFLAG_ALLOWHEALTHPICKUP (1 << 0)
 #define BOSSFLAG_ALLOWAMMOPICKUP (1 << 1)
@@ -351,7 +360,8 @@ public Action:Hook_StartTouch(entity, other)
 public Action:Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &damagetype, &weapon,
 	Float:damageForce[3], Float:damagePosition[3], damagecustom)
 {
-	if (victim < 0 || victim > MaxClients || attacker < 0 || attacker > MaxClients)
+	// victim and attacker should both be players
+	if (victim <= 0 || victim > MaxClients || attacker <= 0 || attacker > MaxClients)
 	{
 		return Plugin_Continue;
 	}
@@ -393,7 +403,6 @@ public Action:Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &d
 			{
 				case TF_CUSTOM_BACKSTAB:
 				{
-					// We're rounding up here to prevent issues where the knife takes 11 backstabs to kill a boss
 					damage = (g_BossesMaxHealth[bossIndex] * g_BossesMaxLives[bossIndex]) / 10.0;
 					
 					// Both users need to be informed
@@ -415,7 +424,7 @@ public Action:Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &d
 				
 				case TF_CUSTOM_TELEFRAG:
 				{
-					
+					damage = (g_BossesMaxHealth[bossIndex] * g_BossesMaxLives[bossIndex]) / 10.0;
 				}
 				
 				default:
@@ -435,7 +444,241 @@ public Event_PostInventoryApplication(Handle:event, const String:name[], bool:do
 	{
 		return;
 	}
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	
+	if (IsBoss(client))
+	{
+		// Reapply Boss Weapons
+	}
+	else
+	{
+		ApplyClientWeaponChanges(client);
+	}
+}
 
+ApplyBossLoadout(client)
+{
+	if (!IsBoss(client))
+	{
+		return;
+	}
+	
+	// Remove all weapons
+	TF2_RemoveAllWeapons(client);
+
+	// Remove all wearables
+	new wearable = -1;
+	while ((wearable = FindEntityByClassname(wearable, "tf_wearable")) != -1)
+	{
+		if (IsValidEntity(wearable))
+		{
+			AcceptEntityInput(wearable, "Kill");
+		}
+	}
+	
+	// Remove all canteens
+	wearable = -1;
+	while ((wearable = FindEntityByClassname(wearable, "tf_powerup_bottle")) != -1)
+	{
+		if (IsValidEntity(wearable))
+		{
+			AcceptEntityInput(wearable, "Kill");
+		}
+	}
+	
+	// boss specific items.
+	
+}
+
+ApplyClientWeaponChanges(client)
+{
+	new TFClassType:class = TF2_GetPlayerClass(client);
+	
+	for (new i = 0; i < 6; ++i)
+	{
+		// Check primary
+		new weapon = GetPlayerWeaponSlot(client, i);
+		if (weapon == -1 || !IsValidEntity(weapon))
+		{
+			continue;
+		}
+		
+		new String:weaponClass[64];
+		new itemDefinitionIndex = GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+		
+		GetEntityClassname(weapon, weaponClass, sizeof(weaponClass));
+		new Handle:data = INVALID_HANDLE;
+		
+		// Replace weapons
+		data = GetWeaponModsById(itemDefinitionIndex, FF2WeaponMod_Replace);
+		if (data != INVALID_HANDLE)
+		{
+			if (ReplaceWeapon(client, i, weapon, data))
+			{
+				GetEntityClassname(weapon, weaponClass, sizeof(weaponClass));
+			}
+			CloseHandle(data);
+		}
+		
+		// Remove attribs
+		data = GetWeaponModsByClassname(weaponClass, FF2WeaponMod_RemoveAttrib);
+		if (data != INVALID_HANDLE)
+		{
+			RemoveWeaponAttribs(weapon, data);
+			CloseHandle(data);
+		}
+		
+		data = GetWeaponModsById(itemDefinitionIndex, FF2WeaponMod_RemoveAttrib);
+		if (data != INVALID_HANDLE)
+		{
+			RemoveWeaponAttribs(weapon, data);
+			CloseHandle(data);
+		}
+		
+		// Add attribs
+		data = GetWeaponModsByClassname(weaponClass, FF2WeaponMod_AddAttrib);
+		if (data != INVALID_HANDLE)
+		{
+			SetWeaponAttribs(weapon, data);
+			CloseHandle(data);
+		}
+		
+		data = GetWeaponModsById(itemDefinitionIndex, FF2WeaponMod_AddAttrib);
+		if (data != INVALID_HANDLE)
+		{
+			SetWeaponAttribs(weapon, data);
+			CloseHandle(data);
+		}
+		
+	}
+	
+}
+
+/**
+ * 
+ * @returns Datapack with 
+ */
+Handle:GetWeaponModsByClassname(const String:classname[64], FF2WeaponModType:type)
+{
+	new bool:change = false;
+	
+	// lookup if we have any mods
+	
+	if (!change)
+	{
+		return INVALID_HANDLE;
+	}
+	
+	new Handle:data = CreateDataPack();
+	
+	// set data
+	
+	ResetPack(data);
+	return data;
+}
+
+Handle:GetWeaponModsById(iDefinitionIndex, FF2WeaponModType:type)
+{
+	new bool:change = false;
+	
+	// lookup if we have any mods
+	
+	if (!change)
+	{
+		return INVALID_HANDLE;
+	}
+	
+	new Handle:data = CreateDataPack();
+	
+	// set data
+	
+	ResetPack(data);
+	return data;
+}
+
+SetWeaponAttribs(weapon, Handle:data)
+{
+	if (!IsValidEntity(weapon))
+	{
+		LogError("Weapon %d is invalid", weapon);
+		return;
+	}
+	
+	new attribCount = ReadPackCell(data);
+	
+	for (new i = 0; i < attribCount; i++)
+	{
+		new String:attribName[128];
+		ReadPackString(data, attribName, sizeof(attribName));
+		new attribValue = ReadPackCell(data);
+		TF2Attrib_SetByName(weapon, attribName, float(attribValue));
+	}
+	
+	ResetPack(data);
+}
+
+RemoveWeaponAttribs(weapon, Handle:data)
+{
+	if (!IsValidEntity(weapon))
+	{
+		LogError("Weapon %d is invalid", weapon);
+		return;
+	}
+	
+	new attribCount = ReadPackCell(data);
+	
+	for (new i = 0; i < attribCount; i++)
+	{
+		new String:attribName[128];
+		ReadPackString(data, attribName, sizeof(attribName));
+		TF2Attrib_RemoveByName(weapon, attribName);
+	}
+	
+	ResetPack(data);
+}
+
+bool:ReplaceWeapon(client, slot, &weapon, Handle:data)
+{
+	TF2_RemoveWeaponSlot(client, slot);
+	
+	new String:classname[64];
+	ReadPackString(data, classname, sizeof(classname));
+
+	new itemDefinitionIndex = ReadPackCell(data);
+	new quality = ReadPackCell(data);
+	new level = ReadPackCell(data);
+	
+	if (strlen(classname) == 0 || itemDefinitionIndex == 0 || quality == 0 || level == 0)
+	{
+		return false;
+	}
+	
+	new Handle:newWeapon = TF2Items_CreateItem(OVERRIDE_ALL);
+	TF2Items_SetClassname(newWeapon, classname);
+	TF2Items_SetItemIndex(newWeapon, itemDefinitionIndex);
+	TF2Items_SetQuality(newWeapon, quality);
+	TF2Items_SetLevel(newWeapon, level);
+	
+	new attribCount = ReadPackCell(data);
+	
+	TF2Items_SetNumAttributes(newWeapon, attribCount);
+	
+	for (new i = 0; i < attribCount; ++i)
+	{
+		new attribId = ReadPackCell(data);
+		new Float:value = ReadPackFloat(data);
+		
+		TF2Items_SetAttribute(newWeapon, i, attribId, value);
+	}
+	
+	weapon = TF2Items_GiveNamedItem(client, newWeapon);
+	
+	EquipPlayerWeapon(client, weapon);
+	
+	CloseHandle(newWeapon);
+
+	ResetPack(data);
+	return true;
 }
 
 public OnClientDisconnect_Post(client)
