@@ -14,6 +14,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <tf2>
 
 // Taken from TF2ItemsInfo
 enum
@@ -57,6 +58,24 @@ enum TF2ScoreData
 	TF2Score_BonusPoints, // m_iBonusPoints
 	TF2Score_Points, // m_iPoints
 };
+
+new TF2Hitpoints[] = { 
+	0, // TFClass_Unknown
+	125, // TFClass_Scout
+	125, // TFClass_Sniper
+	200, // TFClass_Soldier
+	175, // TFClass_DemoMan
+	150, // TFClass_Medic
+	300, // TFClass_Heavy
+	175, // TFClass_Pyro
+	125, // TFClass_Spy
+	125 // TFClass_Engineer
+}
+
+stock TF2_GetBaseHP(TFClassType:class)
+{
+	return TF2Hitpoints[class];
+}
 
 /**
  * Return a value from a player's Score Data

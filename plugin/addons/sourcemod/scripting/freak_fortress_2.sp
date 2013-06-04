@@ -26,6 +26,11 @@
 #define TARGET_RED "@red"
 #define TARGET_BLU "@blue"
 
+#define FF2_CONFIGS "configs/freak_fortress_2"
+#define BOSS_FILE "characters.cfg"
+#define DOORS_FILE "doors.cfg"
+#define WEAPONS_FILE "weapons.cfg"
+
 #define SOUND_SHIELD_ZAP "player/spy_shield_break.wav"
 
 #define PLUGIN_VERSION "2.0 alpha"
@@ -62,10 +67,10 @@ enum FF2WeaponModType
 	FF2WeaponMod_OnTakeDamage,
 }
 
-#define BOSSFLAG_NONE 0
-#define BOSSFLAG_ALLOWHEALTHPICKUP (1 << 0)
-#define BOSSFLAG_ALLOWAMMOPICKUP (1 << 1)
-
+#define BOSSFLAG_NONE (0)
+#define BOSSFLAG_ALLOW_HEALTH_PICKUP (1<<0)
+#define BOSSFLAG_ALLOW_AMMO_PICKUP (1<<1)
+#define BOSSFLAG_ALLOW_HEALTH_AND_AMMO_PICKUP ((1<<0)|(1<<1))
 
 // Weapon Special Abilities
 
@@ -76,8 +81,8 @@ new String:WeaponSpecials[][] = {
 	"remove on damage"
 };
 
-// Weapon stats
-
+// KeyValues isn't the best structure, but otherwise we'd be parsing it into a bunch of constructs
+new Handle:g_KeyValues_WeaponMods = INVALID_HANDLE;
 
 // Boss flags are loaded from boss configs
 new g_BossFlags[MAXPLAYERS+1];
@@ -133,7 +138,8 @@ new Handle:g_Array_BossSets;
 // Current set and its bosses
 // ------------------------
 new String:g_CurrentBossSet[SET_AND_BOSS_LENGTH];
-new Handle:g_Array_Bosses; // adt_array of KeyValues handles of all bosses in the current set
+new Handle:g_Trie_Bosses; // adt_trie of KeyValues handles of all bosses in the current set
+new Handle:g_Array_BossNames; // adt_array of keys to g_Trie_Bosses
 // ------------------------
 
 // Available boss abilities
@@ -206,7 +212,8 @@ public OnPluginStart()
 {
 	new cells = ByteCountToCells(SET_AND_BOSS_LENGTH);
 	g_Array_BossSets = CreateArray(cells);
-	g_Array_Bosses = CreateArray(cells);
+	g_Trie_Bosses = CreateTrie();
+	g_Array_BossNames = CreateArray(cells);
 	g_Array_AbilityList = CreateArray(cells);
 	g_Trie_AbilityMap = CreateTrie();
 
@@ -236,14 +243,6 @@ public OnPluginStart()
 	//SetConVarInt(g_Cvar_ForceCamera, CvarChange_ForceZero);
 	
 	BuildPath(Path_SM, g_ConfigPath, PLATFORM_MAX_PATH, "configs/freak_fortress_2");
-}
-
-public OnAllPluginsLoaded()
-{
-	if (GetFeatureStatus(FeatureType_Capability, "SDKHook_DmgCustomInOTD") != FeatureStatus_Available)
-	{
-		SetFailState("SDKHooks version out of date");
-	}
 }
 
 public OnMapStart()
@@ -281,16 +280,18 @@ public OnMapStart()
 			if (StrEqual(mapPrefix, line, false))
 			{
 				g_bFF2Map = true;
-				break;
+				break; // No point continuing to loop if we found it
 			}
 		}
 		CloseHandle(fh);
 	}
 	
+	// Check to see if we still need g_OldHealing later
 	for (new i = 1; i <= MaxClients; ++i)
 	{
 		g_OldHealing[i] = 0;
 	}
+	
 }
 
 public OnConfigsExecuted()
@@ -313,6 +314,114 @@ public OnConfigsExecuted()
 		PrepareFF2();
 		ChangeValveCvars();
 	}
+	
+	// Don't bother parsing the various boss and weapons files unless we're actually loaded
+	if (g_bEnabled)
+	{
+		new String:configFile[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, configFile, PLATFORM_MAX_PATH, "%s/%s", FF2_CONFIGS, WEAPONS_FILE);
+		
+		if (g_KeyValues_WeaponMods != INVALID_HANDLE)
+		{
+			CloseHandle(g_KeyValues_WeaponMods);
+		}
+		
+		if (!FileToKeyValues(g_KeyValues_WeaponMods, configFile))
+		{
+			SetFailState("Failed to load weapon configuration file.");
+		}
+		
+		BuildPath(Path_SM, configFile, PLATFORM_MAX_PATH, "%s/%s", FF2_CONFIGS, BOSS_FILE);
+		
+		new Handle:bossFile;
+		if (!FileToKeyValues(bossFile, configFile))
+		{
+			SetFailState("Failed to load boss character list file.");
+		}
+
+		new bool:found = false;
+		
+		if (strlen(g_CurrentBossSet) > 0 && KvJumpToKey(bossFile, g_CurrentBossSet))
+		{
+			found = ReadBossSet(bossFile);
+		}
+		
+		// Was an else if, but we want found from above to be processed, too
+		if (!found && KvGotoFirstSubKey(bossFile))
+		{
+			// Couldn't find the selected set, so we fell back to the first set
+			KvGetSectionName(bossFile, g_CurrentBossSet, sizeof(g_CurrentBossSet));
+			found = ReadBossSet(bossFile);
+		}
+		
+		if (!found)
+		{
+			// Couldn't find any sets?
+			SetFailState("Could not locate valid boss set in boss list file.");
+		}
+		
+		
+		
+	}
+}
+
+bool:ReadBossSet(Handle:bossFile)
+{
+	if (KvGotoFirstSubKey(bossFile, false))
+	{
+		new count = 0;
+		do
+		{
+			decl String:boss[128];
+			KvGetString(bossFile, NULL_STRING, boss, sizeof(boss));
+			
+			new Handle:bossConfig = ReadBoss(boss);
+			if (bossConfig == INVALID_HANDLE)
+			{
+				continue;
+			}
+			
+			PushArrayString(g_Array_BossNames, boss);
+			SetTrieValue(g_Trie_Bosses, boss, bossConfig);
+			
+			count++;
+			
+		} while (KvGotoNextKey(bossFile, false));
+		
+		KvGoBack(bossFile);
+		
+		if (count == 0)
+		{
+			LogError("No valid bosses in selected set: %s", g_CurrentBossSet);
+			return false;
+		}
+		
+		LogMessage("Loaded %d bosses from %s", count, GetArraySize(g_Array_BossNames));
+	}
+	else
+	{
+		LogError("No bosses in selected set: %s", g_CurrentBossSet);
+		return false;
+	}
+	
+	return true;
+}
+
+Handle:ReadBoss(const String:boss[])
+{
+	decl bossFile[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, bossFile, PLATFORM_MAX_PATH, "%s/%s.cfg", FF2_CONFIGS, boss);
+	
+	new Handle:bossConfig;
+	
+	if (!FileToKeyValues(bossConfig, bossFile))
+	{
+		LogError("Could not parse boss configuraton: %s", boss);
+		return INVALID_HANDLE;
+	}
+	
+	return bossConfig;
+	
 }
 
 public OnClientConnected(client)
@@ -334,7 +443,7 @@ public Action:Hook_StartTouch(entity, other)
 	GetEntityClassname(other, classname, sizeof(classname));
 	
 	// Ammo
-	if (g_BossFlags[entity] & BOSSFLAG_ALLOWAMMOPICKUP != BOSSFLAG_ALLOWAMMOPICKUP)
+	if (g_BossFlags[entity] & BOSSFLAG_ALLOW_AMMO_PICKUP != BOSSFLAG_ALLOW_AMMO_PICKUP)
 	{
 		// Boss isn't allowed to pick up ammo packs
 		if (StrEqual(classname, "item_ammopack_full") || StrEqual(classname, "item_ammopack_medium")
@@ -345,7 +454,7 @@ public Action:Hook_StartTouch(entity, other)
 	}
 	
 	// Health
-	if (g_BossFlags[entity] & BOSSFLAG_ALLOWHEALTHPICKUP != BOSSFLAG_ALLOWHEALTHPICKUP)
+	if (g_BossFlags[entity] & BOSSFLAG_ALLOW_HEALTH_PICKUP != BOSSFLAG_ALLOW_HEALTH_PICKUP)
 	{
 		if (StrEqual(classname, "item_healthkit_full") || StrEqual(classname, "item_healthkit_medium") 
 			|| StrEqual(classname, "item_healthkit_small"))
@@ -372,24 +481,21 @@ public Action:Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &d
 		// Player took damage
 		if (IsBoss(attacker))
 		{
-			if (TF2_GetPlayerClass(victim) == TFClass_DemoMan)
+			// Break any demoshields they have
+			new entity = -1;
+			while ((entity = FindEntityByClassname(entity, "tf_wearable_demoshield")) != -1)
 			{
-				// Break any demoshields they have
-				new entity = -1;
-				while ((entity = FindEntityByClassname(entity, "tf_wearable_demoshield")) != -1)
+				if (victim == GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 				{
-					if (victim == GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity") && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
-					{
-						AcceptEntityInput(entity, "Kill");
-						
-						new Float:victimPos[3];
-						GetClientAbsOrigin(victim, victimPos);
-						
-						EmitSoundToAll(SOUND_SHIELD_ZAP, victim, SNDCHAN_ITEM, _, _, 130);
-						
-						damage = 0.0;
-						return Plugin_Changed;
-					}
+					AcceptEntityInput(entity, "Kill");
+					
+					new Float:victimPos[3];
+					GetClientAbsOrigin(victim, victimPos);
+					
+					EmitSoundToAll(SOUND_SHIELD_ZAP, victim, SNDCHAN_ITEM, _, _, 130);
+					
+					damage = 0.0;
+					return Plugin_Changed;
 				}
 			}
 		} // if (IsBoss(attacker))
@@ -456,7 +562,7 @@ public Event_PostInventoryApplication(Handle:event, const String:name[], bool:do
 	}
 }
 
-ApplyBossLoadout(client)
+ApplyBossLoadout(client, const String:boss[])
 {
 	if (!IsBoss(client))
 	{
@@ -466,6 +572,9 @@ ApplyBossLoadout(client)
 	// Remove all weapons
 	TF2_RemoveAllWeapons(client);
 
+	// Remove all attributes
+	TF2Attrib_RemoveAll(client);
+	
 	// Remove all wearables
 	new wearable = -1;
 	while ((wearable = FindEntityByClassname(wearable, "tf_wearable")) != -1)
@@ -487,7 +596,7 @@ ApplyBossLoadout(client)
 	}
 	
 	// boss specific items.
-	
+	// TODO
 }
 
 ApplyClientWeaponChanges(client)
@@ -510,6 +619,16 @@ ApplyClientWeaponChanges(client)
 		new Handle:data = INVALID_HANDLE;
 		
 		// Replace weapons
+		data = GetWeaponModsByClassname(weaponClass, FF2WeaponMod_Replace);
+		if (data != INVALID_HANDLE)
+		{
+			if (ReplaceWeapon(client, i, weapon, data))
+			{
+				GetEntityClassname(weapon, weaponClass, sizeof(weaponClass));
+			}
+			CloseHandle(data);
+		}
+		
 		data = GetWeaponModsById(itemDefinitionIndex, FF2WeaponMod_Replace);
 		if (data != INVALID_HANDLE)
 		{
@@ -555,14 +674,19 @@ ApplyClientWeaponChanges(client)
 }
 
 /**
- * 
- * @returns Datapack with 
+ * @param classname		Classname to check
+ * @param type			FF2WeaponModType you want
+ * @returns 			Datapack with requested data
+ * However, the datapack format is dependent on the FF2WeaponModType: [] specifies repeating sets of values corresponding to count
+ * FF2WeaponMod_Replace - String classname, int item definition index, int quality, int level
+ * FF2WeaponMod_RemoveAttrib - int count, [String definition]
+ * FF2WeaponMod_AddAttrib - int count, [String definition, Float value]
  */
 Handle:GetWeaponModsByClassname(const String:classname[64], FF2WeaponModType:type)
 {
 	new bool:change = false;
 	
-	// lookup if we have any mods
+	// TODO lookup if we have any mods
 	
 	if (!change)
 	{
@@ -577,18 +701,55 @@ Handle:GetWeaponModsByClassname(const String:classname[64], FF2WeaponModType:typ
 	return data;
 }
 
+/**
+ * @param iDefinitionIndex	Item Definition Index to check
+ * @param type			FF2WeaponModType you want
+ * @returns 			Datapack with requested data
+ * However, the datapack format is dependent on the FF2WeaponModType: [] specifies repeating sets of values corresponding to count
+ * FF2WeaponMod_Replace - String classname, int item definition index, int quality, int level
+ * FF2WeaponMod_RemoveAttrib - int count, [String definition]
+ * FF2WeaponMod_AddAttrib - int count, [String definition, Float value]
+ */
 Handle:GetWeaponModsById(iDefinitionIndex, FF2WeaponModType:type)
 {
 	new bool:change = false;
 	
-	// lookup if we have any mods
+	new Handle:data = CreateDataPack();
+
+	// TODO lookup if we have any mods
+	
+	switch (type)
+	{
+		case FF2WeaponMod_AddAttrib:
+		{
+			//adt_array of keys and adt_trie of key/values
+		}
+		
+		case FF2WeaponMod_RemoveAttrib:
+		{
+			//adt_array of strings
+		}
+		
+		case FF2WeaponMod_Replace:
+		{
+			//adt_
+		}
+		
+		case FF2WeaponMod_OnTakeDamage:
+		{
+		}
+		
+		case FF2WeaponMod_OnHit:
+		{
+		}
+		
+	}
 	
 	if (!change)
 	{
+		CloseHandle(data);
 		return INVALID_HANDLE;
 	}
-	
-	new Handle:data = CreateDataPack();
 	
 	// set data
 	
@@ -637,7 +798,7 @@ RemoveWeaponAttribs(weapon, Handle:data)
 	ResetPack(data);
 }
 
-bool:ReplaceWeapon(client, slot, &weapon, Handle:data)
+bool:ReplaceWeapon(client, slot, weapon, Handle:data)
 {
 	TF2_RemoveWeaponSlot(client, slot);
 	
