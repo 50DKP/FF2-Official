@@ -67,11 +67,6 @@ enum FF2WeaponModType
 	FF2WeaponMod_OnTakeDamage,
 }
 
-#define BOSSFLAG_NONE (0)
-#define BOSSFLAG_ALLOW_HEALTH_PICKUP (1<<0)
-#define BOSSFLAG_ALLOW_AMMO_PICKUP (1<<1)
-#define BOSSFLAG_ALLOW_HEALTH_AND_AMMO_PICKUP ((1<<0)|(1<<1))
-
 // Weapon Special Abilities
 
 new String:WeaponSpecials[][] = {
@@ -1082,7 +1077,7 @@ public CvarChange_ForceFalse(Handle:convar, const String:oldValue[], const Strin
 
 public CvarChange_ForceZero(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	if (!g_Cvar_Enabled)
+	if (!g_bEnabled)
 	{
 		return;
 	}

@@ -6,6 +6,17 @@
 
 #define _freak_fortress_2_included
 
+#define FF2FLAG_UBERREADY				(1 << 1)		//Used when medic says "I'm charged!"
+#define FF2FLAG_ISBUFFED				(1 << 2)		//Used when soldier uses backup's buff.
+#define FF2FLAG_CLASSTIMERDISABLED 		(1 << 3)		//Used to prevent clients' timer.
+#define FF2FLAG_HUDDISABLED				(1 << 4)		//Used to prevent custom hud from clients' timer.
+#define FF2FLAG_BOTRAGE					(1 << 5)		//Used by bots to use Boss' rage.
+#define FF2FLAG_TALKING					(1 << 6)		//Used by Bosses with "sound_block_vo" to disable block for some lines.
+#define FF2FLAG_ALLOWSPAWNINBOSSTEAM	(1 << 7)		//Used to allow spawn players in Boss' team.
+#define FF2FLAG_USEBOSSTIMER			(1 << 8)		//Used to prevent Boss' timer.
+#define FF2FLAG_USINGABILITY			(1 << 9)		//Used to prevent Boss' hints about abilities buttons.
+#define FF2FLAGS_SPAWN				~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & FF2FLAG_USEBOSSTIMER
+
 enum SoundExcept
 {
 	SoundExcept_Music,
@@ -34,6 +45,11 @@ enum FF2AbilityMode
 	FF2AbilityMode_Pre,
 	FF2AbilityMode_Normal,
 };
+
+#define BOSSFLAG_NONE (0)
+#define BOSSFLAG_ALLOW_HEALTH_PICKUP (1<<0)
+#define BOSSFLAG_ALLOW_AMMO_PICKUP (1<<1)
+#define BOSSFLAG_ALLOW_HEALTH_AND_AMMO_PICKUP ((1<<0)|(1<<1))
 
 /**
  * Is Freak Fortress enabled?
@@ -95,6 +111,7 @@ native FF2_GetBossTeam();
  * @return		    		true if Special exists, false if not
  */
 native bool:FF2_GetBossSpecial( index = 0, String:buffer[], bufferlen, isNumOfSpecial = 0);
+native bool:FF2_GetBossName( index = 0, String:buffer[], bufferlen, isNumOfSpecial = 0);
 
 /**
  * Gets number of lives of current Boss
@@ -165,7 +182,7 @@ native FF2_GetClientDamage( client );
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
  * @param plugin_name	Name of plugin with this ability
  * @param ability_name 	Name of ability (use null string if you want get boss' global "ragedist" value)
- * @return		    	
+ * @return
  */
 native Float:FF2_GetRageDist( index = 0 , const String:plugin_name[]="", const String:ability_name[]="" );
 
@@ -180,7 +197,7 @@ native Float:FF2_GetRageDist( index = 0 , const String:plugin_name[]="", const S
 native bool:FF2_HasAbility( index, const String:plugin_name[], const String:ability_name[] );
 
 /**
- * Does Boss have ability in the current subplugin?
+ * Does Boss have ability in v2 ability pool?
  *
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
  * @param ability_name 	Name of ability 
@@ -206,6 +223,22 @@ native bool:FF2_HasAbilityEx( index, const String:ability_name[] );
  */
 native FF2_DoAbility(index, const String:plugin_name[], const String:ability_name[], slot, buttonmode = 0);
 
+/**
+ * Force a boss to do a v2 ability
+ *
+ * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
+ * @param ability_name 	Name of ability
+ * @param slot			Slot of charge meter
+ *							0 - rage
+ *							1 - as usual, used for brave jump or teleport
+ *							0 - other charged abilities 
+ * @param buttonmode	There is 2 buttonmodes today:
+ *							0 - by taunt
+ *							1 - by right mouse button or duck
+ *							2 - by reload button
+ * @noreturn
+ */
+native FF2_DoAbilityEx(index, const String:ability_name[], slot, buttonmode = 0);
 
 /**
  * Gets integer argument of ability
@@ -220,6 +253,17 @@ native FF2_DoAbility(index, const String:plugin_name[], const String:ability_nam
 native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:ability_name[], argument, defvalue = 0 );
 
 /**
+ * Gets integer argument of ability
+ *
+ * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
+ * @param ability_name 	Name of ability
+ * @param argument 		Number of argument 
+ * @param defvalue 		Returns if argument is not defined
+ * @return				Value of argument
+ */
+native FF2_GetAbilityArgumentEx( index, const String:ability_name[], argument, defvalue = 0, FF2AbilityType:type = FF2Ability_Any );
+
+/**
  * Gets float argument of ability
  *
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
@@ -230,6 +274,18 @@ native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:a
  * @return				Value of argument
  */
 native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], const String:ability_name[], argument, Float:defvalue = 0.0);
+
+/**
+ * Gets float argument of ability
+ *
+ * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
+ * @param plugin_name	Name of plugin with this ability
+ * @param ability_name 	Name of ability
+ * @param argument 		Number of argument 
+ * @param defvalue 		Returns if argument is not defined
+ * @return				Value of argument
+ */
+native Float:FF2_GetAbilityArgumentFloatEx( index, const String:ability_name[], argument, Float:defvalue = 0.0, FF2AbilityType:type = FF2Ability_Any);
 
 /**
  * Gets string argument of ability
@@ -243,6 +299,19 @@ native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], con
  * @noreturn
  */
 native FF2_GetAbilityArgumentString( index, const String:plugin_name[], const String:ability_name[], argument, String:buffer[], bufferlen);
+
+/**
+ * Gets string argument of ability
+ *
+ * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
+ * @param plugin_name	Name of plugin with this ability
+ * @param ability_name 	Name of ability
+ * @param argument 		Number of argument 
+ * @param buffer 		Buffer for value of argument
+ * @param bufferlen		Length of buffer string
+ * @noreturn
+ */
+native FF2_GetAbilityArgumentStringEx( index, const String:ability_name[], argument, String:buffer[], bufferlen, FF2AbilityType:type = FF2Ability_Any);
 
 /**
  * Starts random boss' sound from his config file
@@ -273,12 +342,13 @@ native FF2_StopMusic( client = 0 );
  *								Don't forget: 1st chatacter from chatacters.cfg is _0th_ here
  * @return					Handle of Boss' keyvalues
  */
-native Handle:FF2_GetSpecialKV( index , isNumOfSpecial = 0);
+native Handle:FF2_GetSpecialKV( index = 0, isNumOfSpecial = 0);
+native Handle:FF2_GetBossKV( index = 0, isNumOfSpecial = 0);
 
 /**
  * Gets client's flags for FF2 
  *
- * @param index			Client's index
+ * @param client		Client's index
  * @return				Flags
  */
 native FF2_GetFF2flags( client );
@@ -286,11 +356,30 @@ native FF2_GetFF2flags( client );
 /**
  * Sets client's flags for FF2 
  *
- * @param index			Client's index
+ * @param client		Client's index
  * @param flags			New values
  * @noreturn
  */
-native FF2_SetFF2flags( index, flags );
+native FF2_SetFF2flags( client, flags );
+
+/**
+ * Gets boss's boss flags for FF2
+ * See BOSSFLAG constants for flag definitions
+ *
+ * @param index			Boss's index
+ * @return				Flags
+ */
+native FF2_GetBossFlags( index = 0 );
+
+/**
+ * Sets boss's boss flags for FF2 
+ * See BOSSFLAG constants for flag definitions
+ *
+ * @param index			Boss's index
+ * @param flags			New values
+ * @noreturn
+ */
+native FF2_SetBossFlags( index, flags );
 
 /**
  * Gets client's queue points
@@ -332,7 +421,6 @@ forward FF2_PreAbility( index, const String:plugin_name[], const String:ability_
 // To be deprecated in 1.08 in favor of FF2_OnAbilityEx and FF2_RegisterSubplugin, return type ignored either way
 forward Action:FF2_OnAbility( index, const String:plugin_name[], const String:ability_name[], action );
 
-// Coming soon
 /**
  * Begins when Boss uses ability (stun rage,jump,uber rage etc)
  * Calls each 0.2 seconds for charge abilities
@@ -397,6 +485,38 @@ funcenum FF2_Ability
 }
 
 /**
+ * Wrapper around EmitSoundToAll that uses the FF2 sound exception system
+ * 
+ * @param exceptiontype	Which type of sound this is.
+ * @param sample		Sound file name relative to the "sounds" folder.
+ * @param entity		Entity to emit from.
+ * @param channel		Channel to emit with.
+ * @param level			Sound level.
+ * @param flags			Sound flags.
+ * @param volume		Sound volume.
+ * @param pitch			Sound pitch.
+ * @param speakerentity	Unknown.
+ * @param origin		Sound origin.
+ * @param dir			Sound direction.
+ * @param updatePos		Unknown (updates positions?)
+ * @param soundtime		Alternate time to play sound for.
+ * @noreturn
+ */
+native FF2_EmitSoundToAllExcept(SoundExcept:exceptiontype = SoundExcept_Music,
+				const String:sample[],
+				entity = SOUND_FROM_PLAYER,
+				channel = SNDCHAN_AUTO,
+				level = SNDLEVEL_NORMAL,
+				flags = SND_NOFLAGS,
+				Float:volume = SNDVOL_NORMAL,
+				pitch = SNDPITCH_NORMAL,
+				speakerentity = -1,
+				const Float:origin[3] = NULL_VECTOR,
+				const Float:dir[3] = NULL_VECTOR,
+				bool:updatePos = true,
+				Float:soundtime = 0.0);
+
+/**
  * Called when a boss that uses this subplugin loads
  */
 //functag public FF2_StartPlugin();
@@ -428,14 +548,14 @@ funcenum FF2_Ability
  * @error if incorrect ParamTypes are used.  This only supports Cell, Float, and String.
  * @noreturn
  */
-native FF2_RegisterAbility(String:abilityName[], defaultSlot=0, ParamType:...);
+native FF2_RegisterAbility(const String:abilityName[], defaultSlot=0, ParamType:...);
 
 /**
  * Unregister a boss ability.
  * 
  * @noreturn
  */
-native FF2_UnregisterAbility(String:abilityName[]);
+native FF2_UnregisterAbility(const String:abilityName[]);
 
 /**
  * Unregister all abilities registered to this subplugin
@@ -451,6 +571,41 @@ native FF2_UnregisterAllAbilities();
  * @return true if ability is registered
  */
 native bool:FF2_IsAbilityRegistered(String:abilityName[]);
+
+native FF2_SetAbilityArgumentDefault( const String:ability_name[], argument, defvalue );
+native Float:FF2_SetAbilityArgumentDefaultFloat( const String:ability_name[], argument, Float:defvalue);
+native FF2_SetAbilityArgumentDefaultString( const String:ability_name[], argument, const String:defvalue[]);
+
+/**
+ * Gets integer default argument of ability
+ *
+ * @param ability_name 	Name of ability
+ * @param argument 		Number of argument 
+ * @param defvalue 		Returns if argument is not defined
+ * @return				Value of argument
+ */
+native FF2_GetAbilityArgumentDefault( const String:ability_name[], argument, defvalue = 0 );
+
+/**
+ * Gets Float default argument of ability
+ *
+ * @param ability_name 	Name of ability
+ * @param argument 		Number of argument 
+ * @param defvalue 		Returns if argument is not defined
+ * @return				Value of argument
+ */
+
+native Float:FF2_GetAbilityArgumentDefaultFloat( const String:ability_name[], argument, Float:defvalue = 0.0);
+/**
+ * Gets String argument of ability
+ *
+ * @param ability_name 	Name of ability
+ * @param argument 		Number of argument 
+ * @param buffer 		Buffer for value of argument
+ * @param bufferlen		Length of buffer string
+ * @return				Value of argument
+ */
+native FF2_GetAbilityArgumentDefaultString( const String:ability_name[], argument, String:buffer[], bufferlen);
 
 /**
  * Hook a previously registered ability
@@ -473,38 +628,6 @@ native FF2_UnhookAbility(String:abilityName[], FF2_Ability:callback, FF2AbilityM
  * (SourceMod gives plugins no way of knowing when other plugins are unloaded)
  */
 native FF2_UnhookAllAbilities();
-
-/**
- * Wrapper around EmitSoundToAll that uses the FF2 sound exception system
- * 
- * @param exceptiontype	Which type of sound this is.
- * @param sample		Sound file name relative to the "sounds" folder.
- * @param entity		Entity to emit from.
- * @param channel		Channel to emit with.
- * @param level			Sound level.
- * @param flags			Sound flags.
- * @param volume		Sound volume.
- * @param pitch			Sound pitch.
- * @param speakerentity	Unknown.
- * @param origin		Sound origin.
- * @param dir			Sound direction.
- * @param updatePos		Unknown (updates positions?)
- * @param soundtime		Alternate time to play sound for.
- * @noreturn
- */
-native FF2_EmitSoundToAllExcept(SoundExcept:exceptiontype = SoundExcept_Music,
-				const String:sample[],
-				entity = SOUND_FROM_PLAYER,
-				channel = SNDCHAN_AUTO,
-				level = SNDLEVEL_NORMAL,
-				flags = SND_NOFLAGS,
-				Float:volume = SNDVOL_NORMAL,
-				pitch = SNDPITCH_NORMAL,
-				speakerentity = -1,
-				const Float:origin[3] = NULL_VECTOR,
-				const Float:dir[3] = NULL_VECTOR,
-				bool:updatePos = true,
-				Float:soundtime = 0.0);
 
 /**
  * Begins when Boss hurts by pit, sawblade etc.
@@ -581,28 +704,55 @@ public SharedPlugin:__pl_FF2 =
 public __pl_FF2_SetNTVOptional()
 {
 	MarkNativeAsOptional("FF2_IsFF2Enabled");
+	MarkNativeAsOptional("FF2_GetRoundState");
 	MarkNativeAsOptional("FF2_GetBossUserId");
+	MarkNativeAsOptional("FF2_GetBossClientId");
 	MarkNativeAsOptional("FF2_GetBossIndex");
 	MarkNativeAsOptional("FF2_GetBossTeam");
 	MarkNativeAsOptional("FF2_GetBossSpecial");
+	MarkNativeAsOptional("FF2_GetBossLives");
+	MarkNativeAsOptional("FF2_GetBossMaxLives");
+	MarkNativeAsOptional("FF2_GetBossHealth");
 	MarkNativeAsOptional("FF2_GetBossMaxHealth");
 	MarkNativeAsOptional("FF2_GetBossCharge");
 	MarkNativeAsOptional("FF2_SetBossCharge");
 	MarkNativeAsOptional("FF2_GetClientDamage");
-	MarkNativeAsOptional("FF2_GetRoundState");	
 	MarkNativeAsOptional("FF2_GetRageDist");
-	MarkNativeAsOptional("FF2_HasAbility");	
-	MarkNativeAsOptional("FF2_GetAbilityArgument");		
-	MarkNativeAsOptional("FF2_GetAbilityArgumentFloat");		
-	MarkNativeAsOptional("FF2_GetAbilityArgumentString");		
-	MarkNativeAsOptional("FF2_RandomSound");	
-	MarkNativeAsOptional("FF2_StopMusic");	
-	MarkNativeAsOptional("FF2_GetSpecialKV");		
-	MarkNativeAsOptional("FF2_GetQueuePoints");		
-	MarkNativeAsOptional("FF2_SetQueuePoints");		
-	MarkNativeAsOptional("FF2_GetFF2flags");		
-	MarkNativeAsOptional("FF2_SetFF2flags");		
+	MarkNativeAsOptional("FF2_HasAbility");
+	MarkNativeAsOptional("FF2_HasAbilityEx");
 	MarkNativeAsOptional("FF2_DoAbility");
+	MarkNativeAsOptional("FF2_DoAbilityEx");
+	MarkNativeAsOptional("FF2_GetAbilityArgument");
+	MarkNativeAsOptional("FF2_GetAbilityArgumentEx");
+	MarkNativeAsOptional("FF2_GetAbilityArgumentFloat");
+	MarkNativeAsOptional("FF2_GetAbilityArgumentFloatEx");
+	MarkNativeAsOptional("FF2_GetAbilityArgumentString");
+	MarkNativeAsOptional("FF2_GetAbilityArgumentStringEx");
+	MarkNativeAsOptional("FF2_RandomSound");
+	MarkNativeAsOptional("FF2_StopMusic");
+	MarkNativeAsOptional("FF2_GetSpecialKV");
+	MarkNativeAsOptional("FF2_GetQueuePoints");
+	MarkNativeAsOptional("FF2_SetQueuePoints");
+	MarkNativeAsOptional("FF2_GetFF2flags");
+	MarkNativeAsOptional("FF2_SetFF2flags");
+	MarkNativeAsOptional("FF2_GetFF2Flags");
+	MarkNativeAsOptional("FF2_SetFF2Flags");
+	MarkNativeAsOptional("FF2_GetBossFlags");
+	MarkNativeAsOptional("FF2_SetBossFlags");
+	MarkNativeAsOptional("FF2_EmitSoundToAllExcept");
+	MarkNativeAsOptional("FF2_RegisterAbility");
+	MarkNativeAsOptional("FF2_UnregisterAbility");
+	MarkNativeAsOptional("FF2_UnregisterAllAbilities");
+	MarkNativeAsOptional("FF2_IsAbilityRegistered");
+	MarkNativeAsOptional("FF2_SetAbilityArgumentDefault");
+	MarkNativeAsOptional("FF2_SetAbilityArgumentDefaultFloat");
+	MarkNativeAsOptional("FF2_SetAbilityArgumentDefaultString");
+	MarkNativeAsOptional("FF2_GetAbilityArgumentDefault");
+	MarkNativeAsOptional("FF2_GetAbilityArgumentDefaultFloat");
+	MarkNativeAsOptional("FF2_GetAbilityArgumentDefaultString");
+	MarkNativeAsOptional("FF2_HookAbility");
+	MarkNativeAsOptional("FF2_UnhookAbility");
+	MarkNativeAsOptional("FF2_UnhookAllAbilities");
 	//MarkNativeAsOptional("FF2_RegisterSubplugin");
 	//MarkNativeAsOptional("FF2_UnregisterSubplugin");
 	//MarkNativeAsOptional("FF2_GetMySubpluginName");

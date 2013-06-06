@@ -1,5 +1,10 @@
 //Freak Fortress 2 include file.
 
+#if defined _FF2_included
+ #endinput
+#endif
+#define _FF2_included
+
 #define FF2FLAG_UBERREADY				(1 << 1)		//Used when medic says "I'm charged!"
 #define FF2FLAG_ISBUFFED				(1 << 2)		//Used when soldier uses backup's buff.
 #define FF2FLAG_CLASSTIMERDISABLED 		(1 << 3)		//Used to prevent clients' timer.
@@ -10,11 +15,6 @@
 #define FF2FLAG_USEBOSSTIMER			(1 << 8)		//Used to prevent Boss' timer.
 #define FF2FLAG_USINGABILITY			(1 << 9)		//Used to prevent Boss' hints about abilities buttons.
 #define FF2FLAGS_SPAWN				~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & FF2FLAG_USEBOSSTIMER
-
-#if defined _FF2_included
- #endinput
-#endif
-#define _FF2_included
 
 enum FF2Ability
 {
