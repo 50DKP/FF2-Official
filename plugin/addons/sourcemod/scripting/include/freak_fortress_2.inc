@@ -6,50 +6,77 @@
 
 #define _freak_fortress_2_included
 
-#define FF2FLAG_UBERREADY				(1 << 1)		//Used when medic says "I'm charged!"
-#define FF2FLAG_ISBUFFED				(1 << 2)		//Used when soldier uses backup's buff.
-#define FF2FLAG_CLASSTIMERDISABLED 		(1 << 3)		//Used to prevent clients' timer.
-#define FF2FLAG_HUDDISABLED				(1 << 4)		//Used to prevent custom hud from clients' timer.
-#define FF2FLAG_BOTRAGE					(1 << 5)		//Used by bots to use Boss' rage.
-#define FF2FLAG_TALKING					(1 << 6)		//Used by Bosses with "sound_block_vo" to disable block for some lines.
-#define FF2FLAG_ALLOWSPAWNINBOSSTEAM	(1 << 7)		//Used to allow spawn players in Boss' team.
-#define FF2FLAG_USEBOSSTIMER			(1 << 8)		//Used to prevent Boss' timer.
-#define FF2FLAG_USINGABILITY			(1 << 9)		//Used to prevent Boss' hints about abilities buttons.
-#define FF2FLAGS_SPAWN				~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & FF2FLAG_USEBOSSTIMER
+#define FF2_FLAG_UBERREADY				(1 << 0)		//Used when medic says "I'm charged!"
+#define FF2_FLAG_ISBUFFED				(1 << 1)		//Used when soldier uses backup's buff.
+#define FF2_FLAG_CLASSTIMERDISABLED 		(1 << 2)		//Used to prevent clients' timer.
+#define FF2_FLAG_HUDDISABLED				(1 << 3)		//Used to prevent custom hud from clients' timer.
+#define FF2_FLAG_BOTRAGE					(1 << 4)		//Used by bots to use Boss' rage.
+#define FF2_FLAG_TALKING					(1 << 5)		//Used by Bosses with "sound_block_vo" to disable block for some lines.
+#define FF2_FLAG_ALLOWSPAWNINBOSSTEAM	(1 << 6)		//Used to allow spawn players in Boss' team.
+#define FF2_FLAG_USEBOSSTIMER			(1 << 7)		//Used to prevent Boss' timer.
+#define FF2_FLAG_USINGABILITY			(1 << 8)		//Used to prevent Boss' hints about abilities buttons.
+#define FF2_FLAGS_NONE				(0)
+#define FF2_FLAGS_SPAWN				~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & FF2FLAG_USEBOSSTIMER
 
-enum SoundExcept
+enum FF2_SoundExcept
 {
-	SoundExcept_Music,
-	SoundExcept_Voice,
+	FF2_SoundExcept_Music,
+	FF2_SoundExcept_Voice,
 };
 
-enum FF2AbilityType
+enum FF2_AbilityType
 {
-	FF2Ability_Any = -100,
-	FF2Ability_FakeDeath = -1,
-	FF2Ability_Rage = 0,
-	FF2Ability_BraveJump = 1,
-	FF2Ability_Charge = 2,
-	FF2Ability_Weighdown = 3,
-	FF2Ability_Custom1 = 4,
-	FF2Ability_Custom2 = 5,
-	FF2Ability_Custom3 = 6,
-	FF2Ability_Custom4 = 7,
-	FF2Ability_KilledPlayer = 8,
-	FF2Ability_Died = 9,
-	FF2Ability_Backstab = 10,
+	FF2_Ability_Any = -100,
+	FF2_Ability_FakeDeath = -1,
+	FF2_Ability_Rage = 0,
+	FF2_Ability_BraveJump = 1,
+	FF2_Ability_Charge = 2,
+	FF2_Ability_Weighdown = 3,
+	FF2_Ability_Custom1 = 4,
+	FF2_Ability_Custom2 = 5,
+	FF2_Ability_Custom3 = 6,
+	FF2_Ability_Custom4 = 7,
+	FF2_Ability_KilledPlayer = 8,
+	FF2_Ability_Died = 9,
+	FF2_Ability_Backstab = 10,
 };
 
-enum FF2AbilityMode
+enum FF2_AbilityActionType
 {
-	FF2AbilityMode_Pre,
-	FF2AbilityMode_Normal,
+	FF2_AbilityAction_None,
+	FF2_AbilityAction_Charging,
+	FF2_AbilityAction_FullyCharged,
+	FF2_AbilityAction_OnUse,
+}
+
+enum FF2_AbilityHookMode
+{
+	FF2_AbilityHookMode_Pre,
+	FF2_AbilityHookMode_Normal,
 };
 
-#define BOSSFLAG_NONE (0)
-#define BOSSFLAG_ALLOW_HEALTH_PICKUP (1<<0)
-#define BOSSFLAG_ALLOW_AMMO_PICKUP (1<<1)
-#define BOSSFLAG_ALLOW_HEALTH_AND_AMMO_PICKUP ((1<<0)|(1<<1))
+enum FF2_ButtonMode
+{
+	FF2_ButtonMode_Taunt,
+	FF2_ButtonMode_DuckOrAttack2,
+	FF2_ButtonMode_Reload,
+}
+
+enum FF2_AbilityMode
+{
+	FF2_AbilityMode_Active,
+	FF2_AbilityMode_Passive,
+}
+
+#define FF2_BOSSFLAG_ALLOW_HEALTH_PICKUP (1<<0)
+#define FF2_BOSSFLAG_ALLOW_AMMO_PICKUP (1<<1)
+#define FF2_BOSSFLAG_ALLOW_HEALTH_AND_AMMO_PICKUP ((1<<0)|(1<<1))
+#define FF2_BOSSFLAGS_NONE (0)
+
+#define FF2_CHARGE_OTHER 0
+#define FF2_CHARGE_RAGE 0
+#define FF2_CHARGE_WEIGHDOWN 1
+#define FF2_CHARGE_TELEPORT 1
 
 /**
  * Is Freak Fortress enabled?
@@ -110,8 +137,8 @@ native FF2_GetBossTeam();
  *								Don't forget: 1st character from characters.cfg is _0th_ here
  * @return		    		true if Special exists, false if not
  */
-native bool:FF2_GetBossSpecial( index = 0, String:buffer[], bufferlen, isNumOfSpecial = 0);
-native bool:FF2_GetBossName( index = 0, String:buffer[], bufferlen, isNumOfSpecial = 0);
+native bool:FF2_GetBossSpecial( index = 0, String:buffer[], bufferlen, isNumOfSpecial = 0 );
+native bool:FF2_GetBossName( index = 0, String:buffer[], bufferlen, isNumOfSpecial = 0 );
 
 /**
  * Gets number of lives of current Boss
@@ -149,32 +176,37 @@ native FF2_GetBossMaxHealth( index = 0 );
  * Gets charge meter value of current Boss
  *
  * @param index			Index of boss (0 for normal boss, 1 or higher for companion bosses)
- * @param slot			Slot of charge meter
- *							0 - rage
- *							1 - brave jump or teleport
- *							0 - other charged abilities
+ * @param charge_type	See FF2_CHARGE constants
+ * 
+ * @return charge percent
  */
-native Float:FF2_GetBossCharge( index, slot );
+native Float:FF2_GetBossCharge( index, charge_type = FF2_CHARGE_RAGE );
 
 /**
  * Sets charge meter value of current Boss
  *
  * @param index			Index of boss (0 for normal boss, 1 or higher for companion bosses)
- * @param slot			Slot of charge meter
- *							0 - rage
- *							1 - as usual, used for brave jump or teleport
- *							0 - other charged abilities
+ * @param charge_type	See FF2_CHARGE constants
  * @param value			New value of charge
+ * @noreturn
  */
-native FF2_SetBossCharge( index, slot, Float:value );
+native FF2_SetBossCharge( index, charge_type, Float:value );
 
 /**
  * Gets damage, dealt by this client to boss
  *
- * @param client 		Client's index.
- * @return		    	Damage, dealt by this client.
+ * @param client 		Client index.
+ * @return		    	Damage dealt by this client.
  */
 native FF2_GetClientDamage( client );
+
+/**
+ * Gets damage, dealt by this client to boss
+ *
+ * @param client 		Client index.
+ * @return		    	Healing done by this client.
+ */
+native FF2_GetClientHealing( client );
 
 /**
  * Gets Boss' rage distance
@@ -188,22 +220,26 @@ native Float:FF2_GetRageDist( index = 0 , const String:plugin_name[]="", const S
 
 /**
  * Does Boss have ability?
+ * Only works for v1 abilities.
  *
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
  * @param plugin_name	Name of plugin with this ability
  * @param ability_name 	Name of ability 
- * @return				true if Boss has this ability. false is hasn't
+ * @return				true if Boss has this ability. false if is hasn't
  */
 native bool:FF2_HasAbility( index, const String:plugin_name[], const String:ability_name[] );
 
 /**
- * Does Boss have ability in v2 ability pool?
+ * Does Boss have ability?
+ * Only works for v2 abilities.
  *
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
- * @param ability_name 	Name of ability 
- * @return				true if Boss has this ability. false is hasn't
+ * @param ability_name 	Name of ability
+ * @param ability_type	Only return true if the ability is of this type.  Set to FF2_Ability_Any to ignore type.
+ * 						Type is always ignored for passive abilities..
+ * @return				true if Boss has this ability. false if it hasn't
  */
-native bool:FF2_HasAbilityEx( index, const String:ability_name[] );
+native bool:FF2_HasAbilityEx( index, const String:ability_name[], FF2_AbilityType:ability_type = FF2_Ability_Any );
 
 /**
  * Force a boss to do an ability
@@ -211,34 +247,27 @@ native bool:FF2_HasAbilityEx( index, const String:ability_name[] );
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
  * @param plugin_name	Name of plugin with this ability
  * @param ability_name 	Name of ability
- * @param slot			Slot of charge meter
- *							0 - rage
- *							1 - as usual, used for brave jump or teleport
- *							0 - other charged abilities 
- * @param buttonmode	There is 2 buttonmodes today:
+ * @param charge_type	See FF2_CHARGE constants
+ * @param buttonmode	There are 3 buttonmodes:
  *							0 - by taunt
  *							1 - by right mouse button or duck
  *							2 - by reload button
  * @noreturn
  */
-native FF2_DoAbility(index, const String:plugin_name[], const String:ability_name[], slot, buttonmode = 0);
+native FF2_DoAbility(index, const String:plugin_name[], const String:ability_name[], charge_type, buttonmode = 0 );
 
 /**
- * Force a boss to do a v2 ability
+ * Force a boss to do a v2 non-passive ability
  *
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
  * @param ability_name 	Name of ability
- * @param slot			Slot of charge meter
- *							0 - rage
- *							1 - as usual, used for brave jump or teleport
- *							0 - other charged abilities 
- * @param buttonmode	There is 2 buttonmodes today:
- *							0 - by taunt
- *							1 - by right mouse button or duck
- *							2 - by reload button
+ * @param slot			See FF2_CHARGE constants
+ * @param buttonmode	See FF2_ButtomMode enum
+ * @param ability_type	Only do the ability if it's a specific type, defaults to any
+ * 
  * @noreturn
  */
-native FF2_DoAbilityEx(index, const String:ability_name[], slot, buttonmode = 0);
+native FF2_DoAbilityEx(index, const String:ability_name[], charge_type, FF2_ButtonMode:buttonmode = FF2_ButtonMode_Taunt, FF2_AbilityType:ability_type = FF2_Ability_Any  );
 
 /**
  * Gets integer argument of ability
@@ -259,6 +288,7 @@ native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:a
  * @param ability_name 	Name of ability
  * @param argument 		Number of argument 
  * @param defvalue 		Returns if argument is not defined
+ * @param ability_type	
  * @return				Value of argument
  */
 native FF2_GetAbilityArgumentEx( index, const String:ability_name[], argument, defvalue = 0, FF2AbilityType:type = FF2Ability_Any );
@@ -273,7 +303,7 @@ native FF2_GetAbilityArgumentEx( index, const String:ability_name[], argument, d
  * @param defvalue 		Returns if argument is not defined
  * @return				Value of argument
  */
-native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], const String:ability_name[], argument, Float:defvalue = 0.0);
+native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], const String:ability_name[], argument, Float:defvalue = 0.0 );
 
 /**
  * Gets float argument of ability
@@ -285,7 +315,7 @@ native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], con
  * @param defvalue 		Returns if argument is not defined
  * @return				Value of argument
  */
-native Float:FF2_GetAbilityArgumentFloatEx( index, const String:ability_name[], argument, Float:defvalue = 0.0, FF2AbilityType:type = FF2Ability_Any);
+native Float:FF2_GetAbilityArgumentFloatEx( index, const String:ability_name[], argument, Float:defvalue = 0.0, FF2AbilityType:type = FF2Ability_Any );
 
 /**
  * Gets string argument of ability
@@ -298,7 +328,7 @@ native Float:FF2_GetAbilityArgumentFloatEx( index, const String:ability_name[], 
  * @param bufferlen		Length of buffer string
  * @noreturn
  */
-native FF2_GetAbilityArgumentString( index, const String:plugin_name[], const String:ability_name[], argument, String:buffer[], bufferlen);
+native FF2_GetAbilityArgumentString( index, const String:plugin_name[], const String:ability_name[], argument, String:buffer[], bufferlen );
 
 /**
  * Gets string argument of ability
@@ -311,7 +341,7 @@ native FF2_GetAbilityArgumentString( index, const String:plugin_name[], const St
  * @param bufferlen		Length of buffer string
  * @noreturn
  */
-native FF2_GetAbilityArgumentStringEx( index, const String:ability_name[], argument, String:buffer[], bufferlen, FF2AbilityType:type = FF2Ability_Any);
+native FF2_GetAbilityArgumentStringEx( index, const String:ability_name[], argument, String:buffer[], bufferlen, FF2AbilityType:type = FF2Ability_Any );
 
 /**
  * Starts random boss' sound from his config file
@@ -342,8 +372,8 @@ native FF2_StopMusic( client = 0 );
  *								Don't forget: 1st chatacter from chatacters.cfg is _0th_ here
  * @return					Handle of Boss' keyvalues
  */
-native Handle:FF2_GetSpecialKV( index = 0, isNumOfSpecial = 0);
-native Handle:FF2_GetBossKV( index = 0, isNumOfSpecial = 0);
+native Handle:FF2_GetSpecialKV( index = 0, isNumOfSpecial = 0 );
+native Handle:FF2_GetBossKV( index = 0, isNumOfSpecial = 0 );
 
 /**
  * Gets client's flags for FF2 
@@ -400,7 +430,8 @@ native FF2_SetQueuePoints( client, value );
 
 /**
  * FF2_OnAbility:
- * Begins when Boss uses ability (stun rage,jump,uber rage etc)
+ * Begins when Boss uses a v1 ability (stun rage,jump,uber rage etc)
+ * For v2 abilities, use FF2_HookAbility or FF2_HookPassiveAbility
  * Calls each 0.2 seconds for charge abilities
  *
  * Use FF2_PreAbility with enabled=false only to prevent FF2_OnAbility!
@@ -413,37 +444,20 @@ native FF2_SetQueuePoints( client, value );
  *							1 - on charging
  *							2 - is charged
  *							3 - on use
- * @return		    	Plugin_Stop can not preve Ability. Use FF2_PreAbility with enabled = false
+ * @return		    	Plugin_Stop can not prevent Ability. Use FF2_PreAbility with enabled = false
  */
- // In 1.08 or newer, only use this if you're intercepting abilities from other plugins, otherwise use FF_PreAbilityEx
 forward FF2_PreAbility( index, const String:plugin_name[], const String:ability_name[], action, &enabled = true );
-
-// To be deprecated in 1.08 in favor of FF2_OnAbilityEx and FF2_RegisterSubplugin, return type ignored either way
 forward Action:FF2_OnAbility( index, const String:plugin_name[], const String:ability_name[], action );
-
-/**
- * Begins when Boss uses ability (stun rage,jump,uber rage etc)
- * Calls each 0.2 seconds for charge abilities
- *
- * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
- * @param ability_name 	Name of ability
- * @param action		Action of ability (for slot=1 or 2)
- *							0 - not on use
- *							1 - on charging
- *							2 - is charged
- *							3 - on use
- * @return		    	Plugin_Stop in PreAbility will prevent Ability;
- */
-//functag public Action:FF2_PreAbilityEx( index, const String:ability_name[], action );
-//functag public FF2_OnAbilityEx( index, const String:ability_name[], action );
 
 funcenum FF2_Ability
 {
 	/**
 	 * Runs when Boss uses ability (stun rage,jump,uber rage etc)
+	 * The Action version is intended for a prehook
 	 * 
 	 * @param index 	Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
-	 * @return		    Plugin_Stop in PreAbility will prevent Ability;
+	 * @return	    	Plugin_Stop or Plugin_Handled in PreAbility will prevent Ability;
+	 * 					Plugin_Stop will stop any later callbacks from being processed for this ability
 	 */
 	Action:public( index ),
 	
@@ -452,14 +466,12 @@ funcenum FF2_Ability
 	 * Called each 0.2 seconds for charge abilities
 	 * 
 	 * @param index 	Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
-	 * @param action	Action of ability (for slot=1 or 2)
-	 *						0 - not on use
-	 *						1 - on charging
-	 *						2 - is charged
-	 *						3 - on use
-	 * @return	    	Plugin_Stop in PreAbility will prevent Ability;
+	 * @param action	Action of ability (for 	FF2_Ability_BraveJump or FF2_Ability_Charge)
+	 * 					See FF2_AbilityActionType for valid actions
+	 * @return	    	Plugin_Stop or Plugin_Handled in PreAbility will prevent Ability;
+	 * 					Plugin_Stop will stop any later callbacks from being processed for this ability
 	 */
-	Action:public( index, action ),
+	Action:public( index, FF2_AbilityActionType:action ),
 	
 	/**
 	 * Runs when Boss uses ability (stun rage,jump,uber rage etc)
@@ -474,15 +486,22 @@ funcenum FF2_Ability
 	 * Called each 0.2 seconds for charge abilities
 	 * 
 	 * @param index 	Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
-	 * @param action	Action of ability (for slot=1 or 2)
-	 *						0 - not on use
-	 *						1 - on charging
-	 *						2 - is charged
-	 *						3 - on use
+	 * @param action	Action of ability (for 	FF2_Ability_BraveJump or FF2_Ability_Charge)
+	 * 					See FF2_AbilityActionType for valid actions
 	 * @noreturn
 	 */
-	public( index, action ),
+	public( index, FF2_AbilityActionType:action ),
 }
+
+/**
+ * Runs when a passive ability is toggled
+ * Passive abilities are startedwhen a boss character is loaded and stopped when a boss is unloaded
+ * NOTE: They are NOT unloaded when a boss dies.
+ * 
+ * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
+ * @param start			True if ability is starting, false if it is stopping
+ */
+functag FF2_ToggleAbility public( index, bool:start );
 
 /**
  * Wrapper around EmitSoundToAll that uses the FF2 sound exception system
@@ -502,7 +521,7 @@ funcenum FF2_Ability
  * @param soundtime		Alternate time to play sound for.
  * @noreturn
  */
-native FF2_EmitSoundToAllExcept(SoundExcept:exceptiontype = SoundExcept_Music,
+native FF2_EmitSoundToAllExcept( SoundExcept:exceptiontype = SoundExcept_Music,
 				const String:sample[],
 				entity = SOUND_FROM_PLAYER,
 				channel = SNDCHAN_AUTO,
@@ -514,48 +533,58 @@ native FF2_EmitSoundToAllExcept(SoundExcept:exceptiontype = SoundExcept_Music,
 				const Float:origin[3] = NULL_VECTOR,
 				const Float:dir[3] = NULL_VECTOR,
 				bool:updatePos = true,
-				Float:soundtime = 0.0);
-
-/**
- * Called when a boss that uses this subplugin loads
- */
-//functag public FF2_StartPlugin();
-
-/**
- * Called when a boss that uses this subplugin unloads
- */
-//functag public FF2_StopPlugin();
-
-/**
- * Register a subplugin.
- * 
- * @param ability		Function called whenever one of this plugin's abilities are called. Pass _ or INVALID_FUNCTION if you don't have activated abilities.
- * @param preability	Function called vefore one of this plugin's abilities are called.
- * @param start			Function called whenever a boss loads that uses abilities from this plugin. Used for non-activated abilities, such as event-triggered.
- * @param stop			Called whenever a boss unloads that used abilities from this plugin. Used for non-activated abilities, such as event-triggered.
- */
-//native FF2_RegisterSubplugin(FF2_OnAbilityEx:ability = INVALID_FUNCTION, FF2_PreAbilityEx:preability, FF2_StartPlugin:start = INVALID_FUNCTION, FF2_StopPlugin:stop = INVALID_FUNCTION);
-
-//native FF2_UnregisterSubplugin();
-
-//native FF2_GetMySubpluginName(String:name[], maxlength);
+				Float:soundtime = 0.0 );
 
 /**
  * Register a boss ability, including slot number and argument types for arg1 and higher
  * (i.e. Param_Cell, Param_Float, or Param_String)
- * This should be done in OnAllPluginsLoaded.
  * 
+ * This should be called by subplugins when they are loaded
+ * 
+ * @param ability_name	Name of ability
+ * @param default_slot	slot of ability.
  * @error if incorrect ParamTypes are used.  This only supports Cell, Float, and String.
  * @noreturn
  */
-native FF2_RegisterAbility(const String:abilityName[], defaultSlot=0, ParamType:...);
+native FF2_RegisterAbility( const String:ability_name[], default_slot=0, ParamType:... );
+
+/**
+ * Register a passive boss ability, including argument types for arg1 and higher
+ * (i.e. Param_Cell, Param_Float, or Param_String)
+ * 
+ * This should be called by subplugins when they are loaded
+ * 
+ * Use this to write manual events and the like that aren't a registered ability type.
+ * Prior to this release, that would include a player_death hook for a boss's death
+ * 
+ * @param ability_name	Name of ability
+ * @error if incorrect ParamTypes are used.  This only supports Cell, Float, and String.
+ * @noreturn
+ */
+native FF2_RegisterPassiveAbility( const String:ability_name[], ParamType:... );
+
+/**
+ * Broadcast when an FF2 ability is registered by a plugin
+ * 
+ * @param ability_name		Ability that was registered
+ */
+forward FF2_OnAbilityRegistered( const String:ability_name[] );
 
 /**
  * Unregister a boss ability.
+ * Do this in OnPluginEnd for subplugins
  * 
+ * @param ability_name		Ability that was unregistered
  * @noreturn
  */
-native FF2_UnregisterAbility(const String:abilityName[]);
+native FF2_UnregisterAbility( const String:ability_name[] );
+
+/**
+ * Broadcast when an FF2 ability is unregistered by a plugin
+ * 
+ * @param ability_name		Ability that was unregistered
+ */
+forward FF2_OnAbilityUnregistered( const String:ability_name[] );
 
 /**
  * Unregister all abilities registered to this subplugin
@@ -570,56 +599,47 @@ native FF2_UnregisterAllAbilities();
  * 
  * @return true if ability is registered
  */
-native bool:FF2_IsAbilityRegistered(String:abilityName[]);
-
-native FF2_SetAbilityArgumentDefault( const String:ability_name[], argument, defvalue );
-native Float:FF2_SetAbilityArgumentDefaultFloat( const String:ability_name[], argument, Float:defvalue);
-native FF2_SetAbilityArgumentDefaultString( const String:ability_name[], argument, const String:defvalue[]);
-
-/**
- * Gets integer default argument of ability
- *
- * @param ability_name 	Name of ability
- * @param argument 		Number of argument 
- * @param defvalue 		Returns if argument is not defined
- * @return				Value of argument
- */
-native FF2_GetAbilityArgumentDefault( const String:ability_name[], argument, defvalue = 0 );
-
-/**
- * Gets Float default argument of ability
- *
- * @param ability_name 	Name of ability
- * @param argument 		Number of argument 
- * @param defvalue 		Returns if argument is not defined
- * @return				Value of argument
- */
-
-native Float:FF2_GetAbilityArgumentDefaultFloat( const String:ability_name[], argument, Float:defvalue = 0.0);
-/**
- * Gets String argument of ability
- *
- * @param ability_name 	Name of ability
- * @param argument 		Number of argument 
- * @param buffer 		Buffer for value of argument
- * @param bufferlen		Length of buffer string
- * @return				Value of argument
- */
-native FF2_GetAbilityArgumentDefaultString( const String:ability_name[], argument, String:buffer[], bufferlen);
+native bool:FF2_IsAbilityRegistered( const String:ability_name[] );
 
 /**
  * Hook a previously registered ability
+ * This is separate from register because you can hook abilities from other plugins
  *
+ * @param ability_name	Name of ability
+ * @param callback		Callback for when an ability is used
+ * @param mode			What king of hook (pre or normal)
+ * @error 				If ability hasn't been registered as passive
  * @noreturn
  */
-native FF2_HookAbility(String:abilityName[], FF2_Ability:callback, FF2AbilityMode:mode=FF2AbilityMode_Normal);
+native FF2_HookAbility( const String:ability_name[], FF2_Ability:callback, FF2_AbilityHookMode:mode = FF2_AbilityHookMode_Normal );
+
+/**
+ * Hook a previously registered passive ability.  The callback will be called when a relevant boss is loaded or unloaded.
+ * 
+ * @param ability_name 	Name of ability
+ * @param callback		Callback for when ability is started or stopped
+ * @error 				If ability hasn't been registered as passive
+ * @noreturn
+ */
+native FF2_HookPassiveAbility( const String:ability_name[], FF2_ToggleAbility:callback );
 
 /**
  * Unhook a previously registered ability
- * 
+ * @param ability_name	Name of ability
+ * @param callback		Callback for when an ability is used
+ * @param mode			What king of hook (pre or normal)
  * @noreturn
  */
-native FF2_UnhookAbility(String:abilityName[], FF2_Ability:callback, FF2AbilityMode:mode=FF2AbilityMode_Normal);
+native FF2_UnhookAbility( const String:abilityName[], FF2_Ability:callback, FF2_AbilityHookMode:mode = FF2_AbilityHookMode_Normal );
+
+/**
+ * Unhook a previously registered passive ability
+ * 
+ * @param ability_name 	Name of ability
+ * @param callback		Callback for when ability is started or stopped
+ * @noreturn
+ */
+native FF2_UnhookPassiveAbility( const String:ability_name[], FF2_ToggleAbility:callback );
 
 /**
  * Unhook all abilities this plugin has hooked.
@@ -637,7 +657,7 @@ native FF2_UnhookAllAbilities();
  * @param damage 		Damage by the trigger_hurt, also you can change it.
  * @return		    	Plugin_Stop will prevent forward, Plugin_Changed will change damage;
  */
-forward Action:FF2_OnTriggerHurt( index, triggerhurt, &Float:damage);
+forward Action:FF2_OnTriggerHurt( index, triggerhurt, &Float:damage );
 
 /**
  * Begins when Boss' music begins
@@ -648,12 +668,11 @@ forward Action:FF2_OnTriggerHurt( index, triggerhurt, &Float:damage);
  */
 forward Action:FF2_OnMusic( String:path[], &Float:time );
 
-
 /**
  * @deprecated		No longer called. Use FF2_OnSpecialSelectedEx.
  */
 #pragma deprecated		No longer called. Use FF2_OnSpecialSelectedEx.
-forward Action:FF2_OnSpecialSelected( index, &SpecialNum, String:SpecialName[]);
+forward Action:FF2_OnSpecialSelected( index, &SpecialNum, String:SpecialName[] );
 
 /**
  * Begins when FF2 picks Special for Boss
@@ -663,7 +682,7 @@ forward Action:FF2_OnSpecialSelected( index, &SpecialNum, String:SpecialName[]);
  * @return		    	You can NOT use Plugin_Stop to prevent this, but
  *							you can change SpecialName and use Plugin_Changed to change Special;
  */
-forward Action:FF2_OnSpecialSelectedEx( index, String:SpecialName[]);
+forward Action:FF2_OnSpecialSelectedEx( index, String:SpecialName[] );
 
 /**
  * Begins when FF2 adds queue points.
@@ -688,7 +707,7 @@ forward Action:FF2_OnLoadCharacterSet( CharSetNum, String:CharSetName[] );
  *							you can change CharSetName and use Plugin_Changed to change Special;
  *							if you want to change CharSetNum, then set CharSetName to null string ("").
  */
-forward Action:FF2_OnLoadCharacterSetEx(String:CharSetName[] );
+forward Action:FF2_OnLoadCharacterSetEx( String:CharSetName[] );
 
 public SharedPlugin:__pl_FF2 =
 {
@@ -710,6 +729,7 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetBossIndex");
 	MarkNativeAsOptional("FF2_GetBossTeam");
 	MarkNativeAsOptional("FF2_GetBossSpecial");
+	MarkNativeAsOptional("FF2_GetBossName");
 	MarkNativeAsOptional("FF2_GetBossLives");
 	MarkNativeAsOptional("FF2_GetBossMaxLives");
 	MarkNativeAsOptional("FF2_GetBossHealth");
@@ -717,6 +737,7 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetBossCharge");
 	MarkNativeAsOptional("FF2_SetBossCharge");
 	MarkNativeAsOptional("FF2_GetClientDamage");
+	MarkNativeAsOptional("FF2_GetClientHealing");
 	MarkNativeAsOptional("FF2_GetRageDist");
 	MarkNativeAsOptional("FF2_HasAbility");
 	MarkNativeAsOptional("FF2_HasAbilityEx");
@@ -731,14 +752,15 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_RandomSound");
 	MarkNativeAsOptional("FF2_StopMusic");
 	MarkNativeAsOptional("FF2_GetSpecialKV");
-	MarkNativeAsOptional("FF2_GetQueuePoints");
-	MarkNativeAsOptional("FF2_SetQueuePoints");
+	MarkNativeAsOptional("FF2_GetBossKV");
 	MarkNativeAsOptional("FF2_GetFF2flags");
 	MarkNativeAsOptional("FF2_SetFF2flags");
 	MarkNativeAsOptional("FF2_GetFF2Flags");
 	MarkNativeAsOptional("FF2_SetFF2Flags");
 	MarkNativeAsOptional("FF2_GetBossFlags");
 	MarkNativeAsOptional("FF2_SetBossFlags");
+	MarkNativeAsOptional("FF2_GetQueuePoints");
+	MarkNativeAsOptional("FF2_SetQueuePoints");
 	MarkNativeAsOptional("FF2_EmitSoundToAllExcept");
 	MarkNativeAsOptional("FF2_RegisterAbility");
 	MarkNativeAsOptional("FF2_UnregisterAbility");
@@ -751,10 +773,8 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetAbilityArgumentDefaultFloat");
 	MarkNativeAsOptional("FF2_GetAbilityArgumentDefaultString");
 	MarkNativeAsOptional("FF2_HookAbility");
+	MarkNativeAsOptional("FF2_HookPassiveAbility");
 	MarkNativeAsOptional("FF2_UnhookAbility");
+	MarkNativeAsOptional("FF2_UnhookPassiveAbility");
 	MarkNativeAsOptional("FF2_UnhookAllAbilities");
-	//MarkNativeAsOptional("FF2_RegisterSubplugin");
-	//MarkNativeAsOptional("FF2_UnregisterSubplugin");
-	//MarkNativeAsOptional("FF2_GetMySubpluginName");
-
 }

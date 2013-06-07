@@ -404,7 +404,7 @@ bool:ReadBossSet(Handle:bossFile)
 
 Handle:ReadBoss(const String:boss[])
 {
-	decl bossFile[PLATFORM_MAX_PATH];
+	decl String:bossFile[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, bossFile, PLATFORM_MAX_PATH, "%s/%s.cfg", FF2_CONFIGS, boss);
 	
 	new Handle:bossConfig;
@@ -438,7 +438,7 @@ public Action:Hook_StartTouch(entity, other)
 	GetEntityClassname(other, classname, sizeof(classname));
 	
 	// Ammo
-	if (g_BossFlags[entity] & BOSSFLAG_ALLOW_AMMO_PICKUP != BOSSFLAG_ALLOW_AMMO_PICKUP)
+	if (g_BossFlags[entity] & FF2_BOSSFLAG_ALLOW_AMMO_PICKUP != FF2_BOSSFLAG_ALLOW_AMMO_PICKUP)
 	{
 		// Boss isn't allowed to pick up ammo packs
 		if (StrEqual(classname, "item_ammopack_full") || StrEqual(classname, "item_ammopack_medium")
@@ -449,7 +449,7 @@ public Action:Hook_StartTouch(entity, other)
 	}
 	
 	// Health
-	if (g_BossFlags[entity] & BOSSFLAG_ALLOW_HEALTH_PICKUP != BOSSFLAG_ALLOW_HEALTH_PICKUP)
+	if (g_BossFlags[entity] & FF2_BOSSFLAG_ALLOW_HEALTH_PICKUP != FF2_BOSSFLAG_ALLOW_HEALTH_PICKUP)
 	{
 		if (StrEqual(classname, "item_healthkit_full") || StrEqual(classname, "item_healthkit_medium") 
 			|| StrEqual(classname, "item_healthkit_small"))
