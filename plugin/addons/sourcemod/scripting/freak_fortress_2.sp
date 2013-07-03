@@ -39,7 +39,7 @@
 
 #pragma semicolon 1
 
-#define SET_AND_BOSS_LENGTH 64
+#define SET_AND_BOSS_LENGTH 128
 
 enum FF2Stats
 {
@@ -75,6 +75,8 @@ new String:WeaponSpecials[][] = {
 	"prevent damage",
 	"remove on damage"
 };
+
+new Handle:g_KeyValues_WeaponSpecials;
 
 // KeyValues isn't the best structure, but otherwise we'd be parsing it into a bunch of constructs
 new Handle:g_KeyValues_WeaponMods = INVALID_HANDLE;
@@ -237,7 +239,34 @@ public OnPluginStart()
 	HookConVarChange(g_Cvar_FirstBlood, CvarChange_ForceFalse);
 	//SetConVarInt(g_Cvar_ForceCamera, CvarChange_ForceZero);
 	
+	CreateWeaponModsKeyValues();
+	
 	BuildPath(Path_SM, g_ConfigPath, PLATFORM_MAX_PATH, "configs/freak_fortress_2");
+}
+
+// Use this function to reset the WeaponSpecials list
+CreateWeaponModsKeyValues()
+{
+	if (g_KeyValues_WeaponSpecials != INVALID_HANDLE)
+	{
+		CloseHandle(g_KeyValues_WeaponSpecials);
+	}
+	
+	g_KeyValues_WeaponSpecials = CreateKeyValues("WeaponSpecials");
+	
+	// For each item in WeaponSpecials, we need to store the appropriate classname and index lists
+	for (new i = 0; i < sizeof(WeaponSpecials); ++i)
+	{
+		KvJumpToKey(g_KeyValues_WeaponSpecials, WeaponSpecials[i], true); // 1
+		
+		KvJumpToKey(g_KeyValues_WeaponSpecials, "ByClassname", true); // 2
+		KvGoBack(g_KeyValues_WeaponSpecials); // 1
+		
+		KvJumpToKey(g_KeyValues_WeaponSpecials, "ByIndex", true); // 2
+		KvGoBack(g_KeyValues_WeaponSpecials); // 1
+		
+		KvGoBack(g_KeyValues_WeaponSpecials); // 0
+	}
 }
 
 public OnMapStart()
