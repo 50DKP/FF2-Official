@@ -226,13 +226,17 @@ public OnPluginStart()
 	g_Cvar_FirstRound = CreateConVar("ff2_first_round", "0", "Should first round be FF2? Set to 0 for normal arena", FCVAR_NONE, true, 0.0, true, 1.0);
 	g_Cvar_Announce = CreateConVar("ff2_announce", "120", "How often in seconds should we advertise information about FF2? Set to 0 to hide", FCVAR_NONE, true, 0.0);
 	g_Cvar_Crits = CreateConVar("ff2_crits", "0", "Can bosses get crits?", FCVAR_NONE, true, 0.0, true, 1.0);
-	//g_Cvar_Countdown = CreateConVar("ff2_countdown", "", "", FCVAR_NONE, true, 60.0);
-	//g_Cvar_PointAlive = CreateConVar("ff2_point_alive", "5", "", FCVAR_NONE, true, 0.0, true, 1.0);
-	//g_Cvar_PointDelay = CreateConVar("ff2_point_delay", "60", "", FCVAR_NONE, true, 60.0);
-	//g_Cvar_PointType = CreateConVar("ff2_point_type", "0", "", FCVAR_NONE, true, 0.0, true, 1.0);
-	//g_Cvar_ShortCircuit = CreateConVar("ff2_shortcircuit_stun", "2", "", FCVAR_NONE, true, 0.0);
-	//g_Cvar_SpecForceBoss = CreateConVar("ff2_spec_forceboss", "0", "", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_Cvar_Countdown = CreateConVar("ff2_countdown", "120.0", "When only one non-boss character is left, start a countdown for the boss to kill them or have the round stalemate..  Set to 0 to disable.", FCVAR_NONE, true, 0.0);
+	g_Cvar_PointType = CreateConVar("ff2_point_type", "0", "When should the point be enabled? (-1 = never, 0 = when only ff2_point_alive players are left alive, 1 = when ff2_point_delay seconds have passed.", FCVAR_NONE, true, 0.0, true, 1.0);
+	g_Cvar_PointAlive = CreateConVar("ff2_point_alive", "5", "If ff2_point_type is 0, enable the control point when this many non-boss players are left alive.", FCVAR_NONE, true, 1.0, true, 12.0);
+	g_Cvar_PointDelay = CreateConVar("ff2_point_delay", "6", "If ff2_point_type is 1, enable the control point after this many seconds times the number of players at the start of the round", FCVAR_NONE, true, 1.0, true, 60.0);
+	g_Cvar_SpecForceBoss = CreateConVar("ff2_spec_forceboss", "0", "If 1, Spectators will be part of the boss queue.", FCVAR_NONE, true, 0.0, true, 1.0);
 
+	// Deprecated cvars
+	//g_Cvar_EnableEurekaEffect = CreateConVar("ff2_enable_eureka", "0", "1- allow Eureka Effect, else disallow", FCVAR_PLUGIN, true, 0.0, true, 1.0); // Moved to weapon config file
+	//g_Cvar_ShortCircuit = CreateConVar("ff2_shortcircuit_stun", "2", "", FCVAR_NONE, true, 0.0); // Moved to weapon config file
+	//g_Cvar_HealthBar = CreateConVar("ff2_health_bar", "1", "Show boss health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0); // Moved to separate plugin
+	
 	HookConVarChange(g_Cvar_ArenaQueue, CvarChange_ForceFalse);
 	HookConVarChange(g_Cvar_Autobalance, CvarChange_ForceFalse);
 	SetConVarInt(g_Cvar_UnbalanceLimit, CvarChange_ForceZero);
@@ -516,7 +520,7 @@ public Action:Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &d
 					new Float:victimPos[3];
 					GetClientAbsOrigin(victim, victimPos);
 					
-					EmitSoundToAll(SOUND_SHIELD_ZAP, victim, SNDCHAN_ITEM, _, _, 130);
+					EmitSoundToAll(SOUND_SHIELD_ZAP, victim, SNDCHAN_ITEM, _, _, 130.0);
 					
 					damage = 0.0;
 					return Plugin_Changed;
@@ -942,7 +946,6 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 			g_CurrentStats[i][j] = 0;
 		}
 	}
-
 }
 
 /**
@@ -1200,3 +1203,20 @@ public Handle:LoadBoss(client, String:bossName[])
 	
 }
 
+EnableCapPoint()
+{
+	new entity = FindEntityByClassname(-1, "team_control_point");
+	
+	if (entity == -1)
+	{
+		return;
+	}
+	
+	SetVariantBool(false);
+	AcceptEntityInput(entity, "SetLocked");
+	
+	new broadcast = CreateEvent("teamplay_broadcast_audio");
+	SetEventInt(broadcast, "team", -1);
+	SetEventString(broadcast, "sound", "Announcer.AM_CapEnabledRandom");
+	FireEvent(broadcast);
+}

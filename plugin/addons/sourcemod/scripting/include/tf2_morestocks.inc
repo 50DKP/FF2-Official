@@ -129,7 +129,7 @@ stock TF2_GetRoundScoreData(client, TF2ScoreData:dataType)
 	return GetEntProp(client, Prop_Send, "m_RoundScoreData", 4, _:dataType);
 }
 
-stock PrintToChatTarget(const String:pattern[], const String:format[], any...)
+stock PrintToChatTarget(const String:pattern[], const String:format[], any:...)
 {
 	decl String:buffer[192];
 	

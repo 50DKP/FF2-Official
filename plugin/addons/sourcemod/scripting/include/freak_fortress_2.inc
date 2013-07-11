@@ -4,6 +4,8 @@
   #endinput
 #endif
 
+#include <sdktools_sound>
+
 #define _freak_fortress_2_included
 
 #define FF2_FLAG_UBERREADY				(1 << 0)		//Used when medic says "I'm charged!"
@@ -291,7 +293,7 @@ native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:a
  * @param ability_type	
  * @return				Value of argument
  */
-native FF2_GetAbilityArgumentEx( index, const String:ability_name[], argument, defvalue = 0, FF2AbilityType:type = FF2Ability_Any );
+native FF2_GetAbilityArgumentEx( index, const String:ability_name[], argument, defvalue = 0, FF2_AbilityType:type = FF2_Ability_Any );
 
 /**
  * Gets float argument of ability
@@ -315,7 +317,7 @@ native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], con
  * @param defvalue 		Returns if argument is not defined
  * @return				Value of argument
  */
-native Float:FF2_GetAbilityArgumentFloatEx( index, const String:ability_name[], argument, Float:defvalue = 0.0, FF2AbilityType:type = FF2Ability_Any );
+native Float:FF2_GetAbilityArgumentFloatEx( index, const String:ability_name[], argument, Float:defvalue = 0.0, FF2_AbilityType:type = FF2_Ability_Any );
 
 /**
  * Gets string argument of ability
@@ -341,7 +343,7 @@ native FF2_GetAbilityArgumentString( index, const String:plugin_name[], const St
  * @param bufferlen		Length of buffer string
  * @noreturn
  */
-native FF2_GetAbilityArgumentStringEx( index, const String:ability_name[], argument, String:buffer[], bufferlen, FF2AbilityType:type = FF2Ability_Any );
+native FF2_GetAbilityArgumentStringEx( index, const String:ability_name[], argument, String:buffer[], bufferlen, FF2_AbilityType:type = FF2_Ability_Any );
 
 /**
  * Starts random boss' sound from his config file
@@ -521,7 +523,7 @@ functag FF2_ToggleAbility public( index, bool:start );
  * @param soundtime		Alternate time to play sound for.
  * @noreturn
  */
-native FF2_EmitSoundToAllExcept( SoundExcept:exceptiontype = SoundExcept_Music,
+native FF2_EmitSoundToAllExcept( FF2_SoundExcept:exceptiontype = FF2_SoundExcept_Music,
 				const String:sample[],
 				entity = SOUND_FROM_PLAYER,
 				channel = SNDCHAN_AUTO,
@@ -646,8 +648,27 @@ native FF2_UnhookPassiveAbility( const String:ability_name[], FF2_ToggleAbility:
  * 
  * This MUST be called in OnPluginEnd if you hooked any abilities.
  * (SourceMod gives plugins no way of knowing when other plugins are unloaded)
+ * 
+ * @noreturn
  */
 native FF2_UnhookAllAbilities();
+
+// QUEUE MANAGER STUFF
+
+functag FF2_GetNextPlayers public(&count, clients[], bool:remove);
+
+functag FF2_GetPlayerPoints public(client);
+
+functag FF2_GetPlayerPosition public(client);
+
+/**
+ * Registers the calling plugin as a boss queue manager
+ * 
+ * Registering a new queue manager will automatically unregister the old one.
+ * 
+ * @return 				True if the new queue manager is successfully registered, false if not
+ */
+native FF2_RegisterQueueManager(FF2_GetNextPlayers:nextPlayerFunc, FF2_GetPlayerPoints:getPlayerPointsFunc, FF2_GetPlayerPosition:getPlayerPositionFunc);
 
 /**
  * Begins when Boss hurts by pit, sawblade etc.
