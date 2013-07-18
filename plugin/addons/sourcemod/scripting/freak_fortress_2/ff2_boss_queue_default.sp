@@ -1,22 +1,29 @@
 #include <sourcemod>
 #include <freak_fortress_2>
 #include <morecolors>
-
+#include <tf2>
 #define VERSION "2.0 alpha"
+
+#define STEAM_LENGTH 20
+// 20 is enough for Steam IDs up to STEAM_0:0:1234567890 in length.  This is for future expansion.
+
+#define DEBUG
 
 public Plugin:myinfo = 
 {
 	name = "Freak Fortress 2 Boss Queue: Fair",
 	author = "Powerlord",
-	description = "Default Freak Fortress 2 Boss Queue",
+	description = "Default Freak Fortress 2 Boss Queue. \"Fair\" refers to everyone getting an equal number of points at round end.",
 	version = "1.0",
 	url = "<- URL ->"
 }
 
 new Handle:g_hPlayerQueue;
 new Handle:g_hDb;
-new Handle:g_hUpdateQuery;
 new g_Points[MAXPLAYERS+1];
+new bool:g_bValidPlayers[MAXPLAYERS+1];
+
+new Handle:g_Cvar_SpecForceBoss = INVALID_HANDLE;
 
 public OnPluginStart()
 {
@@ -31,8 +38,17 @@ public OnPluginStart()
 	
 	// TODO: Check that the DB exists here
 	
-	FF2_RegisterQueueManager(GetNextPlayers, GetPlayerPoints, GetPlayerPosition);
+	HookEvent("arena_round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEvent("teamplay_round_win", Event_RoundWin, EventHookMode_PostNoCopy);
+	
+	CreateConVar("ff2_bossqueue_fair_version", VERSION, "FF2 Boss Queue Fair Version", FCVAR_NOTIFY | FCVAR_DONTRECORD);
+}
+
+public OnAllPluginsLoaded()
+{
+	g_Cvar_SpecForceBoss = FindConVar("ff2_spec_forceboss");
+	
+	FF2_RegisterQueueManager(GetNextPlayers, GetPlayerPoints, GetPlayerPosition);
 }
 
 public OnClientAuthorized(client, const String:auth[])
@@ -42,18 +58,23 @@ public OnClientAuthorized(client, const String:auth[])
 		return;
 	}
 	
-	new String:safeAuth[41];
+	new String:safeAuth[STEAM_LENGTH * 2 + 1];
 	SQL_EscapeString(g_hDb, auth, safeAuth, sizeof(safeAuth));
 	
 	new String:query[1024];
 	Format(query, sizeof(query), "SELECT points FROM ff2_queue_points WHERE auth = '%s'", safeAuth);
 	
-	SQL_TQuery(g_hDb, FetchPoints, query, GetClientUserId(client));
+	new Handle:data = CreateDataPack();
+	WritePackCell(data, GetClientUserId(client));
+	WritePackString(data, auth);
+	
+	SQL_TQuery(g_hDb, FetchPoints, query, data);
 }
 
 public OnClientDisconnect(client)
 {
 	g_Points[client] = 0;
+	g_bValidPlayers[client] = false;
 	
 	new position = FindValueInArray(g_hPlayerQueue, client);
 	if (position > -1)
@@ -65,14 +86,14 @@ public OnClientDisconnect(client)
 public FetchPoints(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
 	new client;
-	if ((client = GetClientOfUserId(data)) == 0)
+	if ((client = GetClientOfUserId(ReadPackCell(data))) == 0)
 	{
 		return;
 	}
 	
 	if (owner == INVALID_HANDLE || hndl == INVALID_HANDLE)
 	{
-		LogError("Query failed retrieving user points: %s", error);
+		LogError("%L: Query failed retrieving user points: %s", client, error);
 		return;
 	}
 	
@@ -80,14 +101,14 @@ public FetchPoints(Handle:owner, Handle:hndl, const String:error[], any:data)
 	
 	if (SQL_GetRowCount(hndl) == 0)
 	{
-		new String:auth[20];
-		GetClientAuthString(client, auth, sizeof(auth));
+		new String:auth[STEAM_LENGTH + 1];
+		ReadPackString(data, auth, sizeof(auth));
 		
-		new String:safeAuth[41];
+		new String:safeAuth[STEAM_LENGTH * 2 + 1];
 		SQL_EscapeString(g_hDb, auth, safeAuth, sizeof(safeAuth));
 		
 		new String:query[1024];
-		Format(query, sizeof(query), "INSERT INTO points (auth, points, time) VALUES ('%s', 0, %d)", safeAuth, time);
+		Format(query, sizeof(query), "INSERT INTO ff2_queue_points (auth, points, time) VALUES ('%s', 0, %d)", safeAuth, time);
 		SQL_TQuery(g_hDb, AddNewUser, query, data);
 		
 		g_Points[client] = 0;
@@ -125,17 +146,33 @@ public AddNewUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
 	if (owner == INVALID_HANDLE || hndl == INVALID_HANDLE)
 	{
-		LogError("Query failed adding new user: %s, userid: %d", error, data);
+		LogError("%L: Query failed adding new user: %s", GetClientOfUserId(data), error);
 		return;
 	}
-	
+}
+
+public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	for (new i = 1; i <= MaxClients; ++i)
+	{
+		g_bValidPlayers[i] = false;
+		
+		if (IsClientInGame(i) && !IsFakeClient(i) && IsClientAuthorized(i))
+		{
+			if (!GetConVarBool(g_Cvar_SpecForceBoss) && GetClientTeam(i) <= _:TFTeam_Spectator)
+			{
+				continue;
+			}
+			g_bValidPlayers[i] = true;
+		}
+	}
 }
 
 public Event_RoundWin(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	for (new i = 1; i <= MaxClients; ++i)
 	{
-		if (IsClientInGame(i))
+		if (IsClientInGame(i) && g_bValidPlayers[i])
 		{
 			g_Points[i] += 10;
 			
@@ -145,14 +182,50 @@ public Event_RoundWin(Handle:event, const String:name[], bool:dontBroadcast)
 			}
 			else
 			{
-				// Do update query here
+				new String:auth[STEAM_LENGTH + 1];
+				if (GetClientAuthString(i, auth, sizeof(auth)))
+				{
+					new String:safeAuth[STEAM_LENGTH * 2 + 1];
+					SQL_EscapeString(g_hDb, auth, safeAuth, sizeof(safeAuth));
+					
+					new String:query[1024];
+					Format(query, sizeof(query), "UPDATE ff2_queue_points SET points = %d, time = %d WHERE auth = %s", g_Points[i], GetTime(), safeAuth);
+					
+					SQL_TQuery(g_hDb, QueuePointsUpdated, query, GetClientUserId(i));
+					
+					#if defined DEBUG
+					LogMessage("%L: Dispatched query: %s", i, query);
+					#endif
+				}
+				else
+				{
+					// Should never happen due to IsClientAuthorized call when validating players in first event
+					LogError("%L: Could not get auth for client", i);
+				}
 			}
 		}
+		g_bValidPlayers[i] = false;
 	}
 }
 
+public QueuePointsUpdated(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if (owner == INVALID_HANDLE || hndl == INVALID_HANDLE)
+	{
+		LogError("%L: Query failed updating user: %s, userid: %d", GetClientOfUserId(data), error);
+		return;
+	}
+}
 
-// Users returned here should be REMOVED from the array
+/**
+ * Get the next count players and, optionally, remove them from the queue
+ * 
+ * Players that are currently bosses will not show in the queue
+ * 
+ * @param count		Number of players to retrieve. count is updated if the queue size is smaller than the count.
+ * @param clients[]	Array of players retrieved
+ * @param bool		If true, remove players from the queue.  This is the only way to remove players from the queue and reset their queue points!
+ */
 public GetNextPlayers(&count, clients[], bool:remove)
 {
 	// Get the next count players.  Adjust count if less players are there
@@ -178,12 +251,26 @@ public GetNextPlayers(&count, clients[], bool:remove)
 	}
 }
 
+/**
+ * Returns a player's position number in the queue
+ * 
+ * @param client	Client index
+ * @return			Position in queue or -1 if not found
+ */
 public GetPlayerPosition(client)
 {
-	// Get the position in the queue of a specific client
+	return FindValueInArray(g_hPlayerQueue, client);
 }
 
+/**
+ * Returns a player's points
+ * 
+ * Note: This returns the cached copy of their point total
+ * 
+ * @param client	Client Index
+ * @return 			Number of points.
+ */
 public GetPlayerPoints(client)
 {
-	// Get the number of points for a specific client
+	return g_Points[client];
 }

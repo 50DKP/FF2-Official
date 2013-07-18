@@ -146,6 +146,10 @@ new Handle:g_Array_AbilityList;
 new Handle:g_Trie_AbilityMap;
 // ------------------------
 
+// Queue functions
+new Handle:g_Forward_GetNextPlayers;
+new Handle:g_Forward_GetPlayerPosition;
+new Handle:g_Forward_GetPlayerPoints;
 
 // Boss Tracking Variables
 // ------------------------
@@ -243,9 +247,110 @@ public OnPluginStart()
 	HookConVarChange(g_Cvar_FirstBlood, CvarChange_ForceFalse);
 	//SetConVarInt(g_Cvar_ForceCamera, CvarChange_ForceZero);
 	
+	HookEvent("teamplay_round_start", Event_RoundStart);
+	HookEvent("arena_round_start", Event_ArenaRoundStart);
+	HookEvent("arena_win_panel", Event_ArenaWinPanel, EventHookMode_Pre);
+	HookEvent("post_inventory_application", Event_PostInventoryApplication);
+
+	g_Forward_GetNextPlayers = CreateForward(ET_Ignore, Param_CellByRef, Param_Array, Param_Cell);
+	g_Forward_GetPlayerPoints = CreateForward(ET_Single, Param_Cell);
+	g_Forward_GetPlayerPosition = CreateForward(ET_Single, Param_Cell);
+	
 	CreateWeaponModsKeyValues();
 	
 	BuildPath(Path_SM, g_ConfigPath, PLATFORM_MAX_PATH, "configs/freak_fortress_2");
+	RegServerCmd("ff2_queue_createtables", Cmd_CreateTables);
+	
+	LoadTranslations("common.phrases");
+	LoadTranslations("freak_fortress_2.phrases");
+}
+
+Handle:DbConnect()
+{
+	new String:error[255];
+	new Handle:db;
+	
+	if (SQL_CheckConfig("freak_fortress_2"))
+	{
+		db = SQL_Connect("freak_fortress_2", false, error, sizeof(error));
+	}
+	else
+	{
+		db = SQL_Connect("default", false, error, sizeof(error));
+	}
+	
+	if (db == INVALID_HANDLE)
+	{
+		LogError("Could not connect to databaseL %s", error);
+	}
+	
+	return db;
+}
+
+public Action:Cmd_CreateTables(args)
+{
+	new client = 0;
+	new Handle:db = DbConnect();
+	if (db == INVALID_HANDLE)
+	{
+		ReplyToCommand(client, "[SM] %t", "Could not connect to database");
+		return Plugin_Handled;
+	}
+
+	new String:ident[16];
+	SQL_ReadDriver(db, ident, sizeof(ident));
+
+	if (StrEqual(ident, "mysql"))
+	{
+		CreateMySQLDb(client, db);
+	} else if (StrEqual(ident, "sqlite")) {
+		CreateSQLiteDb(client, db);
+	} else {
+		ReplyToCommand(client, "[SM] Unknown driver type '%s', cannot create tables.", ident);
+	}
+
+	CloseHandle(db);
+
+	return Plugin_Handled;
+}
+
+CreateMySQLDb(client, Handle:db)
+{
+	new String:query[] = "CREATE TABLE ff2_queue_points (auth varchar(20) NOT NULL, points int(10) NOT NULL, time int(10), PRIMARY KEY (auth))";
+	
+	if (!DoQuery(client, db, query))
+	{
+		return;
+	}
+	
+	ReplyToCommand(client, "[FF2] Queue tables have been created");
+}
+
+CreateSQLiteDb(client, Handle:db)
+{
+	new String:query[] = "CREATE TABLE ff2_queue_points (auth varchar(20) PRIMARY KEY, points INTEGER NOT NULL, time INTEGER)";
+
+	if (!DoQuery(client, db, query))
+	{
+		return;
+	}
+	
+	ReplyToCommand(client, "[FF2] Queue tables have been created");
+}
+
+stock bool:DoQuery(client, Handle:db, const String:query[])
+{
+	if (!SQL_FastQuery(db, query))
+	{
+		decl String:error[255];
+		SQL_GetError(db, error, sizeof(error));
+		LogError("Query failed: %s", error);
+		LogError("Query dump: %s", query);
+		ReplyToCommand(client, "[SM] %t", "Failed to query database");
+		return false;
+	}
+
+	return true;
 }
 
 // Use this function to reset the WeaponSpecials list
@@ -946,6 +1051,66 @@ public Event_RoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 			g_CurrentStats[i][j] = 0;
 		}
 	}
+	
+	new bool:bAllBossesAssigned = false;
+	
+	while (!bAllBossesAssigned)
+	{
+		new client = GetNextPlayer(true);
+		// TODO: Choose a boss and see if he has any companions
+	}
+}
+
+// Since we don't know what Queue manager is in use, we have these as forwards.
+// You should only have one Queue manager loaded or else it will cause errors.
+GetNextPlayer(bool:remove = false)
+{
+	new count = 1;
+	new clients[1];
+	GetNextPlayers(count, clients, remove);
+	return clients[0];
+}
+
+GetNextPlayers(&count, clients[], bool:remove = false)
+{
+	Call_StartForward(g_Forward_GetNextPlayers);
+	Call_PushCellRef(count);
+	Call_PushArrayEx(clients, count, SM_PARAM_COPYBACK);
+	Call_PushCell(remove);
+	Call_Finish();
+}
+
+GetPlayerPoints(client)
+{
+	new result = 0
+	
+	Call_StartForward(g_Forward_GetPlayerPoints);
+	Call_PushCell(client);
+	Call_Finish(result);
+	
+	return result;
+}
+
+GetPlayerPosition(client)
+{
+	new result = -1;
+	
+	Call_StartForward(g_Forward_GetPlayerPosition);
+	Call_PushCell(client);
+	Call_Finish(result);
+	
+	return result;
+}
+
+public Native_RegisterQueueManager(Handle:plugin, numParams)
+{
+	new Function:nextPlayers = GetNativeCell(1);
+	new Function:playerPoints = GetNativeCell(2);
+	new Function:playerPosition = GetNativeCell(3);
+	
+	AddToForward(g_Forward_GetNextPlayers, plugin, nextPlayers);
+	AddToForward(g_Forward_GetPlayerPoints, plugin, playerPoints);
+	AddToForward(g_Forward_GetPlayerPosition, plugin, playerPosition);
 }
 
 /**
