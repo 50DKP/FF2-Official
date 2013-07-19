@@ -5,7 +5,7 @@
 #define VERSION "2.0 alpha"
 
 #define STEAM_LENGTH 20
-// 20 is enough for Steam IDs up to STEAM_0:0:1234567890 in length.  This is for future expansion.
+// 20 is enough for Steam IDs up to STEAM_0:0:1234567890 in length.  This is for future expansion, as they're currently only STEAM_0:0:12345678
 
 #define DEBUG
 
@@ -30,18 +30,24 @@ public OnPluginStart()
 	g_hPlayerQueue = CreateArray();
 	
 	new String:error[1024];
-	g_hDb = SQL_Connect("freak_fortress_2", true, error, sizeof(error));
+	if (SQL_CheckConfig("freak_fortress_2"))
+	{
+		g_hDb = SQL_Connect("freak_fortress_2", true, error, sizeof(error));
+	}
+	else
+	{
+		g_hDb = SQL_Connect("default", true, error, sizeof(error));
+	}
+	
 	if (g_hDb == INVALID_HANDLE)
 	{
 		SetFailState("Could not connect to database: %s", error);
 	}
 	
-	// TODO: Check that the DB exists here
-	
 	HookEvent("arena_round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEvent("teamplay_round_win", Event_RoundWin, EventHookMode_PostNoCopy);
 	
-	CreateConVar("ff2_bossqueue_fair_version", VERSION, "FF2 Boss Queue Fair Version", FCVAR_NOTIFY | FCVAR_DONTRECORD);
+	CreateConVar("ff2_bossqueue_fair_version", VERSION, "FF2 Boss Queue: Fair Version", FCVAR_NOTIFY | FCVAR_DONTRECORD);
 }
 
 public OnAllPluginsLoaded()

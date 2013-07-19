@@ -281,7 +281,7 @@ Handle:DbConnect()
 	
 	if (db == INVALID_HANDLE)
 	{
-		LogError("Could not connect to databaseL %s", error);
+		LogError("Could not connect to database: %s", error);
 	}
 	
 	return db;
