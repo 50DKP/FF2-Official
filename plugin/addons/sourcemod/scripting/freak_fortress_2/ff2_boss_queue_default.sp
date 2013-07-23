@@ -2,6 +2,8 @@
 #include <freak_fortress_2>
 #include <morecolors>
 #include <tf2>
+#include <clientprefs>
+
 #define VERSION "2.0 alpha"
 
 #define STEAM_LENGTH 20
@@ -48,6 +50,7 @@ public OnPluginStart()
 	HookEvent("teamplay_round_win", Event_RoundWin, EventHookMode_PostNoCopy);
 	
 	CreateConVar("ff2_bossqueue_fair_version", VERSION, "FF2 Boss Queue: Fair Version", FCVAR_NOTIFY | FCVAR_DONTRECORD);
+	LoadTranslations("freak_fortress_2.phrases");
 }
 
 public OnAllPluginsLoaded()
@@ -79,9 +82,11 @@ public OnClientAuthorized(client, const String:auth[])
 
 public OnClientDisconnect(client)
 {
+	SavePoints(client);
+	
 	g_Points[client] = 0;
 	g_bValidPlayers[client] = false;
-	
+
 	new position = FindValueInArray(g_hPlayerQueue, client);
 	if (position > -1)
 	{
@@ -114,7 +119,7 @@ public FetchPoints(Handle:owner, Handle:hndl, const String:error[], any:data)
 		SQL_EscapeString(g_hDb, auth, safeAuth, sizeof(safeAuth));
 		
 		new String:query[1024];
-		Format(query, sizeof(query), "INSERT INTO ff2_queue_points (auth, points, time) VALUES ('%s', 0, %d)", safeAuth, time);
+		Format(query, sizeof(query), "INSERT INTO freak_fortress_2 (auth, points) VALUES ('%s', 0)", safeAuth);
 		SQL_TQuery(g_hDb, AddNewUser, query, data);
 		
 		g_Points[client] = 0;
@@ -188,30 +193,43 @@ public Event_RoundWin(Handle:event, const String:name[], bool:dontBroadcast)
 			}
 			else
 			{
-				new String:auth[STEAM_LENGTH + 1];
-				if (GetClientAuthString(i, auth, sizeof(auth)))
-				{
-					new String:safeAuth[STEAM_LENGTH * 2 + 1];
-					SQL_EscapeString(g_hDb, auth, safeAuth, sizeof(safeAuth));
-					
-					new String:query[1024];
-					Format(query, sizeof(query), "UPDATE ff2_queue_points SET points = %d, time = %d WHERE auth = %s", g_Points[i], GetTime(), safeAuth);
-					
-					SQL_TQuery(g_hDb, QueuePointsUpdated, query, GetClientUserId(i));
-					
-					#if defined DEBUG
-					LogMessage("%L: Dispatched query: %s", i, query);
-					#endif
-				}
-				else
-				{
-					// Should never happen due to IsClientAuthorized call when validating players in first event
-					LogError("%L: Could not get auth for client", i);
-				}
+				CPrintToChat(i,"{olive}[FF2]{default} %t","add_points", 10);
 			}
+			SavePoints(i);
 		}
 		g_bValidPlayers[i] = false;
 	}
+}
+
+SavePoints(client)
+{
+	if (!g_bValidPlayers[client])
+	{
+		return;
+	}
+	
+	new points = (g_Points[client] > 0 ? g_Points[client] : 0);
+
+	new String:auth[STEAM_LENGTH + 1];
+	if (GetClientAuthString(client, auth, sizeof(auth)))
+	{
+		new String:safeAuth[STEAM_LENGTH * 2 + 1];
+		SQL_EscapeString(g_hDb, auth, safeAuth, sizeof(safeAuth));
+		
+		new String:query[1024];
+		Format(query, sizeof(query), "UPDATE ff2_queue_points SET points = %d, time = %d WHERE auth = %s", points, GetTime(), safeAuth);
+		
+		SQL_TQuery(g_hDb, QueuePointsUpdated, query, GetClientUserId(client));
+		
+		#if defined DEBUG
+		LogMessage("%L: Dispatched query: %s", client, query);
+		#endif
+	}
+	else
+	{
+		LogError("%L: Could not get auth for client", client);
+	}
+
 }
 
 public QueuePointsUpdated(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -253,6 +271,7 @@ public GetNextPlayers(&count, clients[], bool:remove)
 			
 			RemoveFromArray(g_hPlayerQueue, 0);
 			g_Points[clients[i]] = -10;
+			SavePoints(clients[i]);
 		}
 	}
 }

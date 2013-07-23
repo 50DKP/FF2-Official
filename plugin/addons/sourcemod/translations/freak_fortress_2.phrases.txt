@@ -203,7 +203,7 @@
 	"your_points"
 	{
 		"#format" "{1:i}"
-		"en"    "Your queue point(s) is {1}."
+		"en"    "Your queue point(s) are {1}."
 	}
 	"add_points"
 	{
@@ -273,12 +273,12 @@
 	}
 	"menu_9a"
 	{
-		"en"	"Toggle info about changes of classes in FF2"
+		"en"	"Toggle info about class changes in FF2"
 	}
 	"ff2_classinfo"
 	{
 		"#format" "{1:s}"
-		"en"	"Info about changes of classes in FF2: {1}"
+		"en"	"Info about class changes in FF2: {1}"
 	}
 	"ff2_last_update"
 	{

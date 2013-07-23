@@ -67,6 +67,7 @@ CreateFF2Natives()
 	CreateNative("FF2_GetQueuePoints", Native_GetQueuePoints);
 	CreateNative("FF2_SetQueuePoints", Native_SetQueuePoints);
 	CreateNative("FF2_EmitSoundToAllExcept", Native_EmitSoundToAllExcept);
+	CreateNative("FF2_GetDatabaseHandle", Native_GetDatabaseHandle);
 
 	g_Forward_PreAbility = CreateGlobalForward("FF2_PreAbility", ET_Ignore, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);
 	g_Forward_OnAbility = CreateGlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell);
@@ -305,4 +306,9 @@ public Native_GetRandomAbility(Handle:plugin, numParams)
 {
 	//TODO
 	
+}
+
+public Native_GetDatabaseHandle(Handle:plugin, numParams)
+{
+	return DbConnect();
 }

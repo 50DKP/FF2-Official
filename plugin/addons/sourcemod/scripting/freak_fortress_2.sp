@@ -41,6 +41,14 @@
 
 #define SET_AND_BOSS_LENGTH 128
 
+enum FF2PlayerPrefs
+{
+	FF2PlayerPref_PlayMusic,
+	FF2PlayerPref_PlayVoice,
+	FF2PlayerPref_ShowClassInfo,
+	FF2PlayerPref_HideHud,
+}
+
 enum FF2Stats
 {
 	FF2Stat_UserId=0,
@@ -73,7 +81,8 @@ new String:WeaponSpecials[][] = {
 	"drop health pack on kill",
 	"glow on scoped hit",
 	"prevent damage",
-	"remove on damage"
+	"remove on damage",
+	"drain boost when full"
 };
 
 new Handle:g_KeyValues_WeaponSpecials;
@@ -259,7 +268,6 @@ public OnPluginStart()
 	CreateWeaponModsKeyValues();
 	
 	BuildPath(Path_SM, g_ConfigPath, PLATFORM_MAX_PATH, "configs/freak_fortress_2");
-	RegServerCmd("ff2_queue_createtables", Cmd_CreateTables);
 	
 	LoadTranslations("common.phrases");
 	LoadTranslations("freak_fortress_2.phrases");
@@ -272,70 +280,73 @@ Handle:DbConnect()
 	
 	if (SQL_CheckConfig("freak_fortress_2"))
 	{
-		db = SQL_Connect("freak_fortress_2", false, error, sizeof(error));
+		db = SQL_Connect("freak_fortress_2", true, error, sizeof(error));
 	}
 	else
 	{
-		db = SQL_Connect("default", false, error, sizeof(error));
+		db = SQL_Connect("default", true, error, sizeof(error));
 	}
 	
 	if (db == INVALID_HANDLE)
 	{
-		LogError("Could not connect to database: %s", error);
+		SetFailState("Could not connect to database: %s", error);
 	}
 	
-	return db;
-}
-
-public Action:Cmd_CreateTables(args)
-{
-	new client = 0;
-	new Handle:db = DbConnect();
-	if (db == INVALID_HANDLE)
-	{
-		ReplyToCommand(client, "[SM] %t", "Could not connect to database");
-		return Plugin_Handled;
-	}
-
 	new String:ident[16];
 	SQL_ReadDriver(db, ident, sizeof(ident));
 
 	if (StrEqual(ident, "mysql"))
 	{
-		CreateMySQLDb(client, db);
-	} else if (StrEqual(ident, "sqlite")) {
-		CreateSQLiteDb(client, db);
-	} else {
-		ReplyToCommand(client, "[SM] Unknown driver type '%s', cannot create tables.", ident);
+		CreateMySQLDb(db);
+	}
+	else if (StrEqual(ident, "sqlite"))
+	{
+		CreateSQLiteDb(db);
+	}
+	else
+	{
+		SetFailState("Unknown driver type '%s', cannot create tables.", ident);
 	}
 
-	CloseHandle(db);
-
-	return Plugin_Handled;
+	return db;
 }
 
-CreateMySQLDb(client, Handle:db)
+CreateMySQLDb(Handle:db)
 {
-	new String:query[] = "CREATE TABLE ff2_queue_points (auth varchar(20) NOT NULL, points int(10) NOT NULL, time int(10), PRIMARY KEY (auth))";
+	new String:query[] = "CREATE TABLE IF NOT EXISTS freak_fortress_2 ( \
+	auth varchar(20) NOT NULL, \
+	points int(10) NOT NULL, \
+	music BOOLEAN NOT NULL, \
+	voice BOOLEAN NOT NULL, \
+	classinfo BOOLEAN NOT NULL, \
+	hidehud BOOLEAN NOT NULL, \
+	PRIMARY KEY (auth))";
 	
-	if (!DoQuery(client, db, query))
+	if (!SQL_FastQuery(db, query))
 	{
-		return;
+		decl String:error[255];
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Could not create database table: %s", error);
 	}
 	
-	ReplyToCommand(client, "[FF2] Queue tables have been created");
 }
 
-CreateSQLiteDb(client, Handle:db)
+CreateSQLiteDb(Handle:db)
 {
-	new String:query[] = "CREATE TABLE ff2_queue_points (auth varchar(20) PRIMARY KEY, points INTEGER NOT NULL, time INTEGER)";
+	new String:query[] = "CREATE TABLE IF NOT EXISTS freak_fortress_2 ( \
+	auth varchar(20) PRIMARY KEY, \
+	points INTEGER NOT NULL, \
+	music TINYINT NOT NULL, \
+	voice TINYINT NOT NULL, \
+	classinfo TINYINT NOT NULL, \
+	hidehud TINYINT NOT NULL)";
 
-	if (!DoQuery(client, db, query))
+	if (!SQL_FastQuery(db, query))
 	{
-		return;
+		decl String:error[255];
+		SQL_GetError(db, error, sizeof(error));
+		SetFailState("Could not create database table: %s", error);
 	}
-	
-	ReplyToCommand(client, "[FF2] Queue tables have been created");
 }
 
 stock bool:DoQuery(client, Handle:db, const String:query[])
@@ -557,10 +568,17 @@ Handle:ReadBoss(const String:boss[])
 	
 }
 
-public OnClientConnected(client)
+public OnClientPutInServer(client)
 {
 	SDKHook(client, SDKHook_StartTouch, Hook_StartTouch);
 	SDKHook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
+	
+	new Handle:db = DbConnect();
+	
+	
+	
+	CloseHandle(db);
+	
 }
 
 // This combines with bossflags to make it so bosses can't pick up health or ammo by default
