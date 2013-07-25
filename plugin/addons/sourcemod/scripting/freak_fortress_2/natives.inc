@@ -310,5 +310,5 @@ public Native_GetRandomAbility(Handle:plugin, numParams)
 
 public Native_GetDatabaseHandle(Handle:plugin, numParams)
 {
-	return DbConnect();
+	return _:CloneHandle(g_hDb);
 }

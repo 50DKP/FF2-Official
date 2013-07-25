@@ -21,7 +21,6 @@ public Plugin:myinfo =
 }
 
 new Handle:g_hPlayerQueue;
-new Handle:g_hDb;
 new g_Points[MAXPLAYERS+1];
 new bool:g_bValidPlayers[MAXPLAYERS+1];
 
@@ -30,21 +29,6 @@ new Handle:g_Cvar_SpecForceBoss = INVALID_HANDLE;
 public OnPluginStart()
 {
 	g_hPlayerQueue = CreateArray();
-	
-	new String:error[1024];
-	if (SQL_CheckConfig("freak_fortress_2"))
-	{
-		g_hDb = SQL_Connect("freak_fortress_2", true, error, sizeof(error));
-	}
-	else
-	{
-		g_hDb = SQL_Connect("default", true, error, sizeof(error));
-	}
-	
-	if (g_hDb == INVALID_HANDLE)
-	{
-		SetFailState("Could not connect to database: %s", error);
-	}
 	
 	HookEvent("arena_round_start", Event_RoundStart, EventHookMode_PostNoCopy);
 	HookEvent("teamplay_round_win", Event_RoundWin, EventHookMode_PostNoCopy);
@@ -60,6 +44,18 @@ public OnAllPluginsLoaded()
 	FF2_RegisterQueueManager(GetNextPlayers, GetPlayerPoints, GetPlayerPosition);
 }
 
+Handle:DbConnect(SQLTCallback:callback, any:data=0)
+{
+	if (SQL_CheckConfig("freak_fortress_2"))
+	{
+		SQL_TConnect(callback, "freak_fortress_2", data);
+	}
+	else
+	{
+		SQL_TConnect(callback, "default", data);
+	}
+}
+
 public OnClientAuthorized(client, const String:auth[])
 {
 	if (IsFakeClient(client))
@@ -67,65 +63,71 @@ public OnClientAuthorized(client, const String:auth[])
 		return;
 	}
 	
-	new String:safeAuth[STEAM_LENGTH * 2 + 1];
-	SQL_EscapeString(g_hDb, auth, safeAuth, sizeof(safeAuth));
-	
-	new String:query[1024];
-	Format(query, sizeof(query), "SELECT points FROM ff2_queue_points WHERE auth = '%s'", safeAuth);
-	
-	new Handle:data = CreateDataPack();
+	new Handle:data;
+	CreateDataTimer(2.0, FetchPoints, data, TIMER_FLAG_NO_MAPCHANGE);
 	WritePackCell(data, GetClientUserId(client));
 	WritePackString(data, auth);
-	
-	SQL_TQuery(g_hDb, FetchPoints, query, data);
+	ResetPack(data);
 }
 
-public OnClientDisconnect(client)
+public Action:FetchPoints(Handle:timer, any:data)
 {
-	SavePoints(client);
+	new client = GetClientOfUserId(ReadPackCell(data));
 	
-	g_Points[client] = 0;
-	g_bValidPlayers[client] = false;
-
-	new position = FindValueInArray(g_hPlayerQueue, client);
-	if (position > -1)
+	if (client == 0)
 	{
-		RemoveFromArray(g_hPlayerQueue, position);
+		return Plugin_Continue;
 	}
+
+	new Handle:db = FF2_GetDatabaseHandle();
+	if (db == INVALID_HANDLE)
+	{
+		LogError("Invalid Database Handle");
+		return Plugin_Continue;
+	}
+	
+	new String:auth[STEAM_LENGTH + 1];
+	ReadPackString(data, auth, sizeof(auth));
+	
+	ResetPack(data);
+	
+	new String:safeAuth[STEAM_LENGTH * 2 + 1];
+	SQL_EscapeString(db, auth, safeAuth, sizeof(safeAuth));
+	
+	new String:query[1024];
+	Format(query, sizeof(query), "SELECT points FROM freak_fortress_2 WHERE auth = '%s'", safeAuth);
+	
+	SQL_TQuery(db, FetchPointsComplete, query, CloneHandle(data));
+	
+	return Plugin_Continue;
 }
 
-public FetchPoints(Handle:owner, Handle:hndl, const String:error[], any:data)
+public FetchPointsComplete(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
-	new client;
-	if ((client = GetClientOfUserId(ReadPackCell(data))) == 0)
+	new client = GetClientOfUserId(ReadPackCell(data));
+	
+	if (client == 0)
 	{
+		CloseHandle(data);
 		return;
 	}
 	
 	if (owner == INVALID_HANDLE || hndl == INVALID_HANDLE)
 	{
+		CloseHandle(data);
 		LogError("%L: Query failed retrieving user points: %s", client, error);
 		return;
 	}
 	
-	new time = GetTime();
-	
 	if (SQL_GetRowCount(hndl) == 0)
 	{
-		new String:auth[STEAM_LENGTH + 1];
-		ReadPackString(data, auth, sizeof(auth));
-		
-		new String:safeAuth[STEAM_LENGTH * 2 + 1];
-		SQL_EscapeString(g_hDb, auth, safeAuth, sizeof(safeAuth));
-		
-		new String:query[1024];
-		Format(query, sizeof(query), "INSERT INTO freak_fortress_2 (auth, points) VALUES ('%s', 0)", safeAuth);
-		SQL_TQuery(g_hDb, AddNewUser, query, data);
-		
+		ResetPack(data);
+		CreateTimer(5.0, FetchPoints, data, TIMER_DATA_HNDL_CLOSE|TIMER_FLAG_NO_MAPCHANGE);
 		g_Points[client] = 0;
 	}
 	else
 	{
+		CloseHandle(data);
 		SQL_FetchRow(hndl);
 		g_Points[client] = SQL_FetchInt(hndl, 0);
 	}
@@ -150,15 +152,19 @@ public FetchPoints(Handle:owner, Handle:hndl, const String:error[], any:data)
 	{
 		PushArrayCell(g_hPlayerQueue, client);
 	}
-
 }
 
-public AddNewUser(Handle:owner, Handle:hndl, const String:error[], any:data)
+public OnClientDisconnect(client)
 {
-	if (owner == INVALID_HANDLE || hndl == INVALID_HANDLE)
+	SavePoints(client);
+	
+	g_Points[client] = 0;
+	g_bValidPlayers[client] = false;
+
+	new position = FindValueInArray(g_hPlayerQueue, client);
+	if (position > -1)
 	{
-		LogError("%L: Query failed adding new user: %s", GetClientOfUserId(data), error);
-		return;
+		RemoveFromArray(g_hPlayerQueue, position);
 	}
 }
 
@@ -208,22 +214,15 @@ SavePoints(client)
 		return;
 	}
 	
-	new points = (g_Points[client] > 0 ? g_Points[client] : 0);
-
 	new String:auth[STEAM_LENGTH + 1];
 	if (GetClientAuthString(client, auth, sizeof(auth)))
 	{
-		new String:safeAuth[STEAM_LENGTH * 2 + 1];
-		SQL_EscapeString(g_hDb, auth, safeAuth, sizeof(safeAuth));
+		new Handle:data = CreateDataPack();
 		
-		new String:query[1024];
-		Format(query, sizeof(query), "UPDATE ff2_queue_points SET points = %d, time = %d WHERE auth = %s", points, GetTime(), safeAuth);
+		WritePackCell(data, GetClientUserId(client));
+		WritePackString(data, auth);
 		
-		SQL_TQuery(g_hDb, QueuePointsUpdated, query, GetClientUserId(client));
-		
-		#if defined DEBUG
-		LogMessage("%L: Dispatched query: %s", client, query);
-		#endif
+		DbConnect(UpdateQueuePoints, data);
 	}
 	else
 	{
@@ -232,7 +231,33 @@ SavePoints(client)
 
 }
 
-public QueuePointsUpdated(Handle:owner, Handle:hndl, const String:error[], any:data)
+public UpdateQueuePoints(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	new client = GetClientOfUserId(ReadPackCell(data));
+	if (client == 0)
+	{
+		return;
+	}
+	
+	new points = (g_Points[client] > 0 ? g_Points[client] : 0);
+
+	new String:auth[STEAM_LENGTH + 1];
+	ReadPackString(data, auth, STEAM_LENGTH + 1);
+	
+	new String:safeAuth[STEAM_LENGTH * 2 + 1];
+	SQL_EscapeString(hndl, auth, safeAuth, sizeof(safeAuth));
+	
+	new String:query[1024];
+	Format(query, sizeof(query), "UPDATE ff2_queue_points SET points = %d, time = %d WHERE auth = %s", points, GetTime(), safeAuth);
+	
+	SQL_TQuery(hndl, UpdateQueuePointsComplete, query, data);
+	
+	#if defined DEBUG
+	LogMessage("%L: Dispatched query: %s", client, query);
+	#endif
+}
+
+public UpdateQueuePointsComplete(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
 	if (owner == INVALID_HANDLE || hndl == INVALID_HANDLE)
 	{

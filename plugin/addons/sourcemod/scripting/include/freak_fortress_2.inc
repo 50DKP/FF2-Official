@@ -671,6 +671,13 @@ functag FF2_GetPlayerPosition public(client);
 native FF2_RegisterQueueManager(FF2_GetNextPlayers:nextPlayerFunc, FF2_GetPlayerPoints:getPlayerPointsFunc, FF2_GetPlayerPosition:getPlayerPositionFunc);
 
 /**
+ * Retrieve the FF2 database handle.
+ * 
+ * @return		A clone of the FF2 database handle
+ */
+native Handle:FF2_GetDatabaseHandle();
+
+/**
  * Begins when Boss hurts by pit, sawblade etc.
  *
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
@@ -798,4 +805,5 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_UnhookAbility");
 	MarkNativeAsOptional("FF2_UnhookPassiveAbility");
 	MarkNativeAsOptional("FF2_UnhookAllAbilities");
+	MarkNativeAsOptional("FF2_GetDatabaseHandle");
 }

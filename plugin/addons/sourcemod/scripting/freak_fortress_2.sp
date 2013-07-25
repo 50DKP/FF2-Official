@@ -18,10 +18,12 @@
 #include <morecolors>
 
 #include <freak_fortress_2>
-#include "freak_fortress_2/natives.inc"
 
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
+
+// STEAM_0:0:123456789 plus terminator
+#define STEAM_LENGTH 20
 
 #define TARGET_RED "@red"
 #define TARGET_BLU "@blue"
@@ -193,6 +195,10 @@ new g_RoundStartTime;
 new g_CurrentRound;
 // ------------------------
 
+new Handle:g_hDb = INVALID_HANDLE;
+
+new g_ClientPrefs[MAXPLAYERS+1][FF2PlayerPrefs];
+
 public Plugin:myinfo = 
 {
 	name = "Freak Fortress 2",
@@ -271,44 +277,46 @@ public OnPluginStart()
 	
 	LoadTranslations("common.phrases");
 	LoadTranslations("freak_fortress_2.phrases");
+	
+	DbConnect();
 }
 
 Handle:DbConnect()
 {
-	new String:error[255];
-	new Handle:db;
-	
 	if (SQL_CheckConfig("freak_fortress_2"))
 	{
-		db = SQL_Connect("freak_fortress_2", true, error, sizeof(error));
+		SQL_TConnect(DBConnect_Post, "freak_fortress_2");
 	}
 	else
 	{
-		db = SQL_Connect("default", true, error, sizeof(error));
+		SQL_TConnect(DBConnect_Post, "default");
 	}
-	
-	if (db == INVALID_HANDLE)
+}
+
+public DBConnect_Post(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if (owner == INVALID_HANDLE || hndl == INVALID_HANDLE)
 	{
 		SetFailState("Could not connect to database: %s", error);
 	}
 	
 	new String:ident[16];
-	SQL_ReadDriver(db, ident, sizeof(ident));
+	SQL_ReadDriver(hndl, ident, sizeof(ident));
 
 	if (StrEqual(ident, "mysql"))
 	{
-		CreateMySQLDb(db);
+		CreateMySQLDb(hndl);
 	}
 	else if (StrEqual(ident, "sqlite"))
 	{
-		CreateSQLiteDb(db);
+		CreateSQLiteDb(hndl);
 	}
 	else
 	{
 		SetFailState("Unknown driver type '%s', cannot create tables.", ident);
 	}
-
-	return db;
+	
+	g_hDb = CloneHandle(hndl);
 }
 
 CreateMySQLDb(Handle:db)
@@ -347,21 +355,6 @@ CreateSQLiteDb(Handle:db)
 		SQL_GetError(db, error, sizeof(error));
 		SetFailState("Could not create database table: %s", error);
 	}
-}
-
-stock bool:DoQuery(client, Handle:db, const String:query[])
-{
-	if (!SQL_FastQuery(db, query))
-	{
-		decl String:error[255];
-		SQL_GetError(db, error, sizeof(error));
-		LogError("Query failed: %s", error);
-		LogError("Query dump: %s", query);
-		ReplyToCommand(client, "[SM] %t", "Failed to query database");
-		return false;
-	}
-
-	return true;
 }
 
 // Use this function to reset the WeaponSpecials list
@@ -573,13 +566,114 @@ public OnClientPutInServer(client)
 	SDKHook(client, SDKHook_StartTouch, Hook_StartTouch);
 	SDKHook(client, SDKHook_OnTakeDamage, Hook_OnTakeDamage);
 	
-	new Handle:db = DbConnect();
+	g_ClientPrefs[client][FF2PlayerPref_PlayMusic] = -1;
+	g_ClientPrefs[client][FF2PlayerPref_PlayVoice] = -1;
+	g_ClientPrefs[client][FF2PlayerPref_HideHud] = -1;
+	g_ClientPrefs[client][FF2PlayerPref_ShowClassInfo] = -1;
+
+}
+
+public OnClientAuthorized(client, const String:auth[])
+{
+	//if (IsClientSourceTV(client) || IsClientReplay(client))
+	if (IsFakeClient(client))
+	{
+		return;
+	}
+
+	new Handle:data = CreateDataPack();
+	WritePackCell(data, GetClientUserId(client));
+	WritePackString(data, auth);
 	
+	ResetPack(data);
 	
+	new String:safeAuth[STEAM_LENGTH * 2 + 1];
+	SQL_EscapeString(g_hDb, auth, safeAuth, sizeof(safeAuth));
 	
-	CloseHandle(db);
+	new String:query[1024];
+	Format(query, sizeof(query), "SELECT music, voice, classinfo, hidehud FROM freak_fortress_2 WHERE auth = '%s'", safeAuth);
+	
+	SQL_TQuery(g_hDb, FetchPrefs, query, data);
+}
+
+public FetchPrefs(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	new client = GetClientOfUserId(ReadPackCell(data));
+	if (client == 0)
+	{
+		return;
+	}
+	
+	if (owner == INVALID_HANDLE || hndl == INVALID_HANDLE)
+	{
+		LogError("Database error while retrieving preferences: %s", error);
+	}
+	
+	if (SQL_GetRowCount(hndl) == 0)
+	{
+		new String:auth[STEAM_LENGTH + 1];
+		ReadPackString(data, auth, sizeof(auth));
+		
+		new String:safeAuth[STEAM_LENGTH * 2 + 1];
+		SQL_EscapeString(g_hDb, auth, safeAuth, sizeof(safeAuth));
+		
+		new String:query[1024];
+		Format(query, sizeof(query), "INSERT INTO freak_fortress_2 (auth, points, music, voice, classinfo, hidehud) \
+		VALUES ('%s', %d, %d, %d, %d)", safeAuth, 0, 0, 0, 0);
+		
+		ResetPack(data);
+		SQL_TQuery(g_hDb, DbAddClient, query, data);
+		
+		return;
+	}
+	
+	CloseHandle(data);
+
+	g_ClientPrefs[client][FF2PlayerPref_PlayMusic] = SQL_FetchInt(hndl, _:FF2PlayerPref_PlayMusic);
+	g_ClientPrefs[client][FF2PlayerPref_PlayVoice] = SQL_FetchInt(hndl, _:FF2PlayerPref_PlayVoice);
+	g_ClientPrefs[client][FF2PlayerPref_HideHud] = SQL_FetchInt(hndl, _:FF2PlayerPref_HideHud);
+	g_ClientPrefs[client][FF2PlayerPref_ShowClassInfo] = SQL_FetchInt(hndl, _:FF2PlayerPref_ShowClassInfo);
 	
 }
+
+
+public DbAddClient(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	new client = GetClientOfUserId(ReadPackCell(data));
+
+	if (owner == INVALID_HANDLE || hndl == INVALID_HANDLE)
+	{
+		LogError("Database error while creating user: %s", error);
+	}
+	
+	if (client == 0)
+	{
+		return;
+	}
+	
+	g_ClientPrefs[client][FF2PlayerPref_PlayMusic] = 0;
+	g_ClientPrefs[client][FF2PlayerPref_PlayVoice] = 0;
+	g_ClientPrefs[client][FF2PlayerPref_HideHud] = 0;
+	g_ClientPrefs[client][FF2PlayerPref_ShowClassInfo] = 0;
+}
+
+stock GetClientPref(client, FF2PlayerPrefs:pref)
+{
+	if (client < 0 || client > MaxClients)
+	{
+		ThrowError("Client index %d out of range", client);
+		return -1;
+	}
+	
+	if (!IsClientInGame(client))
+	{
+		ThrowError("Client %d is not in game", client);
+		return -1;
+	}
+	
+	return g_ClientPrefs[client][pref];
+}
+
 
 // This combines with bossflags to make it so bosses can't pick up health or ammo by default
 public Action:Hook_StartTouch(entity, other)
@@ -1403,3 +1497,6 @@ EnableCapPoint()
 	SetEventString(broadcast, "sound", "Announcer.AM_CapEnabledRandom");
 	FireEvent(broadcast);
 }
+
+// Included at the end for variables reasons
+#include "freak_fortress_2/natives.inc"
