@@ -12,7 +12,7 @@
 #define ME 2048
 #define CBS_MAX_ARROWS 9
 
-#define PLUGIN_VERSION "1.06 beta 1"
+#define PLUGIN_VERSION "1.06 beta 2"
 
 public Plugin:myinfo = {
 	name = "Freak Fortress 2: Abilities of 1st set",
@@ -28,6 +28,7 @@ new TFClassType:LastClass[MAXPLAYERS+1];
 new CloneOwnerIndex[MAXPLAYERS+1];
 
 new Handle:SloMoTimer;
+new oldtarget;
 
 new Handle:OnHaleRage = INVALID_HANDLE;
 
@@ -440,6 +441,7 @@ Rage_UseSlomo(index,const String:ability_name[])
 public Action:Timer_StopSlomo(Handle:hTimer,any:index)
 {
 	SloMoTimer=INVALID_HANDLE;
+	oldtarget=0;
 	SetConVarFloat(cvarTimeScale, 1.0);
 	UpdateClientCheatValue("0");
 	if (index!=-1)
@@ -496,11 +498,12 @@ public Action:Rage_Timer_NinjaAttacks(Handle:hTimer,Handle:data)
 		decl Float:pos[3], Float:pos2[3];
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", pos); 
 		GetEntPropVector(target, Prop_Send, "m_vecOrigin", pos2); 
-		if (GetVectorDistance(pos,pos2)<1500)
+		if (GetVectorDistance(pos,pos2)<1500 && target != oldtarget)
 		{
 			SetEntProp(client, Prop_Send, "m_bDucked", 1);
 			SDKHooks_TakeDamage(target,client,client,900.0);
 			TeleportEntity(client, pos2, NULL_VECTOR, NULL_VECTOR);
+			oldtarget=target;
 		}
 	}
 }
