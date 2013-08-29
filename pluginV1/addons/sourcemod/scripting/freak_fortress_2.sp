@@ -2343,10 +2343,11 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[] = "", index = -1, con
 	new addattribs = 0;
 
 	new String:weaponAttribsArray[32][32];
-	new attribCount = 0;
-	if (att[0] != '\0')
+	new attribCount = ExplodeString(att, ";", weaponAttribsArray, 32, 32);
+	
+	if (attribCount % 2 != 0)
 	{
-		attribCount = ExplodeString(att, " ; ", weaponAttribsArray, 32, 32);
+		--attribCount;
 	}
 
 	new flags = OVERRIDE_ATTRIBUTES;
@@ -2398,6 +2399,14 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[] = "", index = -1, con
 		new i2 = 0;
 		for (new i = 0; i < attribCount && i2 < 16; i += 2)
 		{
+			new attrib = StringToInt(weaponAttribsArray[i]);
+			if (attrib == 0)
+			{
+				LogError("Bad weapon attribute passed: %s ; %s", weaponAttribsArray[i], weaponAttribsArray[i+1]);
+				CloseHandle(hWeapon);
+				return INVALID_HANDLE;
+			}
+			
 			TF2Items_SetAttribute(hWeapon, i2, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
 			i2++;
 		}
@@ -5060,14 +5069,28 @@ stock SpawnWeapon(client,String:name[],index,level,qual,String:att[])
 	TF2Items_SetLevel(hWeapon, level);
 	TF2Items_SetQuality(hWeapon, qual);
 	new String:atts[32][32];
-	new count = ExplodeString(att, " ; ", atts, 32, 32);
+	new count = ExplodeString(att, ";", atts, 32, 32);
+	
+	if (count % 2 != 0)
+	{
+		--count;
+	}
+	
 	if (count > 0)
 	{
 		TF2Items_SetNumAttributes(hWeapon, count/2);
 		new i2 = 0;
 		for (new i = 0;  i < count;  i+= 2)
 		{
-			TF2Items_SetAttribute(hWeapon, i2, StringToInt(atts[i]), StringToFloat(atts[i+1]));
+			new attrib = StringToInt(atts[i]);
+			if (attrib == 0)
+			{
+				LogError("Bad weapon attribute passed: %s ; %s", atts[i], atts[i+1]);
+				CloseHandle(hWeapon);
+				return -1;
+			}
+			
+			TF2Items_SetAttribute(hWeapon, i2, attrib, StringToFloat(atts[i+1]));
 			i2++;
 		}
 	}

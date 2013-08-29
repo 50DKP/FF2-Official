@@ -100,18 +100,25 @@ stock SpawnWeapon(client,String:name[],index,level,qual,String:att[])
 	TF2Items_SetLevel(hWeapon, level);
 	TF2Items_SetQuality(hWeapon, qual);
 	new String:atts[32][32];
-	new count = 0;
-	if (att[0] != '\0')
+	new count = ExplodeString(att, ";", atts, 32, 32);
+	if (count % 2 != 0)
 	{
-		count = ExplodeString(att, " ; ", atts, 32, 32);
+		--count;
 	}
+	
 	if (count > 0)
 	{
 		TF2Items_SetNumAttributes(hWeapon, count/2);
 		new i2 = 0;
 		for (new i = 0; i < count; i+=2)
 		{
-			TF2Items_SetAttribute(hWeapon, i2, StringToInt(atts[i]), StringToFloat(atts[i+1]));
+			new attrib = StringToInt(atts[i]);
+			if (attrib == 0)
+			{
+				LogError("Bad weapon attribute passed: %s ; %s", atts[i], atts[i+1]);
+				return -1;
+			}
+			TF2Items_SetAttribute(hWeapon, i2, attrib, StringToFloat(atts[i+1]));
 			i2++;
 		}
 	}
