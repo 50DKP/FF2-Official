@@ -100,7 +100,11 @@ stock SpawnWeapon(client,String:name[],index,level,qual,String:att[])
 	TF2Items_SetLevel(hWeapon, level);
 	TF2Items_SetQuality(hWeapon, qual);
 	new String:atts[32][32];
-	new count = ExplodeString(att, " ; ", atts, 32, 32);
+	new count = 0;
+	if (att[0] != '\0')
+	{
+		count = ExplodeString(att, " ; ", atts, 32, 32);
+	}
 	if (count > 0)
 	{
 		TF2Items_SetNumAttributes(hWeapon, count/2);

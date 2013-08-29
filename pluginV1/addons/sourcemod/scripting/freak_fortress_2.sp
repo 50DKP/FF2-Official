@@ -2343,7 +2343,11 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[] = "", index = -1, con
 	new addattribs = 0;
 
 	new String:weaponAttribsArray[32][32];
-	new attribCount = ExplodeString(att, " ; ", weaponAttribsArray, 32, 32);
+	new attribCount = 0;
+	if (att[0] != '\0')
+	{
+		attribCount = ExplodeString(att, " ; ", weaponAttribsArray, 32, 32);
+	}
 
 	new flags = OVERRIDE_ATTRIBUTES;
 	if (!dontpreserve) flags |= PRESERVE_ATTRIBUTES;
