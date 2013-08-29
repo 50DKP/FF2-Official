@@ -2043,7 +2043,14 @@ EquipBoss(index)
 		{
 			KvGetString(BossKV[Special[index]], "name",s, 64);
 			KvGetString(BossKV[Special[index]], "attributes",s2, 128);
-			Format(s2,128,"68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; %s",s2);
+			if (s2[0] != '\0')
+			{
+				Format(s2,128,"68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; %s",s2);
+			}
+			else
+			{
+				s2 = "68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0";
+			}
 			new BossWeapon = SpawnWeapon(Boss[index],s,KvGetNum(BossKV[Special[index]], "index"),101,5,s2);
 			if (!KvGetNum(BossKV[Special[index]], "show",0))
 			{
