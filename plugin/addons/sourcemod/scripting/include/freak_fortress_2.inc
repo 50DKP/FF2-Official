@@ -84,9 +84,17 @@ enum FF2_AbilityMode
  * Is Freak Fortress enabled?
  *
  * @return		false - FF2 is disabled
-				true - FF2 is enabled
+ *				true - FF2 is enabled
  */
 native bool:FF2_IsFF2Enabled();
+
+/**
+ * Is the specified map a VSH/FF2 map?
+ * 
+ * @return		false - No, it is not a VSH/FF2 map
+ *				true - Yes, it is a VSH/FF2 map
+ */
+native bool:FF2_IsFF2ModeMap(const String:map[]);
 
 /**
  * @deprecated
@@ -272,7 +280,7 @@ native FF2_DoAbility(index, const String:plugin_name[], const String:ability_nam
 native FF2_DoAbilityEx(index, const String:ability_name[], charge_type, FF2_ButtonMode:buttonmode = FF2_ButtonMode_Taunt, FF2_AbilityType:ability_type = FF2_Ability_Any  );
 
 /**
- * Gets integer argument of ability
+ * Gets integer argument of v1 ability
  *
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
  * @param plugin_name	Name of plugin with this ability
@@ -284,7 +292,7 @@ native FF2_DoAbilityEx(index, const String:ability_name[], charge_type, FF2_Butt
 native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:ability_name[], argument, defvalue = 0 );
 
 /**
- * Gets integer argument of ability
+ * Gets integer argument of v2 ability
  *
  * @param index 		Index of boss (0, as usual, but, for example, companion like Seeldier has 1)
  * @param ability_name 	Name of ability
@@ -414,6 +422,7 @@ native FF2_GetBossFlags( index = 0 );
 native FF2_SetBossFlags( index, flags );
 
 /**
+ *
  * Gets client's queue points
  *
  * @param index			Client's index
@@ -422,6 +431,7 @@ native FF2_SetBossFlags( index, flags );
 native FF2_GetQueuePoints( client );
 
 /**
+ * @deprecated Use a custom queue plugin instead
  * Sets client's queue points
  *
  * @param index			Client's index

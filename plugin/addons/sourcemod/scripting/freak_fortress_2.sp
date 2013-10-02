@@ -1214,17 +1214,6 @@ GetPlayerPosition(client)
 	return result;
 }
 
-public Native_RegisterQueueManager(Handle:plugin, numParams)
-{
-	new Function:nextPlayers = GetNativeCell(1);
-	new Function:playerPoints = GetNativeCell(2);
-	new Function:playerPosition = GetNativeCell(3);
-	
-	AddToForward(g_Forward_GetNextPlayers, plugin, nextPlayers);
-	AddToForward(g_Forward_GetPlayerPoints, plugin, playerPoints);
-	AddToForward(g_Forward_GetPlayerPosition, plugin, playerPosition);
-}
-
 /**
  * Called when players unfreeze and can move around.  This is when the arena clock would start.
  * Force the boss back to the boss class and loadout here

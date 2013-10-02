@@ -110,202 +110,358 @@ CreateVSHNatives()
 	RegPluginLibrary("saxtonhale");
 }
 
+// native bool:FF2_IsFF2Enabled();
 public Native_IsFF2Enabled(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+// native bool:FF2_IsFF2ModeMap(const String:map[]);
 public Native_IsFF2ModeMap(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+// native FF2_GetRoundState();
 public Native_GetRoundState(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+// native FF2_GetBossUserId( index = 0 );
 public Native_GetBossUserId(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetBossClientId( index = 0 );
 public Native_GetBossClientId(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetBossClientId( index = 0 );
 public Native_GetBossIndex(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetBossTeam();
 public Native_GetBossTeam(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native bool:FF2_GetBossSpecial( index = 0, String:buffer[], bufferlen, isNumOfSpecial = 0 );
+//native bool:FF2_GetBossName( index = 0, String:buffer[], bufferlen, isNumOfSpecial = 0 );
 public Native_GetBossSpecial(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetBossLives( index = 0 );
+public Native_GetBossLives(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_GetBossMaxLives( index = 0 );
+public Native_GetBossMaxLives(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_GetBossHealth( index = 0 );
 public Native_GetBossHealth(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetBossMaxHealth( index = 0 );
 public Native_GetBossMaxHealth(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native Float:FF2_GetBossCharge( index, charge_type = FF2_CHARGE_RAGE );
 public Native_GetBossCharge(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_SetBossCharge( index, charge_type, Float:value );
 public Native_SetBossCharge(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetClientDamage( client );
 public Native_GetClientDamage(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetClientHealing( client );
 public Native_GetClientHealing(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native Float:FF2_GetRageDist( index = 0 , const String:plugin_name[]="", const String:ability_name[]="" );
 public Native_GetRageDist(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native bool:FF2_HasAbility( index, const String:plugin_name[], const String:ability_name[] );
 public Native_HasAbility(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native bool:FF2_HasAbilityEx( index, const String:ability_name[], FF2_AbilityType:ability_type = FF2_Ability_Any );
 public Native_HasAbilityEx(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_DoAbility(index, const String:plugin_name[], const String:ability_name[], charge_type, buttonmode = 0 );
 public Native_DoAbility(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_DoAbilityEx(index, const String:ability_name[], charge_type, FF2_ButtonMode:buttonmode = FF2_ButtonMode_Taunt, FF2_AbilityType:ability_type = FF2_Ability_Any  );
 public Native_DoAbilityEx(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetAbilityArgument( index, const String:plugin_name[], const String:ability_name[], argument, defvalue = 0 );
 public Native_GetAbilityArgument(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetAbilityArgumentEx( index, const String:ability_name[], argument, defvalue = 0, FF2_AbilityType:type = FF2_Ability_Any );
+public Native_GetAbilityArgumentEx(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native Float:FF2_GetAbilityArgumentFloat( index, const String:plugin_name[], const String:ability_name[], argument, Float:defvalue = 0.0 );
 public Native_GetAbilityArgumentFloat(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native Float:FF2_GetAbilityArgumentFloatEx( index, const String:ability_name[], argument, Float:defvalue = 0.0, FF2_AbilityType:type = FF2_Ability_Any );
+public Native_GetAbilityArgumentFloatEx(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_GetAbilityArgumentString( index, const String:plugin_name[], const String:ability_name[], argument, String:buffer[], bufferlen );
 public Native_GetAbilityArgumentString(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetAbilityArgumentStringEx( index, const String:ability_name[], argument, String:buffer[], bufferlen, FF2_AbilityType:type = FF2_Ability_Any );
+public Native_GetAbilityArgumentStringEx(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native bool:FF2_RandomSound( const String: keyvalue[], String: str[], length, index = 0, slot = 0 );
 public Native_RandomSound(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_StopMusic( client = 0 );
 public Native_StopMusic(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native Handle:FF2_GetSpecialKV( index = 0, isNumOfSpecial = 0 );
 public Native_GetSpecialKV(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetFF2flags( client );
 public Native_GetFF2flags(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_SetFF2flags( client, flags );
 public Native_SetFF2flags(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_GetBossFlags( index = 0 );
+public Native_GetBossFlags(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_SetBossFlags( index, flags );
+public Native_SetBossFlags(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_GetQueuePoints( client );
 public Native_GetQueuePoints(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_SetQueuePoints( client, value );
 public Native_SetQueuePoints(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+/*native FF2_EmitSoundToAllExcept( FF2_SoundExcept:exceptiontype = FF2_SoundExcept_Music,
+				const String:sample[],
+				entity = SOUND_FROM_PLAYER,
+				channel = SNDCHAN_AUTO,
+				level = SNDLEVEL_NORMAL,
+				flags = SND_NOFLAGS,
+				Float:volume = SNDVOL_NORMAL,
+				pitch = SNDPITCH_NORMAL,
+				speakerentity = -1,
+				const Float:origin[3] = NULL_VECTOR,
+				const Float:dir[3] = NULL_VECTOR,
+				bool:updatePos = true,
+				Float:soundtime = 0.0 );*/
 public Native_EmitSoundToAllExcept(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_RegisterAbility( const String:ability_name[], default_slot=0, ParamType:... );
 public Native_RegisterAbility(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
+//native FF2_RegisterPassiveAbility( const String:ability_name[], ParamType:... );
+public Native_RegisterPassiveAbility(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_UnregisterAbility( const String:ability_name[] );
 public Native_UnregisterAbility(Handle:plugin, numParams)
 {
 	//TODO
 	
 }
 
-public Native_GetRandomAbility(Handle:plugin, numParams)
+//native FF2_UnregisterAllAbilities();
+public Native_UnregisterAllAbilities(Handle:plugin, numParams)
 {
 	//TODO
 	
+}
+
+//native bool:FF2_IsAbilityRegistered( const String:ability_name[] );
+public Native_IsAbilityRegistered(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_HookAbility( const String:ability_name[], FF2_Ability:callback, FF2_AbilityHookMode:mode = FF2_AbilityHookMode_Normal );
+public Native_HookAbility(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_HookPassiveAbility( const String:ability_name[], FF2_ToggleAbility:callback );
+public Native_HookPassiveAbility(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_UnhookAbility( const String:abilityName[], FF2_Ability:callback, FF2_AbilityHookMode:mode = FF2_AbilityHookMode_Normal );
+public Native_UnhookAbility(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_UnhookPassiveAbility( const String:ability_name[], FF2_ToggleAbility:callback );
+public Native_UnhookPassiveAbility(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_UnhookAllAbilities();
+public Native_UnhookAllAbilities(Handle:plugin, numParams)
+{
+	//TODO
+	
+}
+
+//native FF2_RegisterQueueManager(FF2_GetNextPlayers:nextPlayerFunc, FF2_GetPlayerPoints:getPlayerPointsFunc, FF2_GetPlayerPosition:getPlayerPositionFunc);
+public Native_RegisterQueueManager(Handle:plugin, numParams)
+{
+	new Function:nextPlayers = GetNativeCell(1);
+	new Function:playerPoints = GetNativeCell(2);
+	new Function:playerPosition = GetNativeCell(3);
+	
+	AddToForward(g_Forward_GetNextPlayers, plugin, nextPlayers);
+	AddToForward(g_Forward_GetPlayerPoints, plugin, playerPoints);
+	AddToForward(g_Forward_GetPlayerPosition, plugin, playerPosition);
 }
 
 public Native_GetDatabaseHandle(Handle:plugin, numParams)
