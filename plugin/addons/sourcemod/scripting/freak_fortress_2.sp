@@ -1087,6 +1087,75 @@ bool:ReplaceWeapon(client, slot, weapon, Handle:data)
 	return true;
 }
 
+public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefinitionIndex, &Handle:hItem)
+{
+	static Handle:weapon;
+	if (weapon != INVALID_HANDLE)
+	{
+		CloseHandle(weapon);
+		weapon = INVALID_HANDLE;
+	}
+
+	if (!IsBoss(client))
+	{
+		KvRewind(g_KeyValues_WeaponMods);
+		new bool:giveNew = false;
+		if (KvJumpToKey(g_KeyValues_WeaponMods, "By Classname") && KvJumpToKey(g_KeyValues_WeaponMods, classname))
+		{
+			if (KvJumpToKey(g_KeyValues_WeaponMods, "replace"))
+			{
+				new String:newClass[64];
+				KvGetString(g_KeyValues_WeaponMods, "classname", newClass, sizeof(newClass));
+
+				new flags = OVERRIDE_ITEM_DEF|OVERRIDE_ATTRIBUTES;
+				new index = KvGetNum(g_KeyValues_WeaponMods, "index", -1);
+				
+				if (index == -1)
+				{
+					LogError("Replace is missing item definition index for classname %s", classname);
+				}
+				
+				if (!StrEqual(classname, newClass))
+				{
+					flags |= OVERRIDE_CLASSNAME;
+					giveNew = true;
+					strcopy(classname, sizeof(classname), newClass);
+				}
+				
+				new level = KvGetNum(g_KeyValues_WeaponMods, "level", -1);
+				if (level > -1)
+				{
+					flags |= OVERRIDE_ITEM_LEVEL;
+				}
+				else if (giveNew)
+				{
+					level = 1;
+				}
+				
+				new quality = KvGetNum(g_KeyValues_WeaponMods, "quality", -1);
+				if (quality > -1)
+				{
+					flags |= OVERRIDE_ITEM_QUALITY;
+				}
+				else if (giveNew)
+				{
+					quality = 0;
+				}
+				
+				TF2Items_SetClassname(weapon, classname);
+				TF2Items_SetQuality(weapon, quality);
+				TF2Items_SetLevel(weapon, level);
+			}
+		}
+		
+		if (giveNew)
+		{
+			TF2Items_GiveNamedItem(client, weapon);
+			return Plugin_Stop;
+		}
+	}
+}
+
 public OnClientDisconnect_Post(client)
 {
 	g_OldHealing[client] = 0;
