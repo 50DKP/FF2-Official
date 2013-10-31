@@ -11,73 +11,75 @@ public OnPluginStart()
 public Action:SayCmd(client, args)
 {
 	decl String:CurrentChat[128];
-	if (GetCmdArgString(CurrentChat, sizeof(CurrentChat)) < 1 || (client == 0))
+	if(GetCmdArgString(CurrentChat, sizeof(CurrentChat)) < 1 || (client==0))
+	{
 		return Plugin_Continue;
-		
-	if (!strcmp(CurrentChat, "\"1\""))
-	{
-		PrintToChatAll("enabled - %i",FF2_IsFF2Enabled());
 	}
-	if (!strcmp(CurrentChat, "\"2\""))
+	
+	if(!strcmp(CurrentChat, "\"1\""))
 	{
-		PrintToChatAll("state - %i",FF2_GetRoundState());
+		PrintToChatAll("enabled - %i", FF2_IsFF2Enabled());
 	}
-	if (!strcmp(CurrentChat, "\"30\""))
+	else if(!strcmp(CurrentChat, "\"2\""))
 	{
-		PrintToChatAll("userid0 - %i",FF2_GetBossUserId(0));
+		PrintToChatAll("state - %i", FF2_GetRoundState());
 	}
-	if (!strcmp(CurrentChat, "\"31\""))
+	else if(!strcmp(CurrentChat, "\"30\""))
 	{
-		PrintToChatAll("userid1 - %i",FF2_GetBossUserId(1));
+		PrintToChatAll("userid0 - %i", FF2_GetBossUserId(0));
 	}
-	if (!strcmp(CurrentChat, "\"40\""))
+	else if(!strcmp(CurrentChat, "\"31\""))
 	{
-		PrintToChatAll("index0 - %i",FF2_GetBossIndex(0));
+		PrintToChatAll("userid1 - %i", FF2_GetBossUserId(1));
 	}
-	if (!strcmp(CurrentChat, "\"41\""))
+	else if(!strcmp(CurrentChat, "\"40\""))
 	{
-		PrintToChatAll("index - %i",FF2_GetBossIndex(client));
+		PrintToChatAll("index0 - %i", FF2_GetBossIndex(0));
 	}
-	if (!strcmp(CurrentChat, "\"5\""))
+	else if(!strcmp(CurrentChat, "\"41\""))
 	{
-		PrintToChatAll("bteam - %i",FF2_GetBossTeam());
+		PrintToChatAll("index - %i", FF2_GetBossIndex(client));
 	}
-	if (!strcmp(CurrentChat, "\"50\""))
+	else if(!strcmp(CurrentChat, "\"5\""))
 	{
-		decl String:s[64];
-		new see=FF2_GetBossSpecial(0,s,64);
-		PrintToChatAll("special0 - %i %s",see,s);
+		PrintToChatAll("bteam - %i", FF2_GetBossTeam());
 	}
-	if (!strcmp(CurrentChat, "\"51\""))
+	else if(!strcmp(CurrentChat, "\"50\""))
 	{
 		decl String:s[64];
-		new see=FF2_GetBossSpecial(1,s,64);
-		PrintToChatAll("special1 - %i %s",see,s);
+		new see=FF2_GetBossSpecial(0, s, 64);
+		PrintToChatAll("special0 - %i %s", see, s);
 	}
-	if (!strcmp(CurrentChat, "\"60\""))
+	else if(!strcmp(CurrentChat, "\"51\""))
 	{
-		PrintToChatAll("mhp0 - %i",FF2_GetBossMaxHealth(0));
+		decl String:s[64];
+		new see=FF2_GetBossSpecial(1, s, 64);
+		PrintToChatAll("special1 - %i %s", see, s);
 	}
-	if (!strcmp(CurrentChat, "\"61\""))
+	else if(!strcmp(CurrentChat, "\"60\""))
 	{
-		PrintToChatAll("mhp1 - %i",FF2_GetBossMaxHealth(1));
+		PrintToChatAll("mhp0 - %i", FF2_GetBossMaxHealth(0));
 	}
-	if (!strcmp(CurrentChat, "\"7\""))
+	else if(!strcmp(CurrentChat, "\"61\""))
 	{
-		PrintToChatAll("rage - %f",FF2_GetRageDist(0,"",""));
+		PrintToChatAll("mhp1 - %i", FF2_GetBossMaxHealth(1));
 	}
-	if (!strcmp(CurrentChat, "\"8\""))
+	else if(!strcmp(CurrentChat, "\"7\""))
 	{
-		PrintToChatAll("flags - %i",FF2_GetFF2flags(0));
+		PrintToChatAll("rage - %f", FF2_GetRageDist(0,"",""));
 	}
-	if (!strcmp(CurrentChat, "\"9\""))
+	else if(!strcmp(CurrentChat, "\"8\""))
+	{
+		PrintToChatAll("flags - %i", FF2_GetFF2flags(0));
+	}
+	else if(!strcmp(CurrentChat, "\"9\""))
 	{
 		FF2_DoAbility(0, "default_abilities", "rage_stun", 0, 0);
 	}
 	return Plugin_Continue;	
 }
 
-public Action:FF2_PreAbility( index, const String:plugin_name[], const String:ability_name[], action )
+public Action:FF2_PreAbility(index, const String:plugin_name[], const String:ability_name[], action, &enabled=true)
 {
 	return Plugin_Stop;
 }
