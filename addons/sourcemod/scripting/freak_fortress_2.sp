@@ -3587,7 +3587,7 @@ public Action:ClientTimer(Handle:hTimer)
 
 	decl String:wepclassname[32];
 	decl TFCond:cond;
-	for(new client=-1; client<=MaxClients; client++)
+	for(new client=1; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client) && !IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
 		{
