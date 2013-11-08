@@ -283,7 +283,7 @@
 	"ff2_last_update"
 	{
 		"#format" "{1:s},{2:s}"
-		"en"	"Whats new in v.{olive}{1}{default} at {olive}{2}{default}? Type {olive}/ff2new{default}."
+		"en"	"Whats new in v{olive}{1}{default} ({olive}{2}{default})? Type {olive}/ff2new{default}."
 	}
 	"charge_status"
 	{

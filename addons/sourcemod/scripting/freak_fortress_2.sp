@@ -681,7 +681,6 @@ public OnPluginStart()
 	#if defined _steamtools_included
 	steamtools=LibraryExists("SteamTools");
 	#endif
-
 }
 
 public bool:BossTargetFilter(const String:pattern[], Handle:clients)
@@ -1258,20 +1257,20 @@ public Action:Timer_Announce(Handle:hTimer)
 			}
 			case 3:
 			{
-				CPrintToChatAll("{default} === Freak Fortress 2 v.%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) === ",ff2versiontitles[maxversion]);
+				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) === ", ff2versiontitles[maxversion]);
 			}
 			case 4:
 			{
-				CPrintToChatAll("{olive}[FF2]{default} %t","type_ff2_to_open_menu");
+				CPrintToChatAll("{olive}[FF2]{default} %t", "type_ff2_to_open_menu");
 			}
 			case 5:
 			{
 				announcecount=0;
-				CPrintToChatAll("{olive}[FF2]{default} %t","ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxversion]);
+				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxversion]);
 			}
 			default: 
 			{
-				CPrintToChatAll("{olive}[FF2]{default} %t","type_ff2_to_open_menu");
+				CPrintToChatAll("{olive}[FF2]{default} %t", "type_ff2_to_open_menu");
 			}
 		}
 	}
@@ -2844,7 +2843,7 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 	}
 
 	new flags=OVERRIDE_ATTRIBUTES;
-	if(!dontpreserve) flags |= PRESERVE_ATTRIBUTES;
+	if(!dontpreserve) flags|=PRESERVE_ATTRIBUTES;
 	if(hWeapon==INVALID_HANDLE) hWeapon=TF2Items_CreateItem(flags);
 	else TF2Items_SetFlags(hWeapon, flags);
 //	new Handle:hWeapon=TF2Items_CreateItem(flags);	//INVALID_HANDLE;
@@ -2878,12 +2877,12 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 
 	if(name[0]!='\0')
 	{
-		flags |= OVERRIDE_CLASSNAME;
+		flags|=OVERRIDE_CLASSNAME;
 		TF2Items_SetClassname(hWeapon, name);
 	}
 	if(index!=-1)
 	{
-		flags |= OVERRIDE_ITEM_DEF;
+		flags|=OVERRIDE_ITEM_DEF;
 		TF2Items_SetItemIndex(hWeapon, index);
 	}
 	if(attribCount>0)
@@ -3257,7 +3256,7 @@ public Action:Timer_Lazor(Handle:hTimer,any:medigunid)
 		if(charge<=0.05)
 		{
 			CreateTimer(3.0,Timer_Lazor2,EntIndexToEntRef(medigun));
-			FF2flags[client] &= ~FF2FLAG_UBERREADY;
+			FF2flags[client]&=~FF2FLAG_UBERREADY;
 			return Plugin_Stop;
 		}
 	}
@@ -3536,32 +3535,36 @@ public Action:Timer_RegenPlayer(Handle:timer, any:userid)
 public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled)
+	{
 		return Plugin_Continue;
-		
+	}
+
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	if(!IsValidClient(client, false))
+	{
 		return Plugin_Continue;
-		
+	}
+
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
-	
+
 	if(b_BossChgClassDetected)
 	{
 		TF2_RemoveAllWeapons(client);
 		b_BossChgClassDetected=false;
 	}
-	
+
 	if(GetBossIndex(client)!=-1 && CheckRoundState()==0)
 	{
 		TF2_RemoveAllWeapons(client);
 	}	
-	
+
 	if((CheckRoundState()!=1 || !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM)))
 	{
 		if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
 		{
-			FF2flags[client] |= FF2FLAG_HASONGIVED;
-			RemovePlayerBack(client, { 57, 133, 231, 405, 444, 608, 642 }, 7);
+			FF2flags[client]|=FF2FLAG_HASONGIVED;
+			RemovePlayerBack(client, {57, 133, 231, 405, 444, 608, 642}, 7);
 			RemovePlayerTarge(client);
 			TF2_RemoveAllWeapons(client);
 			TF2_RegeneratePlayer(client);
@@ -3573,8 +3576,8 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	{
 		CreateTimer(0.1, checkItems, client);
 	}
-	FF2flags[client] &= ~(FF2FLAG_UBERREADY | FF2FLAG_ISBUFFED | FF2FLAG_TALKING | FF2FLAG_ALLOWSPAWNINBOSSTEAM | FF2FLAG_USINGABILITY | FF2FLAG_CLASSHELPED);
-	FF2flags[client] |= FF2FLAG_USEBOSSTIMER;
+	FF2flags[client]&=~(FF2FLAG_UBERREADY | FF2FLAG_ISBUFFED | FF2FLAG_TALKING | FF2FLAG_ALLOWSPAWNINBOSSTEAM | FF2FLAG_USINGABILITY | FF2FLAG_CLASSHELPED);
+	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
 }
 
@@ -3808,7 +3811,7 @@ public Action:BackUpBuffTimer(Handle:hTimer,any:clientid)
 {
 	new client=GetClientOfUserId(clientid);
 	TF2_RemoveCondition(client,TFCond_Buffed);
-	FF2flags[client] &= ~FF2FLAG_ISBUFFED;
+	FF2flags[client]&=~FF2FLAG_ISBUFFED;
 	return Plugin_Continue;
 }
 
@@ -3857,7 +3860,7 @@ public Action:BossTimer(Handle:hTimer)
 				if(IsFakeClient(Boss[index]) && !(FF2flags[Boss[index]] & FF2FLAG_BOTRAGE))
 				{
 					CreateTimer(1.0, Timer_BotRage,index, TIMER_FLAG_NO_MAPCHANGE);
-					FF2flags[Boss[index]] |= FF2FLAG_BOTRAGE;
+					FF2flags[Boss[index]]|=FF2FLAG_BOTRAGE;
 				}
 				else
 				{
@@ -4054,7 +4057,7 @@ public Action:DoTaunt(client, const String:command[], argc)
 		decl String:s2[PLATFORM_MAX_PATH];
 		if(RandomSoundAbility("sound_ability",s2,PLATFORM_MAX_PATH))
 		{
-			FF2flags[Boss[index]] |= FF2FLAG_TALKING;
+			FF2flags[Boss[index]]|=FF2FLAG_TALKING;
 			EmitSoundToAll(s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
 			EmitSoundToAll(s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
 		
@@ -4064,7 +4067,7 @@ public Action:DoTaunt(client, const String:command[], argc)
 					EmitSoundToClient(i,s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
 					EmitSoundToClient(i,s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
 				}
-			FF2flags[Boss[index]] &= ~FF2FLAG_TALKING;
+			FF2flags[Boss[index]]&=~FF2FLAG_TALKING;
 		}
 	}
 	return Plugin_Continue;
@@ -4578,19 +4581,19 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				{
 					if(GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 					{
-						if(damagetype & DMG_CRIT) damagetype &= ~DMG_CRIT;
+						if(damagetype & DMG_CRIT) damagetype&=~DMG_CRIT;
 						damage=620.0;
 						return Plugin_Changed;
 					}
 					if(TF2_IsPlayerInCondition(client, TFCond_Cloaked) && TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 					{
-						if(damagetype & DMG_CRIT) damagetype &= ~DMG_CRIT;
+						if(damagetype & DMG_CRIT) damagetype&=~DMG_CRIT;
 						damage=850.0;
 						return Plugin_Changed;
 					}
 					if(GetEntProp(client, Prop_Send, "m_bFeignDeathReady") || TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 					{
-						if(damagetype & DMG_CRIT) damagetype &= ~DMG_CRIT;
+						if(damagetype & DMG_CRIT) damagetype&=~DMG_CRIT;
 						damage=620.0;
 						return Plugin_Changed;
 					}
@@ -4600,7 +4603,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, 1))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client]&FF2FLAG_ISBUFFED))
 					{
 						SetEntPropFloat(client, Prop_Send, "m_flRageMeter",100.0);
-						FF2flags[client] |= FF2FLAG_ISBUFFED;
+						FF2flags[client]|=FF2FLAG_ISBUFFED;
 					}
 				}
 			}
@@ -5626,7 +5629,7 @@ stock SpawnWeapon(client,String:name[],index,level,qual,String:att[])
 public HintPanelH(Handle:menu, MenuAction:action, param1, param2)
 {
 	if(!IsValidClient(param1)) return;
-	if(action==MenuAction_Select || (action==MenuAction_Cancel && param2==MenuCancel_Exit)) FF2flags[param1] |= FF2FLAG_CLASSHELPED;
+	if(action==MenuAction_Select || (action==MenuAction_Cancel && param2==MenuCancel_Exit)) FF2flags[param1]|=FF2FLAG_CLASSHELPED;
 	
 	return;
 }
@@ -6384,7 +6387,7 @@ UseAbility(const String:ability_name[],const String:plugin_name[], index, slot, 
 	}
 	else if(!slot)
 	{
-		FF2flags[Boss[index]] &= ~FF2FLAG_BOTRAGE; 	
+		FF2flags[Boss[index]]&=~FF2FLAG_BOTRAGE; 	
 		Call_PushCell(0);
 		Call_Finish(act);
 		BossCharge[index][slot]=0.0;
@@ -6404,7 +6407,7 @@ UseAbility(const String:ability_name[],const String:plugin_name[], index, slot, 
 		{
 			if(!(FF2flags[Boss[index]] & FF2FLAG_USINGABILITY))
 			{
-				FF2flags[Boss[index]] |= FF2FLAG_USINGABILITY;
+				FF2flags[Boss[index]]|=FF2FLAG_USINGABILITY;
 				switch(buttonmode)
 				{
 					//case 0: it's a taunt!
@@ -6947,11 +6950,11 @@ public CheckRoundState()
 {
 	switch(GameRules_GetRoundState())
 	{
-		case RoundState_Init:
+		case RoundState_Init, RoundState_Pregame:
 		{
 			return -1;
 		}
-		case RoundState_Pregame, RoundState_StartGame, RoundState_Preround:
+		case RoundState_StartGame, RoundState_Preround:
 		{
 			return 0;
 		}
