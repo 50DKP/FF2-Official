@@ -1,5 +1,9 @@
 #This is so you can put this repo in your server directory without stuff blowing up :)
+
+#GLOBAL
 *.ztmp
+
+#ROOT
 /*.bat
 /*.cache
 /*.cfg
@@ -18,13 +22,15 @@
 /*.vbsp
 /*.vdf
 /*.vpk
-#METAMOD/SOURCEMOD/STRIPPER
+
+#ADDONS
 /addons/metamod/
 /addons/sourcemod/bin/
 /addons/stripper/
 /addons/BounceSteam.vdf
 /addons/metamod.vdf
 /addons/triggerbotdetector.*
+
 #SOURCEMOD CONFIGS
 /addons/sourcemod/configs/geoip/
 /addons/sourcemod/configs/sql-init-scripts/
@@ -39,6 +45,7 @@
 /addons/sourcemod/configs/s*.cfg
 /addons/sourcemod/configs/*.txt
 /addons/sourcemod/configs/*.ini
+
 #SOURCEMOD RANDOM STUFF
 /addons/sourcemod/data/
 /addons/sourcemod/extensions/
@@ -49,6 +56,7 @@
 /addons/sourcemod/gamedata/sm-tf2.games.txt
 /addons/sourcemod/gamedata/tf2.items.txt
 /addons/sourcemod/logs/
+
 #SOURCEMOD PLUGINS
 /addons/sourcemod/plugins/disabled/
 /addons/sourcemod/plugins/ad*.smx
@@ -68,7 +76,8 @@
 /addons/sourcemod/plugins/t*.smx
 /addons/sourcemod/plugins/u*.smx
 /addons/sourcemod/plugins/w*.smx
-#SOURCEMOD SOURCE
+
+#SOURCEMOD SOURCE FILES
 /addons/sourcemod/scripting/a*/
 /addons/sourcemod/scripting/b*/
 /addons/sourcemod/scripting/c*/
@@ -116,6 +125,7 @@
 /addons/sourcemod/scripting/w*.sp
 /addons/sourcemod/scripting/u*.sp
 /addons/sourcemod/source/
+
 #SOURCEMOD TRANSLATIONS
 /addons/sourcemod/translations/*/
 /addons/sourcemod/.hg_archival.txt
@@ -131,13 +141,15 @@
 /addons/sourcemod/translations/s*.txt
 /addons/sourcemod/translations/u*.txt
 /addons/sourcemod/translations/w*.txt
+
 #RANDOM STUFF
 /bin/
 motd.txt
 update_tf2.txt
+
 #CONFIGS
 /cfg/sourcemod/c*.cfg
-/cfg/sourcemod/f*.cfg
+/cfg/sourcemod/fu*.cfg
 /cfg/sourcemod/k*.cfg
 /cfg/sourcemod/m*.cfg
 /cfg/sourcemod/n*.cfg
@@ -146,22 +158,24 @@ update_tf2.txt
 /cfg/sourcemod/s*.cfg
 /cfg/sourcemod/t*.cfg
 /cfg/sourcemod/u*.cfg
-/cfg/*.cfg
-/cfg/*.rc
-/cfg/*.scr
-/cfg/*.txt
+/cfg/unencrypted/
+/cfg/*.*
+
 #CUSTOM
 /custom/
+
 #RANDOM STUFF FTW
 /download/
 /downloadlists/
+
 #MAPS
 /maps/
+
 #MATERIALS
 /materials/models/player/items/templates/standard.vmt
-#MEDIA
+
+#RANDOM STUFF NEVER ENDS
 /media/
-#RANDOM STUFF
 /replay/
 /resource/
 /scripts/
