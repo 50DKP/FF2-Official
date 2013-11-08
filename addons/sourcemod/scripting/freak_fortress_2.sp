@@ -3580,7 +3580,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 public Action:ClientTimer(Handle:hTimer)
 {
-	if(CheckRoundState()>1 || CheckRoundState()==-1)
+	if(CheckRoundState()==2 || CheckRoundState()==-1)
 	{
 		return Plugin_Stop;
 	}
@@ -3686,11 +3686,11 @@ public Action:ClientTimer(Handle:hTimer)
 			}
 
 			new medic=-1;
-			for(client=1; client<=MaxClients; client++)
+			for(new client2=1; client2<=MaxClients; client2++)
 			{
-				if(IsValidClient(client) && IsPlayerAlive(client) && GetHealingTarget(client, true)==client)
+				if(IsValidClient(client2) && IsPlayerAlive(client2) && GetHealingTarget(client2, true)==client)
 				{
-					medic=client;
+					medic=client2;
 					break;
 				}
 			}
@@ -3739,10 +3739,10 @@ public Action:ClientTimer(Handle:hTimer)
 						new medigun=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 						if(IsValidEdict(medigun))
 						{
-							SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255,0,0.2,0.0,0.1);
+							SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
 							new charge=RoundToFloor(GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")*100);
 							ShowHudText(client, -1, "%T: %i", "uber-charge", client, charge);
-							if(charge==100 && !(FF2flags[client]&FF2FLAG_UBERREADY))
+							if(charge==100 && !(FF2flags[client] & FF2FLAG_UBERREADY))
 							{
 								FakeClientCommand(client,"voicemenu 1 7");
 								FF2flags[client]|= FF2FLAG_UBERREADY;

@@ -7,8 +7,11 @@
 /*.rad
 /*.raw
 /*.res
+/.hg_archival.txt
 /gameinfo.txt
+/GPLv*.txt
 /item_whitelist_example.txt
+/LICENSE.txt
 /mapcycle.txt
 /stats.txt
 /umc_mapcycle.txt
