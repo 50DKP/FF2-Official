@@ -36,7 +36,15 @@
 /addons/sourcemod/configs/sql-init-scripts/
 /addons/sourcemod/configs/freak_fortress_2/readme/
 /addons/sourcemod/configs/sourcebans/
-/addons/sourcemod/configs/
+/addons/sourcemod/configs/a*.cfg
+/addons/sourcemod/configs/c*.cfg
+/addons/sourcemod/configs/da*.cfg
+/addons/sourcemod/configs/l*.cfg
+/addons/sourcemod/configs/m*.cfg
+/addons/sourcemod/configs/p*.cfg
+/addons/sourcemod/configs/s*.cfg
+/addons/sourcemod/configs/*.txt
+/addons/sourcemod/configs/*.ini
 
 #SOURCEMOD RANDOM STUFF
 /addons/sourcemod/data/
@@ -140,18 +148,7 @@ motd.txt
 update_tf2.txt
 
 #CONFIGS
-/cfg/sourcemod/c*.cfg
-/cfg/sourcemod/fu*.cfg
-/cfg/sourcemod/k*.cfg
-/cfg/sourcemod/m*.cfg
-/cfg/sourcemod/n*.cfg
-/cfg/sourcemod/p*.cfg
-/cfg/sourcemod/r*.cfg
-/cfg/sourcemod/s*.cfg
-/cfg/sourcemod/t*.cfg
-/cfg/sourcemod/u*.cfg
-/cfg/unencrypted/
-/cfg/*.*
+/cfg/
 
 #CUSTOM
 /custom/
