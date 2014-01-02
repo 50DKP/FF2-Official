@@ -27,7 +27,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 1"
+#define PLUGIN_VERSION "1.9.0 Beta 2"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -109,6 +109,7 @@ new Handle:cvarHealthBar;
 new Handle:cvarAllowSpectators;
 new Handle:cvarHalloween;
 new Handle:cvarLastPlayerGlow;
+new Handle:cvarDebug;
 
 new Handle:FF2Cookies;
 
@@ -129,6 +130,7 @@ new bool:BossCrits=true;
 new Float:circuitStun=0.0;
 new UseCountdown=120;
 new bool:SpecForceBoss=false;
+new DebugEnabled=false;
 
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -567,6 +569,7 @@ public OnPluginStart()
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarHalloween=CreateConVar("ff2_halloween", "2", "0-Disable Halloween mode, 1-Enable Halloween mode, 2-Use TF2 logic (tf_forced_holiday 2)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "0", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarDebug=CreateConVar("ff2_Debug", "0", "0-Disable FF2 Debug output, 1-Enable Debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
 
 	HookConVarChange(cvarHealthBar, HealthbarEnableChanged);
@@ -744,6 +747,7 @@ public OnConfigsExecuted()
 	AliveToEnable=GetConVarInt(cvarAliveToEnable);
 	BossCrits=GetConVarBool(cvarCrits);
 	circuitStun=GetConVarFloat(cvarCircuitStun);
+	DebugEnabled=GetConVarBool(cvarDebug);
 	
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
@@ -889,20 +893,19 @@ public AddToDownload()
 	{
 		if(halloween)
 		{
-			LogError("[FF2] Warning: Using default characters.cfg-can not find characters_halloween.cfg!");
 			BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
 			if(!FileExists(config))
 			{
-				LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
+				LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg or characters_halloween.cfg!");
 				return;
 			}
-			break;
+			LogError("[FF2] Warning: Using default characters.cfg-can not find characters_halloween.cfg!");
 		}
 		else
 		{
 			LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
+			return;
 		}
-		return;
 	}
 
 	new Handle:Kv=CreateKeyValues("");
@@ -2507,7 +2510,7 @@ public Action:MessageTimer(Handle:hTimer)
 
 public Action:MakeModelTimer(Handle:hTimer,any:index)
 {		
-	if(!Boss[index] || !IsValidEdict(Boss[index]) || !IsClientInGame(Boss[index]) || !IsPlayerAlive(Boss[index]) || (CheckRoundState()==2))
+	if(!Boss[index] || !IsValidEdict(Boss[index]) || !IsClientInGame(Boss[index]) || !IsPlayerAlive(Boss[index]) || CheckRoundState()==2)
 	{
 		return Plugin_Stop;
 	}
@@ -2520,56 +2523,65 @@ public Action:MakeModelTimer(Handle:hTimer,any:index)
 	return Plugin_Continue;
 }
 
-EquipBoss(index)
+EquipBoss(client)
 {
-	DoOverlay(Boss[index],"");
-	TF2_RemoveAllWeapons(Boss[index]);
-	decl String:s[64];
-	decl String:s2[128];
-	for(new j=1; ; j++)
+	Debug("Start EquipBoss");
+	DoOverlay(Boss[client], "");
+	TF2_RemoveAllWeapons(Boss[client]);
+	decl String:weapon[64];
+	decl String:attributes[128];
+	for(new i=1; ; i++)
 	{
-		KvRewind(BossKV[Special[index]]);
-		Format(s,10,"weapon%i",j);
-		if(KvJumpToKey(BossKV[Special[index]],s))
+		KvRewind(BossKV[Special[client]]);
+		Format(weapon, 10, "weapon%i", i);
+		if(KvJumpToKey(BossKV[Special[client]], weapon))
 		{
-			KvGetString(BossKV[Special[index]], "name",s, 64);
-			KvGetString(BossKV[Special[index]], "attributes",s2, 128);
-			if(s2[0]!='\0')
+			KvGetString(BossKV[Special[client]], "name", weapon, 64);
+			KvGetString(BossKV[Special[client]], "attributes", attributes, 128);
+			if(attributes[0]!='\0')
 			{
-				Format(s2, 128, "68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; %s", s2);
+				Format(attributes, 128, "68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; %s", attributes);
+				Debug("EquipBoss: Attributes added");
 			}
 			else
 			{
-				s2="68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0";
+				attributes="68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0";
+				Debug("EquipBoss: Default attributes added");
 			}
-			new BossWeapon=SpawnWeapon(Boss[index],s,KvGetNum(BossKV[Special[index]], "index"),101,5,s2);
-			if(!KvGetNum(BossKV[Special[index]], "show",0))
+
+			new BossWeapon=SpawnWeapon(Boss[client], weapon, KvGetNum(BossKV[Special[client]], "client"), 101, 5, attributes);
+			if(!KvGetNum(BossKV[Special[client]], "show", 0))
 			{
-				SetEntProp(BossWeapon, Prop_Send, "m_iWorldModelIndex", -1);
-				SetEntProp(BossWeapon, Prop_Send, "m_nModelIndexOverrides", -1, _, 0);
+				SetEntProp(BossWeapon, Prop_Send, "m_iWorldModelclient", -1);
+				SetEntProp(BossWeapon, Prop_Send, "m_nModelclientOverrides", -1, _, 0);
 			}
-			SetEntPropEnt(Boss[index], Prop_Send, "m_hActiveWeapon",BossWeapon);
-			KvGoBack(BossKV[Special[index]]);
-			new TFClassType:tclass=TFClassType:KvGetNum(BossKV[Special[index]], "class",1);
-			if(TF2_GetPlayerClass(Boss[index])!=tclass)
-				TF2_SetPlayerClass(Boss[index], tclass);
+			SetEntPropEnt(Boss[client], Prop_Send, "m_hActiveWeapon", BossWeapon);
+			Debug("EquipBoss: Weapon equipped");
+
+			KvGoBack(BossKV[Special[client]]);
+			new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[client]], "class", 1);
+			if(TF2_GetPlayerClass(Boss[client])!=class)
+			{
+				TF2_SetPlayerClass(Boss[client], class);
+			}
 		}
 		else
+		{
 			break;
+		}
 	}
+	Debug("End EquipBoss");
 }
 
 public OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast) 
 { 
-    new iClient=GetClientOfUserId(GetEventInt(event, "userid")), 
-            TFClassType:oldclass=TF2_GetPlayerClass(iClient), 
-            iTeam  =GetClientTeam(iClient); 
+    new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client); 
      
-    if(iTeam==BossTeam && !b_allowBossChgClass && IsPlayerAlive(iClient) && GetBossIndex(iClient) !=-1)  
+    if(team==BossTeam && !b_allowBossChgClass && IsPlayerAlive(client) && GetBossIndex(client)!=-1)  
     { 
-        CPrintToChat(iClient,"{olive}[FF2] {default}Do NOT change class when you're a HALE!");
+        CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a HALE!");
         b_BossChgClassDetected=true; 
-        TF2_SetPlayerClass(iClient, oldclass); 
+        TF2_SetPlayerClass(client, oldclass); 
     } 
 } 
 
@@ -2580,6 +2592,7 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 		return Plugin_Continue;
 	}
 
+	Debug("Start MakeBoss");
 	KvRewind(BossKV[Special[client]]);
 	TF2_RemovePlayerDisguise(Boss[client]);
 	TF2_SetPlayerClass(Boss[client], TFClassType:KvGetNum(BossKV[Special[client]], "class", 1));
@@ -2671,23 +2684,28 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 		}
 	}
 
+	Debug("MakeBoss: Deferring to EquipBoss");
 	EquipBoss(client); 	
 	KSpreeCount[client]=0;
 	BossCharge[client][0]=0.0;
 	SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
-	SetClientQueuePoints(Boss[client], 0);	
+	SetClientQueuePoints(Boss[client], 0);
+	Debug("MakeBoss: Health and queue points set");
 
 	if(chkFirstHale==0)
 	{
 		if(GetConVarBool(cvarFirstRound) && RoundCount==0)
 		{
 			cFH(Boss[client]);
+			Debug("MakeBoss: Deferring to cFH");
 		}
 		else if(!GetConVarBool(cvarFirstRound) && RoundCount==1)
 		{
 			cFH(Boss[client]);
+			Debug("MakeBoss: Deferring to cFH (2nd round)");
 		}
 	}
+	Debug("End MakeBoss");
 	return Plugin_Continue;
 }
 
@@ -2701,6 +2719,7 @@ public cFH(client)
 
 public Action:checkFirstHale(Handle:timer, any:client)
 {
+	Debug("Start checkFirstHale");
 	b_allowBossChgClass=true;
 	if(GetBossIndex(client)!=-1 && client>0)
 	{
@@ -2720,6 +2739,7 @@ public Action:checkFirstHale(Handle:timer, any:client)
 	}
 	b_allowBossChgClass=false;
 	chkFirstHale++;
+	Debug("End checkFirstHale");
 }
 
 public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefinitionIndex, &Handle:hItem)
@@ -5432,8 +5452,8 @@ stock SpawnSmallHealthPackAt(client, ownerteam=0)
 		DispatchSpawn(healthpack);
 		SetEntProp(healthpack, Prop_Send, "m_iTeamNum", ownerteam, 4);
 		SetEntityMoveType(healthpack, MOVETYPE_VPHYSICS);
-		new Float:vel[]={float(GetRandomInt(-10, 10), float(GetRandomInt(-10, 10)), 50.0};
-		//vel[0]=float(GetRandomInt(-10, 10)), vel[1]=float(GetRandomInt(-10, 10)), vel[2]=50.0;  //I did this because setting it on the creation of the vel variable was creating a compiler error for me.
+		new Float:vel[3];//={float(GetRandomInt(-10, 10)), float(GetRandomInt(-10, 10)), 50.0};  //Q_Q
+		vel[0]=float(GetRandomInt(-10, 10)), vel[1]=float(GetRandomInt(-10, 10)), vel[2]=50.0;  //I did this because setting it on the creation of the vel variable was creating a compiler error for me.
 		TeleportEntity(healthpack, pos, NULL_VECTOR, vel);
 	}
 }
@@ -7361,7 +7381,7 @@ public OnEntityCreated(entity, const String:classname[])
 	if(StrEqual(classname, HEALTHBAR_CLASS))
 	{
 		healthBar=entity;
-		CPrintToChatAll("OnEntityCreated healthbar value: %i", healthBar);
+		Debug("OnEntityCreated healthbar value: %i", healthBar);
 	}
 
 	if(g_Monoculus==-1 && StrEqual(classname, MONOCULUS))
@@ -7414,11 +7434,11 @@ public CheckRoundState()
 FindHealthBar()
 {
 	healthBar=FindEntityByClassname(-1, HEALTHBAR_CLASS);
-	CPrintToChatAll("FindHealthBar healthbar value: %i", healthBar);
+	Debug("FindHealthBar healthbar value: %i", healthBar);
 	if(healthBar==-1)
 	{
 		healthBar=CreateEntityByName(HEALTHBAR_CLASS);
-		CPrintToChatAll("FindHealthBar healthbar value if healthbar was -1: %i", healthBar);
+		Debug("FindHealthBar healthbar value if healthbar was -1: %i", healthBar);
 	}
 }
 
@@ -7430,7 +7450,7 @@ public HealthbarEnableChanged(Handle:convar, const String:oldValue[], const Stri
 	}
 	else if(g_Monoculus==-1)
 	{
-		CPrintToChatAll("HealthbarEnableChanged healthbar value: %i", healthBar);
+		Debug("HealthbarEnableChanged healthbar value: %i", healthBar);
 		SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, 0);
 	}
 }
@@ -7469,8 +7489,16 @@ UpdateHealthBar()
 			healthPercent=1;
 		}
 	}
-	CPrintToChatAll("UpdateHealthBar healthbar value: %i", healthBar);
+	Debug("UpdateHealthBar healthbar value: %i", healthBar);
 	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);
+}
+
+Debug(String:message[1024], any:...)
+{
+	if(DebugEnabled)
+	{
+		CPrintToChatAll("{olive}FF2{default} {darkorange}DEBUG:{default} %s", message);
+	}
 }
 
 #include <freak_fortress_2_vsh_feedback>
