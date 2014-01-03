@@ -27,7 +27,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 2"
+#define PLUGIN_VERSION "1.9.0 Beta 3"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -2748,7 +2748,16 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	//if(hItem!=INVALID_HANDLE) return Plugin_Continue;
 	switch(iItemDefinitionIndex)
 	{
-		case 39, 351:
+		case 38, 457:  //Axtinguisher, Postal Pummeler
+		{
+			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "", true);
+			if(hItemOverride!=INVALID_HANDLE)
+			{
+				hItem=hItemOverride;
+				return Plugin_Changed;
+			}
+		}
+		case 39, 351, 1081:  //Flaregun, Detonator, Festive Flaregun
 		{
 			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "25 ; 0.5 ; 207 ; 1.33 ; 144 ; 1.0 ; 58 ; 3.2", true);
 			if(hItemOverride!=INVALID_HANDLE)
@@ -2757,7 +2766,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-		case 40:
+		case 40:  //Backburner
 		{
 			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "165 ; 1.0");
 			if(hItemOverride!=INVALID_HANDLE)
@@ -2766,25 +2775,34 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-		case 648:
+		case 43, 239, 1084:  //KGB, GRU, Festive GRU
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "279 ; 2.0");
+			new Handle:hItemOverride=PrepareItemHandle(hItem, _, 239, "107 ; 1.5 ; 1 ; 0.5 ; 128 ; 1 ; 191 ; -7", true);
 			if(hItemOverride!=INVALID_HANDLE)
 			{
 				hItem=hItemOverride;
 				return Plugin_Changed;
 			}
 		}
-		case 444:
+		case 56, 1005:  //Huntsman, Festive Huntsman
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "58 ; 1.5");
+			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "2 ; 1.5");
 			if(hItemOverride!=INVALID_HANDLE)
 			{
 				hItem=hItemOverride;
 				return Plugin_Changed;
 			}
 		}
-		case 220:
+/*		case 132, 266, 482:
+		{
+			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "202 ; 0.5 ; 125 ; -15", true);
+			if(hItemOverride!=INVALID_HANDLE)
+			{
+				hItem=hItemOverride;
+				return Plugin_Changed;
+			}
+		}*/
+		case 220:  //Shortstop
 		{
 			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "328 ; 1.0", true);
 			if(hItemOverride!=INVALID_HANDLE)
@@ -2793,7 +2811,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-		case 226:
+		case 226:  //Battalion's Backup
 		{
 //			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "116 ; 4.0", true);
 			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "140 ; 10.0");
@@ -2803,7 +2821,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-		case 305:
+		case 305, 1079:  //Crusader's Crossbow, Festive Crusader's Crossbow
 		{
 			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "17 ; 0.1 ; 2 ; 1.2"); //; 266 ; 1.0");
 			if(hItemOverride!=INVALID_HANDLE)
@@ -2812,43 +2830,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-		case 56, 1005:
-		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "2 ; 1.5");
-			if(hItemOverride!=INVALID_HANDLE)
-			{
-				hItem=hItemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 38, 457:
-		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "", true);
-			if(hItemOverride!=INVALID_HANDLE)
-			{
-				hItem=hItemOverride;
-				return Plugin_Changed;
-			}
-		}
-//		case 132, 266, 482:
-//		{
-//			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "202 ; 0.5 ; 125 ; -15", true);
-//			if(hItemOverride!=INVALID_HANDLE)
-//			{
-//				hItem=hItemOverride;
-//				return Plugin_Changed;
-//			}
-//		}
-		case 43, 239:
-		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, 239, "107 ; 1.5 ; 1 ; 0.5 ; 128 ; 1 ; 191 ; -7", true);
-			if(hItemOverride!=INVALID_HANDLE)
-			{
-				hItem=hItemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 415:
+		case 415:  //Reserve Shooter
 		{
 			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "265 ; 99999.0 ; 178 ; 0.6 ; 2 ; 1.1 ; 3 ; 0.5", true);
 			if(hItemOverride!=INVALID_HANDLE)
@@ -2857,13 +2839,38 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-//		case 526:
+		case 444:  //Mantreads
+		{
+			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "58 ; 1.5");
+			if(hItemOverride!=INVALID_HANDLE)
+			{
+				hItem=hItemOverride;
+				return Plugin_Changed;
+			}
+		}
+		case 648:  //Wrap Assassin
+		{
+			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "279 ; 2.0");
+			if(hItemOverride!=INVALID_HANDLE)
+			{
+				hItem=hItemOverride;
+				return Plugin_Changed;
+			}
+		}
 	}
+
 	if(TF2_GetPlayerClass(client)==TFClass_Soldier && (strncmp(classname, "tf_weapon_rocketlauncher", 24, false)==0 || strncmp(classname, "tf_weapon_shotgun", 17, false)==0))
 	{
 		new Handle:hItemOverride;
-		if(iItemDefinitionIndex==127) hItemOverride=PrepareItemHandle(hItem, _, _, "265 ; 99999.0 ; 179 ; 1.0");
-		else hItemOverride=PrepareItemHandle(hItem, _, _, "265 ; 99999.0");
+		if(iItemDefinitionIndex==127)  //Direct Hit
+		{
+			hItemOverride=PrepareItemHandle(hItem, _, _, "265 ; 99999.0 ; 179 ; 1.0");
+		}
+		else
+		{
+			hItemOverride=PrepareItemHandle(hItem, _, _, "265 ; 99999.0");
+		}
+
 		if(hItemOverride!=INVALID_HANDLE)
 		{
 			hItem=hItemOverride;
@@ -2872,6 +2879,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	}
 	return Plugin_Continue;
 }
+
 /* Need to find a way to easily add all the attributes using one line, not adding one attribute/line.
 public Action:TF2Attributes_CheckAttributes(client, weapon)
 {
