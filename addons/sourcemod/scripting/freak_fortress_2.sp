@@ -27,7 +27,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 4"
+#define PLUGIN_VERSION "1.9.0 Beta 5"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -7391,7 +7391,6 @@ public OnEntityCreated(entity, const String:classname[])
 	if(StrEqual(classname, HEALTHBAR_CLASS))
 	{
 		healthBar=entity;
-		Debug("OnEntityCreated healthbar value: %i", healthBar);
 	}
 
 	if(g_Monoculus==-1 && StrEqual(classname, MONOCULUS))
@@ -7444,11 +7443,9 @@ public CheckRoundState()
 FindHealthBar()
 {
 	healthBar=FindEntityByClassname(-1, HEALTHBAR_CLASS);
-	Debug("FindHealthBar healthbar value: %i", healthBar);
 	if(healthBar==-1)
 	{
 		healthBar=CreateEntityByName(HEALTHBAR_CLASS);
-		Debug("FindHealthBar healthbar value if healthbar was -1: %i", healthBar);
 	}
 }
 
@@ -7460,14 +7457,13 @@ public HealthbarEnableChanged(Handle:convar, const String:oldValue[], const Stri
 	}
 	else if(g_Monoculus==-1)
 	{
-		Debug("HealthbarEnableChanged healthbar value: %i", healthBar);
 		SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, 0);
 	}
 }
 
 UpdateHealthBar()
 {
-	if(!GetConVarBool(cvarHealthBar) || g_Monoculus!=-1)
+	if(!GetConVarBool(cvarHealthBar) || g_Monoculus!=-1 || CheckRoundState()==-1)
 	{
 		return;
 	}
@@ -7499,8 +7495,7 @@ UpdateHealthBar()
 			healthPercent=1;
 		}
 	}
-	Debug("UpdateHealthBar healthbar value: %i", healthBar);
-	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);  //Throwing invalid entity errors
+	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);
 }
 
 Debug(String:buffer[], any:...)
