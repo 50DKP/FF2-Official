@@ -27,7 +27,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 3"
+#define PLUGIN_VERSION "1.9.0 Beta 4"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -45,7 +45,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 new bool:steamtools=false;
 #endif
 
-new chkFirstHale;
+//new chkFirstHale;
 new bool:b_allowBossChgClass=false;
 new bool:b_BossChgClassDetected=false;
 new OtherTeam=2;
@@ -130,7 +130,6 @@ new bool:BossCrits=true;
 new Float:circuitStun=0.0;
 new UseCountdown=120;
 new bool:SpecForceBoss=false;
-new DebugEnabled=false;
 
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -747,7 +746,6 @@ public OnConfigsExecuted()
 	AliveToEnable=GetConVarInt(cvarAliveToEnable);
 	BossCrits=GetConVarBool(cvarCrits);
 	circuitStun=GetConVarFloat(cvarCircuitStun);
-	DebugEnabled=GetConVarBool(cvarDebug);
 	
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
@@ -823,7 +821,7 @@ public OnConfigsExecuted()
 public OnMapStart()
 {
 	HPTime=0.0;
-	chkFirstHale=0;
+	//chkFirstHale=0;
 	MusicTimer=INVALID_HANDLE;
 	RoundCounter=0;
 	doorchecktimer=INVALID_HANDLE;
@@ -976,6 +974,10 @@ public AddToDownload()
 	PrecacheSound("saxton_hale/9000.wav", true);
 	PrecacheSound("vo/announcer_am_capincite01.wav", true);
 	PrecacheSound("vo/announcer_am_capincite03.wav", true);
+	for(new i=1; i<=4; i++)
+	{
+		PrecacheSound("vo/announcer_am_capenabled0%i.wav", true);
+	}
 	PrecacheSound("weapons/barret_arm_zap.wav", true);
 	PrecacheSound("vo/announcer_ends_2min.wav", true);
 	isCharSetSelected=false;
@@ -2552,8 +2554,8 @@ EquipBoss(client)
 			new BossWeapon=SpawnWeapon(Boss[client], weapon, KvGetNum(BossKV[Special[client]], "client"), 101, 5, attributes);
 			if(!KvGetNum(BossKV[Special[client]], "show", 0))
 			{
-				SetEntProp(BossWeapon, Prop_Send, "m_iWorldModelclient", -1);
-				SetEntProp(BossWeapon, Prop_Send, "m_nModelclientOverrides", -1, _, 0);
+				SetEntProp(BossWeapon, Prop_Send, "m_iWorldModelIndex", -1);
+				SetEntProp(BossWeapon, Prop_Send, "m_nModelIndexOverrides", -1, _, 0);
 			}
 			SetEntPropEnt(Boss[client], Prop_Send, "m_hActiveWeapon", BossWeapon);
 			Debug("EquipBoss: Weapon equipped");
@@ -2692,7 +2694,7 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 	SetClientQueuePoints(Boss[client], 0);
 	Debug("MakeBoss: Health and queue points set");
 
-	if(chkFirstHale==0)
+	/*if(chkFirstHale==0)
 	{
 		if(GetConVarBool(cvarFirstRound) && RoundCount==0)
 		{
@@ -2704,12 +2706,12 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 			cFH(Boss[client]);
 			Debug("MakeBoss: Deferring to cFH (2nd round)");
 		}
-	}
+	}*/
 	Debug("End MakeBoss");
 	return Plugin_Continue;
 }
 
-public cFH(client)
+/*public cFH(client)
 {
 	if(client>0)
 	{
@@ -2740,7 +2742,7 @@ public Action:checkFirstHale(Handle:timer, any:client)
 	b_allowBossChgClass=false;
 	chkFirstHale++;
 	Debug("End checkFirstHale");
-}
+}*/
 
 public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefinitionIndex, &Handle:hItem)
 {
@@ -7498,14 +7500,16 @@ UpdateHealthBar()
 		}
 	}
 	Debug("UpdateHealthBar healthbar value: %i", healthBar);
-	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);
+	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);  //Throwing invalid entity errors
 }
 
-Debug(String:message[1024], any:...)
+Debug(String:buffer[], any:...)
 {
-	if(DebugEnabled)
+	if(GetConVarBool(cvarDebug))
 	{
-		CPrintToChatAll("{olive}FF2{default} {darkorange}DEBUG:{default} %s", message);
+		decl String:message[192];
+		VFormat(message, sizeof(message), buffer, 2);
+		CPrintToChatAll("{olive}[FF2]{default} {darkorange}DEBUG:{default} %s", message);
 	}
 }
 

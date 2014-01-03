@@ -49,12 +49,10 @@
 #SOURCEMOD RANDOM STUFF
 /addons/sourcemod/data/
 /addons/sourcemod/extensions/
-/addons/sourcemod/gamedata/core.games/
-/addons/sourcemod/gamedata/sdkhooks.games/
-/addons/sourcemod/gamedata/sdktools.games/
-/addons/sourcemod/gamedata/sm-cstrike.games/
+/addons/sourcemod/gamedata/*/
 /addons/sourcemod/gamedata/sm-tf2.games.txt
 /addons/sourcemod/gamedata/tf2.items.txt
+/addons/sourcemod/gamedata/tf2items.*
 /addons/sourcemod/logs/
 
 #SOURCEMOD PLUGINS
