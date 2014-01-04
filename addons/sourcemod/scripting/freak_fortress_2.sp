@@ -27,7 +27,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 6"
+#define PLUGIN_VERSION "1.9.0 Beta 7"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -246,7 +246,6 @@ stock FindVersionData(Handle:panel, versionindex)
 		}
 		case 28:  //1.0.8
 		{
-			DrawPanelText(panel, "POWERLORD HAS QUIT FF2 D:  As a result, Wliu, Chris, Lawd, and Carge of 50DKP have taken over.");
 			DrawPanelText(panel, "1) Prevented spy bosses from changing disguises (Powerlord)");
 			DrawPanelText(panel, "2) Added Saxton Hale stab sounds (Powerlord/AeroAcrobat)");
 			DrawPanelText(panel, "3) Made sure that the boss doesn't have any invalid weapons/items (Powerlord)");
