@@ -20,14 +20,14 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include <sdkhooks>
 #include <tf2_stocks>
 #include <morecolors>
-#include <tf2attributes>
+//#include <tf2attributes>
 #include <tf2items>
 #include <clientprefs>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 5"
+#define PLUGIN_VERSION "1.9.0 Beta 6"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -102,13 +102,14 @@ new Handle:cvarCrits;
 new Handle:cvarFirstRound;
 new Handle:cvarCircuitStun;
 new Handle:cvarSpecForceBoss;
-new Handle:cvarUseCountdown;
+new Handle:cvarcountdownTime;
 new Handle:cvarEnableEurekaEffect;
 new Handle:cvarForceBossTeam;
 new Handle:cvarHealthBar;
 new Handle:cvarAllowSpectators;
 new Handle:cvarHalloween;
 new Handle:cvarLastPlayerGlow;
+new Handle:cvarCountdownHealth;
 new Handle:cvarDebug;
 
 new Handle:FF2Cookies;
@@ -128,7 +129,8 @@ new AliveToEnable=5;
 new PointType=0;
 new bool:BossCrits=true;
 new Float:circuitStun=0.0;
-new UseCountdown=120;
+new countdownTime=120;
+new countdownHealth=2000;
 new bool:SpecForceBoss=false;
 
 new Handle:MusicTimer;
@@ -190,7 +192,8 @@ static const String:ff2versiontitles[][]=
 	"1.0.8",
 	"1.0.8",
 	"1.0.8",
-	"1.0.8"
+	"1.0.8",
+	"1.9.0"
 };
 
 static const String:ff2versiondates[][]=
@@ -223,13 +226,24 @@ static const String:ff2versiondates[][]=
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
-	"October 30, 2013"	//1.0.8
+	"October 30, 2013",	//1.0.8
+	"January 4, 2014"	//1.9.0
 };
 
 stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
+		case 29:  //1.9.0
+		{
+			DrawPanelText(panel, "1) Removed checkFirstHale (Wliu)");
+			DrawPanelText(panel, "2) [Server] Fixed invalid healthbar entity bug (Wliu)");
+			DrawPanelText(panel, "3) Changed default medic ubercharge percentage to 40% (Wliu)");
+			DrawPanelText(panel, "4) Whitelisted festive variants of weapons (Wliu)");
+			DrawPanelText(panel, "5) [Server] Added convar to control what health value the boss should have in order to turn off the stalemate timer (Wliu)");
+			DrawPanelText(panel, "6) [Server] Added convar to control whether or not the last person should be highlighted or not (Wliu)");
+			DrawPanelText(panel, "7) [Dev] Added debug method used for sending debug messages and a convar to control it (Wliu)");
+		}
 		case 28:  //1.0.8
 		{
 			DrawPanelText(panel, "POWERLORD HAS QUIT FF2 D:  As a result, Wliu, Chris, Lawd, and Carge of 50DKP have taken over.");
@@ -561,14 +575,15 @@ public OnPluginStart()
 	cvarCrits=CreateConVar("ff2_crits", "1", "Can Boss get crits?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarFirstRound=CreateConVar("ff2_first_round", "0", "0-Make the first round arena so that more people can join, 1-Make all rounds FF2", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCircuitStun=CreateConVar("ff2_circuit_stun", "2", "Amount of seconds the Short Circuit stuns the boss for.  0 to disable", FCVAR_PLUGIN, true, 0.0);
-	cvarUseCountdown=CreateConVar("ff2_countdown", "120", "Amount of seconds until the round ends in a stalemate (begins when it becomes 1v1)", FCVAR_PLUGIN);
+	cvarcountdownTime=CreateConVar("ff2_countdown", "120", "Amount of seconds until the round ends in a stalemate (begins when it becomes 1v1)", FCVAR_PLUGIN);
 	cvarSpecForceBoss=CreateConVar("ff2_spec_force_boss", "0", "0-Spectators are excluded from the queue system, 1-Spectators are counted in the queue system", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarEnableEurekaEffect=CreateConVar("ff2_enable_eureka", "0", "0-Disable the Eureka Effect, 1-Enable the Eureka Effect", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarHalloween=CreateConVar("ff2_halloween", "2", "0-Disable Halloween mode, 1-Enable Halloween mode, 2-Use TF2 logic (tf_forced_holiday 2)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "0", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarDebug=CreateConVar("ff2_Debug", "0", "0-Disable FF2 Debug output, 1-Enable Debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
+	cvarDebug=CreateConVar("ff2_Debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);  //Keep this as the last convar
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
 
 	HookConVarChange(cvarHealthBar, HealthbarEnableChanged);
@@ -591,7 +606,8 @@ public OnPluginStart()
 	HookConVarChange(cvarAliveToEnable, CvarChange);
 	HookConVarChange(cvarCrits, CvarChange);
 	HookConVarChange(cvarCircuitStun, CvarChange);
-	HookConVarChange(cvarUseCountdown, CvarChange);
+	HookConVarChange(cvarcountdownTime, CvarChange);
+	HookConVarChange(cvarCountdownHealth, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
 	cvarNextmap=FindConVar("sm_nextmap");
 	HookConVarChange(cvarNextmap,CvarChangeNextmap);
@@ -1219,9 +1235,13 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		circuitStun=StringToFloat(newValue);
 	}
-	else if(convar==cvarUseCountdown)
+	else if(convar==cvarcountdownTime)
 	{
-		UseCountdown=StringToInt(newValue);
+		countdownTime=StringToInt(newValue);
+	}
+	else if(convar==cvarCountdownHealth)
+	{
+		countdownHealth=StringToInt(newValue);
 	}
 	else if(convar==cvarSpecForceBoss)
 	{
@@ -2516,6 +2536,7 @@ public Action:MakeModelTimer(Handle:hTimer,any:index)
 	{
 		return Plugin_Stop;
 	}
+
 	decl String:s[PLATFORM_MAX_PATH];
 	KvRewind(BossKV[Special[index]]);
 	KvGetString(BossKV[Special[index]], "model", s, PLATFORM_MAX_PATH);
@@ -2542,7 +2563,7 @@ EquipBoss(client)
 			KvGetString(BossKV[Special[client]], "attributes", attributes, 128);
 			if(attributes[0]!='\0')
 			{
-				Format(attributes, 128, "68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; %s", attributes);
+				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; %s", attributes);
 				Debug("EquipBoss: Attributes added");
 			}
 			else
@@ -2551,7 +2572,7 @@ EquipBoss(client)
 				Debug("EquipBoss: Default attributes added");
 			}
 
-			new BossWeapon=SpawnWeapon(Boss[client], weapon, KvGetNum(BossKV[Special[client]], "client"), 101, 5, attributes);
+			new BossWeapon=SpawnWeapon(Boss[client], weapon, KvGetNum(BossKV[Special[client]], "index"), 101, 5, attributes);
 			if(!KvGetNum(BossKV[Special[client]], "show", 0))
 			{
 				SetEntProp(BossWeapon, Prop_Send, "m_iWorldModelIndex", -1);
@@ -2564,6 +2585,7 @@ EquipBoss(client)
 			new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[client]], "class", 1);
 			if(TF2_GetPlayerClass(Boss[client])!=class)
 			{
+				Debug("EquipBoss: Enforced boss class");
 				TF2_SetPlayerClass(Boss[client], class);
 			}
 		}
@@ -2575,17 +2597,17 @@ EquipBoss(client)
 	Debug("End EquipBoss");
 }
 
-public OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast) 
-{ 
-    new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client); 
-     
-    if(team==BossTeam && !b_allowBossChgClass && IsPlayerAlive(client) && GetBossIndex(client)!=-1)  
-    { 
-        CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a HALE!");
-        b_BossChgClassDetected=true; 
-        TF2_SetPlayerClass(client, oldclass); 
-    } 
-} 
+public OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client);
+
+	if(team==BossTeam && !b_allowBossChgClass && IsPlayerAlive(client) && GetBossIndex(client)!=-1)
+	{
+		CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a HALE!");
+		b_BossChgClassDetected=true; 
+		TF2_SetPlayerClass(client, oldclass); 
+	}
+}
 
 public Action:MakeBoss(Handle:hTimer,any:client)
 {
@@ -3923,10 +3945,10 @@ public Action:ClientTimer(Handle:hTimer)
 
 				if(GetConVarInt(cvarLastPlayerGlow))
 				{
-					if(UseCountdown>1)
+					if(countdownTime>1)
 					{
-						GlowTimer[client]==UseCountdown;
-						GlowTimer[Boss[client]]==UseCountdown;
+						GlowTimer[client]==countdownTime;
+						GlowTimer[Boss[client]]==countdownTime;
 					}
 					else
 					{
@@ -4652,11 +4674,11 @@ public Action:CheckAlivePlayers(Handle:hTimer)
 	}
 	else if(RedAlivePlayers==1 && BlueAlivePlayers && !DrawGameTimer)
 	{
-		if(BossHealth[0]>2000 && UseCountdown>1)
+		if(BossHealth[0]>countdownHealth && countdownTime>1)
 		{
 			if(FindEntityByClassname2(-1, "team_control_point")!=-1)
 			{
-				timeleft=UseCountdown;
+				timeleft=countdownTime;
 				DrawGameTimer=CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 				EmitSoundToAll("vo/announcer_ends_2min.wav");
 				EmitSoundToAll("vo/announcer_ends_2min.wav");
@@ -4680,18 +4702,21 @@ public Action:CheckAlivePlayers(Handle:hTimer)
 		PrintHintTextToAll("%t", "point_enable", AliveToEnable);
 		if(RedAlivePlayers==AliveToEnable)
 		{
+			new String:sound[64];
 			if(GetRandomInt(0, 1))
 			{
-				EmitSoundToAll("vo/announcer_am_capenabled0%i.wav", GetRandomInt(1, 4));
+				Format(sound, sizeof(sound), "vo/announcer_am_capenabled0%i.wav", GetRandomInt(1, 4));
+				EmitSoundToAll(sound);
 			}
 			else
 			{
-				new soundnumber=GetRandomInt(1, 4);
-				if(soundnumber%2==0)
+				new i=GetRandomInt(1, 4);
+				if(i%2==0)
 				{
-					soundnumber--;
+					i--;
 				}
-				EmitSoundToAll("vo/announcer_am_capincite0%i.wav", soundnumber);
+				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.wav", i);
+				EmitSoundToAll(sound);
 			}
 		}
 		SetControlPoint(true);
@@ -4702,7 +4727,7 @@ public Action:CheckAlivePlayers(Handle:hTimer)
 
 public Action:Timer_DrawGame(Handle:timer)
 {
-	if(BossHealth[0]<2000 || CheckRoundState()!=1)
+	if(BossHealth[0]<countdownHealth || CheckRoundState()!=1)
 	{
 		return Plugin_Stop;
 	}
@@ -6316,20 +6341,28 @@ SetClientQueuePoints(client, points)
 stock IsBoss(client)
 {
 	if(client<=0)
+	{
 		return 0;
-	for(new i=0; i<=MaxClients; i++)
-		if(Boss[i]==client)
+	}
+
+	for(new boss=0; boss<=MaxClients; boss++)
+	{
+		if(Boss[boss]==client)
+		{
 			return 1;
+		}
+	}
 	return 0;
 }
 
-DoOverlay(client,const String:overlay[])
+DoOverlay(client, const String:overlay[])
 {	
 	new iFlags=GetCommandFlags("r_screenoverlay");
 	SetCommandFlags("r_screenoverlay", iFlags & ~FCVAR_CHEAT);
 	ClientCommand(client, "r_screenoverlay \"%s\"", overlay);
 	SetCommandFlags("r_screenoverlay", iFlags);
 }
+
 public FF2PanelH(Handle:menu, MenuAction:action, param1, param2)
 {
 	if(action==MenuAction_Select)
@@ -7504,7 +7537,7 @@ Debug(String:buffer[], any:...)
 	{
 		decl String:message[192];
 		VFormat(message, sizeof(message), buffer, 2);
-		CPrintToChatAll("{olive}[FF2]{default} {darkorange}DEBUG:{default} %s", message);
+		CPrintToChatAll("{olive}[FF2] {darkorange}DEBUG:{default} %s", message);
 	}
 }
 
