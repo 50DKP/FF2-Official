@@ -23,6 +23,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 //#include <tf2attributes>
 #include <tf2items>
 #include <clientprefs>
+#include <tf2_wearabletemp>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
@@ -2664,7 +2665,7 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 				}
 				default:
 				{
-					AcceptEntityInput(ent, "kill");
+					TF2_RemoveWearable(Boss[client], ent);
 				}
 			}
 		}
@@ -2675,7 +2676,7 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 	{
 		if(IsBoss(GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity")))
 		{
-			AcceptEntityInput(ent, "kill");
+			TF2_RemoveWearable(Boss[client], ent);
 		}
 	}
    
@@ -2684,7 +2685,7 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 	{
 		if(IsBoss(GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity")))
 		{
-			AcceptEntityInput(ent, "kill");
+			TF2_RemoveWearable(Boss[client], ent);
 		}
 	}
 
@@ -2700,7 +2701,7 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 				}
 				default:
 				{
-					AcceptEntityInput(ent, "kill");
+					TF2_RemoveWearable(Boss[client], ent);
 				}
 			}
 		}
@@ -3204,7 +3205,7 @@ public Action:checkItems(Handle:hTimer,any:client)  //Weapon balance 2
 		weapon=GetPlayerWeaponSlot(client, 4);
 		if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
 		{
-			TF2_RemoveWeaponSlot(client, 4);
+			TF2_RemoveWeaponSlot2(client, 4);
 			weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
 		}
 		return Plugin_Continue;
@@ -3217,17 +3218,17 @@ public Action:checkItems(Handle:hTimer,any:client)  //Weapon balance 2
 		{
 			case 41:  //Natascha
 			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
+				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Primary);
 				weapon=SpawnWeapon(client, "tf_weapon_minigun", 15, 1, 0, "");
 			}
 			case 402:  //Bazaar Bargain
 			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
+				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Primary);
 				SpawnWeapon(client, "tf_weapon_sniperrifle", 14, 1, 0, "");
 			}
 			case 237:  //Rocket Jumper
 			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
+				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Primary);
 				weapon=SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "265 ; 99999.0");
 					//265: Mini-crits airborne targets for 99999 seconds
 				SetAmmo(client, 0, 20);
@@ -3236,7 +3237,7 @@ public Action:checkItems(Handle:hTimer,any:client)  //Weapon balance 2
 			{
 				if(GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)
 				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
+					TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Primary);
 					SpawnWeapon(client, "tf_weapon_syringegun_medic", 17, 1, 10, "17 ; 0.05 ; 144 ; 1");
 						//17: +5 uber/hit
 						//144:  NOOP
@@ -3253,12 +3254,12 @@ public Action:checkItems(Handle:hTimer,any:client)  //Weapon balance 2
 		{
 			case 57, 231:  //Razorback, Darwin's Danger Shield
 			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Secondary);
 				weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 0, "");
 			}
 			case 265:  //Stickybomb Jumper
 			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Secondary);
 				weapon=SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
 				SetAmmo(client, 1, 24);
 			}
@@ -3284,7 +3285,7 @@ public Action:checkItems(Handle:hTimer,any:client)  //Weapon balance 2
 		{
 			case 331:  //Fists of Steel
 			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
+				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Melee);
 				weapon=SpawnWeapon(client, "tf_weapon_fists", 5, 1, 6, "");
 			}
 			case 357:  //Half-Zatoichi
@@ -3295,7 +3296,7 @@ public Action:checkItems(Handle:hTimer,any:client)  //Weapon balance 2
 			{
 				if(!GetConVarBool(cvarEnableEurekaEffect))
 				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
+					TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Melee);
 					weapon=SpawnWeapon(client, "tf_weapon_wrench", 7, 1, 0, "");
 				}
 			}
@@ -3305,7 +3306,7 @@ public Action:checkItems(Handle:hTimer,any:client)  //Weapon balance 2
 	weapon=GetPlayerWeaponSlot(client, 4);
 	if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
 	{
-		TF2_RemoveWeaponSlot(client, 4);
+		TF2_RemoveWeaponSlot2(client, 4);
 		weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
 	}
 
@@ -3315,7 +3316,7 @@ public Action:checkItems(Handle:hTimer,any:client)  //Weapon balance 2
 		new mediquality=(weapon>MaxClients && IsValidEdict(weapon) ? GetEntProp(weapon, Prop_Send, "m_iEntityQuality") : -1);
 		if(mediquality!=10)
 		{
-			TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+			TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Secondary);
 			weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");  //200 ; 1 for area of effect healing	//; 178 ; 0.75 ; 128 ; 1.0 Faster switch-to
 			if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
 			{
@@ -3330,49 +3331,59 @@ public Action:checkItems(Handle:hTimer,any:client)  //Weapon balance 2
 
 stock RemovePlayerTarge(client)
 {
-	new edict=MaxClients+1;
-	while((edict=FindEntityByClassname2(edict, "tf_wearable_demoshield"))!=-1)
+	new entity=MaxClients+1;
+	while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
 	{
-		new idx=GetEntProp(edict, Prop_Send, "m_iItemDefinitionIndex");
-		if((idx==131 || idx==406) && GetEntPropEnt(edict, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
+		new index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
+		if((index==131 || index==406) && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))  //The Chargin' Targe, Splendid Screen
 		{
-			AcceptEntityInput(edict, "Kill");
+			TF2_RemoveWearable(Boss[client], entity);
 		}
 	}
 }
 
 stock RemovePlayerBack(client, indices[], len)
 {
-	if(len<=0) return;
-	new edict=MaxClients+1;
-	while((edict=FindEntityByClassname2(edict, "tf_wearable"))!=-1)
+	if(len<=0)
+	{
+		return;
+	}
+
+	new entity=MaxClients+1;
+	while((entity=FindEntityByClassname2(entity, "tf_wearable"))!=-1)
 	{
 		decl String:netclass[32];
-		if(GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable"))
+		if(GetEntityNetClass(entity, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable"))
 		{
-			new idx=GetEntProp(edict, Prop_Send, "m_iItemDefinitionIndex");
-			if(GetEntPropEnt(edict, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
+			new index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
+			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 			{
 				for(new i=0; i<len; i++)
 				{
-					if(idx==indices[i]) AcceptEntityInput(edict, "Kill");
+					if(index==indices[i])
+					{
+						TF2_RemoveWearable(Boss[client], entity);
+					}
 				}
 			}
 		}
 	}
 	
-	edict=MaxClients+1;
-	while((edict=FindEntityByClassname2(edict, "tf_powerup_bottle"))!=-1)
+	entity=MaxClients+1;
+	while((entity=FindEntityByClassname2(entity, "tf_powerup_bottle"))!=-1)
 	{
 		decl String:netclass[32];
-		if(GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle"))
+		if(GetEntityNetClass(entity, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle"))
 		{
-			new idx=GetEntProp(edict, Prop_Send, "m_iItemDefinitionIndex");
-			if(GetEntPropEnt(edict, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
+			new index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
+			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 			{
 				for(new i=0; i<len; i++)
 				{
-					if(idx==indices[i]) AcceptEntityInput(edict, "Kill");
+					if(index==indices[i])
+					{
+						AcceptEntityInput(entity, "Kill");
+					}
 				}
 			}
 		}
@@ -3381,36 +3392,46 @@ stock RemovePlayerBack(client, indices[], len)
 
 stock FindPlayerBack(client, indices[], len)
 {
-	if(len<=0) return -1;
-	new edict=MaxClients+1;
-	while((edict=FindEntityByClassname2(edict, "tf_wearable"))!=-1)
+	if(len<=0)
+	{
+		return -1;
+	}
+
+	new entity=MaxClients+1;
+	while((entity=FindEntityByClassname2(entity, "tf_wearable"))!=-1)
 	{
 		decl String:netclass[32];
-		if(GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable"))
+		if(GetEntityNetClass(entity, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable"))
 		{
-			new idx=GetEntProp(edict, Prop_Send, "m_iItemDefinitionIndex");
-			if(GetEntPropEnt(edict, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
+			new index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
+			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 			{
 				for(new i=0; i<len; i++)
 				{
-					if(idx==indices[i]) return edict;
+					if(index==indices[i])
+					{
+						return entity;
+					}
 				}
 			}
 		}
 	}
 	
-	edict=MaxClients+1;
-	while((edict=FindEntityByClassname2(edict, "tf_powerup_bottle"))!=-1)
+	entity=MaxClients+1;
+	while((entity=FindEntityByClassname2(entity, "tf_powerup_bottle"))!=-1)
 	{
 		decl String:netclass[32];
-		if(GetEntityNetClass(edict, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle"))
+		if(GetEntityNetClass(entity, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle"))
 		{
-			new idx=GetEntProp(edict, Prop_Send, "m_iItemDefinitionIndex");
-			if(GetEntPropEnt(edict, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(edict, Prop_Send, "m_bDisguiseWearable"))
+			new index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
+			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 			{
 				for(new i=0; i<len; i++)
 				{
-					if(idx==indices[i]) return edict;
+					if(index==indices[i])
+					{
+						return entity;
+					}
 				}
 			}
 		}
@@ -3439,21 +3460,27 @@ public Action:event_destroy(Handle:event, const String:name[], bool:dontBroadcas
 public Action:event_changeclass(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(Enabled)
-		CreateTimer(0.1,Timer_changeclass,GetEventInt(event, "userid"));
+	{
+		CreateTimer(0.1, Timer_changeclass, GetEventInt(event, "userid"));
+	}
 	return Plugin_Continue;
 }
 
 public Action:Timer_changeclass(Handle:hTimer,any:userid)
 {
 	new client=GetClientOfUserId(userid);
-	new index=GetBossIndex(client);
-	if(index==-1 || Special[index]==-1 || !BossKV[Special[index]])
+	new boss=GetBossIndex(client);
+	if(boss==-1 || Special[boss]==-1 || !BossKV[Special[boss]])
+	{
 		return Plugin_Continue;
-	KvRewind(BossKV[Special[index]]);
-	new TFClassType:tclass=TFClassType:KvGetNum(BossKV[Special[index]], "class",0);
-	if(TF2_GetPlayerClass(client)!=tclass)
-		TF2_SetPlayerClass(client, tclass);
-	
+	}
+
+	KvRewind(BossKV[Special[boss]]);
+	new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[boss]], "class", 0);
+	if(TF2_GetPlayerClass(client)!=class)
+	{
+		TF2_SetPlayerClass(client, class);
+	}
 	return Plugin_Continue;
 }
 
@@ -3741,6 +3768,7 @@ public Action:Command_Point_Enable(client, args)
 	if(Enabled) SetControlPoint(true);
 	return Plugin_Handled;
 }
+
 stock SetControlPoint(bool:enable)
 {
 	new CPm=MaxClients+1; 	
@@ -4552,6 +4580,7 @@ OnPlayerDeath(client,attacker,bool:fake=false)
 		CreateTimer(0.5,Timer_RestoreLastClass,GetClientUserId(client));
 		return;
 	}
+
 	if(TF2_GetPlayerClass(client)==TFClass_Engineer && !fake)
 	{
 		FakeClientCommand(client, "destroy 2");
@@ -4953,26 +4982,29 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				damage*=0.3;
 				return Plugin_Changed;
 			}
+
 			if(TF2_IsPlayerInCondition(client, TFCond_DefenseBuffMmmph))
 			{
 				damage*=9;
 				TF2_AddCondition(client, TFCond_Bonked, 0.1);
 				return Plugin_Changed;
 			}
+
 			new ent=-1;
 			while((ent=FindEntityByClassname2(ent, "tf_wearable_demoshield"))!=-1)
 			{
 				if(GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable"))
 				{
-					AcceptEntityInput(ent, "Kill");
+					TF2_RemoveWearable(Boss[client], ent);
 					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 					EmitSoundToClient(attacker,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 					EmitSoundToClient(attacker,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					TF2_AddCondition(client,TFCond_Bonked,0.1);
+					TF2_AddCondition(client, TFCond_Bonked, 0.1);
 					return Plugin_Continue;
 				}
 			}
+
 			switch(TF2_GetPlayerClass(client))
 			{
 				case TFClass_Spy:

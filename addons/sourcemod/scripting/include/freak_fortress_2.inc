@@ -63,7 +63,7 @@ native FF2_GetBossTeam();
  * @param bufferlength		Length of buffer string
  * @param IndexMeaning		0 - "Index" parameter means index of current Boss
  *							1 - "Index" parameter means number of Boss in characters.cfg-1
- * @return		    		True if boss exists, false if not
+ * @return					True if boss exists, false if not
  */
 native bool:FF2_GetBossSpecial(index=0, String:buffer[], bufferlength, IndexMeaning=0);
 
@@ -71,7 +71,7 @@ native bool:FF2_GetBossSpecial(index=0, String:buffer[], bufferlength, IndexMean
  * Gets Max Health of current Boss
  *
  * @param index 	Index of boss
- * @return		    Max health of Boss
+ * @return			Max health of Boss
  */
 native FF2_GetBossMaxHealth(index=0);
 
@@ -102,7 +102,7 @@ native FF2_SetBossCharge(index, slot, Float:value);
  * Gets damage dealt by this client
  *
  * @param client 	Client's index
- * @return		    Damage dealt
+ * @return			Damage dealt
  */
 native FF2_GetClientDamage(client);
 
@@ -112,7 +112,6 @@ native FF2_GetClientDamage(client);
  * @param index 		Index of boss
  * @param plugin_name	Name of plugin with this ability
  * @param ability_name	Name of ability (use null string if you want get boss's global "ragedist" value)
- * @return		    	
  */
 native Float:FF2_GetRageDist(index=0, const String:plugin_name[]="", const String:ability_name[]="");
 
@@ -264,7 +263,7 @@ native FF2_SetQueuePoints(client, value);
  *							1 - Charging
  *							2 - Charged
  *							3 - In use
- * @return		    	Plugin_Stop can not prevent Ability. Use FF2_PreAbility with enabled=false
+ * @return				Plugin_Stop can not prevent Ability. Use FF2_PreAbility with enabled=false
  */
 forward FF2_PreAbility(index, const String:plugin_name[], const String:ability_name[], action, &enabled=true);
 forward Action:FF2_OnAbility(index, const String:plugin_name[], const String:ability_name[], action);
@@ -275,7 +274,7 @@ forward Action:FF2_OnAbility(index, const String:plugin_name[], const String:abi
  * @param index 		Index of boss
  * @param triggerhurt	Entity index of "trigger_hurt"
  * @param damage 		Damage by "trigger_hurt".  Cutomizable.
- * @return		    	Plugin_Stop will prevent forward, Plugin_Changed will change damage.
+ * @return				Plugin_Stop will prevent forward, Plugin_Changed will change damage.
  */
 forward Action:FF2_OnTriggerHurt(index, triggerhurt, &Float:damage);
 
@@ -284,7 +283,7 @@ forward Action:FF2_OnTriggerHurt(index, triggerhurt, &Float:damage);
  *
  * @param path 			Path to music sound file
  * @param time			Length of music
- * @return		    	Plugin_Stop will prevent music, Plugin_Changed will change it.
+ * @return				Plugin_Stop will prevent music, Plugin_Changed will change it.
  */
 forward Action:FF2_OnMusic(String:path[], &Float:time);
 
@@ -295,7 +294,7 @@ forward Action:FF2_OnMusic(String:path[], &Float:time);
  * @param index 		Index of boss
  * @param SpecialNum	Number of boss
  * @param SpecialName	Name of boss
- * @return		    	You can NOT use Plugin_Stop to prevent this, but you can change SpecialName and use Plugin_Changed to change the boss.  If you want to change SpecialNum, then make SpecialName null.
+ * @return				You can NOT use Plugin_Stop to prevent this, but you can change SpecialName and use Plugin_Changed to change the boss.  If you want to change SpecialNum, then make SpecialName null.
  */
 forward Action:FF2_OnSpecialSelected(index, &SpecialNum, String:SpecialName[]);
 
@@ -313,7 +312,7 @@ forward Action:FF2_OnAddQueuePoints( add_points[MAXPLAYERS+1] );
  *
  * @param CharSetNum	Number of boss
  * @param CharSetName	Name of boss
- * @return		    	You can NOT use Plugin_Stop to prevent this, but you can change CharSetName and use Plugin_Changed to change the character set.  If you want to change CharSetNum, then make CharSetName null.
+ * @return				You can NOT use Plugin_Stop to prevent this, but you can change CharSetName and use Plugin_Changed to change the character set.  If you want to change CharSetNum, then make CharSetName null.
  */
 forward Action:FF2_OnLoadCharacterSet(CharSetNum, String:CharSetName[]);
 

@@ -49,7 +49,7 @@
 #SOURCEMOD RANDOM STUFF
 /addons/sourcemod/data/
 /addons/sourcemod/extensions/
-/addons/sourcemod/gamedata/*/
+/addons/sourcemod/gamedata/*.games/
 /addons/sourcemod/gamedata/sm-tf2.games.txt
 /addons/sourcemod/gamedata/tf2.items.txt
 /addons/sourcemod/gamedata/tf2items.*
