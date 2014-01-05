@@ -583,7 +583,7 @@ public OnPluginStart()
 	cvarHalloween=CreateConVar("ff2_halloween", "2", "0-Disable Halloween mode, 1-Enable Halloween mode, 2-Use TF2 logic (tf_forced_holiday 2)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "0", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
-	cvarDebug=CreateConVar("ff2_Debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);  //Keep this as the last convar
+	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);  //Keep this as the last convar
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
 
 	HookConVarChange(cvarHealthBar, HealthbarEnableChanged);
