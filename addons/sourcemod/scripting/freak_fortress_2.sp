@@ -23,7 +23,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 //#include <tf2attributes>
 #include <tf2items>
 #include <clientprefs>
-#include <tf2_wearabletemp>
+#include <wearabletemp>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
