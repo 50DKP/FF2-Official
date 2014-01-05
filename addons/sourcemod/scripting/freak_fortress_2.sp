@@ -240,12 +240,12 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "2) [Server] Fixed invalid healthbar entity bug (Wliu)");
 			DrawPanelText(panel, "3) Changed default medic ubercharge percentage to 40% (Wliu)");
 			DrawPanelText(panel, "4) Whitelisted festive variants of weapons (Wliu)");
-			DrawPanelText(panel, "5) [Server] Added convar to control what health value the boss should have in order to turn off the stalemate timer (Wliu)");
-			DrawPanelText(panel, "6) [Server] Added convar to control whether or not the last person should be highlighted or not (Wliu)");
-			DrawPanelText(panel, "7) [Dev] Added debug method used for sending debug messages and a convar to control it (Wliu)");
+			DrawPanelText(panel, "5) [Server] Added convars to control last player highlight and stalemate timer health value (Wliu");
+			DrawPanelText(panel, "6) [Dev] Added debug method used for sending debug messages and a convar to control it (Wliu)");
 		}
 		case 28:  //1.0.8
 		{
+			DrawPanelText(panel, "Wliu, Chris, Lawd, and Carge of 50DKP have taken over FF2 development");
 			DrawPanelText(panel, "1) Prevented spy bosses from changing disguises (Powerlord)");
 			DrawPanelText(panel, "2) Added Saxton Hale stab sounds (Powerlord/AeroAcrobat)");
 			DrawPanelText(panel, "3) Made sure that the boss doesn't have any invalid weapons/items (Powerlord)");
@@ -2584,7 +2584,6 @@ EquipBoss(client)
 			new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[client]], "class", 1);
 			if(TF2_GetPlayerClass(Boss[client])!=class)
 			{
-				Debug("EquipBoss: Enforced boss class");
 				TF2_SetPlayerClass(Boss[client], class);
 			}
 		}
