@@ -3337,7 +3337,7 @@ stock RemovePlayerTarge(client)
 		new index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
 		if((index==131 || index==406) && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))  //The Chargin' Targe, Splendid Screen
 		{
-			TF2_RemoveWearable(Boss[client], entity);
+			TF2_RemoveWearable(client, entity);
 		}
 	}
 }
@@ -3362,7 +3362,7 @@ stock RemovePlayerBack(client, indices[], len)
 				{
 					if(index==indices[i])
 					{
-						TF2_RemoveWearable(Boss[client], entity);
+						TF2_RemoveWearable(client, entity);
 					}
 				}
 			}
@@ -4995,7 +4995,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			{
 				if(GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable"))
 				{
-					TF2_RemoveWearable(Boss[client], ent);
+					TF2_RemoveWearable(client, ent);
 					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 					EmitSoundToClient(attacker,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
