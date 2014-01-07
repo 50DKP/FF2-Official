@@ -28,7 +28,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 7"
+#define PLUGIN_VERSION "1.9.0 Beta 8"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -1680,6 +1680,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	CreateTimer(0.2, Timer_GogoBoss);
 	CreateTimer(9.1, StartBossTimer);
 	CreateTimer(3.5, StartResponceTimer);
+	Debug("Creating boss info text in 9.6 seconds");
 	CreateTimer(9.6, MessageTimer);
 
 	for(new entity=MaxClients+1; entity<ME; entity++)
@@ -2483,11 +2484,11 @@ public Action:MessageTimer(Handle:hTimer)
 
 	if(checkdoors)
 	{
-		new ent=-1;
-		while((ent=FindEntityByClassname2(ent, "func_door"))!=-1)
+		new entity=-1;
+		while((entity=FindEntityByClassname2(entity, "func_door"))!=-1)
 		{
-			AcceptEntityInput(ent, "Open");
-			AcceptEntityInput(ent, "Unlock");
+			AcceptEntityInput(entity, "Open");
+			AcceptEntityInput(entity, "Unlock");
 		}
 
 		if(doorchecktimer==INVALID_HANDLE)
@@ -2496,8 +2497,8 @@ public Action:MessageTimer(Handle:hTimer)
 		}
 	}
 	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
-	new String:s[512];
-	decl String:s2[4];
+	new String:text[512];
+	decl String:lives[4];
 	decl String:name[64];
 	for(new client=0; Boss[client]; client++)
 	{
@@ -2505,18 +2506,20 @@ public Action:MessageTimer(Handle:hTimer)
 		{
 			continue;
 		}
+
 		CreateTimer(0.1, MakeBoss, client);
 		KvRewind(BossKV[Special[client]]);
 		KvGetString(BossKV[Special[client]], "name", name, 64, "=Failed name=");
 		if(BossLives[client]>1)
 		{
-			Format(s2, 4, "x%i", BossLives[client]);
+			Format(lives, 4, "x%i", BossLives[client]);
 		}
 		else
 		{
-			strcopy(s2, 2, "");
+			strcopy(lives, 2, "");
 		}
-		Format(s, 512, "%s\n%t", s, "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), s2);
+		Debug("Boss text formatted");
+		Format(text, 512, "%s\n%t", text, "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
 	}
 
 	for(new client=1; client<=MaxClients; client++)
@@ -2524,25 +2527,26 @@ public Action:MessageTimer(Handle:hTimer)
 		if(IsValidClient(client) && !(FF2flags[client] & FF2FLAG_HUDDISABLED))
 		{
 			SetGlobalTransTarget(client);
-			ShowHudText(client, -1, s);
+			Debug("Boss info text rendered");
+			ShowHudText(client, -1, text);
 		}
 	}
 	return Plugin_Continue;
 }
 
-public Action:MakeModelTimer(Handle:hTimer,any:index)
+public Action:MakeModelTimer(Handle:hTimer,any:client)
 {		
-	if(!Boss[index] || !IsValidEdict(Boss[index]) || !IsClientInGame(Boss[index]) || !IsPlayerAlive(Boss[index]) || CheckRoundState()==2)
+	if(!Boss[client] || !IsValidEdict(Boss[client]) || !IsClientInGame(Boss[client]) || !IsPlayerAlive(Boss[client]) || CheckRoundState()==2)
 	{
 		return Plugin_Stop;
 	}
 
-	decl String:s[PLATFORM_MAX_PATH];
-	KvRewind(BossKV[Special[index]]);
-	KvGetString(BossKV[Special[index]], "model", s, PLATFORM_MAX_PATH);
-	SetVariantString(s);
-	AcceptEntityInput(Boss[index], "SetCustomModel");
-	SetEntProp(Boss[index], Prop_Send, "m_bUseClassAnimations", 1);		
+	decl String:model[PLATFORM_MAX_PATH];
+	KvRewind(BossKV[Special[client]]);
+	KvGetString(BossKV[Special[client]], "model", model, PLATFORM_MAX_PATH);
+	SetVariantString(model);
+	AcceptEntityInput(Boss[client], "SetCustomModel");
+	SetEntProp(Boss[client], Prop_Send, "m_bUseClassAnimations", 1);		
 	return Plugin_Continue;
 }
 
@@ -2599,12 +2603,12 @@ EquipBoss(client)
 public OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client);
-
 	if(team==BossTeam && !b_allowBossChgClass && IsPlayerAlive(client) && GetBossIndex(client)!=-1)
 	{
 		CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a HALE!");
-		b_BossChgClassDetected=true; 
-		TF2_SetPlayerClass(client, oldclass); 
+		b_BossChgClassDetected=true;
+		TF2_SetPlayerClass(client, oldclass);
+		EquipBoss(client);
 	}
 }
 
@@ -2653,55 +2657,55 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 		return Plugin_Continue;
 	}
 
-	new ent=-1;
-	while((ent=FindEntityByClassname2(ent, "tf_wearable"))!=-1)
+	new entity=-1;
+	while((entity=FindEntityByClassname2(entity, "tf_wearable"))!=-1)
 	{
-		if(IsBoss(GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity")))
+		if(IsBoss(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")))
 		{
-			switch(GetEntProp(ent, Prop_Send, "m_iItemDefinitionIndex"))
+			switch(GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex"))
 			{
 				case 438, 463, 167, 477, 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 1015, 5607:  //Action slot items
 				{
 				}
 				default:
 				{
-					TF2_RemoveWearable(Boss[client], ent);
+					TF2_RemoveWearable(Boss[client], entity);
 				}
 			}
 		}
 	}
 
-	ent=-1;
-	while((ent=FindEntityByClassname2(ent, "tf_powerup_bottle"))!=-1)
+	entity=-1;
+	while((entity=FindEntityByClassname2(entity, "tf_powerup_bottle"))!=-1)
 	{
-		if(IsBoss(GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity")))
+		if(IsBoss(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")))
 		{
-			TF2_RemoveWearable(Boss[client], ent);
+			TF2_RemoveWearable(Boss[client], entity);
 		}
 	}
    
-	ent=-1;
-	while((ent=FindEntityByClassname2(ent, "tf_wearable_demoshield"))!=-1)
+	entity=-1;
+	while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
 	{
-		if(IsBoss(GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity")))
+		if(IsBoss(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")))
 		{
-			TF2_RemoveWearable(Boss[client], ent);
+			TF2_RemoveWearable(Boss[client], entity);
 		}
 	}
 
-	ent=-1;
-	while((ent=FindEntityByClassname2(ent, "tf_usableitem"))!=-1)
+	entity=-1;
+	while((entity=FindEntityByClassname2(entity, "tf_usableitem"))!=-1)
 	{
-		if(IsBoss(GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity")))
+		if(IsBoss(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")))
 		{
-			switch(GetEntProp(ent, Prop_Send, "m_iItemDefinitionIndex"))
+			switch(GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex"))
 			{
 				case 438, 463, 167, 477, 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542:  //Action slot items
 				{
 				}
 				default:
 				{
-					TF2_RemoveWearable(Boss[client], ent);
+					TF2_RemoveWearable(Boss[client], entity);
 				}
 			}
 		}

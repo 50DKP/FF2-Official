@@ -11,7 +11,9 @@ stock TF2_RemoveWearable(client, wearable)
 		new Handle:hGameConfigtemp=LoadGameConfigFile("equipwearable");
 		if(hGameConfigtemp==INVALID_HANDLE)
 		{
-			LogError("EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
+			LogError("[FF2] EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
+			PrintToServer("[FF2] WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
+			AcceptEntityInput(wearable, "kill");
 			return;
 		}
 
@@ -21,7 +23,9 @@ stock TF2_RemoveWearable(client, wearable)
 		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
 		if((hRemoveWearable=EndPrepSDKCall())==INVALID_HANDLE)
 		{
-			LogError("Couldn't load SDK functions (CTFPlayer::RemoveWearable). SDK call failed.");
+			LogError("[FF2] Couldn't load SDK functions (CTFPlayer::RemoveWearable). SDK call failed.");
+			PrintToServer("[FF2] WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
+			AcceptEntityInput(wearable, "kill");
 			return;
 		}
 	}
@@ -32,10 +36,12 @@ stock TF2_EquipWearable(client, wearable)
 {
 	if(hEquipWearable==INVALID_HANDLE)
 	{
-		new Handle:hGameConfigtemp = LoadGameConfigFile("equipwearable");
+		new Handle:hGameConfigtemp=LoadGameConfigFile("equipwearable");
 		if(hGameConfigtemp==INVALID_HANDLE)
 		{
-			LogError("EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
+			LogError("[FF2] EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
+			PrintToServer("[FF2] WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
+			AcceptEntityInput(wearable, "kill");
 			return;
 		}
 
@@ -45,7 +51,9 @@ stock TF2_EquipWearable(client, wearable)
 		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
 		if((hEquipWearable=EndPrepSDKCall())==INVALID_HANDLE)
 		{
-			LogError("Couldn't load SDK functions (CTFPlayer::EquipWearable). SDK call failed.");
+			LogError("[FF2] Couldn't load SDK functions (CTFPlayer::EquipWearable). SDK call failed.");
+			PrintToServer("[FF2] WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
+			AcceptEntityInput(wearable, "kill");
 			return;
 		}
 	}
@@ -54,12 +62,14 @@ stock TF2_EquipWearable(client, wearable)
 
 stock TF2_IsWearable(wearable)
 {
-	if(hIsWearable == INVALID_HANDLE)	
+	if(hIsWearable==INVALID_HANDLE)	
 	{
-		new Handle:hGameConfigtemp = LoadGameConfigFile("equipwearable");
-		if(hGameConfigtemp == INVALID_HANDLE)
+		new Handle:hGameConfigtemp=LoadGameConfigFile("equipwearable");
+		if(hGameConfigtemp==INVALID_HANDLE)
 		{
-			LogError("EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
+			LogError("[FF2] EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
+			PrintToServer("[FF2] WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
+			AcceptEntityInput(wearable, "kill");
 			return false;
 		}
 
@@ -67,9 +77,11 @@ stock TF2_IsWearable(wearable)
 		PrepSDKCall_SetFromConf(hGameConfigtemp, SDKConf_Virtual, "IsWearable");
 		CloseHandle(hGameConfigtemp);
 		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
-		if((hIsWearable = EndPrepSDKCall()) == INVALID_HANDLE)
+		if((hIsWearable=EndPrepSDKCall())==INVALID_HANDLE)
 		{
-			LogError("Couldn't load SDK functions (CTFPlayer::IsWearable). SDK call failed.");
+			LogError("[FF2] Couldn't load SDK functions (CTFPlayer::IsWearable). SDK call failed.");
+			PrintToServer("[FF2] WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
+			AcceptEntityInput(wearable, "kill");
 			return false;
 		}
 	}
