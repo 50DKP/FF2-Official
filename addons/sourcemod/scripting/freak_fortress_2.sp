@@ -4022,7 +4022,7 @@ public Action:ClientTimer(Handle:hTimer)
 
 			switch(index)
 			{
-				case 305, 56, 16, 203, 58, 1005:
+				case 16, 56, 58, 203, 305, 1005, 1079:
 				{
 					addthecrit=true;
 				}
@@ -4041,7 +4041,7 @@ public Action:ClientTimer(Handle:hTimer)
 				}
 			}
 
-			if(index==16 && addthecrit && IsValidEntity(FindPlayerBack(client, { 642 }, 1)))
+			if(index==16 && addthecrit && IsValidEntity(FindPlayerBack(client, {642}, 1)))
 			{
 				addthecrit=false;
 			}
