@@ -11,8 +11,8 @@
 // #define MB 5
 #define ME 2048
 
-#define EF_BONEMERGE			(1 << 0)
-#define EF_BONEMERGE_FASTCULL	(1 << 7)
+#define EF_BONEMERGE			(1<<0)
+#define EF_BONEMERGE_FASTCULL	(1<<7)
 
 #define PROJECTILE		"model_projectile_replace"
 #define OBJECTS			"spawn_many_objects_on_kill"
@@ -116,13 +116,13 @@ public OnEntityCreated(entity, const String:classname[])
 	if(FF2_IsFF2Enabled() && FF2_GetRoundState()==2 && StrContains(classname, "tf_projectile")>=0)
 	{
 		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
+		Debug("Easter Abilities OnEntityCreated: Entity %i created", entity);
 	}
 }
 
 public OnProjectileSpawned(entity)
 {
 	new owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-	
 	if(IsValidClient(owner))
 	{
 		new index=FF2_GetBossIndex(owner);
@@ -164,7 +164,11 @@ public Action:Timer_SetProjectileModel(Handle:timer, Handle:data)
 stock CreateVM(client, String:model[])
 {
 	new ent=CreateEntityByName("tf_wearable_vm");
-	if(!IsValidEntity(ent)) return -1;
+	if(!IsValidEntity(ent))
+	{
+		return -1;
+	}
+
 	SetEntProp(ent, Prop_Send, "m_nModelIndex", PrecacheModel(model));
 	SetEntProp(ent, Prop_Send, "m_fEffects", EF_BONEMERGE|EF_BONEMERGE_FASTCULL);
 	SetEntProp(ent, Prop_Send, "m_iTeamNum", GetClientTeam(client));
@@ -184,7 +188,11 @@ stock TF2_EquipWearable(client, entity)
 
 stock AttachProjectileModel(entity, String:strModel[], String:strAnim[]="")
 {
-	if(!IsValidEntity(entity)) return -1;
+	if(!IsValidEntity(entity))
+	{
+		return -1;
+	}
+
 	new model=CreateEntityByName("prop_dynamic");
 	if(IsValidEdict(model))
 	{
@@ -206,8 +214,10 @@ stock AttachProjectileModel(entity, String:strModel[], String:strAnim[]="")
 		}
 		SetEntPropEnt(model, Prop_Send, "m_hOwnerEntity", entity);
 		return model;
-	} else {
-		LogError("(AttachProjectileModel): Could not create prop_dynamic");
+	}
+	else
+	{
+		LogError("AttachProjectileModel: Could not create prop_dynamic");
 	}
 	return -1;
 }
@@ -224,29 +234,35 @@ stock SpawnManyAmmoPacks()
 
 SpawnManyObjects(String:classname[], client, String:model[], skin=0, num=14, Float:offsz=30.0)
 {
-	if(hSetObjectVelocity==INVALID_HANDLE) return;
+	if(hSetObjectVelocity==INVALID_HANDLE)
+	{
+		Debug("Easter Abilities SpawnManyObjects: hSetObjectVelocity is null!");
+		return;
+	}
+
 	decl Float:pos[3], Float:vel[3], Float:ang[3];
 	ang[0]=90.0;
 	ang[1]=0.0;
 	ang[2]=0.0;
 	GetClientAbsOrigin(client, pos);
-	pos[2] += offsz;
-	for(new i=0; i < num; i++)
+	pos[2]+=offsz;
+	for(new i=0; i<num; i++)
 	{
 		vel[0]=GetRandomFloat(-400.0, 400.0);
 		vel[1]=GetRandomFloat(-400.0, 400.0);
 		vel[2]=GetRandomFloat(300.0, 500.0);
-		pos[0] += GetRandomFloat(-5.0, 5.0);
-		pos[1] += GetRandomFloat(-5.0, 5.0);
+		pos[0]+=GetRandomFloat(-5.0, 5.0);
+		pos[1]+=GetRandomFloat(-5.0, 5.0);
 		new ent=CreateEntityByName(classname);
-		if(!IsValidEntity(ent)) continue;
+		if(!IsValidEntity(ent))
+		{
+			continue;
+		}
+
 		SetEntityModel(ent, model);
-		DispatchKeyValue(ent, "OnPlayerTouch", "!self,Kill,,0,-1");	//for safety, but it shouldn't act like a normal ammopack
+		DispatchKeyValue(ent, "OnPlayerTouch", "!self,Kill,,0,-1");	
 		SetEntProp(ent, Prop_Send, "m_nSkin", skin);
 		SetEntProp(ent, Prop_Send, "m_nSolidType", 6);
-//		SetEntityMoveType(ent, MOVETYPE_FLYGRAVITY);
-//		SetEntProp(ent, Prop_Send, "movetype", 5);
-//		SetEntProp(ent, Prop_Send, "movecollide", 0);
 		SetEntProp(ent, Prop_Send, "m_usSolidFlags", 152);
 		SetEntProp(ent, Prop_Send, "m_triggerBloat", 24);
 		SetEntProp(ent, Prop_Send, "m_CollisionGroup", 1);
@@ -259,17 +275,7 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, num=14, Flo
 		SetEntProp(ent, Prop_Data, "m_iHealth", 900);
 		new offs=GetEntSendPropOffs(ent, "m_vecInitialVelocity", true);
 		SetEntData(ent, offs-4, 1, _, true);
-/*		SetEntData(ent, offs-13, 0, 1, true);
-		SetEntData(ent, offs-11, 1, 1, true);
-		SetEntData(ent, offs-15, 1, 1, true);
-		SetEntityMoveType(ent, MOVETYPE_FLYGRAVITY);
-		SetEntProp(ent, Prop_Data, "m_nNextThinkTick", GetEntProp(client, Prop_Send, "m_nTickBase") + 3);
-		SetEntPropVector(ent, Prop_Data, "m_vecAbsVelocity", vel);
-		SetEntPropVector(ent, Prop_Data, "m_vecVelocity", vel);
-		SetEntPropVector(ent, Prop_Send, "m_vecInitialVelocity", vel);
-		SetEntProp(ent, Prop_Send, "m_bClientSideAnimation", 1);
-		PrintToChatAll("aeiou %d %d %d %d %d", GetEntData(ent, offs-16, 1), GetEntData(ent, offs-15, 1), GetEntData(ent, offs-14, 1), GetEntData(ent, offs-13, 1), GetEntData(ent, offs-12, 1));
-		*/
+		Debug("Easter Abilities SpawnManyObjects: Objects spawned!");
 	}
 }
 

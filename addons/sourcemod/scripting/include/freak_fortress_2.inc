@@ -1,15 +1,17 @@
 //Freak Fortress 2 include file.
 
-#define FF2FLAG_UBERREADY				(1 << 1)		//Used when medic says "I'm charged!"
-#define FF2FLAG_ISBUFFED				(1 << 2)		//Used when soldier uses backup's buff.
-#define FF2FLAG_CLASSTIMERDISABLED 		(1 << 3)		//Used to prevent clients' timer.
-#define FF2FLAG_HUDDISABLED				(1 << 4)		//Used to prevent custom hud from clients' timer.
-#define FF2FLAG_BOTRAGE					(1 << 5)		//Used by bots to use Boss' rage.
-#define FF2FLAG_TALKING					(1 << 6)		//Used by Bosses with "sound_block_vo" to disable block for some lines.
-#define FF2FLAG_ALLOWSPAWNINBOSSTEAM	(1 << 7)		//Used to allow spawn players in Boss' team.
-#define FF2FLAG_USEBOSSTIMER			(1 << 8)		//Used to prevent Boss' timer.
-#define FF2FLAG_USINGABILITY			(1 << 9)		//Used to prevent Boss' hints about abilities buttons.
-#define FF2FLAGS_SPAWN					~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & FF2FLAG_USEBOSSTIMER
+#define FF2FLAG_UBERREADY				(1<<1)		//Used when medic says "I'm charged!"
+#define FF2FLAG_ISBUFFED				(1<<2)		//Used when soldier uses backup's buff.
+#define FF2FLAG_CLASSTIMERDISABLED 		(1<<3)		//Used to prevent clients' timer.
+#define FF2FLAG_HUDDISABLED				(1<<4)		//Used to prevent custom hud from clients' timer.
+#define FF2FLAG_BOTRAGE					(1<<5)		//Used by bots to use Boss' rage.
+#define FF2FLAG_TALKING					(1<<6)		//Used by Bosses with "sound_block_vo" to disable block for some lines.
+#define FF2FLAG_ALLOWSPAWNINBOSSTEAM	(1<<7)		//Used to allow spawn players in Boss' team.
+#define FF2FLAG_USEBOSSTIMER			(1<<8)		//Used to prevent Boss' timer.
+#define FF2FLAG_USINGABILITY			(1<<9)		//Used to prevent Boss' hints about abilities buttons.
+#define FF2FLAG_CLASSHELPED				(1<<10)
+#define FF2FLAG_HASONGIVED				(1<<11)
+#define FF2FLAGS_SPAWN					~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & FF2FLAG_USEBOSSTIMER & FF2FLAG_USINGABILITY
 
 #if defined _FF2_included
  #endinput
@@ -178,7 +180,7 @@ native Float:FF2_GetAbilityArgumentFloat(index, const String:plugin_name[], cons
  * @param bufferlength	Length of buffer string
  * @noreturn
  */
-native FF2_GetAbilityArgumentString( index, const String:plugin_name[], const String:ability_name[], argument, String:buffer[], bufferlength);
+native FF2_GetAbilityArgumentString(index, const String:plugin_name[], const String:ability_name[], argument, String:buffer[], bufferlength);
 
 /**
  * Starts random boss sound from its config file
@@ -243,6 +245,13 @@ native FF2_GetQueuePoints(client);
  * @noreturn
  */
 native FF2_SetQueuePoints(client, value);
+
+/**
+ * Returns whether or not debug is enabled
+ *
+ * @return			True if enabled; false otherwise
+ */
+native Bool:FF2_Debug();
 
 /**
  * FF2_OnAbility:
@@ -316,6 +325,23 @@ forward Action:FF2_OnAddQueuePoints( add_points[MAXPLAYERS+1] );
  */
 forward Action:FF2_OnLoadCharacterSet(CharSetNum, String:CharSetName[]);
 
+/**
+ * Used to consolidate debug messages
+ *
+ * @param buffer	Debug string to display
+ * @param any:...	Formatting rules
+ * @noreturn
+ */
+stock Debug(String:buffer[], any:...)
+{
+	if(FF2_Debug())
+	{
+		decl String:message[192];
+		VFormat(message, sizeof(message), buffer, 2);
+		CPrintToChatAll("{olive}[FF2] {darkorange}DEBUG:{default} %s", message);
+	}
+}
+
 public SharedPlugin:__pl_FF2 =
 {
 	name = "freak_fortress_2",
@@ -353,5 +379,6 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetFF2flags");		
 	MarkNativeAsOptional("FF2_SetFF2flags");		
 	MarkNativeAsOptional("FF2_DoAbility");
+	MarkNativeAsOptional("FF2_Debug");
 }
 #endif

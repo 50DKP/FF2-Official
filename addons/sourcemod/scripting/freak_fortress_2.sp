@@ -15,6 +15,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #pragma semicolon 1
 
 #include <sourcemod>
+#include <freak_fortress_2>
 #include <sdktools>
 #include <sdktools_gamerules>
 #include <sdkhooks>
@@ -28,7 +29,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 8"
+#define PLUGIN_VERSION "1.9.0 Beta 8-2"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -46,7 +47,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 new bool:steamtools=false;
 #endif
 
-//new chkFirstHale;
 new bool:b_allowBossChgClass=false;
 new bool:b_BossChgClassDetected=false;
 new OtherTeam=2;
@@ -63,18 +63,6 @@ new Damage[MAXPLAYERS+1];
 new curHelp[MAXPLAYERS+1];	
 new uberTarget[MAXPLAYERS+1];
 
-#define FF2FLAG_UBERREADY				(1<<1)	//Used when medic says "I'm charged!"
-#define FF2FLAG_ISBUFFED				(1<<2)	//Used when soldier uses backup's buff.
-#define FF2FLAG_CLASSTIMERDISABLED 		(1<<3)	//Used to prevent clients' timer.
-#define FF2FLAG_HUDDISABLED				(1<<4)	//Used to prevent custom hud from clients' timer.
-#define FF2FLAG_BOTRAGE					(1<<5)	//Used by bots to use Boss' rage.
-#define FF2FLAG_TALKING					(1<<6)	//Used by Bosses with "sound_block_vo" to disable block for some lines.
-#define FF2FLAG_ALLOWSPAWNINBOSSTEAM	(1<<7)	//Used to allow spawn players in Boss' team.
-#define FF2FLAG_USEBOSSTIMER			(1<<8)	//Used to prevent Boss' timer.
-#define FF2FLAG_USINGABILITY			(1<<9)	//Used to prevent Boss' hints about abilities buttons.
-#define FF2FLAG_CLASSHELPED				(1<<10)
-#define FF2FLAG_HASONGIVED				(1<<11)
-#define FF2FLAGS_SPAWN					~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & FF2FLAG_USEBOSSTIMER & ~FF2FLAG_USINGABILITY
 new FF2flags[MAXPLAYERS+1];
 
 new Boss[MAXPLAYERS+1];
@@ -228,7 +216,7 @@ static const String:ff2versiondates[][]=
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
-	"January 4, 2014"	//1.9.0
+	"January 12, 2014"	//1.9.0
 };
 
 stock FindVersionData(Handle:panel, versionindex)
@@ -544,6 +532,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_SetFF2flags", Native_SetFF2flags);
 	CreateNative("FF2_GetQueuePoints", Native_GetQueuePoints);
 	CreateNative("FF2_SetQueuePoints", Native_SetQueuePoints);
+	CreateNative("FF2_Debug", Native_Debug);
 
 	PreAbility=CreateGlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);
 	OnAbility=CreateGlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell);
@@ -837,7 +826,6 @@ public OnConfigsExecuted()
 public OnMapStart()
 {
 	HPTime=0.0;
-	//chkFirstHale=0;
 	MusicTimer=INVALID_HANDLE;
 	RoundCounter=0;
 	doorchecktimer=INVALID_HANDLE;
@@ -2718,56 +2706,9 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 	SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
 	SetClientQueuePoints(Boss[client], 0);
 	Debug("MakeBoss: Health and queue points set");
-
-	/*if(chkFirstHale==0)
-	{
-		if(GetConVarBool(cvarFirstRound) && RoundCount==0)
-		{
-			cFH(Boss[client]);
-			Debug("MakeBoss: Deferring to cFH");
-		}
-		else if(!GetConVarBool(cvarFirstRound) && RoundCount==1)
-		{
-			cFH(Boss[client]);
-			Debug("MakeBoss: Deferring to cFH (2nd round)");
-		}
-	}*/
 	Debug("End MakeBoss");
 	return Plugin_Continue;
 }
-
-/*public cFH(client)
-{
-	if(client>0)
-	{
-		CreateTimer(3.0, checkFirstHale, client);
-	}
-}
-
-public Action:checkFirstHale(Handle:timer, any:client)
-{
-	Debug("Start checkFirstHale");
-	b_allowBossChgClass=true;
-	if(GetBossIndex(client)!=-1 && client>0)
-	{
-		CPrintToChat(client, "{olive}[FF2]{default} First-round Hale Bug Check!");
-		ForcePlayerSuicide(client);
-		if(TF2_GetPlayerClass(client)==TFClass_Soldier)
-		{
-			TF2_SetPlayerClass(client, TFClass_Scout);
-		}
-		else
-		{
-			TF2_SetPlayerClass(client, TFClass_Soldier);
-		}
-		TF2_RespawnPlayer(client);
-		TF2_RemoveAllWeapons(client);
-		CPrintToChat(client, "{olive}[FF2]{default} We'll fix you up when the game starts.");
-	}
-	b_allowBossChgClass=false;
-	chkFirstHale++;
-	Debug("End checkFirstHale");
-}*/
 
 public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefinitionIndex, &Handle:hItem)
 {
@@ -4001,7 +3942,7 @@ public Action:ClientTimer(Handle:hTimer)
 			cond=TFCond_HalloweenCritCandy;
 			if(TF2_IsPlayerInCondition(client, TFCond_CritCola) && (class==TFClass_Scout || class==TFClass_Heavy))
 			{
-				TF2_AddCondition(client,cond,0.3);
+				TF2_AddCondition(client, cond, 0.3);
 				continue;
 			}
 
@@ -4026,11 +3967,11 @@ public Action:ClientTimer(Handle:hTimer)
 
 			switch(index)
 			{
-				case 16, 56, 58, 203, 305, 1005, 1079:
+				case 16, 56, 58, 203, 305, 1005, 1079:  //SMG, Huntsman, Jarate, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow
 				{
 					addthecrit=true;
 				}
-				case 22, 23, 160, 209, 294, 449, 773:
+				case 22, 23, 160, 209, 294, 449, 773:  //Pistols
 				{
 					addthecrit=true;
 					if(class==TFClass_Scout && cond==TFCond_HalloweenCritCandy)
@@ -4038,14 +3979,14 @@ public Action:ClientTimer(Handle:hTimer)
 						cond=TFCond_Buffed;
 					}
 				}
-				case 656:
+				case 656:  //Holiday Punch
 				{
 					addthecrit=true;
 					cond=TFCond_Buffed;
 				}
 			}
 
-			if(index==16 && addthecrit && IsValidEntity(FindPlayerBack(client, {642}, 1)))
+			if(index==16 && addthecrit && IsValidEntity(FindPlayerBack(client, {642}, 1)))  //SMG
 			{
 				addthecrit=false;
 			}
@@ -4078,34 +4019,43 @@ public Action:ClientTimer(Handle:hTimer)
 						}
 					}
 				}
-				case TFClass_DemoMan: if(!IsValidEntity(GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)))
+				case TFClass_DemoMan:
 				{
-					addthecrit=true;
-				}
-				case TFClass_Spy: if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
-				{
-					if(!TF2_IsPlayerCritBuffed(client) && !TF2_IsPlayerInCondition(client, TFCond_Buffed) && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && !TF2_IsPlayerInCondition(client, TFCond_Disguised) && !GetEntProp(client, Prop_Send, "m_bFeignDeathReady"))
+					if(!IsValidEntity(GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)))
 					{
-						TF2_AddCondition(client, TFCond_CritCola, 0.3);
+						addthecrit=true;
 					}
 				}
-				case TFClass_Engineer: if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && StrEqual(wepclassname, "tf_weapon_sentry_revenge", false))
+				case TFClass_Spy:
 				{
-					new sentry=FindSentry(client);
-					if(IsValidEntity(sentry) && IsBoss(GetEntPropEnt(sentry, Prop_Send, "m_hEnemy")))
+					if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
 					{
-						SetEntProp(client, Prop_Send, "m_iRevengeCrits", 3);
-						TF2_AddCondition(client, TFCond_Kritzkrieged, 0.3);
-					}
-					else
-					{
-						if(GetEntProp(client, Prop_Send, "m_iRevengeCrits"))
+						if(!TF2_IsPlayerCritBuffed(client) && !TF2_IsPlayerInCondition(client, TFCond_Buffed) && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && !TF2_IsPlayerInCondition(client, TFCond_Disguised) && !GetEntProp(client, Prop_Send, "m_bFeignDeathReady"))
 						{
-							SetEntProp(client, Prop_Send, "m_iRevengeCrits", 0);
+							TF2_AddCondition(client, TFCond_CritCola, 0.3);
 						}
-						else if(TF2_IsPlayerInCondition(client, TFCond_Kritzkrieged) && !TF2_IsPlayerInCondition(client, TFCond_Healing))
+					}
+				}
+				case TFClass_Engineer:
+				{
+					if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && StrEqual(wepclassname, "tf_weapon_sentry_revenge", false))
+					{
+						new sentry=FindSentry(client);
+						if(IsValidEntity(sentry) && IsBoss(GetEntPropEnt(sentry, Prop_Send, "m_hEnemy")))
 						{
-							TF2_RemoveCondition(client, TFCond_Kritzkrieged);
+							SetEntProp(client, Prop_Send, "m_iRevengeCrits", 3);
+							TF2_AddCondition(client, TFCond_Kritzkrieged, 0.3);
+						}
+						else
+						{
+							if(GetEntProp(client, Prop_Send, "m_iRevengeCrits"))
+							{
+								SetEntProp(client, Prop_Send, "m_iRevengeCrits", 0);
+							}
+							else if(TF2_IsPlayerInCondition(client, TFCond_Kritzkrieged) && !TF2_IsPlayerInCondition(client, TFCond_Healing))
+							{
+								TF2_RemoveCondition(client, TFCond_Kritzkrieged);
+							}
 						}
 					}
 				}
@@ -4134,10 +4084,13 @@ public Action:BackUpBuffTimer(Handle:hTimer,any:clientid)
 
 stock FindSentry(client)
 {
-	new i=-1;
-	while((i=FindEntityByClassname2(i, "obj_sentrygun"))!=-1)
+	new entity=-1;
+	while((entity=FindEntityByClassname2(entity, "obj_sentrygun"))!=-1)
 	{
-		if(GetEntPropEnt(i, Prop_Send, "m_hBuilder")==client) return i;
+		if(GetEntPropEnt(entity, Prop_Send, "m_hBuilder")==client)
+		{
+			return entity;
+		}
 	}
 	return -1;
 }
@@ -4348,21 +4301,28 @@ stock OnlyScoutsLeft()
 public Action:Destroy(client, const String:command[], argc)
 {
 	if(!Enabled || IsBoss(client))
+	{
 		return Plugin_Continue;
-	if(IsValidClient(client) && TF2_GetPlayerClass(client)==TFClass_Engineer && TF2_IsPlayerInCondition(client, TFCond_Taunting) && GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==589)
+	}
+
+	if(IsValidClient(client) && TF2_GetPlayerClass(client)==TFClass_Engineer && TF2_IsPlayerInCondition(client, TFCond_Taunting) && GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==589)  //Eureka Effect
+	{
 		return Plugin_Handled;
+	}
 	return Plugin_Continue;
 }
+
 stock GetIndexOfWeaponSlot(client, slot)
 {
 	new weapon=GetPlayerWeaponSlot(client, slot);
 	return (weapon>MaxClients && IsValidEntity(weapon) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 }
+
 public TF2_OnConditionRemoved(client, TFCond:condition)
 {
 	if(TF2_GetPlayerClass(client)==TFClass_Scout && condition==TFCond_CritHype)
 	{
-		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);	//recalc their speed
+		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
 	}
 }
 
@@ -4445,7 +4405,9 @@ public Action:DoTaunt(client, const String:command[], argc)
 public Action:DoSuicide(client, const String:command[], argc)
 {
 	if(Enabled && IsBoss(client) && CheckRoundState()<=0)
+	{
 		return Plugin_Handled;
+	}
 	return Plugin_Continue;
 }
 
@@ -7346,6 +7308,11 @@ public Native_IsVSHMap(Handle:plugin, numParams)
 	return false;
 }
 
+public Native_Debug(Handle:plugin, numParams)
+{
+	return GetConVarBool(cvarDebug);
+}
+
 public Action:VSH_OnIsSaxtonHaleModeEnabled(&result)
 {
 	if((!result || result==1) && Enabled)
@@ -7565,14 +7532,5 @@ UpdateHealthBar()
 	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);
 }
 
-Debug(String:buffer[], any:...)
-{
-	if(GetConVarBool(cvarDebug))
-	{
-		decl String:message[192];
-		VFormat(message, sizeof(message), buffer, 2);
-		CPrintToChatAll("{olive}[FF2] {darkorange}DEBUG:{default} %s", message);
-	}
-}
 
 #include <freak_fortress_2_vsh_feedback>
