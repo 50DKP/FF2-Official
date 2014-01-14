@@ -5617,12 +5617,23 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
-	if(!Enabled) return Plugin_Continue;
-	if(!IsValidClient(client, false)) return Plugin_Continue;
+	if(!Enabled || !IsValidClient(client, false))
+	{
+		return Plugin_Continue;
+	}
+
 	if(IsBoss(client))
 	{
-		if(CheckRoundState()!=-1) return Plugin_Continue;
-		if(TF2_IsPlayerCritBuffed(client)) return Plugin_Continue;
+		if(CheckRoundState()!=-1)
+		{
+			return Plugin_Continue;
+		}
+
+		if(TF2_IsPlayerCritBuffed(client))
+		{
+			return Plugin_Continue;
+		}
+
 		if(!BossCrits)
 		{
 			result=false;
