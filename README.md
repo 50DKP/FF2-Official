@@ -44,6 +44,7 @@ In order to get the most up-to-date builds, you'll have to periodically update y
 4. Execute `git pull master`.  This pulls all commits from the official repository that do not yet exist on your local repository and updates it.
 
 ###Label Information
+***
 * `bug-critical` denotes severe game-impeding bugs that generally do not have a workaround.
 	* *Examples*: Server crashes, unplayable bosses, etc.
 * `bug-major` denotes game-impeding bugs that generally have a workaround and/or can be easily avoided.
