@@ -17,11 +17,11 @@ This tutorial assumes you have TF2 installed. and place it anywhere you want, pr
 4. Right now, you should have a folder structure that looks like:
 
 ***
-ff2dev
-\-tf
-	\-addons
-		\-sourcemod
-			\-Misc. Sourcemod files (should have `scripting` and `plugins`)
+	ff2dev
+	\-tf
+		\-addons
+			\-sourcemod
+				\-Misc. Sourcemod files (should have `scripting` and `plugins`)
 ***
 
 ####Installing Sourcemod
