@@ -49,7 +49,7 @@ In order to get the most up-to-date builds, you'll have to periodically update y
 	* *Examples*: Server crashes, unplayable bosses, etc.
 * `bug-major` denotes game-impeding bugs that generally have a workaround and/or can be easily avoided.
 	* *Examples*: Suicide/weapon-related bugs, etc.
-* `bug-minor` denotes bugs that generally are visual-only and do not seriously affect gameplay.
+* `bug-minor` denotes bugs that are generally visual-only and/or do not seriously affect gameplay.  This may also include bugs that are not always reproducible.
 	* *Examples*: No HUD, missing text, etc.
 * `feedback-required` denotes issues that require feedback from others.
 	* *Examples*: Suggestions, etc.
