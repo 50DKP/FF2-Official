@@ -1,6 +1,7 @@
 #This is so you can put this repo in your server directory without stuff blowing up :)
 
 #GLOBAL
+*.bak
 *.ztmp
 
 #ROOT
@@ -13,7 +14,7 @@
 /*.res
 /.hg_archival.txt
 /gameinfo.txt
-/GPLv*.txt
+/GPL*.txt
 /item_whitelist_example.txt
 /LICENSE.txt
 /mapcycle.txt
@@ -56,24 +57,7 @@
 /addons/sourcemod/logs/
 
 #SOURCEMOD PLUGINS
-/addons/sourcemod/plugins/disabled/
-/addons/sourcemod/plugins/ad*.smx
-/addons/sourcemod/plugins/an*.smx
-/addons/sourcemod/plugins/b*.smx
-/addons/sourcemod/plugins/c*.smx
-/addons/sourcemod/plugins/dkp_*.smx
-/addons/sourcemod/plugins/fun*.smx
-/addons/sourcemod/plugins/g*.smx
-/addons/sourcemod/plugins/h*.smx
-/addons/sourcemod/plugins/l*.smx
-/addons/sourcemod/plugins/m*.smx
-/addons/sourcemod/plugins/n*.smx
-/addons/sourcemod/plugins/p*.smx
-/addons/sourcemod/plugins/s*.smx
-/addons/sourcemod/plugins/r*.smx
-/addons/sourcemod/plugins/t*.smx
-/addons/sourcemod/plugins/u*.smx
-/addons/sourcemod/plugins/w*.smx
+/addons/sourcemod/plugins/
 
 #SOURCEMOD SOURCE FILES
 /addons/sourcemod/scripting/a*/
@@ -151,17 +135,15 @@ update_tf2.txt
 #CUSTOM
 /custom/
 
-#RANDOM STUFF FTW
+#DOWNLOAD STUFFS
 /download/
 /downloadlists/
 
 #MAPS
 /maps/
 
-#MATERIALS
+#MOAR RANDOM STUFF
 /materials/models/player/items/templates/standard.vmt
-
-#RANDOM STUFF NEVER ENDS
 /media/
 /replay/
 /resource/

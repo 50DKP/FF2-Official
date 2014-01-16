@@ -24,12 +24,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 //#include <tf2attributes>
 #include <tf2items>
 #include <clientprefs>
-#include <wearabletemp>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 8-2"
+#define PLUGIN_VERSION "1.9.0 Beta 8-3"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -559,7 +558,7 @@ public OnPluginStart()
 	cvarPointType=CreateConVar("ff2_point_type", "0", "0-Use ff2_point_alive, 1-Use ff2_point_time", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarPointDelay=CreateConVar("ff2_point_delay", "6", "Seconds to add to the point delay per player", FCVAR_PLUGIN);
 	cvarAliveToEnable=CreateConVar("ff2_point_alive", "5", "The control point will only activate when there are this many people or less left alive", FCVAR_PLUGIN);
-	cvarAnnounce=CreateConVar("ff2_announce", "120.0", "Amount of seconds to wait until FF2 info is displayed again.  0 to disable", FCVAR_PLUGIN, true, 0.0);
+	cvarAnnounce=CreateConVar("ff2_announce", "120", "Amount of seconds to wait until FF2 info is displayed again.  0 to disable", FCVAR_PLUGIN, true, 0.0);
 	cvarEnabled=CreateConVar("ff2_enabled", "1", "0-Disable FF2 (WHY?), 1-Enable FF2", FCVAR_PLUGIN|FCVAR_DONTRECORD, true, 0.0, true, 1.0);
 	cvarCrits=CreateConVar("ff2_crits", "1", "Can Boss get crits?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarFirstRound=CreateConVar("ff2_first_round", "0", "0-Make the first round arena so that more people can join, 1-Make all rounds FF2", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -575,7 +574,6 @@ public OnPluginStart()
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);  //Keep this as the last convar
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
 
-	HookConVarChange(cvarHealthBar, HealthbarEnableChanged);
 	HookEvent("player_changeclass", OnChangeClass);
 	HookEvent("teamplay_round_start", event_round_start);
 	HookEvent("teamplay_round_win", event_round_end);
@@ -587,6 +585,7 @@ public OnPluginStart()
 	HookEvent("object_destroyed", event_destroy, EventHookMode_Pre);
 	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
 	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
+
 	HookConVarChange(cvarEnabled, CvarChange);
 	HookConVarChange(cvarPointDelay, CvarChange);
 	HookConVarChange(cvarAnnounce, CvarChange);
@@ -595,11 +594,12 @@ public OnPluginStart()
 	HookConVarChange(cvarAliveToEnable, CvarChange);
 	HookConVarChange(cvarCrits, CvarChange);
 	HookConVarChange(cvarCircuitStun, CvarChange);
+	HookConVarChange(cvarHealthBar, HealthbarEnableChanged);
 	HookConVarChange(cvarcountdownTime, CvarChange);
 	HookConVarChange(cvarCountdownHealth, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
+	HookConVarChange(cvarNextmap, CvarChangeNextmap);
 	cvarNextmap=FindConVar("sm_nextmap");
-	HookConVarChange(cvarNextmap,CvarChangeNextmap);
 
 	RegConsoleCmd("ff2", FF2Panel);
 	RegConsoleCmd("ff2_hp", Command_GetHPCmd);
@@ -751,6 +751,7 @@ public OnConfigsExecuted()
 	AliveToEnable=GetConVarInt(cvarAliveToEnable);
 	BossCrits=GetConVarBool(cvarCrits);
 	circuitStun=GetConVarFloat(cvarCircuitStun);
+	countdownHealth=GetConVarInt(cvarCountdownHealth);
 	
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
@@ -2470,6 +2471,7 @@ public Action:MessageTimer(Handle:hTimer)
 		return Plugin_Continue;
 	}
 
+	Debug("Start MessageTimer");
 	if(checkdoors)
 	{
 		new entity=-1;
@@ -2484,7 +2486,9 @@ public Action:MessageTimer(Handle:hTimer)
 			doorchecktimer=CreateTimer(5.0, Timer_CheckDoors, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 		}
 	}
+
 	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
+	Debug("HUD text params set");
 	new String:text[512];
 	decl String:lives[4];
 	decl String:name[64];
@@ -2495,6 +2499,7 @@ public Action:MessageTimer(Handle:hTimer)
 			continue;
 		}
 
+		Debug("MessageTimer: Deferring to MakeBoss in 0.1 seconds");
 		CreateTimer(0.1, MakeBoss, client);
 		KvRewind(BossKV[Special[client]]);
 		KvGetString(BossKV[Special[client]], "name", name, 64, "=Failed name=");
@@ -2506,8 +2511,8 @@ public Action:MessageTimer(Handle:hTimer)
 		{
 			strcopy(lives, 2, "");
 		}
-		Debug("Boss text formatted");
 		Format(text, 512, "%s\n%t", text, "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
+		Debug("Boss text formatted");
 	}
 
 	for(new client=1; client<=MaxClients; client++)
@@ -2515,10 +2520,10 @@ public Action:MessageTimer(Handle:hTimer)
 		if(IsValidClient(client) && !(FF2flags[client] & FF2FLAG_HUDDISABLED))
 		{
 			SetGlobalTransTarget(client);
-			Debug("Boss info text rendered");
 			ShowHudText(client, -1, text);
 		}
 	}
+	Debug("Boss info text shown");
 	return Plugin_Continue;
 }
 
