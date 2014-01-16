@@ -2417,6 +2417,7 @@ public Action:GottamTimer(Handle:hTimer)
 
 public Action:StartRound(Handle:hTimer)
 {
+	Debug("Start StartRound");
 	for(new client=0; client<=MaxClients; client++)
 	{
 		if(!IsValidClient(Boss[client]))
@@ -2430,6 +2431,7 @@ public Action:StartRound(Handle:hTimer)
 		new bool:melee=IsValidEntity(GetPlayerWeaponSlot(Boss[client], TFWeaponSlot_Melee));
 		if(primary || secondary || melee)
 		{
+			Debug("StartRound: Deferring to ReEquipBoss in .05 secs");
 			CreateTimer(0.05, Timer_ReEquipBoss, client, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
@@ -2601,7 +2603,6 @@ public OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast)
 		CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a HALE!");
 		b_BossChgClassDetected=true;
 		TF2_SetPlayerClass(client, oldclass);
-		EquipBoss(client);
 	}
 }
 
