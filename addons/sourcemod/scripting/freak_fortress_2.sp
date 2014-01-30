@@ -28,7 +28,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 8-3"
+#define PLUGIN_VERSION "1.9.0 Beta 8-4"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -1612,7 +1612,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	decl String:s[64];
 	Boss[0]=FindBosses(see);
-	PickSpecial(0,0);
+	PickSpecial(0, 0);
 	see[Boss[0]]=true;
 	if((Special[0]<0) || !BossKV[Special[0]])
 	{
@@ -2562,12 +2562,26 @@ EquipBoss(client)
 			KvGetString(BossKV[Special[client]], "attributes", attributes, 128);
 			if(attributes[0]!='\0')
 			{
-				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; %s", attributes);
+				if(BossCrits)
+				{
+					Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; %s", attributes);
+				}
+				else
+				{
+					Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; 15 ; 1 ; %s", attributes);
+				}
 				Debug("EquipBoss: Attributes added");
 			}
 			else
 			{
-				attributes="68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0";
+				if(BossCrits)
+				{
+					attributes="68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0";
+				}
+				else
+				{
+					attributes="68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; 15 ; 1";
+				}
 				Debug("EquipBoss: Default attributes added");
 			}
 
@@ -3038,7 +3052,7 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 	new String:weaponAttribsArray[32][32];
 	new attribCount=ExplodeString(att, ";", weaponAttribsArray, 32, 32);
 	
-	if(attribCount % 2!=0)
+	if(attribCount%2!=0)
 	{
 		--attribCount;
 	}
@@ -5621,7 +5635,7 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 	}
 }
 
-public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
+/*public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
 	if(!Enabled || !IsValidClient(client, false))
 	{
@@ -5647,7 +5661,7 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 		}
 	}
 	return Plugin_Continue;
-}
+}*/
 
 stock FindBosses(bool:array[])
 {
@@ -6007,7 +6021,7 @@ ForceTeamWin(team)
 	AcceptEntityInput(ent, "SetWinner");
 }
 
-public bool:PickSpecial(index,index2)
+public bool:PickSpecial(index, index2)
 {
 	if(index==index2)
 	{
@@ -6018,66 +6032,79 @@ public bool:PickSpecial(index,index2)
 			PrecacheCharacter(Special[index]);
 			return true;
 		}
+
 		new chances[MAXSPECIALS];
 		new chances_index;
 		new String:s_chances[MAXSPECIALS*2][8];
 		if(ChancesString[0])
 		{
-			ExplodeString(ChancesString, " ; ", s_chances,MAXSPECIALS*2,8);
+			ExplodeString(ChancesString, ";", s_chances, MAXSPECIALS*2, 8);
 			chances[0]=StringToInt(s_chances[1]);
 			for(chances_index=3; s_chances[chances_index][0]; chances_index+=2)
+			{
 				chances[chances_index/2]=StringToInt(s_chances[chances_index])+chances[chances_index/2-1];
+			}
 			chances_index-=2;
 		}
+
 		new pingas;
 		do
 		{
 			if(ChancesString[0])
 			{
-				new random_num=GetRandomInt(0,chances[chances_index/2]);
+				new random_num=GetRandomInt(0, chances[chances_index/2]);
 				decl see;
-				for(see=0; random_num>chances[see]; see++) {}
+				for(see=0; random_num>chances[see]; see++)
+				{
+				}
+
 				decl String:name1[64];
 				Special[index]=StringToInt(s_chances[see*2])-1;
 				KvRewind(BossKV[Special[index]]);
-				KvGetString(BossKV[Special[index]], "name", name1, 64,"=Failed name=");
+				KvGetString(BossKV[Special[index]], "name", name1, 64, "=Failed name=");
 			}
 			else
 			{
-				Special[index]=GetRandomInt(0,Specials-1);
+				Special[index]=GetRandomInt(0, Specials-1);
 				KvRewind(BossKV[Special[index]]);
 			}
 			pingas++;
 		}
-		while(pingas<100 && KvGetNum(BossKV[Special[index]], "blocked",0));
+		while(pingas<100 && KvGetNum(BossKV[Special[index]], "blocked", 0));
+
 		if(pingas==100)
+		{
 			Special[index]=0;
+		}
 	}
 	else
 	{	
 		decl String:s2[64];
 		decl String:s1[64];
 		KvRewind(BossKV[Special[index2]]);
-		KvGetString(BossKV[Special[index2]], "companion", s2, 64,"=Failed name2=");
+		KvGetString(BossKV[Special[index2]], "companion", s2, 64, "=Failed name2=");
 		decl i;
 		for(i=0; i<Specials; i++)
 		{
 			KvRewind(BossKV[i]);
-			KvGetString(BossKV[i], "name", s1, 64,"=Failed name1=");
+			KvGetString(BossKV[i], "name", s1, 64, "=Failed name1=");
 			if(!strcmp(s1,s2,false))
 			{
 				Special[index]=i;
 				break;
 			}
-			KvGetString(BossKV[i], "filename", s1, 64,"=Failed name1=");
-			if(!strcmp(s1,s2,false))
+			KvGetString(BossKV[i], "filename", s1, 64, "=Failed name1=");
+			if(!strcmp(s1, s2, false))
 			{
 				Special[index]=i;
 				break;
 			}
 		}
+
 		if(i==Specials)
+		{
 			return false;
+		}
 	}
 	new Action:act=Plugin_Continue;
 	Call_StartForward(OnSpecialSelected);
@@ -6114,23 +6141,26 @@ public bool:PickSpecial(index,index2)
 	return true;
 }
 
-stock SpawnWeapon(client,String:name[],index,level,qual,String:att[])
+stock SpawnWeapon(client, String:name[], index, level, qual, String:att[])
 {
 	new Handle:hWeapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
 	if(hWeapon==INVALID_HANDLE)
+	{
 		return -1;
+	}
+
 	TF2Items_SetClassname(hWeapon, name);
 	TF2Items_SetItemIndex(hWeapon, index);
 	TF2Items_SetLevel(hWeapon, level);
 	TF2Items_SetQuality(hWeapon, qual);
 	new String:atts[32][32];
 	new count=ExplodeString(att, ";", atts, 32, 32);
-	
-	if(count % 2!=0)
+
+	if(count%2!=0)
 	{
 		--count;
 	}
-	
+
 	if(count>0)
 	{
 		TF2Items_SetNumAttributes(hWeapon, count/2);
