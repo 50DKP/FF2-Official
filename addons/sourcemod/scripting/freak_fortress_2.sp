@@ -28,7 +28,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 8-4"
+#define PLUGIN_VERSION "1.9.0 Beta 8-5"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -2429,7 +2429,7 @@ public Action:StartRound(Handle:hTimer)
 		new bool:primary=IsValidEntity(GetPlayerWeaponSlot(Boss[client], TFWeaponSlot_Primary));
 		new bool:secondary=IsValidEntity(GetPlayerWeaponSlot(Boss[client], TFWeaponSlot_Secondary));
 		new bool:melee=IsValidEntity(GetPlayerWeaponSlot(Boss[client], TFWeaponSlot_Melee));
-		if(primary || secondary || melee)
+		if((!primary && !secondary && !melee) || (primary || secondary || melee))
 		{
 			Debug("StartRound: Deferring to ReEquipBoss in .05 secs");
 			CreateTimer(0.05, Timer_ReEquipBoss, client, TIMER_FLAG_NO_MAPCHANGE);
@@ -2654,7 +2654,7 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 		}
 	}
 
-	CreateTimer(0.2, MakeModelTimer,client);
+	CreateTimer(0.2, MakeModelTimer, client);
 	if(!IsVoteInProgress() && GetClientClassinfoCookie(Boss[client]))
 	{
 		HelpPanelBoss(client);
@@ -3154,7 +3154,7 @@ public Action:MakeNotBoss(Handle:hTimer,any:clientid)
 	return Plugin_Continue;
 }
 
-public Action:checkItems(Handle:hTimer,any:client)  //Weapon balance 2
+public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 {
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client))
 	{
