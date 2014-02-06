@@ -5183,7 +5183,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							BossCharge[index][0]=0.0;
 						}
 					}
-					case 132, 266, 482:  //Eyelander, HHHH, Nessie's Nine Iron
+					case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander
 					{
 						IncrementHeadCount(attacker);
 					}
