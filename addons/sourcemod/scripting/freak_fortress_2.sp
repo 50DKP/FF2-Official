@@ -28,7 +28,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 8-6"
+#define PLUGIN_VERSION "1.9.0 Beta 9-1"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -215,7 +215,7 @@ static const String:ff2versiondates[][]=
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
-	"February 6, 2014"	//1.9.0
+	"February 7, 2014"	//1.9.0
 };
 
 stock FindVersionData(Handle:panel, versionindex)
@@ -1669,8 +1669,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	}
 	CreateTimer(0.2, Timer_GogoBoss);
 	CreateTimer(9.1, StartBossTimer);
-	CreateTimer(3.5, StartResponceTimer);
-	Debug("Creating boss info text in 9.6 seconds");
+	CreateTimer(3.5, StartResponseTimer);
 	CreateTimer(9.6, MessageTimer);
 
 	for(new entity=MaxClients+1; entity<ME; entity++)
@@ -2084,7 +2083,7 @@ stock CalcQueuePoints()
 	}
 }
 
-public Action:StartResponceTimer(Handle:hTimer)
+public Action:StartResponseTimer(Handle:hTimer)
 {
 	decl String:sound[PLATFORM_MAX_PATH];
 	if(RandomSound("sound_begin", sound, PLATFORM_MAX_PATH))
@@ -2459,7 +2458,7 @@ public Action:Timer_SkipFF2Panel(Handle:hTimer)
 		added[client]=true;
 		if(client && !IsBoss(client))
 		{
-			CPrintToChat(client,"{olive}[FF2]{default} %t","to0_near");
+			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_near");
 			i++;
 		}
 		j++;
@@ -2469,12 +2468,11 @@ public Action:Timer_SkipFF2Panel(Handle:hTimer)
 
 public Action:MessageTimer(Handle:hTimer)
 {
-	if(CheckRoundState()!=1)
+	if(CheckRoundState()!=0)
 	{
 		return Plugin_Continue;
 	}
 
-	Debug("Start MessageTimer");
 	if(checkdoors)
 	{
 		new entity=-1;
@@ -2491,7 +2489,6 @@ public Action:MessageTimer(Handle:hTimer)
 	}
 
 	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
-	Debug("HUD text params set");
 	new String:text[512];
 	decl String:lives[4];
 	decl String:name[64];
@@ -2514,7 +2511,6 @@ public Action:MessageTimer(Handle:hTimer)
 			strcopy(lives, 2, "");
 		}
 		Format(text, 512, "%s\n%t", text, "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
-		Debug("Boss text formatted");
 	}
 
 	for(new client=1; client<=MaxClients; client++)
@@ -2525,7 +2521,6 @@ public Action:MessageTimer(Handle:hTimer)
 			ShowHudText(client, -1, text);
 		}
 	}
-	Debug("Boss info text shown");
 	return Plugin_Continue;
 }
 
@@ -2626,6 +2621,7 @@ public OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast)
 		CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a HALE!");
 		b_BossChgClassDetected=true;
 		TF2_SetPlayerClass(client, oldclass);
+		CreateTimer(0.2, MakeModelTimer, client);
 	}
 }
 
