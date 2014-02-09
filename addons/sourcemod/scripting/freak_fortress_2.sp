@@ -181,6 +181,7 @@ static const String:ff2versiontitles[][]=
 	"1.0.8",
 	"1.0.8",
 	"1.0.8",
+	"1.9.0",
 	"1.9.0"
 };
 
@@ -215,20 +216,25 @@ static const String:ff2versiondates[][]=
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
-	"February 7, 2014"	//1.9.0
+	"February 8, 2014",	//1.9.0
+	"February 8, 2014"	//1.9.0
 };
 
 stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
-		case 29:  //1.9.0
+		case 30:  //1.9.0
 		{
 			DrawPanelText(panel, "1) Removed checkFirstHale (Wliu)");
 			DrawPanelText(panel, "2) [Server] Fixed invalid healthbar entity bug (Wliu)");
 			DrawPanelText(panel, "3) Changed default medic ubercharge percentage to 40% (Wliu)");
 			DrawPanelText(panel, "4) Whitelisted festive variants of weapons (Wliu/BBG_Theory)");
-			DrawPanelText(panel, "5) [Server] Added convars to control last player highlight and stalemate timer health value (Wliu");
+			DrawPanelText(panel, "5) [Server] Added convars to control last player highlight and timer health cutoff (Wliu");
+			DrawPanelText(panel, "See next page (press 8)");
+		}
+		case 29:  //1.9.0
+		{
 			DrawPanelText(panel, "6) [Dev] Added debug method used for sending debug messages and a convar to control it (Wliu)");
 			DrawPanelText(panel, "7) Fixed a few minor !whatsnew bugs (BBG_Theory)");
 		}
@@ -240,7 +246,7 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "3) Made sure that the boss doesn't have any invalid weapons/items (Powerlord)");
 			DrawPanelText(panel, "4) Tried fixing the visible weapon bug (Powerlord)");
 			DrawPanelText(panel, "5) Whitelisted some more action slot items (Powerlord)");
-			DrawPanelText(panel, "See next page (press 2)");
+			DrawPanelText(panel, "See next page (press 8)");
 		}
 		case 27:  //1.0.8
 		{
@@ -250,7 +256,7 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "9) Slight tweaks to the view hp commands (Powerlord)");
 			DrawPanelText(panel, "10) Whitelisted the Silver/Gold Botkiller Sniper Rifle Mk.II (Powerlord)");
 			DrawPanelText(panel, "11) Slight tweaks to boss health calculation (Powerlord)");
-			DrawPanelText(panel, "See next page (press 2)");
+			DrawPanelText(panel, "See next page (press 8)");
 		}
 		case 26:  //1.0.8
 		{
@@ -260,7 +266,7 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "15) Healthpacks from the Candy Cane are no longer despawned (Powerlord)");
 			DrawPanelText(panel, "16) Slight tweaks to removing laughs (Powerlord)");
 			DrawPanelText(panel, "17) [Dev] Added a clip argument to special_noanims.sp (Powerlord)");
-			DrawPanelText(panel, "See next page (press 2)");
+			DrawPanelText(panel, "See next page (press 8)");
 		}
 		case 25:  //1.0.8
 		{
@@ -270,7 +276,7 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "21) Multiple English translation improvements (Wliu/Powerlord)");
 			DrawPanelText(panel, "22) Fixed Ninja Spy and other bosses that use the matrix ability getting stuck in walls/ceilings (Chris)");
 			DrawPanelText(panel, "23) [Dev] Updated item attributes code per the TF2Items update (Powerlord)");
-			DrawPanelText(panel, "See next page (press 2)");
+			DrawPanelText(panel, "See next page (press 8)");
 		}
 		case 24:  //1.0.8
 		{
@@ -2558,16 +2564,16 @@ EquipBoss(client)
 			{
 				if(BossCrits)
 				{
-					Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; %s", attributes);
+					Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; 259 ; 1.0 ; %s", attributes);
 						//68: +2 cap rate
-						//2: x3.1 damage
+						//2: x3 damage
 						//259: Mantreads effect (broken)
 				}
 				else
 				{
-					Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; 15 ; 1 ; %s", attributes);
+					Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3 ; 259 ; 1.0 ; 15 ; 1 ; %s", attributes);
 						//68: +2 cap rate
-						//2: x3.1 damage
+						//2: x3 damage
 						//259: Mantreads effect (broken)
 						//15: No crits
 				}
@@ -2576,16 +2582,16 @@ EquipBoss(client)
 			{
 				if(BossCrits)
 				{
-					attributes="68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0";
+					attributes="68 ; 2.0 ; 2 ; 3 ; 259 ; 1.0";
 						//68: +2 cap rate
-						//2: x3.1 damage
+						//2: x3 damage
 						//259: Mantreads effect (broken)
 				}
 				else
 				{
-					attributes="68 ; 2.0 ; 2 ; 3.1 ; 259 ; 1.0 ; 15 ; 1";
+					attributes="68 ; 2.0 ; 2 ; 3 ; 259 ; 1.0 ; 15 ; 1";
 						//68: +2 cap rate
-						//2: x3.1 damage
+						//2: x3 damage
 						//259: Mantreads effect (broken)
 						//15: No crits
 				}
