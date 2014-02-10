@@ -1001,29 +1001,33 @@ EnableSubPlugins(bool:force=false)
 	{
 		return;
 	}
+
 	areSubPluginsEnabled=true;
-	decl String:path[PLATFORM_MAX_PATH], String:fname[PLATFORM_MAX_PATH], String:fname_old[PLATFORM_MAX_PATH];
+	decl String:path[PLATFORM_MAX_PATH], String:filename[PLATFORM_MAX_PATH], String:filename_old[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks");
 	decl FileType:filetype;
-	new Handle:dir=OpenDirectory(path);
-	while(ReadDirEntry(dir, fname, PLATFORM_MAX_PATH, filetype))
+	new Handle:directory=OpenDirectory(path);
+	while(ReadDirEntry(directory, filename, PLATFORM_MAX_PATH, filetype))
 	{
-		if(filetype==FileType_File && StrContains(fname, ".smx", false)!=-1)
+		if(filetype==FileType_File && StrContains(filename, ".smx", false)!=-1)
 		{
-			Format(fname_old, PLATFORM_MAX_PATH,"%s/%s", path, fname);
-			ReplaceString(fname, PLATFORM_MAX_PATH, ".smx", ".ff2", false);
-			Format(fname,PLATFORM_MAX_PATH, "%s/%s", path, fname);
-			DeleteFile(fname);
-			RenameFile(fname, fname_old);
+			Format(filename_old, PLATFORM_MAX_PATH, "%s/%s", path, filename);
+			ReplaceString(filename, PLATFORM_MAX_PATH, ".smx", ".ff2", false);
+			Format(filename, PLATFORM_MAX_PATH, "%s/%s", path, filename);
+			DeleteFile(filename);
+			RenameFile(filename, filename_old);
 		}
 	}
 
-	dir=OpenDirectory(path);
-	while(ReadDirEntry(dir, fname, PLATFORM_MAX_PATH, filetype))
+	directory=OpenDirectory(path);
+	while(ReadDirEntry(directory, filename, PLATFORM_MAX_PATH, filetype))
 	{
-		if(filetype==FileType_File && StrContains(fname, ".ff2", false)!=-1)
+		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
-			ServerCommand("sm plugins load freaks/%s",fname);
+			else
+			{
+				ServerCommand("sm plugins load freaks/%s", filename);
+			}
 		}
 	}
 }
@@ -1034,16 +1038,17 @@ DisableSubPlugins(bool:force=false)
 	{
 		return;
 	}
+
 	areSubPluginsEnabled=false;
-	decl String:path[PLATFORM_MAX_PATH], String:fname[PLATFORM_MAX_PATH];
+	decl String:path[PLATFORM_MAX_PATH], String:filename[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks");
 	decl FileType:filetype;
-	new Handle:dir=OpenDirectory(path);
-	while(ReadDirEntry(dir, fname, PLATFORM_MAX_PATH, filetype))
+	new Handle:directory=OpenDirectory(path);
+	while(ReadDirEntry(directory, filename, PLATFORM_MAX_PATH, filetype))
 	{
-		if(filetype==FileType_File && StrContains(fname, ".ff2", false)!=-1)
+		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
-			ServerCommand("sm plugins unload freaks/%s", fname);
+			ServerCommand("sm plugins unload freaks/%s", filename);
 		}
 	}
 }
