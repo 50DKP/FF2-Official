@@ -2530,7 +2530,7 @@ public Action:MessageTimer(Handle:hTimer)
 	return Plugin_Continue;
 }
 
-public Action:MakeModelTimer(Handle:hTimer,any:client)
+public Action:MakeModelTimer(Handle:hTimer, any:client)
 {		
 	if(!Boss[client] || !IsValidEdict(Boss[client]) || !IsClientInGame(Boss[client]) || !IsPlayerAlive(Boss[client]) || CheckRoundState()==2)
 	{
@@ -2542,7 +2542,7 @@ public Action:MakeModelTimer(Handle:hTimer,any:client)
 	KvGetString(BossKV[Special[client]], "model", model, PLATFORM_MAX_PATH);
 	SetVariantString(model);
 	AcceptEntityInput(Boss[client], "SetCustomModel");
-	SetEntProp(Boss[client], Prop_Send, "m_bUseClassAnimations", 1);		
+	SetEntProp(Boss[client], Prop_Send, "m_bUseClassAnimations", 1);
 	return Plugin_Continue;
 }
 

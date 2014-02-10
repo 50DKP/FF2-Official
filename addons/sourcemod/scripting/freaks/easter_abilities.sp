@@ -20,7 +20,7 @@
 
 #define PLUGIN_VERSION "1.0.8"
 
-new Handle:hEquipWearable;
+//new Handle:hEquipWearable;
 new Handle:hSetObjectVelocity;
 
 public Plugin:myinfo=
@@ -69,16 +69,16 @@ public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 
 	//Attacker
-	new index=FF2_GetBossIndex(attacker);
-	if(index>-1 && FF2_HasAbility(index, this_plugin_name, OBJECTS))
+	new boss=FF2_GetBossIndex(attacker);
+	if(boss>-1 && FF2_HasAbility(boss, this_plugin_name, OBJECTS))
 	{
 		decl String:classname[64];
 		decl String:model[64];
-		FF2_GetAbilityArgumentString(index, this_plugin_name, OBJECTS, 1, classname, sizeof(classname));
-		FF2_GetAbilityArgumentString(index, this_plugin_name, OBJECTS, 2, model, sizeof(model));
-		new skin=FF2_GetAbilityArgument(index, this_plugin_name, OBJECTS, 3, 0);
-		new count=FF2_GetAbilityArgument(index, this_plugin_name, OBJECTS, 4, 14);
-		new Float:distance=FF2_GetAbilityArgumentFloat(index, this_plugin_name, OBJECTS, 5, 30.0);
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 1, classname, sizeof(classname));
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 2, model, sizeof(model));
+		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, 3, 0);
+		new count=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, 4, 14);
+		new Float:distance=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, OBJECTS, 5, 30.0);
 		SpawnManyObjects(classname, client, model, skin, count, distance);
 		return;
 	}
@@ -118,25 +118,27 @@ public OnEntityCreated(entity, const String:classname[])
 		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
 		Debug("Easter Abilities OnEntityCreated: Entity %i created", entity);
 	}
+	Debug("Easter Abilities OnEntityCreated: Not spawning projectile, FF2_GetRoundState was %i", FF2_GetRoundState());
 }
 
 public OnProjectileSpawned(entity)
 {
+	Debug("Easter Abilities: Start OnProjectileSpawned");
 	new owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
 	if(IsValidClient(owner))
 	{
-		new index=FF2_GetBossIndex(owner);
-		if(index!=-1 && FF2_HasAbility(index, this_plugin_name, PROJECTILE))
+		new boss=FF2_GetBossIndex(owner);
+		if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, PROJECTILE))
 		{
 			decl String:projectile[64];
-			FF2_GetAbilityArgumentString(index, this_plugin_name, PROJECTILE, 0, projectile, sizeof(projectile));
-			
+			FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 0, projectile, sizeof(projectile));
+
 			decl String:classname[64];
 			GetEntityClassname(entity, classname, sizeof(classname));
 			if(StrEqual(classname, projectile, false))
 			{
 				decl String:model[PLATFORM_MAX_PATH];
-				FF2_GetAbilityArgumentString(index, this_plugin_name, PROJECTILE, 1, model, sizeof(model));
+				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 1, model, sizeof(model));
 				new Handle:data;
 				CreateDataTimer(0.0, Timer_SetProjectileModel, data, TIMER_FLAG_NO_MAPCHANGE);
 				WritePackCell(data, EntIndexToEntRef(entity));
@@ -145,6 +147,7 @@ public OnProjectileSpawned(entity)
 			}
 		}
 	}
+	Debug("End Easter Abilities OnProjectileSpawned");
 }
 
 public Action:Timer_SetProjectileModel(Handle:timer, Handle:data)
@@ -161,7 +164,7 @@ public Action:Timer_SetProjectileModel(Handle:timer, Handle:data)
 	}
 }
 
-stock CreateVM(client, String:model[])
+/*stock CreateVM(client, String:model[])  //This never gets called, yet the compiler doesn't throw a warning ._.
 {
 	new ent=CreateEntityByName("tf_wearable_vm");
 	if(!IsValidEntity(ent))
@@ -179,14 +182,14 @@ stock CreateVM(client, String:model[])
 	ActivateEntity(ent);
 	TF2_EquipWearable(client, ent);
 	return ent;
-}
+}*/
 
-stock TF2_EquipWearable(client, entity)
+/*stock TF2_EquipWearable(client, entity)
 {
 	SDKCall(hEquipWearable, client, entity);
-}
+}*/
 
-stock AttachProjectileModel(entity, String:strModel[], String:strAnim[]="")
+stock AttachProjectileModel(entity, String:strModel[], String:animation[]="")
 {
 	if(!IsValidEntity(entity))
 	{
@@ -196,20 +199,20 @@ stock AttachProjectileModel(entity, String:strModel[], String:strAnim[]="")
 	new model=CreateEntityByName("prop_dynamic");
 	if(IsValidEdict(model))
 	{
-		decl Float:pos[3];
-		decl Float:ang[3];
-		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", pos);
-		GetEntPropVector(entity, Prop_Send, "m_angRotation", ang);
-		TeleportEntity(model, pos, ang, NULL_VECTOR);
+		decl Float:position[3];
+		decl Float:angle[3];
+		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position);
+		GetEntPropVector(entity, Prop_Send, "m_angRotation", angle);
+		TeleportEntity(model, position, angle, NULL_VECTOR);
 		DispatchKeyValue(model, "model", strModel);
 		DispatchSpawn(model);
 		SetVariantString("!activator");
 		AcceptEntityInput(model, "SetParent", entity, model, 0);
-		if(strAnim[0]!='\0')
+		if(animation[0]!='\0')
 		{
-			SetVariantString(strAnim);
+			SetVariantString(animation);
 			AcceptEntityInput(model, "SetDefaultAnimation");
-			SetVariantString(strAnim);
+			SetVariantString(animation);
 			AcceptEntityInput(model, "SetAnimation");
 		}
 		SetEntPropEnt(model, Prop_Send, "m_hOwnerEntity", entity);
@@ -240,43 +243,41 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, num=14, Flo
 		return;
 	}
 
-	decl Float:pos[3], Float:vel[3], Float:ang[3];
-	ang[0]=90.0;
-	ang[1]=0.0;
-	ang[2]=0.0;
-	GetClientAbsOrigin(client, pos);
-	pos[2]+=offsz;
+	decl Float:position[3], Float:velocity[3];
+	new Float:angle[]={90.0, 0.0, 0.0};
+	GetClientAbsOrigin(client, position);
+	position[2]+=offsz;
 	for(new i=0; i<num; i++)
 	{
-		vel[0]=GetRandomFloat(-400.0, 400.0);
-		vel[1]=GetRandomFloat(-400.0, 400.0);
-		vel[2]=GetRandomFloat(300.0, 500.0);
-		pos[0]+=GetRandomFloat(-5.0, 5.0);
-		pos[1]+=GetRandomFloat(-5.0, 5.0);
-		new ent=CreateEntityByName(classname);
-		if(!IsValidEntity(ent))
+		velocity[0]=GetRandomFloat(-400.0, 400.0);
+		velocity[1]=GetRandomFloat(-400.0, 400.0);
+		velocity[2]=GetRandomFloat(300.0, 500.0);
+		position[0]+=GetRandomFloat(-5.0, 5.0);
+		position[1]+=GetRandomFloat(-5.0, 5.0);
+		new entity=CreateEntityByName(classname);
+		if(!IsValidEntity(entity))
 		{
 			continue;
 		}
 
-		SetEntityModel(ent, model);
-		DispatchKeyValue(ent, "OnPlayerTouch", "!self,Kill,,0,-1");	
-		SetEntProp(ent, Prop_Send, "m_nSkin", skin);
-		SetEntProp(ent, Prop_Send, "m_nSolidType", 6);
-		SetEntProp(ent, Prop_Send, "m_usSolidFlags", 152);
-		SetEntProp(ent, Prop_Send, "m_triggerBloat", 24);
-		SetEntProp(ent, Prop_Send, "m_CollisionGroup", 1);
-		SetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity", client);
-		SetEntProp(ent, Prop_Send, "m_iTeamNum", 2);
-		TeleportEntity(ent, pos, ang, vel);
-		DispatchSpawn(ent);
-		TeleportEntity(ent, pos, ang, vel);
-		SDKCall(hSetObjectVelocity, ent, vel);
-		SetEntProp(ent, Prop_Data, "m_iHealth", 900);
-		new offs=GetEntSendPropOffs(ent, "m_vecInitialVelocity", true);
-		SetEntData(ent, offs-4, 1, _, true);
-		Debug("Easter Abilities SpawnManyObjects: Objects spawned!");
+		SetEntityModel(entity, model);
+		DispatchKeyValue(entity, "OnPlayerTouch", "!self,Kill,,0,-1");	
+		SetEntProp(entity, Prop_Send, "m_nSkin", skin);
+		SetEntProp(entity, Prop_Send, "m_nSolidType", 6);
+		SetEntProp(entity, Prop_Send, "m_usSolidFlags", 152);
+		SetEntProp(entity, Prop_Send, "m_triggerBloat", 24);
+		SetEntProp(entity, Prop_Send, "m_CollisionGroup", 1);
+		SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", client);
+		SetEntProp(entity, Prop_Send, "m_iTeamNum", 2);
+		TeleportEntity(entity, position, angle, velocity);
+		DispatchSpawn(entity);
+		TeleportEntity(entity, position, angle, velocity);
+		SDKCall(hSetObjectVelocity, entity, velocity);
+		SetEntProp(entity, Prop_Data, "m_iHealth", 900);
+		new offs=GetEntSendPropOffs(entity, "m_vecInitialVelocity", true);
+		SetEntData(entity, offs-4, 1, _, true);
 	}
+	Debug("Easter Abilities SpawnManyObjects: Objects spawned!");
 }
 
 public Action:FF2_OnAbility2(index,const String:plugin_name[],const String:ability_name[],action)
