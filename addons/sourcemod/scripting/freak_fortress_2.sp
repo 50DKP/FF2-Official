@@ -1024,10 +1024,7 @@ EnableSubPlugins(bool:force=false)
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
-			else
-			{
-				ServerCommand("sm plugins load freaks/%s", filename);
-			}
+			ServerCommand("sm plugins load freaks/%s", filename);
 		}
 	}
 }
@@ -1048,6 +1045,7 @@ DisableSubPlugins(bool:force=false)
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
+			PrintToServer("[FF2] DEBUG: Unloading subplugin %s", filename);
 			ServerCommand("sm plugins unload freaks/%s", filename);
 		}
 	}
