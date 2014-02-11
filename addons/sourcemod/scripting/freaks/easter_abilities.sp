@@ -116,9 +116,9 @@ public OnEntityCreated(entity, const String:classname[])
 	if(FF2_IsFF2Enabled() && FF2_GetRoundState()==2 && StrContains(classname, "tf_projectile")>=0)
 	{
 		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
-		Debug("Easter Abilities OnEntityCreated: Entity %i created", entity);
+		Debug(1, "Easter Abilities OnEntityCreated: Entity %i created", entity);
 	}
-	Debug("Easter Abilities OnEntityCreated: Not spawning projectile, FF2_GetRoundState was %i", FF2_GetRoundState());
+	Debug(1, "Easter Abilities OnEntityCreated: Not spawning projectile, FF2_GetRoundState was %i", FF2_GetRoundState());
 }
 
 public OnProjectileSpawned(entity)
@@ -147,7 +147,7 @@ public OnProjectileSpawned(entity)
 			}
 		}
 	}
-	Debug("End Easter Abilities OnProjectileSpawned");
+	Debug(1, "End Easter Abilities OnProjectileSpawned");
 }
 
 public Action:Timer_SetProjectileModel(Handle:timer, Handle:data)
@@ -239,7 +239,7 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, num=14, Flo
 {
 	if(hSetObjectVelocity==INVALID_HANDLE)
 	{
-		Debug("Easter Abilities SpawnManyObjects: hSetObjectVelocity is null!");
+		Debug(1, "Easter Abilities SpawnManyObjects: hSetObjectVelocity is null!");
 		return;
 	}
 
@@ -277,10 +277,10 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, num=14, Flo
 		new offs=GetEntSendPropOffs(entity, "m_vecInitialVelocity", true);
 		SetEntData(entity, offs-4, 1, _, true);
 	}
-	Debug("Easter Abilities SpawnManyObjects: Objects spawned!");
+	Debug(1, "Easter Abilities SpawnManyObjects: Objects spawned!");
 }
 
-public Action:FF2_OnAbility2(index,const String:plugin_name[],const String:ability_name[],action)
+public Action:FF2_OnAbility2(index, const String:plugin_name[], const String:ability_name[], action)
 {
 	// No active abilities...
 }

@@ -315,7 +315,7 @@ forward Action:FF2_OnSpecialSelected(index, &SpecialNum, String:SpecialName[]);
  *				Use array to get and/or change additional points.
  * @return	Plugin_Stop will prevent this, Plugin_Changed will change it.
  */
-forward Action:FF2_OnAddQueuePoints( add_points[MAXPLAYERS+1] );
+forward Action:FF2_OnAddQueuePoints(add_points[MAXPLAYERS+1]);
 
 /**
  * Begins when FF2 picks aCharacter Set for the map
@@ -329,17 +329,25 @@ forward Action:FF2_OnLoadCharacterSet(CharSetNum, String:CharSetName[]);
 /**
  * Used to consolidate debug messages
  *
+ * @param mode		1 to print the debug to chat, 2 to print to the server
  * @param buffer	Debug string to display
  * @param any:...	Formatting rules
  * @noreturn
  */
-stock Debug(String:buffer[], any:...)
+stock Debug(mode, String:buffer[], any:...)
 {
 	if(FF2_Debug())
 	{
 		decl String:message[192];
-		VFormat(message, sizeof(message), buffer, 2);
-		CPrintToChatAll("{olive}[FF2] {darkorange}DEBUG:{default} %s", message);
+		VFormat(message, sizeof(message), buffer, 3);
+		if(mode==1)
+		{
+			CPrintToChatAll("{olive}[FF2] {darkorange}DEBUG:{default} %s", message);
+		}
+		else
+		{
+			PrintToServer("[FF2] DEBUG: %s", message);
+		}
 	}
 }
 
