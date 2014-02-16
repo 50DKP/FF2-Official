@@ -28,7 +28,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 9-1"
+#define PLUGIN_VERSION "1.9.0 Beta 9-2"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -3951,17 +3951,17 @@ public Action:ClientTimer(Handle:hTimer)
 				}
 				TF2_AddCondition(client, TFCond_Buffed, 0.3);
 
-				if(GetConVarInt(cvarLastPlayerGlow))
+				if(GetConVarBool(cvarLastPlayerGlow))
 				{
 					if(countdownTime>1)
 					{
-						GlowTimer[client]==countdownTime;
-						GlowTimer[Boss[client]]==countdownTime;
+						GlowTimer[client]=float(countdownTime);
+						Debug(1, "Last player glow set to %i", float(countdownTime));
 					}
 					else
 					{
-						GlowTimer[client]==10000000;
-						GlowTimer[Boss[client]]==10000000;
+						GlowTimer[client]=10000000.0;
+						Debug(1, "Last player glow set to a long time");
 					}
 				}
 				continue;
@@ -4107,14 +4107,27 @@ public Action:ClientTimer(Handle:hTimer)
 				}
 			}
 		}
+		else if(IsValidClient(client) && IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED) && RedAlivePlayers==1 && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && GetConVarBool(cvarLastPlayerGlow))
+		{
+			if(countdownTime>1)
+			{
+				GlowTimer[client]=float(countdownTime);
+				Debug(1, "Boss glow set to %i", float(countdownTime));
+			}
+			else
+			{
+				GlowTimer[client]=10000000.0;
+				Debug(1, "Boss glow set to a long time");
+			}
+		}
 	}
 	return Plugin_Continue;
 }
 
-public Action:BackUpBuffTimer(Handle:hTimer,any:clientid)
+public Action:BackUpBuffTimer(Handle:hTimer, any:clientid)
 {
 	new client=GetClientOfUserId(clientid);
-	TF2_RemoveCondition(client,TFCond_Buffed);
+	TF2_RemoveCondition(client, TFCond_Buffed);
 	FF2flags[client]&=~FF2FLAG_ISBUFFED;
 	return Plugin_Continue;
 }
@@ -4603,7 +4616,7 @@ OnPlayerDeath(client, attacker, bool:fake=false)
 
 	if(TF2_GetPlayerClass(client)==TFClass_Engineer && !fake)
 	{
-		new String:name[PLATFORM_MAX_PATH];
+		decl String:name[PLATFORM_MAX_PATH];
 		FakeClientCommand(client, "destroy 2");
 		for(new entity=MaxClients+1; entity<ME; entity++)
 		{
