@@ -28,9 +28,7 @@
 /addons/metamod/
 /addons/sourcemod/bin/
 /addons/stripper/
-/addons/BounceSteam.vdf
-/addons/metamod.vdf
-/addons/triggerbotdetector.*
+/addons/*
 
 #SOURCEMOD CONFIGS
 /addons/sourcemod/configs/geoip/
