@@ -35,11 +35,10 @@
 #SOURCEMOD CONFIGS
 /addons/sourcemod/configs/geoip/
 /addons/sourcemod/configs/sql-init-scripts/
-/addons/sourcemod/configs/freak_fortress_2/readme/
 /addons/sourcemod/configs/sourcebans/
 /addons/sourcemod/configs/a*.cfg
 /addons/sourcemod/configs/c*.cfg
-/addons/sourcemod/configs/da*.cfg
+/addons/sourcemod/configs/d*.cfg
 /addons/sourcemod/configs/l*.cfg
 /addons/sourcemod/configs/m*.cfg
 /addons/sourcemod/configs/p*.cfg
@@ -86,13 +85,14 @@
 /addons/sourcemod/scripting/include/t*
 /addons/sourcemod/scripting/include/u*
 /addons/sourcemod/scripting/include/v*
+/addons/sourcemod/scripting/includes/
 /addons/sourcemod/scripting/p*/
 /addons/sourcemod/scripting/t*/
 /addons/sourcemod/scripting/a*.sp
 /addons/sourcemod/scripting/b*.sp
 /addons/sourcemod/scripting/c*.*
 /addons/sourcemod/scripting/fun*.sp
-/addons/sourcemod/scripting/dkp_*.sp
+/addons/sourcemod/scripting/d*.sp
 /addons/sourcemod/scripting/e*.sp
 /addons/sourcemod/scripting/g*.sp
 /addons/sourcemod/scripting/h*.sp
@@ -102,7 +102,7 @@
 /addons/sourcemod/scripting/n*.sp
 /addons/sourcemod/scripting/p*.sp
 /addons/sourcemod/scripting/r*.sp
-/addons/sourcemod/scripting/s*.*
+/addons/sourcemod/scripting/s*
 /addons/sourcemod/scripting/t*.sp
 /addons/sourcemod/scripting/w*.sp
 /addons/sourcemod/scripting/u*.sp
