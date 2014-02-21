@@ -2782,7 +2782,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-		case 56, 1005:  //Huntsman, Festive Huntsman
+		case 56, 1005, 1092:  //Huntsman, Festive Huntsman, Fortified Compound
 		{
 			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "2 ; 1.5");
 			if(hItemOverride!=INVALID_HANDLE)
@@ -4004,7 +4004,7 @@ public Action:ClientTimer(Handle:hTimer)
 
 			switch(index)
 			{
-				case 16, 56, 58, 203, 305, 1005, 1079:  //SMG, Huntsman, Jarate, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow
+				case 16, 56, 58, 203, 305, 1005, 1079, 1092:  //SMG, Huntsman, Jarate, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow, Fortified Compound
 				{
 					addthecrit=true;
 				}
