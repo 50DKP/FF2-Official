@@ -28,7 +28,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 9-2"
+#define PLUGIN_VERSION "1.9.0 Beta 9-3"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -3934,7 +3934,7 @@ public Action:ClientTimer(Handle:hTimer)
 				}
 				else if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))
 				{
-					new healtarget=GetHealingTarget(client,true);
+					new healtarget=GetHealingTarget(client, true);
 					if(IsValidClient(healtarget) && TF2_GetPlayerClass(healtarget)==TFClass_Scout)
 					{
 						TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.3);
@@ -3975,12 +3975,12 @@ public Action:ClientTimer(Handle:hTimer)
 				continue;
 			}
 
-			new medic=-1;
-			for(new client2=1; client2<=MaxClients; client2++)
+			new healer=-1;
+			for(new healtarget=1; healtarget<=MaxClients; healtarget++)
 			{
-				if(IsValidClient(client2) && IsPlayerAlive(client2) && GetHealingTarget(client2, true)==client)
+				if(IsValidClient(healtarget) && IsPlayerAlive(healtarget) && GetHealingTarget(healtarget, true)==client)
 				{
-					medic=client2;
+					healer=healtarget;
 					break;
 				}
 			}
@@ -4101,7 +4101,7 @@ public Action:ClientTimer(Handle:hTimer)
 		}
 		else if(IsValidClient(client) && IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED) && RedAlivePlayers==1 && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && GetConVarBool(cvarLastPlayerGlow))
 		{
-			GlowTimer[GetBossIndex(client)]=3600;
+			GlowTimer[GetBossIndex(client)]=3600.0;
 			Debug(1, "Boss glow set to one hour");
 		}
 	}
@@ -5155,6 +5155,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 								healercount++;
 							}
 						}
+
 						for(new healer=0; healer<healercount; healer++)
 						{
 							if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
@@ -5210,7 +5211,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							new Float:add=10+(chargelevel/10);
 							if(TF2_IsPlayerInCondition(attacker, TFCond:46))
 							{
-								add/= 3;
+								add/=3;
 							}
 							new Float:rage=GetEntPropFloat(attacker, Prop_Send, "m_flRageMeter");
 							SetEntPropFloat(attacker, Prop_Send, "m_flRageMeter", (rage+add>100) ? 100.0 : rage+add);
