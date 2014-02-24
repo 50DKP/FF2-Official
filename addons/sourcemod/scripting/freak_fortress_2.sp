@@ -4093,7 +4093,7 @@ public Action:ClientTimer(Handle:hTimer)
 			if(addthecrit)
 			{
 				TF2_AddCondition(client, cond, 0.3);
-				if(medic!=-1 && cond!=TFCond_Buffed)
+				if(healer!=-1 && cond!=TFCond_Buffed)
 				{
 					TF2_AddCondition(client, TFCond_Buffed, 0.3);
 				}
