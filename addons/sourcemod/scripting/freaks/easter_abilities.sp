@@ -113,12 +113,12 @@ stock bool:IsValidClient(client, bool:replaycheck=true)
 
 public OnEntityCreated(entity, const String:classname[])
 {
-	if(FF2_IsFF2Enabled() && FF2_GetRoundState()==2 && StrContains(classname, "tf_projectile")>=0)
+	if(FF2_IsFF2Enabled() && FF2_GetRoundState()==1 && StrContains(classname, "tf_projectile")>=0)
 	{
 		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
 		Debug(1, "Easter Abilities OnEntityCreated: Entity %i created", entity);
 	}
-	Debug(1, "Easter Abilities OnEntityCreated: Not spawning projectile, FF2_GetRoundState was %i", FF2_GetRoundState());
+	Debug(1, "Easter Abilities OnEntityCreated: Not spawning projectile, tf_projectile was %i", StrContains(classname, "tf_projectile"));
 }
 
 public OnProjectileSpawned(entity)

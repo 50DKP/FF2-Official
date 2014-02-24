@@ -578,13 +578,13 @@ public OnPluginStart()
 	cvarHalloween=CreateConVar("ff2_halloween", "2", "0-Disable Halloween mode, 1-Enable Halloween mode, 2-Use TF2 logic (tf_forced_holiday 2)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "0", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
-	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);  //Keep this as the last convar
+	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
 
 	HookEvent("player_changeclass", OnChangeClass);
 	HookEvent("teamplay_round_start", event_round_start);
 	HookEvent("teamplay_round_win", event_round_end);
-	HookEvent("player_changeclass", event_changeclass);
+	HookEvent("player_changeclass", event_change_class);
 	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
 	HookEvent("player_death", event_player_death, EventHookMode_Pre);
 	HookEvent("player_chargedeployed", event_uberdeployed);
@@ -3432,16 +3432,16 @@ public Action:event_destroy(Handle:event, const String:name[], bool:dontBroadcas
 	return Plugin_Continue;
 }
 
-public Action:event_changeclass(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:event_change_class(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(Enabled)
 	{
-		CreateTimer(0.1, Timer_changeclass, GetEventInt(event, "userid"));
+		CreateTimer(0.1, Timer_Change_Class, GetEventInt(event, "userid"));
 	}
 	return Plugin_Continue;
 }
 
-public Action:Timer_changeclass(Handle:hTimer,any:userid)
+public Action:Timer_Change_Class(Handle:hTimer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
 	new boss=GetBossIndex(client);
@@ -3953,16 +3953,8 @@ public Action:ClientTimer(Handle:hTimer)
 
 				if(GetConVarBool(cvarLastPlayerGlow))
 				{
-					if(countdownTime>1)
-					{
-						GlowTimer[client]=float(countdownTime);
-						Debug(1, "Last player glow set to %i", float(countdownTime));
-					}
-					else
-					{
-						GlowTimer[client]=10000000.0;
-						Debug(1, "Last player glow set to a long time");
-					}
+					GlowTimer[client]=3600.0;
+					Debug(1, "Last player glow set to one hour");
 				}
 				continue;
 			}
@@ -4109,16 +4101,8 @@ public Action:ClientTimer(Handle:hTimer)
 		}
 		else if(IsValidClient(client) && IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED) && RedAlivePlayers==1 && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && GetConVarBool(cvarLastPlayerGlow))
 		{
-			if(countdownTime>1)
-			{
-				GlowTimer[client]=float(countdownTime);
-				Debug(1, "Boss glow set to %i", float(countdownTime));
-			}
-			else
-			{
-				GlowTimer[client]=10000000.0;
-				Debug(1, "Boss glow set to a long time");
-			}
+			GlowTimer[GetBossIndex(client)]=3600;
+			Debug(1, "Boss glow set to one hour");
 		}
 	}
 	return Plugin_Continue;
@@ -4883,7 +4867,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	if(index==-1 || !Boss[index] || !IsValidEdict(Boss[index]) || client==attacker)
 		return Plugin_Continue;
 		
-	if(custom==TF_CUSTOM_TELEFRAG) damage=(IsPlayerAlive(attacker) ? 9001 : 1); 	
+	if(custom==TF_CUSTOM_TELEFRAG) damage=(IsPlayerAlive(attacker) ? 9001 : 1);
 	if(custom==TF_CUSTOM_BOOTS_STOMP) damage*=5;
 	if(GetEventBool(event, "minicrit") && GetEventBool(event, "allseecrit")) SetEventBool(event, "allseecrit", false);
 	if(custom==TF_CUSTOM_BACKSTAB)
@@ -5093,8 +5077,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 	}
 	else
 	{
-		new index=GetBossIndex(client);
-		if(index!=-1)
+		new boss=GetBossIndex(client);
+		if(boss!=-1)
 		{
 			if(attacker<=MaxClients)
 			{
@@ -5132,20 +5116,30 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						damage=1.0;
 						return Plugin_Changed;
 					}
-					damage=(BossHealth[index]>9001 ? 9001.0 : float(GetEntProp(Boss[index], Prop_Send, "m_iHealth"))+90.0);
+					damage=(BossHealth[boss]>9001 ? 9001.0 : float(GetEntProp(Boss[boss], Prop_Send, "m_iHealth"))+90.0);
+
 					new teleowner=FindTeleOwner(attacker);
 					if(IsValidClient(teleowner) && teleowner!=attacker)
 					{
 						Damage[teleowner]+=9001*3/5;
 						if(!(FF2flags[teleowner] & FF2FLAG_HUDDISABLED))
-							PrintCenterText(teleowner, "TELEFRAG ASSIST! Nice job setting it up!");
+						{
+							PrintCenterText(teleowner, "TELEFRAG ASSIST!  Nice job setting it up!");
+						}
 					}
+
 					if(!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
-						PrintCenterText(attacker,"TELEFRAG! You are a pro.");
+					{
+						PrintCenterText(attacker, "TELEFRAG! You are a pro!");
+					}
+
 					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
-						PrintCenterText(client,"TELEFRAG! Be careful around quantum tunneling devices!");
+					{
+						PrintCenterText(client, "TELEFRAG! Be careful around quantum tunneling devices!");
+					}
 					return Plugin_Changed;
 				}
+
 				new wepindex=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 				switch(wepindex)
 				{
@@ -5153,29 +5147,36 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						new healers[MAXPLAYERS];
 						new healercount=0;
-						for(new i=1; i<=MaxClients; i++)
+						for(new healer=1; healer<=MaxClients; healer++)
 						{
-							if(IsValidClient(i) && IsPlayerAlive(i) && (GetHealingTarget(i, true)==attacker))
+							if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
 							{
-								healers[healercount]=i;
+								healers[healercount]=healer;
 								healercount++;
 							}
 						}
-						for(new i=0; i<healercount; i++)
+						for(new healer=0; healer<healercount; healer++)
 						{
-							if(IsValidClient(healers[i]) && IsPlayerAlive(healers[i]))
+							if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
 							{
-								new medigun=GetPlayerWeaponSlot(healers[i], TFWeaponSlot_Secondary);
+								new medigun=GetPlayerWeaponSlot(healers[healer], TFWeaponSlot_Secondary);
 								if(IsValidEntity(medigun))
 								{
-									new String:s[64];
-									GetEdictClassname(medigun, s, sizeof(s));
-									if(strcmp(s, "tf_weapon_medigun", false)==0)
+									new String:classname[64];
+									GetEdictClassname(medigun, classname, sizeof(classname));
+									if(strcmp(classname, "tf_weapon_medigun", false)==0)
 									{
 										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healercount);
 										new Float:max=1.0;
-										if(GetEntProp(medigun, Prop_Send, "m_bChargeRelease")) max=1.5;
-										if(uber>max) uber=max;
+										if(GetEntProp(medigun, Prop_Send, "m_bChargeRelease"))
+										{
+											max=1.5;
+										}
+
+										if(uber>max)
+										{
+											uber=max;
+										}
 										SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", uber);
 									}
 								}
@@ -5191,23 +5192,26 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 								if(CheckRoundState()!=2)
 								{
 									new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
-									new Float:time=(GlowTimer[index]>10 ? 1.0 : 2.0);
-									time+=(GlowTimer[index]>10 ? (GlowTimer[index]>20 ? 1 : 2) : 4)*(chargelevel/100);
+									new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
+									time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1 : 2) : 4)*(chargelevel/100);
 									SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
-									GlowTimer[index]+=RoundToCeil(time);
-									if(GlowTimer[index]>30.0)
+									GlowTimer[boss]+=RoundToCeil(time);
+									if(GlowTimer[boss]>30.0)
 									{
-										GlowTimer[index]=30.0;
+										GlowTimer[boss]=30.0;
 									}
 								}
 							}
 						}
 
-						if(wepindex==752 && CheckRoundState()!=2)
+						if(wepindex==752 && CheckRoundState()!=2)  //Hitman's Heatmaker
 						{
 							new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 							new Float:add=10+(chargelevel/10);
-							if(TF2_IsPlayerInCondition(attacker, TFCond:46)) add/= 3;
+							if(TF2_IsPlayerInCondition(attacker, TFCond:46))
+							{
+								add/= 3;
+							}
 							new Float:rage=GetEntPropFloat(attacker, Prop_Send, "m_flRageMeter");
 							SetEntPropFloat(attacker, Prop_Send, "m_flRageMeter", (rage+add>100) ? 100.0 : rage+add);
 						}
@@ -5220,7 +5224,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 							else
 							{
-								if(wepindex!=230 || BossCharge[index][0]>90)  //The Sydney Sleeper
+								if(wepindex!=230 || BossCharge[boss][0]>90)  //Sydney Sleeper
 								{
 									damage*=2.9;
 								}
@@ -5232,12 +5236,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							return Plugin_Changed;
 						}
 					}
-					case 355:  //The Fan O' War
+					case 355:  //Fan O' War
 					{
-						BossCharge[index][0]-=5.0;
-						if(BossCharge[index][0]<0)
+						BossCharge[boss][0]-=5.0;
+						if(BossCharge[boss][0]<0)
 						{
-							BossCharge[index][0]=0.0;
+							BossCharge[boss][0]=0.0;
 						}
 					}
 					case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander
@@ -5314,10 +5318,10 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 				if(bIsBackstab)
 				{
-					new Float:changedamage=BossHealthMax[index]*(LastBossIndex()+1)*BossLivesMax[index]*(0.12-Stabbed[index]/90);
+					new Float:changedamage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90);
 					new iChangeDamage=RoundFloat(changedamage);
 					Damage[attacker]+=iChangeDamage;
-					if(BossHealth[index]>iChangeDamage)
+					if(BossHealth[boss]>iChangeDamage)
 					{
 						damage=0.0;
 					}
@@ -5326,17 +5330,17 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						damage=changedamage;
 					}
 
-					BossHealth[index]-=iChangeDamage;
-					BossCharge[index][0]+=changedamage*100/BossRageDamage[Special[index]];
-					if(BossCharge[index][0]>100.0)
+					BossHealth[boss]-=iChangeDamage;
+					BossCharge[boss][0]+=changedamage*100/BossRageDamage[Special[boss]];
+					if(BossCharge[boss][0]>100.0)
 					{
-						BossCharge[index][0]=100.0;
+						BossCharge[boss][0]=100.0;
 					}
 
-					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(client,"player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, _, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker,"player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, _, NULL_VECTOR, false, 0.0);
+					EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+					EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+					EmitSoundToClient(client, "player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, _, NULL_VECTOR, false, 0.0);
+					EmitSoundToClient(attacker, "player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, _, NULL_VECTOR, false, 0.0);
 					SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", GetGameTime()+2.0);
 					SetEntPropFloat(attacker, Prop_Send, "m_flNextAttack", GetGameTime()+2.0);
 					SetEntPropFloat(attacker, Prop_Send, "m_flStealthNextChangeTime", GetGameTime()+2.0);
@@ -5351,7 +5355,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							{
 								animation=41;
 							}
-							case 4, 194, 665, 794, 803, 883, 892, 901, 910:  //Knife, Upgradeable Knife, Festive Knife, Botkiller Knifes
+							case 4, 194, 665, 794, 803, 883, 892, 901, 910:  //Knife, Strange Knife, Festive Knife, Botkiller Knifes
 							{
 								animation=10;
 							}
@@ -5375,7 +5379,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 					new Handle:stabevent=CreateEvent("player_hurt", true);
 					SetEventInt(stabevent, "userid", GetClientUserId(client));
-					SetEventInt(stabevent, "health", BossHealth[index]);
+					SetEventInt(stabevent, "health", BossHealth[boss]);
 					SetEventInt(stabevent, "attacker", GetClientUserId(attacker));
 					SetEventInt(stabevent, "damageamount", iChangeDamage);
 					SetEventInt(stabevent, "custom", TF_CUSTOM_BACKSTAB);
@@ -5400,39 +5404,39 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 
 					decl String:sound[PLATFORM_MAX_PATH];
-					if(RandomSound("sound_stabbed", sound, PLATFORM_MAX_PATH,index))
+					if(RandomSound("sound_stabbed", sound, PLATFORM_MAX_PATH, boss))
 					{
-						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[index], _, NULL_VECTOR, false, 0.0);
-						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[index], _, NULL_VECTOR, false, 0.0);
+						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[boss], _, NULL_VECTOR, false, 0.0);
+						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[boss], _, NULL_VECTOR, false, 0.0);
 					}
 
-					if(Stabbed[index]<3)
+					if(Stabbed[boss]<3)
 					{
-						Stabbed[index]++;
+						Stabbed[boss]++;
 					}
 
 					new healers[MAXPLAYERS];
 					new healercount=0;
-					for(new medic=1; medic<=MaxClients; medic++)
+					for(new healer=1; healer<=MaxClients; healer++)
 					{
-						if(IsValidClient(medic) && IsPlayerAlive(medic) && (GetHealingTarget(medic, true)==attacker))
+						if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
 						{
-							healers[healercount]=medic;
+							healers[healercount]=healer;
 							healercount++;
 						}
 					}
 
-					for(new medic=0; medic<healercount; medic++)
+					for(new healer=0; healer<healercount; healer++)
 					{
-						if(IsValidClient(healers[medic]) && IsPlayerAlive(healers[medic]))
+						if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
 						{
-							if(uberTarget[healers[medic]]==attacker)
+							if(uberTarget[healers[healer]]==attacker)
 							{
-								Damage[healers[medic]]+=iChangeDamage;
+								Damage[healers[healer]]+=iChangeDamage;
 							}
 							else
 							{
-								Damage[healers[medic]]+=RoundFloat(changedamage/(healercount+1));
+								Damage[healers[healer]]+=RoundFloat(changedamage/(healercount+1));
 							}
 						}
 					}
@@ -5441,12 +5445,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			}
 			else
 			{
-				decl String:s[64];
-				if(GetEdictClassname(attacker, s, sizeof(s)) && strcmp(s, "trigger_hurt", false)==0)
+				decl String:classname[64];
+				if(GetEdictClassname(attacker, classname, sizeof(classname)) && strcmp(classname, "trigger_hurt", false)==0)
 				{
 					new Action:act=Plugin_Continue;
 					Call_StartForward(OnTriggerHurt);
-					Call_PushCell(index);
+					Call_PushCell(boss);
 					Call_PushCell(attacker);
 					new Float:damage2=damage;
 					Call_PushFloatRef(damage2);
@@ -5467,16 +5471,16 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							damage=490.0;
 						}
-						BossHealth[index]-=RoundFloat(damage);
-						BossCharge[index][0]+=damage*100/BossRageDamage[Special[index]];
-						if(BossHealth[index]<=0)
+						BossHealth[boss]-=RoundFloat(damage);
+						BossCharge[boss][0]+=damage*100/BossRageDamage[Special[boss]];
+						if(BossHealth[boss]<=0)
 						{
 							damage*=5;
 						}
 
-						if(BossCharge[index][0]>100)
+						if(BossCharge[boss][0]>100)
 						{
-							BossCharge[index][0]=100.0;
+							BossCharge[boss][0]=100.0;
 						}
 						return Plugin_Changed;
 					}
@@ -6995,7 +6999,7 @@ stock FindEntityByClassname2(startEnt, const String:classname[])
 	return FindEntityByClassname(startEnt, classname);
 }
 
-stock SetBossHealthFix(client, oldHealth)  //Wat
+stock SetBossHealthFix(client, oldHealth)  //Wat.  TODO: 2.0.0
 {
 	new originalHealth=oldHealth;
 	SetEntProp(client, Prop_Send, "m_iHealth", originalHealth);
