@@ -123,7 +123,7 @@ public OnEntityCreated(entity, const String:classname[])
 
 public OnProjectileSpawned(entity)
 {
-	Debug("Easter Abilities: Start OnProjectileSpawned");
+	Debug(1, "Easter Abilities: Start OnProjectileSpawned");
 	new owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
 	if(IsValidClient(owner))
 	{
