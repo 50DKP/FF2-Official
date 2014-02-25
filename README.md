@@ -1,9 +1,11 @@
 ##Welcome to the official FF2 repository!
 **LATEST VERSION**: [1.0.8](https://forums.alliedmods.net/showpost.php?p=2054933&postcount=1)
 
+[![Build Status](http://198.27.69.149/jenkins/buildStatus/icon?job=FF2-Official)](http://198.27.69.149/jenkins/job/FF2-Official/)
+
 ###Compiling FF2
 ***
-This tutorial assumes you have TF2 installed. and place it anywhere you want, preferably in a `/tf/addons/sourcemod/` configuration.
+This tutorial assumes you have TF2 installed.
 
 ####Setup Git
 1. Download and install Git [here](http://git-scm.com/download/).
