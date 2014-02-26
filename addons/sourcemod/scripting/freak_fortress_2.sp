@@ -4025,15 +4025,7 @@ public Action:BossTimer(Handle:hTimer)
 		{
 			SetClientGlow(client, 3600.0);
 		}
-
-		if(GlowTimer[client]<=0.0)
-		{
-			SetClientGlow(client, 0.0, 0.0);
-		}
-		else
-		{
-			SetClientGlow(client, -0.2);
-		}
+		SetClientGlow(client, -0.2);
 
 		decl String:lives[MAXRANDOMS][3];
 		for(new i=1; ; i++)
@@ -5027,7 +5019,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 								{
 									new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 									new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
-									time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1 : 2) : 4)*(chargelevel/100);
+									time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1.0 : 2.0) : 4.0)*(chargelevel/100.0);
 									SetClientGlow(boss, RoundToCeil(time));
 									if(GlowTimer[boss]>30.0)
 									{
@@ -7478,7 +7470,7 @@ UpdateHealthBar()
 	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);
 }
 
-SetClientGlow(client, Float:time, Float:time2=-1)
+SetClientGlow(client, Float:time, Float:time2=-1.0)
 {
 	if(!IsValidClient(client, false))
 	{
@@ -7486,7 +7478,7 @@ SetClientGlow(client, Float:time, Float:time2=-1)
 	}
 
 	GlowTimer[client]+=time;
-	if(time2!=-1)
+	if(time2>=0)
 	{
 		GlowTimer[client]=time2;
 	}
