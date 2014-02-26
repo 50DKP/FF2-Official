@@ -5020,7 +5020,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 									new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 									new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
 									time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1.0 : 2.0) : 4.0)*(chargelevel/100.0);
-									SetClientGlow(boss, RoundToCeil(time));
+									SetClientGlow(boss, time);
 									if(GlowTimer[boss]>30.0)
 									{
 										GlowTimer[boss]=30.0;
