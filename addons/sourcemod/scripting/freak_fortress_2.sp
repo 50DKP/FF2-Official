@@ -3678,9 +3678,9 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 			RemovePlayerTarge(client);
 			TF2_RemoveAllWeapons2(client);
 			TF2_RegeneratePlayer(client);
-			decl String:name[32];
+			decl String:clientName[32];
 			CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			Debug("Spawned %s", GetClientName(client, name, sizeof(name));
+			Debug("Spawned %s", GetClientName(client, clientName, sizeof(clientName)));
 		}
 		CreateTimer(0.2, MakeNotBoss, GetClientUserId(client));
 	}
