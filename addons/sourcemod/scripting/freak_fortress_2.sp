@@ -216,8 +216,8 @@ static const String:ff2versiondates[][]=
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
-	"February 8, 2014",	//1.9.0
-	"February 8, 2014"	//1.9.0
+	"February 26, 2014",//1.9.0
+	"February 26, 2014"	//1.9.0
 };
 
 stock FindVersionData(Handle:panel, versionindex)
@@ -7472,7 +7472,7 @@ UpdateHealthBar()
 
 SetClientGlow(client, Float:time, Float:time2=-1.0)
 {
-	if(!IsValidClient(client, false))
+	if(!IsValidClient(client, false) && !IsValidClient(Boss[client], false))
 	{
 		return;
 	}

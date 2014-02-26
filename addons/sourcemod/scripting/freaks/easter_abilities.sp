@@ -26,7 +26,7 @@ new Handle:hSetObjectVelocity;
 public Plugin:myinfo=
 {
 	name="Freak Fortress 2: Easter Abilities",
-	author="Powerlord and FlaminSarge",
+	author="Powerlord and FlaminSarge, updated by Wliu",
 	description="FF2: Abilities dealing with cosmetics and projectiles",
 	version=PLUGIN_VERSION,
 };
@@ -76,76 +76,58 @@ public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 		decl String:model[64];
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 1, classname, sizeof(classname));
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 2, model, sizeof(model));
-		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, 3, 0);
+		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, 3);
 		new count=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, 4, 14);
 		new Float:distance=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, OBJECTS, 5, 30.0);
 		SpawnManyObjects(classname, client, model, skin, count, distance);
 		return;
 	}
-}
 
-stock bool:IsValidClient(client, bool:replaycheck=true)
-{
-	if(client<=0 || client>MaxClients)
+	boss=FF2_GetBossIndex(client);
+	if(boss>-1 && FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
 	{
-		return false;
+		decl String:classname[64];
+		decl String:model[64];
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 1, classname, sizeof(classname));
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 2, model, sizeof(model));
+		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS_DEATH, 3);
+		new count=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS_DEATH, 4, 14);
+		new Float:distance=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, OBJECTS_DEATH, 5, 30.0);
+		SpawnManyObjects(classname, client, model, skin, count, distance);
+		return;
 	}
-
-	if(!IsClientInGame(client))
-	{
-		return false;
-	}
-
-	if(GetEntProp(client, Prop_Send, "m_bIsCoaching"))
-	{
-		return false;
-	}
-
-	if(replaycheck)
-	{
-		if(IsClientSourceTV(client) || IsClientReplay(client))
-		{
-			return false;
-		}
-	}
-	return true;
 }
 
 public OnEntityCreated(entity, const String:classname[])
 {
 	if(FF2_IsFF2Enabled() && FF2_GetRoundState()==1 && StrContains(classname, "tf_projectile")>=0)
 	{
-		Debug("Easter Abilities OnEntityCreated: Deferring to OnProjectileSpawned (entity %i)", entity);
 		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
 	}
 }
 
 public OnProjectileSpawned(entity)
 {
-	Debug("Easter Abilities: Start OnProjectileSpawned");
 	new owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
 	if(IsValidClient(owner))
 	{
 		new boss=FF2_GetBossIndex(owner);
 		if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, PROJECTILE))
 		{
-			Debug("Easter Abilities OnProjectileSpawned: Starting to replace model!");
 			decl String:projectile[64];
-			FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 0, projectile, sizeof(projectile));
+			FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 1, projectile, sizeof(projectile));
 
 			decl String:classname[64];
 			GetEntityClassname(entity, classname, sizeof(classname));
 			if(StrEqual(classname, projectile, false))
 			{
-				Debug("Easter Abilities OnProjectileSpawned: Classname and projectile name matched");
 				decl String:model[PLATFORM_MAX_PATH];
-				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 1, model, sizeof(model));
+				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 2, model, sizeof(model));
+				PrecacheModel(model);
 				SetEntityModel(entity, model);
-				Debug("Easter Abilities OnProjectileSpawned: Spawned model %s!", model);
 			}
 		}
 	}
-	Debug("End Easter Abilities OnProjectileSpawned");
 }
 
 /*public Action:Timer_SetProjectileModel(Handle:timer, Handle:data)
@@ -164,6 +146,7 @@ public OnProjectileSpawned(entity)
 
 stock CreateVM(client, String:model[])
 {
+	Debug("Easter Abilities CreateVM:  This is being called? :O (model %s)", model);
 	new ent=CreateEntityByName("tf_wearable_vm");
 	if(!IsValidEntity(ent))
 	{
@@ -187,7 +170,7 @@ stock CreateVM(client, String:model[])
 	SDKCall(hEquipWearable, client, entity);
 }*/
 
-stock AttachProjectileModel(entity, String:strModel[], String:animation[]="")
+/*stock AttachProjectileModel(entity, String:strModel[], String:animation[]="")
 {
 	if(!IsValidEntity(entity))
 	{
@@ -221,37 +204,27 @@ stock AttachProjectileModel(entity, String:strModel[], String:animation[]="")
 		LogError("AttachProjectileModel: Could not create prop_dynamic");
 	}
 	return -1;
-}
+}*/
 
-stock SpawnManyHealthPacks()
-{
-	SpawnManyObjects("tf_health_kit", client, model, skin, num, offsz);
-}
-
-stock SpawnManyAmmoPacks()
-{
-	SpawnManyObjects("tf_ammo_pack", client, model, skin, num, offsz);
-}
-
-SpawnManyObjects(String:classname[], client, String:model[], skin=0, num=14, Float:offsz=30.0)
+SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, Float:distance=30.0)
 {
 	if(hSetObjectVelocity==INVALID_HANDLE)
 	{
-		Debug("Easter Abilities SpawnManyObjects: hSetObjectVelocity is null!");
 		return;
 	}
 
 	decl Float:position[3], Float:velocity[3];
 	new Float:angle[]={90.0, 0.0, 0.0};
 	GetClientAbsOrigin(client, position);
-	position[2]+=offsz;
-	for(new i=0; i<num; i++)
+	position[2]+=distance;
+	for(new i=0; i<amount; i++)
 	{
 		velocity[0]=GetRandomFloat(-400.0, 400.0);
 		velocity[1]=GetRandomFloat(-400.0, 400.0);
 		velocity[2]=GetRandomFloat(300.0, 500.0);
 		position[0]+=GetRandomFloat(-5.0, 5.0);
 		position[1]+=GetRandomFloat(-5.0, 5.0);
+
 		new entity=CreateEntityByName(classname);
 		if(!IsValidEntity(entity))
 		{
@@ -275,10 +248,36 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, num=14, Flo
 		new offs=GetEntSendPropOffs(entity, "m_vecInitialVelocity", true);
 		SetEntData(entity, offs-4, 1, _, true);
 	}
-	Debug("Easter Abilities SpawnManyObjects: Objects spawned!");
 }
 
 public Action:FF2_OnAbility2(index, const String:plugin_name[], const String:ability_name[], action)
 {
 	// No active abilities...
+}
+
+stock bool:IsValidClient(client, bool:replaycheck=true)
+{
+	if(client<=0 || client>MaxClients)
+	{
+		return false;
+	}
+
+	if(!IsClientInGame(client))
+	{
+		return false;
+	}
+
+	if(GetEntProp(client, Prop_Send, "m_bIsCoaching"))
+	{
+		return false;
+	}
+
+	if(replaycheck)
+	{
+		if(IsClientSourceTV(client) || IsClientReplay(client))
+		{
+			return false;
+		}
+	}
+	return true;
 }
