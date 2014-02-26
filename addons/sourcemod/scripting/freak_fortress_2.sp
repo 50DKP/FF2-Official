@@ -1045,7 +1045,6 @@ DisableSubPlugins(bool:force=false)
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
-			Debug(2, "[FF2] DEBUG: Unloading subplugin %s", filename);
 			ServerCommand("sm plugins unload freaks/%s", filename);
 		}
 	}
@@ -1879,19 +1878,13 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	new BossIsAlive=0;
 	for(new client=0; client<=MaxClients; client++)
 	{
-		GlowTimer[client]=0.0;
-		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
+		SetClientGlow(client, 0.0, 0.0)
+		for(new boss=0; boss<=1; boss++)
 		{
-			SetEntProp(Boss[client], Prop_Send, "m_bGlowEnabled", 0);
-			BossIsAlive=client;
-		}
-
-		for(new i=0; i<=1; i++)
-		{
-			if(BossInfoTimer[client][i]!=INVALID_HANDLE)
+			if(BossInfoTimer[client][boss]!=INVALID_HANDLE)
 			{
-				KillTimer(BossInfoTimer[client][i]);
-				BossInfoTimer[client][i]=INVALID_HANDLE;
+				KillTimer(BossInfoTimer[client][boss]);
+				BossInfoTimer[client][boss]=INVALID_HANDLE;
 			}
 		}
 	}
@@ -2145,7 +2138,6 @@ public Action:StartBossTimer(Handle:hTimer)
 			{
 				BossHealthMax[client]=1322;
 			}
-			
 			SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
 			SetBossHealthFix(Boss[client], BossHealthMax[client]);
 			BossLives[client]=BossLivesMax[client];
@@ -2878,164 +2870,6 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	return Plugin_Continue;
 }
 
-/* Need to find a way to easily add all the attributes using one line, not adding one attribute/line.
-public Action:TF2Attributes_CheckAttributes(client, weapon)
-{
-	new bool:attributesAdded;
-	new bool:attributesRemoved;
-	switch(weapon)
-	{
-		case 38, 457:  //Axtinguisher,  Postal Pummeler
-		{
-			attributesRemoved=TF2Attrib_RemoveAll(weapon);
-			if(attributesRemoved)
-			{
-				return Plugin_Changed;
-			}
-		}
-		case 39, 351:  //Flare Gun, Detonator
-		{
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, {25, 207, 144, 58}, {0.5, 1.33, 1.0, 3.2});
-				//25:  -50% secondary ammo
-				//207:  +33% damage to self
-				//144:  noop
-				//58:  +320% self damage push force
-			if(attributesAdded)
-			{
-				return Plugin_Changed;
-			}
-		}
-		case 40:  //Backburner
-		{
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, 165, 1.0);
-				//165:  Charged airblast
-			if(attributesAdded)
-			{
-				return Plugin_Changed;
-			}
-		}
-		case 43:  //KGB.  THIS IS A HACK!  TRY TO FIND A PROPER WAY TO DO THIS
-		{
-			attributesRemoved=TF2Attrib_RemoveAll(weapon);
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, {107, 1, 128, 191}, {1.5, 0.5, 1, -7});
-				//107:  +50% faster move speed
-				//1:  -50% damage
-				//128:  Attribs only activate when weapon is active
-				//191:  -7 health/second
-			if(attributesAdded && attributesRemoved)
-			{
-				return Plugin_Changed;
-			}
-		}
-		case 56, 1005:  //Huntsman, Festive Huntsman
-		{
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, 2, 1.5);
-				//2:  +150% damage
-			if(attributesAdded)
-			{
-				return Plugin_Changed;
-			}
-		}
-		case 220:  //Shortstop
-		{
-			attributesAdded=TF2Attrib_RemoveAll(weapon);
-			attributesRemoved=TF2Attrib_SetByDefIndex(weapon, 328, 1.0);
-				//328:  Disables fancy class select animation
-			if(attributesAdded && attributesRemoved)
-			{
-				return Plugin_Changed;
-			}
-		}
-		case 226:  //Battalion's Backup
-		{
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, 140, 35.0);
-				//140:  +35 health
-			if(attributesAdded)
-			{
-				return Plugin_Changed;
-			}
-		}
-		case 239:  //Gloves of Running Urgently
-		{
-			attributesRemoved=TF2Attrib_RemoveAll(weapon);
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, {107, 1, 128, 191}, {1.5, 0.5, 1, -7});
-				//107:  +50% faster move speed
-				//1:  -50% damage
-				//128:  Attribs only activate when weapon is active
-				//191:  -7 health/second
-			if(attributesAdded && attributesRemoved)
-			{
-				return Plugin_Changed;
-			}
-		}
-		case 305:  //Crusader's Crossbow
-		{
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, {17, 2}, {0.1, 1.25});
-				//17:  +10% uber on hit
-				//2:  +125% damage
-			if(attributesAdded)
-			{
-				return Plugin_Changed;
-			}
-		}
-		case 415:  //Reserve Shooter
-		{
-			attributesRemoved=TF2Attrib_RemoveAll(weapon);
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, {265, 178, 2, 3}, {-1, 0.6, 1.1, 0.5});
-				//265:  Always minicrits airborne targets
-				//178:  +60% faster weapon switch time
-				//2:  +10% damage
-				//3:  -50% clip size
-			if(attributesAdded && attributesRemoved)
-			{
-				return Plugin_Changed;
-			}
-		}
-		case 444:  //Mantreads
-		{
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, 58, 1.5);
-				//58:  +50% self damage push force
-			if(attributesAdded)
-			{
-				return Plugin_Changed;
-			}
-		}
-		case 648:  //Wrap Assasin
-		{
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, 279, 2.0);
-				//279:  Gives 2 ornaments
-			if(attributesAdded)
-			{
-				return Plugin_Changed;
-			}
-		}
-	}
-
-	if(TF2_GetPlayerClass(client)==TFClass_Soldier && (strncmp(classname, "tf_weapon_rocketlauncher", 24, false)==0 || strncmp(classname, "tf_weapon_shotgun", 17, false)==0))
-	{
-		if(weapon==127)
-		{
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, {265, 179}, {-1.0, 1.0});
-				//265:  Always minicrits airborne enemies
-				//179:  Crits when it should mini-crit
-			if(attributesAdded)
-			{
-				return Plugin_Changed;
-			}
-		}
-		else
-		{
-			attributesAdded=TF2Attrib_SetByDefIndex(weapon, 265, -1.0);
-				//265:  Always minicrits airborne enemies
-			if(attributesAdded)
-			{
-				return Plugin_Changed;
-			}
-		}
-	}
-	return Plugin_Continue;
-}
-*/
 public Action:Timer_NoHonorBound(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
@@ -3054,6 +2888,7 @@ public Action:Timer_NoHonorBound(Handle:timer, any:userid)
 		}
 	}
 }
+
 stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const String:att[]="", bool:dontpreserve=false)
 {
 	static Handle:hWeapon;
@@ -3953,8 +3788,8 @@ public Action:ClientTimer(Handle:hTimer)
 
 				if(GetConVarBool(cvarLastPlayerGlow))
 				{
-					GlowTimer[client]=3600.0;
-					Debug(1, "Last player glow set to one hour");
+					SetClientGlow(client, 3600.0);
+					checked=true;
 				}
 				continue;
 			}
@@ -4099,11 +3934,6 @@ public Action:ClientTimer(Handle:hTimer)
 				}
 			}
 		}
-		else if(IsValidClient(client) && IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED) && RedAlivePlayers==1 && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && GetConVarBool(cvarLastPlayerGlow))
-		{
-			GlowTimer[GetBossIndex(client)]=3600.0;
-			Debug(1, "Boss glow set to one hour");
-		}
 	}
 	return Plugin_Continue;
 }
@@ -4192,14 +4022,19 @@ public Action:BossTimer(Handle:hTimer)
 		}
 		SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 
+		if(RedAlivePlayers==1 && cvarLastPlayerGlow)
+		{
+			SetClientGlow(client, 3600.0);
+			checked=true;
+		}
+
 		if(GlowTimer[client]<=0.0)
 		{
-			SetEntProp(Boss[client], Prop_Send, "m_bGlowEnabled", 0);
-			GlowTimer[client]=0.0;
+			SetClientGlow(client, 0.0, 0.0);
 		}
 		else
 		{
-			GlowTimer[client]-=0.2;
+			SetClientGlow(client, -0.2);
 		}
 
 		decl String:lives[MAXRANDOMS][3];
@@ -5195,8 +5030,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 									new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 									new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
 									time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1 : 2) : 4)*(chargelevel/100);
-									SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
-									GlowTimer[boss]+=RoundToCeil(time);
+									SetGlowTime(boss, RoundToCeil(time));
 									if(GlowTimer[boss]>30.0)
 									{
 										GlowTimer[boss]=30.0;
@@ -6548,6 +6382,7 @@ public NewPanelH(Handle:menu, MenuAction:action, param1, param2)
 		}
 	}
 }
+
 public Action:NewPanelCmd(client, args)
 {
 	if(!IsValidClient(client)) return Plugin_Continue;
@@ -6740,12 +6575,14 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, param1, param2)
 		}
 	}
 }
+
 public Action:VoiceTogglePanelCmd(client, args)
 {
 	if(!IsValidClient(client)) return Plugin_Continue;
 	VoiceTogglePanel(client);
 	return Plugin_Handled;
 }
+
 public Action:VoiceTogglePanel(client)
 {
 	if(!Enabled || !IsValidClient(client)) 
@@ -6806,6 +6643,7 @@ stock SetAmmo(client, slot, ammo)
 		SetEntData(client, iAmmoTable+iOffset, ammo, 4, true);
 	}
 }
+
 stock GetAmmo(client, slot)
 {
 	if(!IsValidClient(client)) return 0;
@@ -6818,6 +6656,7 @@ stock GetAmmo(client, slot)
 	}
 	return 0;
 }
+
 stock GetHealingTarget(client,bool:checkgun=false)
 {
 	decl String:s[64];
@@ -7641,5 +7480,38 @@ UpdateHealthBar()
 	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);
 }
 
+SetClientGlow(client, Float:time, Float:time2)
+{
+	if(!IsValidClient(client, false))
+	{
+		return;
+	}
+
+	GlowTimer[client]+=time;
+	GlowTimer[client]=time2;
+	if(GlowTimer[client]<=0.0)
+	{
+		GlowTimer[client]=0.0;
+		if(IsValidClient(Boss[client]))
+		{
+			SetEntProp(Boss[client], Prop_Send, "m_bGlowEnabled", 0);
+		}
+		else
+		{
+			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
+		}
+	}
+	else
+	{
+		if(IsValidClient(Boss[client]))
+		{
+			SetEntProp(Boss[client], Prop_Send, "m_bGlowEnabled", 1);
+		}
+		else
+		{
+			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
+		}
+	}
+}
 
 #include <freak_fortress_2_vsh_feedback>

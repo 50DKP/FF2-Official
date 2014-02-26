@@ -334,20 +334,13 @@ forward Action:FF2_OnLoadCharacterSet(CharSetNum, String:CharSetName[]);
  * @param any:...	Formatting rules
  * @noreturn
  */
-stock Debug(mode, String:buffer[], any:...)
+stock Debug(String:buffer[], any:...)
 {
 	if(FF2_Debug())
 	{
 		decl String:message[192];
-		VFormat(message, sizeof(message), buffer, 3);
-		if(mode==1)
-		{
-			CPrintToChatAll("{olive}[FF2] {darkorange}DEBUG:{default} %s", message);
-		}
-		else
-		{
-			PrintToServer("[FF2] DEBUG: %s", message);
-		}
+		VFormat(message, sizeof(message), buffer, 2);
+		CPrintToChatAll("{olive}[FF2] {darkorange}DEBUG:{default} %s", message);
 	}
 }
 

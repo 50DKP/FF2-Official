@@ -18,7 +18,7 @@
 #define OBJECTS			"spawn_many_objects_on_kill"
 #define OBJECTS_DEATH	"spawn_many_objects_on_death"
 
-#define PLUGIN_VERSION "1.0.8"
+#define PLUGIN_VERSION "1.9.0"
 
 //new Handle:hEquipWearable;
 new Handle:hSetObjectVelocity;
@@ -115,21 +115,21 @@ public OnEntityCreated(entity, const String:classname[])
 {
 	if(FF2_IsFF2Enabled() && FF2_GetRoundState()==1 && StrContains(classname, "tf_projectile")>=0)
 	{
+		Debug("Easter Abilities OnEntityCreated: Deferring to OnProjectileSpawned (entity %i)", entity);
 		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
-		Debug(1, "Easter Abilities OnEntityCreated: Entity %i created", entity);
 	}
-	Debug(1, "Easter Abilities OnEntityCreated: Not spawning projectile, tf_projectile was %i", StrContains(classname, "tf_projectile"));
 }
 
 public OnProjectileSpawned(entity)
 {
-	Debug(1, "Easter Abilities: Start OnProjectileSpawned");
+	Debug("Easter Abilities: Start OnProjectileSpawned");
 	new owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
 	if(IsValidClient(owner))
 	{
 		new boss=FF2_GetBossIndex(owner);
 		if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, PROJECTILE))
 		{
+			Debug("Easter Abilities OnProjectileSpawned: Starting to replace model!");
 			decl String:projectile[64];
 			FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 0, projectile, sizeof(projectile));
 
@@ -137,20 +137,18 @@ public OnProjectileSpawned(entity)
 			GetEntityClassname(entity, classname, sizeof(classname));
 			if(StrEqual(classname, projectile, false))
 			{
+				Debug("Easter Abilities OnProjectileSpawned: Classname and projectile name matched");
 				decl String:model[PLATFORM_MAX_PATH];
 				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 1, model, sizeof(model));
-				new Handle:data;
-				CreateDataTimer(0.0, Timer_SetProjectileModel, data, TIMER_FLAG_NO_MAPCHANGE);
-				WritePackCell(data, EntIndexToEntRef(entity));
-				WritePackString(data, model);
-				ResetPack(data);
+				SetEntityModel(entity, model);
+				Debug("Easter Abilities OnProjectileSpawned: Spawned model %s!", model);
 			}
 		}
 	}
 	Debug(1, "End Easter Abilities OnProjectileSpawned");
 }
 
-public Action:Timer_SetProjectileModel(Handle:timer, Handle:data)
+/*public Action:Timer_SetProjectileModel(Handle:timer, Handle:data)
 {
 	new entity=EntRefToEntIndex(ReadPackCell(data));
 	decl String:model[64];
@@ -162,9 +160,9 @@ public Action:Timer_SetProjectileModel(Handle:timer, Handle:data)
 		SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
 		SetEntityRenderColor(entity, 255, 255, 255, 0);
 	}
-}
+}*/
 
-/*stock CreateVM(client, String:model[])  //This never gets called, yet the compiler doesn't throw a warning ._.
+stock CreateVM(client, String:model[])
 {
 	new ent=CreateEntityByName("tf_wearable_vm");
 	if(!IsValidEntity(ent))
@@ -182,7 +180,7 @@ public Action:Timer_SetProjectileModel(Handle:timer, Handle:data)
 	ActivateEntity(ent);
 	TF2_EquipWearable(client, ent);
 	return ent;
-}*/
+}
 
 /*stock TF2_EquipWearable(client, entity)
 {
