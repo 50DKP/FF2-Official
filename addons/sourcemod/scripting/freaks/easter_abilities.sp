@@ -145,7 +145,7 @@ public OnProjectileSpawned(entity)
 			}
 		}
 	}
-	Debug(1, "End Easter Abilities OnProjectileSpawned");
+	Debug("End Easter Abilities OnProjectileSpawned");
 }
 
 /*public Action:Timer_SetProjectileModel(Handle:timer, Handle:data)
@@ -237,7 +237,7 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, num=14, Flo
 {
 	if(hSetObjectVelocity==INVALID_HANDLE)
 	{
-		Debug(1, "Easter Abilities SpawnManyObjects: hSetObjectVelocity is null!");
+		Debug("Easter Abilities SpawnManyObjects: hSetObjectVelocity is null!");
 		return;
 	}
 
@@ -275,7 +275,7 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, num=14, Flo
 		new offs=GetEntSendPropOffs(entity, "m_vecInitialVelocity", true);
 		SetEntData(entity, offs-4, 1, _, true);
 	}
-	Debug(1, "Easter Abilities SpawnManyObjects: Objects spawned!");
+	Debug("Easter Abilities SpawnManyObjects: Objects spawned!");
 }
 
 public Action:FF2_OnAbility2(index, const String:plugin_name[], const String:ability_name[], action)
