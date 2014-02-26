@@ -450,6 +450,15 @@ stock TF2_RemoveWeaponSlot2(client, slot)
 	}
 }
 
+stock TF2_RemoveAllWeapons2(client)
+{
+	for(new slot=0; slot<=5; slot++)
+	{
+		TF2_RemoveWeaponSlot2(client, slot);
+	}
+}
+/* End temp wearable stocks */
+
 public SharedPlugin:__pl_FF2 =
 {
 	name = "freak_fortress_2",

@@ -28,7 +28,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 
-#define PLUGIN_VERSION "1.9.0 Beta 9-3"
+#define PLUGIN_VERSION "1.9.0 Beta 9-4"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -237,6 +237,7 @@ stock FindVersionData(Handle:panel, versionindex)
 		{
 			DrawPanelText(panel, "6) [Dev] Added debug method used for sending debug messages and a convar to control it (Wliu)");
 			DrawPanelText(panel, "7) Fixed a few minor !whatsnew bugs (BBG_Theory)");
+			DrawPanelText(panel, "8) Fixed Easter Abilities (Wliu)");
 		}
 		case 28:  //1.0.8
 		{
@@ -1521,7 +1522,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	if(GetClientCount()<=1 || playing<2)
 	{
-		CPrintToChatAll("{olive}[FF2]{default} %t","needmoreplayers");
+		CPrintToChatAll("{olive}[FF2]{default} %t", "needmoreplayers");
 		Enabled=false;
 		DisableSubPlugins();
 		SetControlPoint(true);
@@ -1547,7 +1548,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				}
 				else if(!toRed && team!=_:TFTeam_Blue)
 				{
-					ChangeClientTeam(ionplay,_:TFTeam_Blue);
+					ChangeClientTeam(ionplay, _:TFTeam_Blue);
 				}
 				SetEntProp(ionplay, Prop_Send, "m_lifeState", 0);
 				TF2_RespawnPlayer(ionplay);
@@ -1557,12 +1558,13 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		return Plugin_Continue;
 	}
 
-	for(new client=1; client<=MaxClients; client++)
+	for(new client=0; client<=MaxClients; client++)
 	{
 		if(!IsValidClient(client) || !IsPlayerAlive(client))
 		{
 			continue;
 		}
+
 		if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
 		{
 			TF2_RespawnPlayer(client);
@@ -2544,7 +2546,7 @@ public Action:MakeModelTimer(Handle:hTimer, any:client)
 EquipBoss(client)
 {
 	DoOverlay(Boss[client], "");
-	TF2_RemoveAllWeapons(Boss[client]);
+	TF2_RemoveAllWeapons2(Boss[client]);
 	decl String:weapon[64];
 	decl String:attributes[128];
 	for(new i=1; ; i++)
@@ -3433,35 +3435,35 @@ public Action:Command_GetHP(client)
 
 public Action:Command_MakeNextSpecial(client, args)
 {
-	decl String:arg[32];
-	decl String:Special_Name[64];
+	decl String:name[32];
+	decl String:boss[64];
 	if(args<1)
 	{
-		ReplyToCommand(client, "[FF2] Usage: ff2_special<boss>");
+		CReplyToCommand(client, "{olive}FF2]{default} Usage: ff2_special <boss>");
 		return Plugin_Handled;
 	}
-	GetCmdArgString(arg, sizeof(arg));
-	decl i;
-	for(i=0; i<Specials; i++)
+	GetCmdArgString(name, sizeof(name));
+
+	for(new config=0; config<Specials; config++)
 	{
-		KvRewind(BossKV[i]);
-		KvGetString(BossKV[i], "name",Special_Name, 64);
-		if(StrContains(Special_Name,arg,false)>=0)
+		KvRewind(BossKV[config]);
+		KvGetString(BossKV[config], "name", boss, 64);
+		if(StrContains(boss, name, false)>=0)
 		{
-			Incoming[0]=i;
-			ReplyToCommand(client, "[FF2] Set the next Special to %s", Special_Name);
+			Incoming[0]=config;
+			CReplyToCommand(client, "{olive}[FF2]{default} Set the next boss to %s", boss);
 			return Plugin_Handled;
 		}
-		KvGetString(BossKV[i], "filename",Special_Name, 64);
-		if(StrContains(Special_Name,arg,false)>=0)
+		KvGetString(BossKV[config], "filename", boss, 64);
+		if(StrContains(boss, name, false)>=0)
 		{
-			Incoming[0]=i;
-			KvGetString(BossKV[i], "name",Special_Name, 64);
-			ReplyToCommand(client, "[FF2] Set the next Special to %s", Special_Name);
+			Incoming[0]=config;
+			KvGetString(BossKV[config], "name", boss, 64);
+			CReplyToCommand(client, "{olive}[FF2]{default} Set the next boss to %s", boss);
 			return Plugin_Handled;
 		}
 	}
-	ReplyToCommand(client, "[FF2] Boss not be found.");
+	CReplyToCommand(client, "{olive}[FF2]{default} Boss could not be found");
 	return Plugin_Handled;
 }
 
@@ -3658,14 +3660,14 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(b_BossChgClassDetected)
 	{
-		TF2_RemoveAllWeapons(client);
+		TF2_RemoveAllWeapons2(client);
 		b_BossChgClassDetected=false;
 	}
 
-	if(GetBossIndex(client)!=-1 && CheckRoundState()==0)
+	if(GetBossIndex(client)>=0 && CheckRoundState()==0)
 	{
-		TF2_RemoveAllWeapons(client);
-	}	
+		TF2_RemoveAllWeapons2(client);
+	}
 
 	if((CheckRoundState()!=1 || !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM)))
 	{
@@ -3674,9 +3676,11 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 			FF2flags[client]|=FF2FLAG_HASONGIVED;
 			RemovePlayerBack(client, {57, 133, 231, 405, 444, 608, 642}, 7);
 			RemovePlayerTarge(client);
-			TF2_RemoveAllWeapons(client);
+			TF2_RemoveAllWeapons2(client);
 			TF2_RegeneratePlayer(client);
+			decl String:name[32];
 			CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			Debug("Spawned %s", GetClientName(client, name, sizeof(name));
 		}
 		CreateTimer(0.2, MakeNotBoss, GetClientUserId(client));
 	}
