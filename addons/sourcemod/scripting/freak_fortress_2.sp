@@ -1878,7 +1878,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	new BossIsAlive=0;
 	for(new client=0; client<=MaxClients; client++)
 	{
-		SetClientGlow(client, 0.0, 0.0)
+		SetClientGlow(client, 0.0, 0.0);
 		for(new boss=0; boss<=1; boss++)
 		{
 			if(BossInfoTimer[client][boss]!=INVALID_HANDLE)
@@ -3789,7 +3789,6 @@ public Action:ClientTimer(Handle:hTimer)
 				if(GetConVarBool(cvarLastPlayerGlow))
 				{
 					SetClientGlow(client, 3600.0);
-					checked=true;
 				}
 				continue;
 			}
@@ -4025,7 +4024,6 @@ public Action:BossTimer(Handle:hTimer)
 		if(RedAlivePlayers==1 && cvarLastPlayerGlow)
 		{
 			SetClientGlow(client, 3600.0);
-			checked=true;
 		}
 
 		if(GlowTimer[client]<=0.0)
@@ -5030,7 +5028,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 									new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 									new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
 									time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1 : 2) : 4)*(chargelevel/100);
-									SetGlowTime(boss, RoundToCeil(time));
+									SetClientGlow(boss, RoundToCeil(time));
 									if(GlowTimer[boss]>30.0)
 									{
 										GlowTimer[boss]=30.0;
@@ -7480,7 +7478,7 @@ UpdateHealthBar()
 	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);
 }
 
-SetClientGlow(client, Float:time, Float:time2)
+SetClientGlow(client, Float:time, Float:time2=-1)
 {
 	if(!IsValidClient(client, false))
 	{
@@ -7488,7 +7486,11 @@ SetClientGlow(client, Float:time, Float:time2)
 	}
 
 	GlowTimer[client]+=time;
-	GlowTimer[client]=time2;
+	if(time2!=-1)
+	{
+		GlowTimer[client]=time2;
+	}
+
 	if(GlowTimer[client]<=0.0)
 	{
 		GlowTimer[client]=0.0;
