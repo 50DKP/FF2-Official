@@ -4,22 +4,14 @@
 #include <sdktools>
 #include <sdkhooks>
 #include <tf2_stocks>
-#include <morecolors>
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
-
-#define ME 2048
-
-#define EF_BONEMERGE			(1<<0)
-#define EF_BONEMERGE_FASTCULL	(1<<7)
 
 #define PROJECTILE		"model_projectile_replace"
 #define OBJECTS			"spawn_many_objects_on_kill"
 #define OBJECTS_DEATH	"spawn_many_objects_on_death"
 
 #define PLUGIN_VERSION "1.9.0"
-
-//new Handle:hSetObjectVelocity;
 
 public Plugin:myinfo=
 {
@@ -31,24 +23,6 @@ public Plugin:myinfo=
 
 public OnPluginStart2()
 {
-	/*new Handle:hGameConf=LoadGameConfigFile("saxtonhale");
-	if(hGameConf==INVALID_HANDLE)
-	{
-		SetFailState("[FF2 Model] Unable to load gamedata file 'saxtonhale.txt'");
-		return;
-	}
-
-	StartPrepSDKCall(SDKCall_Entity);
-	PrepSDKCall_SetFromConf(hGameConf, SDKConf_Signature, "CTFAmmoPack::SetInitialVelocity");
-	PrepSDKCall_AddParameter(SDKType_Vector, SDKPass_Pointer);
-	hSetObjectVelocity=EndPrepSDKCall();
-	if(hSetObjectVelocity==INVALID_HANDLE)
-	{
-		SetFailState("[FF2 Model] Failed to initialize call to CTFAmmoPack::SetInitialVelocity");
-		CloseHandle(hGameConf);
-		return;
-	}
-	CloseHandle(hGameConf);*/
 	HookEvent("player_death", event_player_death);
 }
 
@@ -66,9 +40,8 @@ public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 
-	//Attacker
 	new boss=FF2_GetBossIndex(attacker);
-	if(boss>-1 && FF2_HasAbility(boss, this_plugin_name, OBJECTS))
+	if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, OBJECTS))
 	{
 		decl String:classname[64];
 		decl String:model[64];
@@ -110,7 +83,7 @@ public OnProjectileSpawned(entity)
 	if(IsValidClient(owner))
 	{
 		new boss=FF2_GetBossIndex(owner);
-		if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, PROJECTILE))
+		if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, PROJECTILE))
 		{
 			decl String:projectile[64];
 			FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 1, projectile, sizeof(projectile));
@@ -121,7 +94,6 @@ public OnProjectileSpawned(entity)
 			{
 				decl String:model[PLATFORM_MAX_PATH];
 				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 2, model, sizeof(model));
-				PrecacheModel(model);
 				SetEntityModel(entity, model);
 			}
 		}
@@ -130,10 +102,10 @@ public OnProjectileSpawned(entity)
 
 SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, Float:distance=30.0)
 {
-	/*if(hSetObjectVelocity==INVALID_HANDLE)
+	if(!IsValidClient(client))
 	{
 		return;
-	}*/
+	}
 
 	decl Float:position[3], Float:velocity[3];
 	new Float:angle[]={90.0, 0.0, 0.0};
@@ -150,11 +122,12 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, 
 		new entity=CreateEntityByName(classname);
 		if(!IsValidEntity(entity))
 		{
+			LogError("[FF2] Invalid entity while spawning objects for Easter Abilities-check your configs!");
 			continue;
 		}
 
 		SetEntityModel(entity, model);
-		DispatchKeyValue(entity, "OnPlayerTouch", "!self,Kill,,0,-1");	
+		DispatchKeyValue(entity, "OnPlayerTouch", "!self,Kill,,0,-1");
 		SetEntProp(entity, Prop_Send, "m_nSkin", skin);
 		SetEntProp(entity, Prop_Send, "m_nSolidType", 6);
 		SetEntProp(entity, Prop_Send, "m_usSolidFlags", 152);
@@ -162,10 +135,8 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, 
 		SetEntProp(entity, Prop_Send, "m_CollisionGroup", 1);
 		SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", client);
 		SetEntProp(entity, Prop_Send, "m_iTeamNum", 2);
-		//TeleportEntity(entity, position, angle, velocity);
 		DispatchSpawn(entity);
 		TeleportEntity(entity, position, angle, velocity);
-		//SDKCall(hSetObjectVelocity, entity, velocity);
 		SetEntProp(entity, Prop_Data, "m_iHealth", 900);
 		new offs=GetEntSendPropOffs(entity, "m_vecInitialVelocity", true);
 		SetEntData(entity, offs-4, 1, _, true);
