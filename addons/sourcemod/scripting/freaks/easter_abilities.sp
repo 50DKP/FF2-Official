@@ -8,7 +8,6 @@
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-// #define MB 5
 #define ME 2048
 
 #define EF_BONEMERGE			(1<<0)
@@ -20,8 +19,7 @@
 
 #define PLUGIN_VERSION "1.9.0"
 
-//new Handle:hEquipWearable;
-new Handle:hSetObjectVelocity;
+//new Handle:hSetObjectVelocity;
 
 public Plugin:myinfo=
 {
@@ -33,7 +31,7 @@ public Plugin:myinfo=
 
 public OnPluginStart2()
 {
-	new Handle:hGameConf=LoadGameConfigFile("saxtonhale");
+	/*new Handle:hGameConf=LoadGameConfigFile("saxtonhale");
 	if(hGameConf==INVALID_HANDLE)
 	{
 		SetFailState("[FF2 Model] Unable to load gamedata file 'saxtonhale.txt'");
@@ -50,7 +48,7 @@ public OnPluginStart2()
 		CloseHandle(hGameConf);
 		return;
 	}
-	CloseHandle(hGameConf);
+	CloseHandle(hGameConf);*/
 	HookEvent("player_death", event_player_death);
 }
 
@@ -130,88 +128,12 @@ public OnProjectileSpawned(entity)
 	}
 }
 
-/*public Action:Timer_SetProjectileModel(Handle:timer, Handle:data)
-{
-	new entity=EntRefToEntIndex(ReadPackCell(data));
-	decl String:model[64];
-	ReadPackString(data, model, sizeof(model));
-	if(FileExists(model, true) && IsModelPrecached(model) && IsValidEntity(entity))
-	{
-		new att=AttachProjectileModel(entity, model);
-		SetEntProp(att, Prop_Send, "m_nSkin", 0);
-		SetEntityRenderMode(entity, RENDER_TRANSCOLOR);
-		SetEntityRenderColor(entity, 255, 255, 255, 0);
-	}
-}*/
-
-stock CreateVM(client, String:model[])
-{
-	Debug("Easter Abilities CreateVM:  This is being called? :O (model %s)", model);
-	new ent=CreateEntityByName("tf_wearable_vm");
-	if(!IsValidEntity(ent))
-	{
-		return -1;
-	}
-
-	SetEntProp(ent, Prop_Send, "m_nModelIndex", PrecacheModel(model));
-	SetEntProp(ent, Prop_Send, "m_fEffects", EF_BONEMERGE|EF_BONEMERGE_FASTCULL);
-	SetEntProp(ent, Prop_Send, "m_iTeamNum", GetClientTeam(client));
-	SetEntProp(ent, Prop_Send, "m_usSolidFlags", 4);
-	SetEntProp(ent, Prop_Send, "m_CollisionGroup", 11);
-	DispatchSpawn(ent);
-	SetVariantString("!activator");
-	ActivateEntity(ent);
-	TF2_EquipWearable(client, ent);
-	return ent;
-}
-
-/*stock TF2_EquipWearable(client, entity)
-{
-	SDKCall(hEquipWearable, client, entity);
-}*/
-
-/*stock AttachProjectileModel(entity, String:strModel[], String:animation[]="")
-{
-	if(!IsValidEntity(entity))
-	{
-		return -1;
-	}
-
-	new model=CreateEntityByName("prop_dynamic");
-	if(IsValidEdict(model))
-	{
-		decl Float:position[3];
-		decl Float:angle[3];
-		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position);
-		GetEntPropVector(entity, Prop_Send, "m_angRotation", angle);
-		TeleportEntity(model, position, angle, NULL_VECTOR);
-		DispatchKeyValue(model, "model", strModel);
-		DispatchSpawn(model);
-		SetVariantString("!activator");
-		AcceptEntityInput(model, "SetParent", entity, model, 0);
-		if(animation[0]!='\0')
-		{
-			SetVariantString(animation);
-			AcceptEntityInput(model, "SetDefaultAnimation");
-			SetVariantString(animation);
-			AcceptEntityInput(model, "SetAnimation");
-		}
-		SetEntPropEnt(model, Prop_Send, "m_hOwnerEntity", entity);
-		return model;
-	}
-	else
-	{
-		LogError("AttachProjectileModel: Could not create prop_dynamic");
-	}
-	return -1;
-}*/
-
 SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, Float:distance=30.0)
 {
-	if(hSetObjectVelocity==INVALID_HANDLE)
+	/*if(hSetObjectVelocity==INVALID_HANDLE)
 	{
 		return;
-	}
+	}*/
 
 	decl Float:position[3], Float:velocity[3];
 	new Float:angle[]={90.0, 0.0, 0.0};
@@ -240,19 +162,14 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, 
 		SetEntProp(entity, Prop_Send, "m_CollisionGroup", 1);
 		SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", client);
 		SetEntProp(entity, Prop_Send, "m_iTeamNum", 2);
-		TeleportEntity(entity, position, angle, velocity);
+		//TeleportEntity(entity, position, angle, velocity);
 		DispatchSpawn(entity);
 		TeleportEntity(entity, position, angle, velocity);
-		SDKCall(hSetObjectVelocity, entity, velocity);
+		//SDKCall(hSetObjectVelocity, entity, velocity);
 		SetEntProp(entity, Prop_Data, "m_iHealth", 900);
 		new offs=GetEntSendPropOffs(entity, "m_vecInitialVelocity", true);
 		SetEntData(entity, offs-4, 1, _, true);
 	}
-}
-
-public Action:FF2_OnAbility2(index, const String:plugin_name[], const String:ability_name[], action)
-{
-	// No active abilities...
 }
 
 stock bool:IsValidClient(client, bool:replaycheck=true)
@@ -280,4 +197,9 @@ stock bool:IsValidClient(client, bool:replaycheck=true)
 		}
 	}
 	return true;
+}
+
+public Action:FF2_OnAbility2(index, const String:plugin_name[], const String:ability_name[], action)
+{
+	//NOOP
 }
