@@ -73,7 +73,7 @@ public OnEntityCreated(entity, const String:classname[])
 {
 	if(FF2_IsFF2Enabled() && FF2_GetRoundState()==1 && StrContains(classname, "tf_projectile")>=0)
 	{
-		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
+		//SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);  //Hacky fix for Easter Abilities crashing
 	}
 }
 

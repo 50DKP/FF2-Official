@@ -21,7 +21,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include <sdkhooks>
 #include <tf2_stocks>
 #include <morecolors>
-//#include <tf2attributes>
 #include <tf2items>
 #include <clientprefs>
 #undef REQUIRE_EXTENSIONS
@@ -2973,11 +2972,14 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 	return hWeapon;
 }
 
-public Action:MakeNotBoss(Handle:hTimer,any:clientid)
+public Action:MakeNotBoss(Handle:hTimer, any:clientid)
 {
 	new client=GetClientOfUserId(clientid);
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client))
+	{
 		return Plugin_Continue;
+	}
+
 	if(LastClass[client]!=TFClass_Unknown)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
@@ -2987,9 +2989,12 @@ public Action:MakeNotBoss(Handle:hTimer,any:clientid)
 		TF2_RespawnPlayer(client);
 	}
 	if(!IsVoteInProgress() && GetClientClassinfoCookie(client) && !(FF2flags[client] & FF2FLAG_CLASSHELPED))
+	{
 		HelpPanel2(client);
+	}
 
-	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0); 
+	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
+	
 	if(GetClientTeam(client)!=OtherTeam)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
@@ -2997,6 +3002,7 @@ public Action:MakeNotBoss(Handle:hTimer,any:clientid)
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
 		TF2_RespawnPlayer(client);
 	}
+
 	CreateTimer(0.1, checkItems, client);
 	return Plugin_Continue;
 }
@@ -3011,8 +3017,9 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 	SetEntityRenderColor(client, 255, 255, 255, 255);
 	new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	new index=-1;
+	new civilianCheck[MAXPLAYERS+1];
 	
-	if(bMedieval)  //Make sure players can't stay cloaked forever in medieval mode, then exit to avoid overriding medieval changes
+	if(bMedieval)  //Make sure players can't stay cloaked forever in medieval mode
 	{
 		weapon=GetPlayerWeaponSlot(client, 4);
 		if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
@@ -3057,6 +3064,10 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 			}
 		}
 	}
+	else
+	{
+		civilianCheck[client]++;
+	}
 
 	weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 	if(weapon && IsValidEdict(weapon))
@@ -3077,8 +3088,12 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 			}
 		}
 	}
+	else
+	{
+		civilianCheck[client]++;
+	}
 
-	if(IsValidEntity(FindPlayerBack(client, {57 , 231}, 2)))  //Razorback, Darwin's Danger Shield
+	if(IsValidEntity(FindPlayerBack(client, {57, 231}, 2)))  //Razorback, Darwin's Danger Shield
 	{
 		RemovePlayerBack(client, {57 , 231}, 2);
 		weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 0, "");
@@ -3114,6 +3129,10 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 			}
 		}
 	}
+	else
+	{
+		civilianCheck[client]++;
+	}
 
 	weapon=GetPlayerWeaponSlot(client, 4);
 	if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
@@ -3138,6 +3157,14 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
 		}
 	}
+	
+	if(civilianCheck[client]==3)
+	{
+		civilianCheck[client]=0;
+		CPrintToChat(client, "Respawning you because you have no weapons");
+		TF2_RespawnPlayer(client);
+	}
+	civilianCheck[client]=0;
 	return Plugin_Continue;
 }
 
@@ -3678,9 +3705,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 			RemovePlayerTarge(client);
 			TF2_RemoveAllWeapons2(client);
 			TF2_RegeneratePlayer(client);
-			decl String:clientName[32];
 			CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			Debug("Spawned %s", GetClientName(client, clientName, sizeof(clientName)));
 		}
 		CreateTimer(0.2, MakeNotBoss, GetClientUserId(client));
 	}
