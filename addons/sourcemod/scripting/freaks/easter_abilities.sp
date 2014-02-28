@@ -73,7 +73,7 @@ public OnEntityCreated(entity, const String:classname[])
 {
 	if(FF2_IsFF2Enabled() && FF2_GetRoundState()==1 && StrContains(classname, "tf_projectile")>=0)
 	{
-		//SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);  //Hacky fix for Easter Abilities crashing
+		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
 	}
 }
 
@@ -92,7 +92,7 @@ public OnProjectileSpawned(entity)
 			GetEntityClassname(entity, classname, sizeof(classname));
 			if(StrEqual(classname, projectile, false))
 			{
-				decl String:model[PLATFORM_MAX_PATH];
+				decl String:model[64];
 				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 2, model, sizeof(model));
 				SetEntityModel(entity, model);
 			}
