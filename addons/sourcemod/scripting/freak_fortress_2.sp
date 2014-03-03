@@ -820,7 +820,6 @@ public OnConfigsExecuted()
 		AddToDownload();
 		strcopy(FF2CharSetStr, 2, "");
 
-		areSubPluginsEnabled=false;
 		bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
 		FindHealthBar();
 	}
@@ -877,7 +876,6 @@ public OnMapEnd()
 			KillTimer(MusicTimer);
 			MusicTimer=INVALID_HANDLE;
 		}
-
 	}
 }
 
@@ -1036,7 +1034,6 @@ DisableSubPlugins(bool:force=false)
 		return;
 	}
 
-	areSubPluginsEnabled=false;
 	decl String:path[PLATFORM_MAX_PATH], String:filename[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks");
 	decl FileType:filetype;
@@ -1048,6 +1045,7 @@ DisableSubPlugins(bool:force=false)
 			ServerCommand("sm plugins unload freaks/%s", filename);
 		}
 	}
+	areSubPluginsEnabled=false;
 }
 
 public LoadCharacter(const String:character[])
@@ -7429,7 +7427,7 @@ public CheckRoundState()
 		{
 			return 0;
 		}
-		case RoundState_RoundRunning, RoundState_Stalemate:  //QFAUD is Stalemate considered a normal round?
+		case RoundState_RoundRunning, RoundState_Stalemate:  //Oh Valve.
 		{
 			return 1;
 		}

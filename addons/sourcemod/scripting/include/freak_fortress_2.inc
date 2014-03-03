@@ -31,8 +31,8 @@ native bool:FF2_IsFF2Enabled();
  * Gets current round state
  *
  * @return	0 - in setup
- *			1 - round is in progress
- *			2 - someone wins/stalemate
+ *			1 - round is in progress (due to a bug in arena mode, stalemate will also return 1)
+ *			2 - someone wins
  */
 native FF2_GetRoundState();
 

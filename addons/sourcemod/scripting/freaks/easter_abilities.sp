@@ -11,7 +11,7 @@
 #define OBJECTS			"spawn_many_objects_on_kill"
 #define OBJECTS_DEATH	"spawn_many_objects_on_death"
 
-#define PLUGIN_VERSION "1.9.0"
+#define PLUGIN_VERSION "1.1.0"
 
 public Plugin:myinfo=
 {
@@ -43,8 +43,8 @@ public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 	new boss=FF2_GetBossIndex(attacker);
 	if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, OBJECTS))
 	{
-		decl String:classname[64];
-		decl String:model[64];
+		decl String:classname[PLATFORM_MAX_PATH];
+		decl String:model[PLATFORM_MAX_PATH];
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 1, classname, sizeof(classname));
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 2, model, sizeof(model));
 		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, 3);
@@ -55,10 +55,10 @@ public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 
 	boss=FF2_GetBossIndex(client);
-	if(boss>-1 && FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
+	if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
 	{
-		decl String:classname[64];
-		decl String:model[64];
+		decl String:classname[PLATFORM_MAX_PATH];
+		decl String:model[PLATFORM_MAX_PATH];
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 1, classname, sizeof(classname));
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 2, model, sizeof(model));
 		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS_DEATH, 3);
@@ -71,7 +71,7 @@ public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 
 public OnEntityCreated(entity, const String:classname[])
 {
-	if(FF2_IsFF2Enabled() && FF2_GetRoundState()==1 && StrContains(classname, "tf_projectile")>=0)
+	if(FF2_IsFF2Enabled() && /*FF2_GetRoundState()==1 && */IsValidEdict(entity) && StrContains(classname, "tf_projectile")>=0)
 	{
 		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
 	}
@@ -85,14 +85,14 @@ public OnProjectileSpawned(entity)
 		new boss=FF2_GetBossIndex(owner);
 		if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, PROJECTILE))
 		{
-			decl String:projectile[64];
+			decl String:projectile[PLATFORM_MAX_PATH];
 			FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 1, projectile, sizeof(projectile));
 
-			decl String:classname[64];
+			decl String:classname[PLATFORM_MAX_PATH];
 			GetEntityClassname(entity, classname, sizeof(classname));
 			if(StrEqual(classname, projectile, false))
 			{
-				decl String:model[64];
+				decl String:model[PLATFORM_MAX_PATH];
 				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 2, model, sizeof(model));
 				SetEntityModel(entity, model);
 			}
