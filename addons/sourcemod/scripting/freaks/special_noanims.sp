@@ -101,7 +101,7 @@ stock SetAmmo(client, weapon, ammo, clip=0)
 	}
 }
 
-stock SpawnWeapon(client,String:name[], index, level, quality, String:attribute[])
+stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute[])
 {
 	new Handle:hWeapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
 	TF2Items_SetClassname(hWeapon, name);

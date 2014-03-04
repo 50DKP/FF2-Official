@@ -26,8 +26,15 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
+#undef REQUIRE_PLUGIN
+#tryinclude <updater>
+#define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "1.9.0 Beta 9-4"
+
+#define UPDATE_URL_CORE "http://198.27.69.149/updater/ff2-official/update-core.txt"  //Handles all the plugins and subplugins
+#define UPDATE_URL_BOSS "http://198.27.69.149/updater/ff2-official/update-boss.txt"  //Handles all the boss material
+#define UPDATE_URL_LANG "http://198.27.69.149/updater/ff2-official/update-lang.txt"  //Handles all the translations
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -700,6 +707,13 @@ public OnPluginStart()
 	#if defined _steamtools_included
 	steamtools=LibraryExists("SteamTools");
 	#endif
+
+	if(LibraryExists("updater"))
+	{
+		Updater_AddPlugin(UPDATE_URL_CORE);
+		Updater_AddPlugin(UPDATE_URL_BOSS);
+		Updater_AddPlugin(UPDATE_URL_LANG);
+	}
 }
 
 public bool:BossTargetFilter(const String:pattern[], Handle:clients)
@@ -733,6 +747,13 @@ public OnLibraryAdded(const String:name[])
 		steamtools=true;
 	}
 	#endif
+
+	if(StrEqual(name, "updater"))
+	{
+		Updater_AddPlugin(UPDATE_URL_CORE);
+		Updater_AddPlugin(UPDATE_URL_BOSS);
+		Updater_AddPlugin(UPDATE_URL_LANG);
+	}
 }
 
 public OnLibraryRemoved(const String:name[])
@@ -816,7 +837,6 @@ public OnConfigsExecuted()
 		}
 		CheckToChangeMapDoors();
 		MapHasMusic(true);
-		EnableSubPlugins();
 		AddToDownload();
 		strcopy(FF2CharSetStr, 2, "");
 
@@ -907,7 +927,7 @@ public AddToDownload()
 				LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg or characters_halloween.cfg!");
 				return;
 			}
-			LogError("[FF2] Warning: Using default characters.cfg-can not find characters_halloween.cfg!");
+			PrintToServer("[FF2] Warning: Using default characters.cfg-can not find characters_halloween.cfg!");
 		}
 		else
 		{
@@ -984,10 +1004,10 @@ public AddToDownload()
 	PrecacheSound("saxton_hale/9000.wav", true);
 	PrecacheSound("vo/announcer_am_capincite01.wav", true);
 	PrecacheSound("vo/announcer_am_capincite03.wav", true);
-	for(new i=1; i<=4; i++)
-	{
-		PrecacheSound("vo/announcer_am_capenabled0%i.wav", true);
-	}
+	PrecacheSound("vo/announcer_am_capenabled01.wav", true);
+	PrecacheSound("vo/announcer_am_capenabled02.wav", true);
+	PrecacheSound("vo/announcer_am_capenabled03.wav", true);
+	PrecacheSound("vo/announcer_am_capenabled04.wav", true);
 	PrecacheSound("weapons/barret_arm_zap.wav", true);
 	PrecacheSound("vo/announcer_ends_2min.wav", true);
 	isCharSetSelected=false;
@@ -1573,11 +1593,11 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	CheckArena();
 
 	new bool:see[MAXPLAYERS+1];
-	for(new i=1; i<=MaxClients; i++)
+	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(i))
+		if(IsValidClient(client))
 		{
-			new TFTeam:team=TFTeam:GetClientTeam(i);
+			new TFTeam:team=TFTeam:GetClientTeam(client);
 			if(!see[0] && team==TFTeam_Blue)
 			{
 				see[0]=true;
