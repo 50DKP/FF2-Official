@@ -32,9 +32,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define PLUGIN_VERSION "1.9.0 Beta 9-4"
 
-#define UPDATE_URL_CORE "http://198.27.69.149/updater/ff2-official/update-core.txt"  //Handles all the plugins and subplugins
-#define UPDATE_URL_BOSS "http://198.27.69.149/updater/ff2-official/update-boss.txt"  //Handles all the boss material
-#define UPDATE_URL_LANG "http://198.27.69.149/updater/ff2-official/update-lang.txt"  //Handles all the translations
+#define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
 #define ME 2048
 #define MAXSPECIALS 64
@@ -710,9 +708,7 @@ public OnPluginStart()
 
 	if(LibraryExists("updater"))
 	{
-		Updater_AddPlugin(UPDATE_URL_CORE);
-		Updater_AddPlugin(UPDATE_URL_BOSS);
-		Updater_AddPlugin(UPDATE_URL_LANG);
+		Updater_AddPlugin(UPDATE_URL);
 	}
 }
 
@@ -750,9 +746,7 @@ public OnLibraryAdded(const String:name[])
 
 	if(StrEqual(name, "updater"))
 	{
-		Updater_AddPlugin(UPDATE_URL_CORE);
-		Updater_AddPlugin(UPDATE_URL_BOSS);
-		Updater_AddPlugin(UPDATE_URL_LANG);
+		Updater_AddPlugin(UPDATE_URL);
 	}
 }
 
