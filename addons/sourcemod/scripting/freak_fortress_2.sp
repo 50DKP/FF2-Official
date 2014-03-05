@@ -1043,6 +1043,7 @@ EnableSubPlugins(bool:force=false)
 
 DisableSubPlugins(bool:force=false)
 {
+	PrintToServer("DisableSubPlugins start");
 	if(!areSubPluginsEnabled && !force)
 	{
 		return;
@@ -1056,10 +1057,12 @@ DisableSubPlugins(bool:force=false)
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
+			PrintToServer("DisableSubPlugins: filename is %s", filename);
 			ServerCommand("sm plugins unload freaks/%s", filename);
 		}
 	}
 	areSubPluginsEnabled=false;
+	PrintToServer("DisableSubPlugins end");
 }
 
 public LoadCharacter(const String:character[])
@@ -1518,20 +1521,17 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	}
 
 	playing=0;
-	for(new ionplay=1; ionplay<=MaxClients; ionplay++)
+	for(new client=1; client<=MaxClients; client++)
 	{
-		Damage[ionplay]=0;
-		uberTarget[ionplay]=-1;
-		if(IsValidClient(ionplay))
+		Damage[client]=0;
+		uberTarget[client]=-1;
+		if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator)
 		{
-			if(GetClientTeam(ionplay)>_:TFTeam_Spectator)
-			{
-				playing++;
-			}
+			playing++;
 		}
 	}
 
-	if(GetClientCount()<=1 || playing<2)
+	if(GetClientCount()<=1 || playing<=1)
 	{
 		CPrintToChatAll("{olive}[FF2]{default} %t", "needmoreplayers");
 		Enabled=false;
@@ -1547,22 +1547,22 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		SetArenaCapEnableTime(60.0);
 		CreateTimer(71.0, Timer_EnableCap, _, TIMER_FLAG_NO_MAPCHANGE);
 		new bool:toRed;
-		decl team;
-		for(new ionplay=1; ionplay<=MaxClients; ionplay++)
+		new team;
+		for(new client=1; client<=MaxClients; client++)
 		{
-			if(IsValidClient(ionplay) && (team=GetClientTeam(ionplay))>1) 
+			if(IsValidClient(client) && (team=GetClientTeam(client))>1) 
 			{
-				SetEntProp(ionplay, Prop_Send, "m_lifeState", 2);
+				SetEntProp(client, Prop_Send, "m_lifeState", 2);
 				if(toRed && team!=_:TFTeam_Red)
 				{
-					ChangeClientTeam(ionplay,_:TFTeam_Red);
+					ChangeClientTeam(client, _:TFTeam_Red);
 				}
 				else if(!toRed && team!=_:TFTeam_Blue)
 				{
-					ChangeClientTeam(ionplay, _:TFTeam_Blue);
+					ChangeClientTeam(client, _:TFTeam_Blue);
 				}
-				SetEntProp(ionplay, Prop_Send, "m_lifeState", 0);
-				TF2_RespawnPlayer(ionplay);
+				SetEntProp(client, Prop_Send, "m_lifeState", 0);
+				TF2_RespawnPlayer(client);
 				toRed=!toRed;
 			}
 		}
@@ -1632,7 +1632,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		Boss[client]=0;
 	}
 
-	decl String:s[64];
 	Boss[0]=FindBosses(see);
 	PickSpecial(0, 0);
 	see[Boss[0]]=true;
@@ -1651,11 +1650,12 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	if(playing>2)
 	{
+		decl String:companion[64];
 		for(new client=1; client<=MaxClients; client++)
 		{		
 			KvRewind(BossKV[Special[client-1]]);
-			KvGetString(BossKV[Special[client-1]], "companion", s, 64);
-			if(StrEqual(s, ""))
+			KvGetString(BossKV[Special[client-1]], "companion", companion, 64);
+			if(StrEqual(companion, ""))
 			{
 				break;
 			}
@@ -1700,24 +1700,25 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			continue;
 		}
 
-		decl entity2;
-		GetEdictClassname(entity, s, 64);
-		if(!strcmp(s, "func_regenerate"))
+		decl String:classname[64];
+		GetEdictClassname(entity, classname, 64);
+		if(!strcmp(classname, "func_regenerate"))
 		{
 			AcceptEntityInput(entity, "Kill");
 		}
-		else if(!strcmp(s, "func_respawnroomvisualizer"))
+		else if(!strcmp(classname, "func_respawnroomvisualizer"))
 		{
 			AcceptEntityInput(entity, "Disable");
 		}
-		else if(!strcmp(s, "item_ammopack_full") || !strcmp(s, "item_ammopack_medium"))
+		else if(!strcmp(classname, "item_ammopack_full") || !strcmp(classname, "item_ammopack_medium"))
 		{
-			decl Float:pos[3];
-			GetEntPropVector(entity, Prop_Send, "m_vecOrigin", pos);  
+			decl Float:position[3];
+			new pack;
+			GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position);  
 			AcceptEntityInput(entity, "Kill");
-			entity2=CreateEntityByName("item_ammopack_small");
-			TeleportEntity(entity2, pos, NULL_VECTOR, NULL_VECTOR);
-			DispatchSpawn(entity2);
+			pack=CreateEntityByName("item_ammopack_small");
+			TeleportEntity(pack, position, NULL_VECTOR, NULL_VECTOR);
+			DispatchSpawn(pack);
 		}
 	}
 	healthcheckused=0;
