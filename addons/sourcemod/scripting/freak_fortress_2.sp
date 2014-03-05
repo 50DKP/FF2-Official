@@ -7432,6 +7432,7 @@ public OnEntityDestroyed(entity)
 
 public CheckRoundState()
 {
+	PrintToServer("Round state is %i", GameRules_GetRoundState());
 	switch(GameRules_GetRoundState())
 	{
 		case RoundState_Init, RoundState_Pregame:
