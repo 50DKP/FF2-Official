@@ -193,7 +193,7 @@ native FF2_GetAbilityArgumentString(index, const String:plugin_name[], const Str
  * @param slot		Only for "sound_ability" - slot of ability
  * @return			True if sound has been found.  False if not
  */
-native bool:FF2_RandomSound(const String: keyvalue[], String: string[], length, index=0, slot=0);
+native bool:FF2_RandomSound(const String:keyvalue[], String:string[], length, index=0, slot=0);
 
 /**
  * Stops boss's music for all players
@@ -246,6 +246,24 @@ native FF2_GetQueuePoints(client);
  * @noreturn
  */
 native FF2_SetQueuePoints(client, value);
+
+/**
+ * Gets client's glow timer
+ *
+ * @param client	Client's index
+ * @return			Number of seconds left until client glow disappears (-1 if invalid client)
+ */
+native Float:FF2_GetClientGlow(client);
+
+/**
+ * Sets client's glow timer
+ *
+ * @param client	Client's index
+ * @param time1		Number of seconds to add to the glow timer (can be negative)
+ * @param time2		New value of glow timer
+ * @noreturn
+ */
+native FF2_SetClientGlow(client, Float:time1, Float:time2=-1.0);
 
 /**
  * Returns whether or not debug is enabled

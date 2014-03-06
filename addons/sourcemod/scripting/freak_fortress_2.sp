@@ -543,6 +543,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_SetFF2flags", Native_SetFF2flags);
 	CreateNative("FF2_GetQueuePoints", Native_GetQueuePoints);
 	CreateNative("FF2_SetQueuePoints", Native_SetQueuePoints);
+	CreateNative("FF2_GetClientGlow", Native_GetClientGlow);
+	CreateNative("FF2_SetClientGlow", Native_SetClientGlow);
 	CreateNative("FF2_Debug", Native_Debug);
 
 	PreAbility=CreateGlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);
@@ -7283,14 +7285,32 @@ public Native_RandomSound(Handle:plugin, numParams)
 	return see;
 }
 
-public Native_IsVSHMap(Handle:plugin, numParams)
+public Native_GetClientGlow(Handle:plugin, numParams)
 {
-	return false;
+	new client=GetNativeCell(1);
+	if(IsValidClient(client))
+	{
+		return _:GlowTimer[client];
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+public Native_SetClientGlow(Handle:plugin, numParams)
+{
+	SetClientGlow(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3));
 }
 
 public Native_Debug(Handle:plugin, numParams)
 {
 	return GetConVarBool(cvarDebug);
+}
+
+public Native_IsVSHMap(Handle:plugin, numParams)
+{
+	return false;
 }
 
 public Action:VSH_OnIsSaxtonHaleModeEnabled(&result)
@@ -7513,14 +7533,14 @@ UpdateHealthBar()
 	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);
 }
 
-SetClientGlow(client, Float:time, Float:time2=-1.0)
+SetClientGlow(client, Float:time1, Float:time2=-1.0)
 {
-	if(!IsValidClient(client, false) && !IsValidClient(Boss[client], false))
+	if(!IsValidClient(client) && !IsValidClient(Boss[client]))
 	{
 		return;
 	}
 
-	GlowTimer[client]+=time;
+	GlowTimer[client]+=time1;
 	if(time2>=0)
 	{
 		GlowTimer[client]=time2;
@@ -7550,5 +7570,4 @@ SetClientGlow(client, Float:time, Float:time2=-1.0)
 		}
 	}
 }
-
 #include <freak_fortress_2_vsh_feedback>
