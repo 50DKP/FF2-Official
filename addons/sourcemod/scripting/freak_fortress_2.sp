@@ -30,7 +30,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.9.0 Beta 9-4"
+#define PLUGIN_VERSION "1.9.0"
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -220,8 +220,8 @@ static const String:ff2versiondates[][]=
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
-	"February 26, 2014",//1.9.0
-	"February 26, 2014"	//1.9.0
+	"March 6, 2014",	//1.9.0
+	"March 6, 2014"		//1.9.0
 };
 
 stock FindVersionData(Handle:panel, versionindex)
@@ -234,14 +234,16 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "2) [Server] Fixed invalid healthbar entity bug (Wliu)");
 			DrawPanelText(panel, "3) Changed default medic ubercharge percentage to 40% (Wliu)");
 			DrawPanelText(panel, "4) Whitelisted festive variants of weapons (Wliu/BBG_Theory)");
-			DrawPanelText(panel, "5) [Server] Added convars to control last player highlight and timer health cutoff (Wliu");
-			DrawPanelText(panel, "See next page (press 8)");
+			DrawPanelText(panel, "5) [Server] Added convars to control last player glow and timer health cutoff (Wliu");
+			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 29:  //1.9.0
 		{
-			DrawPanelText(panel, "6) [Dev] Added debug method used for sending debug messages and a convar to control it (Wliu)");
+			DrawPanelText(panel, "6) [Dev] Added new natives/stocks: Debug, FF2_SetClientGlow and FF2_GetClientGlow (Wliu)");
 			DrawPanelText(panel, "7) Fixed a few minor !whatsnew bugs (BBG_Theory)");
 			DrawPanelText(panel, "8) Fixed Easter Abilities (Wliu)");
+			DrawPanelText(panel, "9) Minor grammar/spelling improvements (Wliu)");
+			DrawPanelText(panel, "10) [Server] Minor subplugin load/unload fixes (Wliu)");
 		}
 		case 28:  //1.0.8
 		{
@@ -251,7 +253,7 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "3) Made sure that the boss doesn't have any invalid weapons/items (Powerlord)");
 			DrawPanelText(panel, "4) Tried fixing the visible weapon bug (Powerlord)");
 			DrawPanelText(panel, "5) Whitelisted some more action slot items (Powerlord)");
-			DrawPanelText(panel, "See next page (press 8)");
+			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 27:  //1.0.8
 		{
@@ -261,7 +263,7 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "9) Slight tweaks to the view hp commands (Powerlord)");
 			DrawPanelText(panel, "10) Whitelisted the Silver/Gold Botkiller Sniper Rifle Mk.II (Powerlord)");
 			DrawPanelText(panel, "11) Slight tweaks to boss health calculation (Powerlord)");
-			DrawPanelText(panel, "See next page (press 8)");
+			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 26:  //1.0.8
 		{
@@ -271,7 +273,7 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "15) Healthpacks from the Candy Cane are no longer despawned (Powerlord)");
 			DrawPanelText(panel, "16) Slight tweaks to removing laughs (Powerlord)");
 			DrawPanelText(panel, "17) [Dev] Added a clip argument to special_noanims.sp (Powerlord)");
-			DrawPanelText(panel, "See next page (press 8)");
+			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 25:  //1.0.8
 		{
@@ -281,7 +283,7 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "21) Multiple English translation improvements (Wliu/Powerlord)");
 			DrawPanelText(panel, "22) Fixed Ninja Spy and other bosses that use the matrix ability getting stuck in walls/ceilings (Chris)");
 			DrawPanelText(panel, "23) [Dev] Updated item attributes code per the TF2Items update (Powerlord)");
-			DrawPanelText(panel, "See next page (press 8)");
+			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 24:  //1.0.8
 		{
@@ -595,7 +597,7 @@ public OnPluginStart()
 	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
 	HookEvent("player_death", event_player_death, EventHookMode_Pre);
 	HookEvent("player_chargedeployed", event_uberdeployed);
-	HookEvent("player_hurt", event_hurt,EventHookMode_Pre);
+	HookEvent("player_hurt", event_hurt, EventHookMode_Pre);
 	HookEvent("object_destroyed", event_destroy, EventHookMode_Pre);
 	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
 	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
@@ -708,10 +710,12 @@ public OnPluginStart()
 	steamtools=LibraryExists("SteamTools");
 	#endif
 
+	#if defined _updater_included
 	if(LibraryExists("updater"))
 	{
 		Updater_AddPlugin(UPDATE_URL);
 	}
+	#endif
 }
 
 public bool:BossTargetFilter(const String:pattern[], Handle:clients)
@@ -746,10 +750,12 @@ public OnLibraryAdded(const String:name[])
 	}
 	#endif
 
+	#if defined _updater_included
 	if(StrEqual(name, "updater"))
 	{
 		Updater_AddPlugin(UPDATE_URL);
 	}
+	#endif
 }
 
 public OnLibraryRemoved(const String:name[])
@@ -3003,6 +3009,7 @@ public Action:MakeNotBoss(Handle:hTimer, any:clientid)
 		LastClass[client]=TFClass_Unknown;
 		TF2_RespawnPlayer(client);
 	}
+
 	if(!IsVoteInProgress() && GetClientClassinfoCookie(client) && !(FF2flags[client] & FF2FLAG_CLASSHELPED))
 	{
 		HelpPanel2(client);
@@ -3173,10 +3180,10 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 		}
 	}
 	
-	if(civilianCheck[client]==3)
+	if(civilianCheck[client]==3 && !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		civilianCheck[client]=0;
-		CPrintToChat(client, "Respawning you because you have no weapons");
+		CPrintToChat(client, "{olive}[FF2]{default} Respawning you because you have no weapons!");
 		TF2_RespawnPlayer(client);
 	}
 	civilianCheck[client]=0;
@@ -3728,6 +3735,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	{
 		CreateTimer(0.1, checkItems, client);
 	}
+
 	FF2flags[client]&=~(FF2FLAG_UBERREADY | FF2FLAG_ISBUFFED | FF2FLAG_TALKING | FF2FLAG_ALLOWSPAWNINBOSSTEAM | FF2FLAG_USINGABILITY | FF2FLAG_CLASSHELPED);
 	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
@@ -7452,7 +7460,6 @@ public OnEntityDestroyed(entity)
 
 public CheckRoundState()
 {
-	PrintToServer("Round state is %i", GameRules_GetRoundState());
 	switch(GameRules_GetRoundState())
 	{
 		case RoundState_Init, RoundState_Pregame:

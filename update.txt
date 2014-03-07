@@ -292,7 +292,7 @@
 			"Plugin"	"Path_Mod/sound/saxton_hale/saxton_hale_responce_start5.wav"
 			"Plugin"	"Path_Mod/sound/saxton_hale/saxton_hale_responce_win1.wav"
 			"Plugin"	"Path_Mod/sound/saxton_hale/saxton_hale_responce_win2.wav"
-			"Plugin"	"Path_Mod/sound/saxton_hale/the_millionaires_holiday.mp3
+			"Plugin"	"Path_Mod/sound/saxton_hale/the_millionaires_holiday.mp3"
 			"Plugin"	"Path_Mod/sound/saxton_hale/vagineer_responce_fail_1.wav"
 			"Plugin"	"Path_Mod/sound/saxton_hale/vagineer_responce_fail_2.wav"
 			"Plugin"	"Path_Mod/sound/saxton_hale/vagineer_responce_intro.wav"
@@ -588,7 +588,7 @@
 		"Plugin"	"Path_Mod/sound/saxton_hale/saxton_hale_responce_start5.wav"
 		"Plugin"	"Path_Mod/sound/saxton_hale/saxton_hale_responce_win1.wav"
 		"Plugin"	"Path_Mod/sound/saxton_hale/saxton_hale_responce_win2.wav"
-		"Plugin"	"Path_Mod/sound/saxton_hale/the_millionaires_holiday.mp3
+		"Plugin"	"Path_Mod/sound/saxton_hale/the_millionaires_holiday.mp3"
 		"Plugin"	"Path_Mod/sound/saxton_hale/vagineer_responce_fail_1.wav"
 		"Plugin"	"Path_Mod/sound/saxton_hale/vagineer_responce_fail_2.wav"
 		"Plugin"	"Path_Mod/sound/saxton_hale/vagineer_responce_intro.wav"
