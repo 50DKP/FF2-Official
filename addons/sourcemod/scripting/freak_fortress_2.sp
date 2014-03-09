@@ -30,11 +30,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.9.0"
+#define PLUGIN_VERSION "2.0.0 Beta 1-1"
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
-#define ME 2048
+#define MAXENTITIES 2048
 #define MAXSPECIALS 64
 #define MAXRANDOMS 16
 
@@ -45,6 +45,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define HEALTHBAR_PROPERTY "m_iBossHealthPercentageByte"
 #define HEALTHBAR_MAX 255
 #define MONOCULUS "eyeball_boss"
+
+#define FF2_CONFIGS "configs/freak_fortress_2"
+#define BOSS_CONFIG "characters.cfg"
+#define DOORS_CONFIG "doors.cfg"
+#define WEAPONS_CONFIG "weapons.cfg"
 
 #if defined _steamtools_included
 new bool:steamtools=false;
@@ -153,6 +158,34 @@ new healthBar=-1;
 new g_Monoculus=-1;
 
 static bool:executed=false;
+
+new Handle:kvWeaponSpecials;
+new Handle:kvWeaponMods=INVALID_HANDLE;
+
+enum FF2WeaponSpecials
+{
+	FF2WeaponSpecial_PreventDamage,
+	FF2WeaponSpecial_RemoveOnDamage,
+	FF2WeaponSpecial_JarateOnChargedHit,
+}
+
+enum FF2WeaponModType
+{
+	FF2WeaponMod_AddAttrib,
+	FF2WeaponMod_RemoveAttrib,
+	FF2WeaponMod_Replace,
+	FF2WeaponMod_OnHit,
+	FF2WeaponMod_OnTakeDamage,
+}
+
+new String:WeaponSpecials[][]=
+{
+	"drop health pack on kill",
+	"glow on scoped hit",
+	"prevent damage",
+	"remove on damage",
+	"drain boost when full"
+};
 
 static const String:ff2versiontitles[][]=
 {
@@ -782,14 +815,29 @@ public OnConfigsExecuted()
 	BossCrits=GetConVarBool(cvarCrits);
 	circuitStun=GetConVarFloat(cvarCircuitStun);
 	countdownHealth=GetConVarInt(cvarCountdownHealth);
-	
+
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
+/*		
+		new String:configFile[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, configFile, PLATFORM_MAX_PATH, "%s/%s", FF2_CONFIGS, WEAPONS_CONFIG);
+
+		if(kvWeaponMods!=INVALID_HANDLE)
+		{
+			CloseHandle(kvWeaponMods);
+		}
+
+		if(!FileToKeyValues(kvWeaponMods, configFile))
+		{
+			SetFailState("[FF2] Failed to load weapon configuration file.");
+		}
+*/
 		tf_arena_use_queue=GetConVarInt(FindConVar("tf_arena_use_queue"));
 		mp_teams_unbalance_limit=GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
 		tf_arena_first_blood=GetConVarInt(FindConVar("tf_arena_first_blood"));
 		mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
 		tf_scout_hype_pep_max=GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
+
 		switch(GetConVarInt(cvarHalloween))
 		{
 			case 1:
@@ -1701,7 +1749,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	CreateTimer(3.5, StartResponseTimer);
 	CreateTimer(9.6, MessageTimer);
 
-	for(new entity=MaxClients+1; entity<ME; entity++)
+	for(new entity=MaxClients+1; entity<MAXENTITIES; entity++)
 	{
 		if(!IsValidEdict(entity))
 		{
@@ -2754,10 +2802,102 @@ public Action:MakeBoss(Handle:hTimer,any:client)
 	return Plugin_Continue;
 }
 
+/*Soon(TM)
+CreateWeaponModsKeyValues()
+{
+	if(kvWeaponSpecials!=INVALID_HANDLE)
+	{
+		CloseHandle(kvWeaponSpecials);
+	}
+
+	kvWeaponSpecials=CreateKeyValues("WeaponSpecials");
+	for(new i=0; i<sizeof(WeaponSpecials); i++)
+	{
+		KvJumpToKey(kvWeaponSpecials, WeaponSpecials[i], true);
+
+		KvJumpToKey(kvWeaponSpecials, "ByClassname", true);
+		KvGoBack(kvWeaponSpecials);
+
+		KvJumpToKey(kvWeaponSpecials, "ByIndex", true);
+		KvGoBack(kvWeaponSpecials);
+
+		KvGoBack(kvWeaponSpecials);
+	}
+}*/
+
 public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefinitionIndex, &Handle:hItem)
 {
-	if(!Enabled) return Plugin_Continue;
-	//if(hItem!=INVALID_HANDLE) return Plugin_Continue;
+	if(!Enabled)
+	{
+		return Plugin_Continue;
+	}
+/*TODO: "By Definition Index", "onhit", "ontakedamage", "removeattrib", "addattrib"
+	static Handle:weapon;
+	if(weapon!=INVALID_HANDLE)
+	{
+		CloseHandle(weapon);
+		weapon=INVALID_HANDLE;
+	}
+
+	if(!IsBoss(client))
+	{
+		KvRewind(kvWeaponMods);
+		new bool:giveNew=false;
+		if(KvJumpToKey(kvWeaponMods, "By Classname") && KvJumpToKey(kvWeaponMods, classname))
+		{
+			if(KvJumpToKey(kvWeaponMods, "replace"))
+			{
+				new String:newClass[64];
+				KvGetString(kvWeaponMods, "classname", newClass, sizeof(newClass));
+
+				new flags=OVERRIDE_ITEM_DEF|OVERRIDE_ATTRIBUTES;
+				new index=KvGetNum(kvWeaponMods, "index", -1);
+
+				if(index==-1)
+				{
+					LogError("[FF2] \"Replace\" is missing item definition index for classname %s!", classname);
+				}
+
+				if(!StrEqual(classname, newClass))
+				{
+					flags|=OVERRIDE_CLASSNAME;
+					giveNew=true;
+					strcopy(classname, sizeof(classname), newClass);
+				}
+
+				new level=KvGetNum(kvWeaponMods, "level", -1);
+				if(level>-1)
+				{
+					flags|=OVERRIDE_ITEM_LEVEL;
+				}
+				else if (giveNew)
+				{
+					level=1;
+				}
+
+				new quality=KvGetNum(kvWeaponMods, "quality", -1);
+				if(quality>-1)
+				{
+					flags|=OVERRIDE_ITEM_QUALITY;
+				}
+				else if(giveNew)
+				{
+					quality=0;
+				}
+
+				TF2Items_SetClassname(weapon, classname);
+				TF2Items_SetQuality(weapon, quality);
+				TF2Items_SetLevel(weapon, level);
+			}
+		}
+
+		if (giveNew)
+		{
+			TF2Items_GiveNamedItem(client, weapon);
+			return Plugin_Stop;
+		}
+	}
+*/
 	switch(iItemDefinitionIndex)
 	{
 		case 38, 457:  //Axtinguisher, Postal Pummeler
@@ -4479,7 +4619,7 @@ OnPlayerDeath(client, attacker, bool:fake=false)
 	{
 		decl String:name[PLATFORM_MAX_PATH];
 		FakeClientCommand(client, "destroy 2");
-		for(new entity=MaxClients+1; entity<ME; entity++)
+		for(new entity=MaxClients+1; entity<MAXENTITIES; entity++)
 		{
 			if(IsValidEdict(entity))
 			{

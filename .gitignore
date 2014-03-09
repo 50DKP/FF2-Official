@@ -26,25 +26,17 @@
 
 #ADDONS
 /addons/metamod/
-/addons/sourcemod/bin/
 /addons/stripper/
-/addons/*
+/addons/*.*
 
 #SOURCEMOD CONFIGS
 /addons/sourcemod/configs/geoip/
 /addons/sourcemod/configs/sql-init-scripts/
 /addons/sourcemod/configs/sourcebans/
-/addons/sourcemod/configs/a*.cfg
-/addons/sourcemod/configs/c*.cfg
-/addons/sourcemod/configs/d*.cfg
-/addons/sourcemod/configs/l*.cfg
-/addons/sourcemod/configs/m*.cfg
-/addons/sourcemod/configs/p*.cfg
-/addons/sourcemod/configs/s*.cfg
-/addons/sourcemod/configs/*.txt
-/addons/sourcemod/configs/*.ini
+/addons/sourcemod/configs/*.*
 
 #SOURCEMOD RANDOM STUFF
+/addons/sourcemod/bin/
 /addons/sourcemod/data/
 /addons/sourcemod/extensions/
 /addons/sourcemod/gamedata/*.games/
@@ -52,6 +44,9 @@
 /addons/sourcemod/gamedata/tf2.items.txt
 /addons/sourcemod/gamedata/tf2items.*
 /addons/sourcemod/logs/
+/addons/sourcemod/.hg_archival.txt
+/addons/sourcemod/GPL_*
+/addons/sourcemod/LICENSE*
 
 #SOURCEMOD PLUGINS
 /addons/sourcemod/plugins/
@@ -108,7 +103,6 @@
 
 #SOURCEMOD TRANSLATIONS
 /addons/sourcemod/translations/*/
-/addons/sourcemod/.hg_archival.txt
 /addons/sourcemod/translations/a*.txt
 /addons/sourcemod/translations/b*.txt
 /addons/sourcemod/translations/c*.txt
