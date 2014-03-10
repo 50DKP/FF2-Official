@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>FF2-Official by 50DKP</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>FF2-Official</h1>
+        <h2>Freak Fortress 2 is a one versus everyone mod for Team Fortress 2.  It is the successor to the Vs. Saxton Hale mode.</h2>
+        <a href="https://github.com/50DKP/FF2-Official" class="button"><small>View project on</small>GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h2>
+<a name="welcome-to-the-official-ff2-repository" class="anchor" href="#welcome-to-the-official-ff2-repository"><span class="octicon octicon-link"></span></a>Welcome to the official FF2 repository!</h2>
+
+<p><strong>LATEST VERSION</strong>: <a href="https://forums.alliedmods.net/showpost.php?p=2054933&amp;postcount=1">1.9.0</a></p>
+
+<p><a href="http://198.27.69.149/jenkins/job/FF2-Official/"><img src="http://198.27.69.149/jenkins/buildStatus/icon?job=FF2-Official" alt="Build Status"></a></p>
+
+<p>All development work towards the next major version of FF2 is done in the <a href="https://github.com/50DKP/FF2-Official/tree/development">development</a> branch.
+The <a href="https://github.com/50DKP/FF2-Official/tree/stable">stable</a> branch contains bugfixes for the most recent version of FF2.
+Once changes are considered ready for release, they are merged into the <a href="https://github.com/50DKP/FF2-Official/tree/master">master</a> branch.  This branch will always contain a released version of FF2.
+<a href="https://github.com/powerlord/">Powerlord's</a> rewrite of FF2 is housed in the <a href="https://github.com/50DKP/FF2-Official/tree/rewrite">rewrite</a> branch.  These changes are slowly being assimilated into the <a href="https://github.com/50DKP/FF2-Official/tree/">v2</a> branch.
+Finally, the <a href="https://github.com/50DKP/FF2-Official/tree/experimental">experimental</a> branch contains experimental work being done towards the next iteration of FF2.
+The default branch is changed to reflect where the most work is currently being done.</p>
+
+<h3>
+<a name="compiling-ff2" class="anchor" href="#compiling-ff2"><span class="octicon octicon-link"></span></a>Compiling FF2</h3>
+
+<hr><p>This tutorial assumes you have TF2 installed.</p>
+
+<h4>
+<a name="setup-git" class="anchor" href="#setup-git"><span class="octicon octicon-link"></span></a>Setup Git</h4>
+
+<ol>
+<li>Download and install Git <a href="http://git-scm.com/download/">here</a>.
+
+<ul>
+<li>It is strongly recommended to allow Git to handle <code>.sh</code> extensions if installing on Windows.</li>
+</ul>
+</li>
+<li>
+<em>Optional</em>: Download and install a Git GUI client, such as Github for Windows/Mac, SmartGitHg, TortoiseGit, etc.  A nice list is available <a href="http://git-scm.com/downloads/guis">here</a>.</li>
+</ol><h4>
+<a name="compile-ff2" class="anchor" href="#compile-ff2"><span class="octicon octicon-link"></span></a>Compile FF2</h4>
+
+<ol>
+<li>Open up your command line.</li>
+<li>Navigate to your TF2 server's location, eg <code>C:\Servers\TF2\FF2-Official\tf</code> by executing <code>cd [folder location]</code>.  This location is hereby referred to as <code>ff2dev</code>.</li>
+<li>Execute <code>git clone https://github.com/50DKP/FF2-Official.git</code>.</li>
+<li>Right now, you should have a folder structure that looks like:</li>
+</ol><hr><pre><code>ff2dev
+\-tf
+    \-addons
+        \-sourcemod
+            \-Misc. Sourcemod files (should have `scripting` and `plugins`)
+</code></pre>
+
+<hr><h4>
+<a name="installing-sourcemod" class="anchor" href="#installing-sourcemod"><span class="octicon octicon-link"></span></a>Installing Sourcemod</h4>
+
+<ol>
+<li>Download <a href="http://www.sourcemod.net/downloads.php">Sourcemod</a>.</li>
+<li>Extract it to <code>ff2dev</code> so that all the directories match up.</li>
+</ol><h4>
+<a name="compile-ff2-1" class="anchor" href="#compile-ff2-1"><span class="octicon octicon-link"></span></a>Compile FF2</h4>
+
+<ol>
+<li>Navigate to <code>tf/addons/sourcemod/scripting</code> in the command prompt.</li>
+<li>Execute <code>compile.sh freak_fortress_2.sp</code>.
+
+<ul>
+<li>
+<strong>NOTE</strong>: This will only work on Windows if you allowed Git to make <code>.sh</code> bash files executable.</li>
+</ul>
+</li>
+<li>The compiled file will be in <code>scripting/compiled</code>, which you can then move to <code>/plugins/</code>.</li>
+</ol><h4>
+<a name="updating-your-repository" class="anchor" href="#updating-your-repository"><span class="octicon octicon-link"></span></a>Updating Your Repository</h4>
+
+<p>In order to get the most up-to-date builds, you'll have to periodically update your local repository.</p>
+
+<ol>
+<li>Open up your command line.</li>
+<li>Navigate to <code>ff2dev</code> in the console.</li>
+<li>Make sure you have not made any changes to the local repository, or else there might be issues with Git.
+
+<ul>
+<li>If you have, try reverting them to the status that they were when you last updated your repository.</li>
+</ul>
+</li>
+<li>Execute <code>git pull master</code>.  This pulls all commits from the official repository that do not yet exist on your local repository and updates it.</li>
+</ol><h3>
+<a name="label-information" class="anchor" href="#label-information"><span class="octicon octicon-link"></span></a>Label Information</h3>
+
+<hr><ul>
+<li>
+<code>bug-critical</code> denotes severe game-impeding bugs that generally do not have a workaround.
+
+<ul>
+<li>
+<em>Examples</em>: Server crashes, unplayable bosses, etc.</li>
+</ul>
+</li>
+<li>
+<code>bug-major</code> denotes game-impeding bugs that generally have a workaround and/or can be easily avoided.
+
+<ul>
+<li>
+<em>Examples</em>: Suicide/weapon-related bugs, etc.</li>
+</ul>
+</li>
+<li>
+<code>bug-minor</code> denotes bugs that are generally visual-only and/or do not seriously affect gameplay.  This may also include bugs that are not always reproducible.
+
+<ul>
+<li>
+<em>Examples</em>: No HUD, missing text, etc.</li>
+</ul>
+</li>
+<li>
+<code>feedback-required</code> denotes issues that require feedback from others.
+
+<ul>
+<li>
+<em>Examples</em>: Suggestions, etc.</li>
+</ul>
+</li>
+</ul>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/50DKP/FF2-Official/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/50DKP/FF2-Official/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/50DKP/FF2-Official"></a> is maintained by <a href="https://github.com/50DKP">50DKP</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+  
+  </body>
+</html>
