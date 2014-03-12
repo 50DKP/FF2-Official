@@ -1,5 +1,8 @@
 /*
-===Freak Fortress 2===
+===Freak Fortress 2 v2===
+By Powerlord and the 50DKP team
+
+===Freak Fortress 2 v1===
 
 By Rainbolt Dash: programmer, modeller, mapper, painter.
 Author of Demoman The Pirate: http://www.randomfortress.ru/thepirate/
@@ -30,7 +33,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.0.0 Beta 1-1"
+#define PLUGIN_VERSION "2.0.0 Alpha 1"
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -159,7 +162,7 @@ new g_Monoculus=-1;
 
 static bool:executed=false;
 
-new Handle:kvWeaponSpecials;
+//new Handle:kvWeaponSpecials;
 new Handle:kvWeaponMods=INVALID_HANDLE;
 
 enum FF2WeaponSpecials
@@ -178,14 +181,14 @@ enum FF2WeaponModType
 	FF2WeaponMod_OnTakeDamage,
 }
 
-new String:WeaponSpecials[][]=
+/*new String:WeaponSpecials[][]=
 {
 	"drop health pack on kill",
 	"glow on scoped hit",
 	"prevent damage",
 	"remove on damage",
 	"drain boost when full"
-};
+};*/
 
 static const String:ff2versiontitles[][]=
 {
@@ -2831,7 +2834,8 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	{
 		return Plugin_Continue;
 	}
-/*TODO: "By Definition Index", "onhit", "ontakedamage", "removeattrib", "addattrib"
+
+//TODO: "By Definition Index", "onhit", "ontakedamage", "removeattrib"
 	static Handle:weapon;
 	if(weapon!=INVALID_HANDLE)
 	{
@@ -2842,27 +2846,29 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	if(!IsBoss(client))
 	{
 		KvRewind(kvWeaponMods);
-		new bool:giveNew=false;
+		new bool:differentClass=false;
 		if(KvJumpToKey(kvWeaponMods, "By Classname") && KvJumpToKey(kvWeaponMods, classname))
 		{
+			Debug("Keyvalues: Entered classname (classname %s)", classname);
 			if(KvJumpToKey(kvWeaponMods, "replace"))
 			{
+				Debug("Keyvalues classname: Entered replace");
 				new String:newClass[64];
 				KvGetString(kvWeaponMods, "classname", newClass, sizeof(newClass));
+				Debug("Keyvalues classname>replace: New classname is %s", newClass);
 
 				new flags=OVERRIDE_ITEM_DEF|OVERRIDE_ATTRIBUTES;
 				new index=KvGetNum(kvWeaponMods, "index", -1);
-
 				if(index==-1)
 				{
-					LogError("[FF2] \"Replace\" is missing item definition index for classname %s!", classname);
+					LogError("[FF2 Weapons] \"Replace\" is missing item definition index for classname %s!", classname);
 				}
 
 				if(!StrEqual(classname, newClass))
 				{
 					flags|=OVERRIDE_CLASSNAME;
-					giveNew=true;
-					strcopy(classname, sizeof(classname), newClass);
+					differentClass=true;
+					strcopy(classname, 64, newClass);
 				}
 
 				new level=KvGetNum(kvWeaponMods, "level", -1);
@@ -2870,7 +2876,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				{
 					flags|=OVERRIDE_ITEM_LEVEL;
 				}
-				else if (giveNew)
+				else if(differentClass)
 				{
 					level=1;
 				}
@@ -2880,24 +2886,73 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				{
 					flags|=OVERRIDE_ITEM_QUALITY;
 				}
-				else if(giveNew)
+				else if(differentClass)
 				{
 					quality=0;
 				}
 
+				weapon=TF2Items_CreateItem(flags);
 				TF2Items_SetClassname(weapon, classname);
 				TF2Items_SetQuality(weapon, quality);
 				TF2Items_SetLevel(weapon, level);
+				Debug("Keyvalues classname>replace: Gave new weapon with classname %s, quality %i, and level %i", classname, quality, level);
+				KvGoBack(kvWeaponMods);
+			}
+
+			if(KvJumpToKey(kvWeaponMods, "addattribs"))
+			{
+				Debug("Keyvalues classname: Entered addattribs");
+				new String:attributes[64][64];
+				new index=KvGetNum(kvWeaponMods, "index", -1);
+				if(index==-1)
+				{
+					LogError("[FF2 Weapons] \"Addattribs\" is missing item definition index for classname %s!", classname);
+				}
+
+				if(KvGotoFirstSubKey(kvWeaponMods))
+				{
+					new attribCount=1;
+					Debug("Keyvalues classname>addattribs: Entered first subkey");
+					KvGetSectionName(kvWeaponMods, attributes[0], sizeof(attributes));
+					KvGetString(kvWeaponMods, attributes[0], attributes[1], sizeof(attributes));
+					Debug("Keyvalues classname>addattribs: First attrib set was %s ; %s", attributes[0], attributes[1]);
+
+					for(new key=3; KvGotoNextKey(kvWeaponMods); key+=2)
+					{
+						KvGetSectionName(kvWeaponMods, attributes[key], sizeof(attributes));
+						KvGetString(kvWeaponMods, attributes[key], attributes[key+1], sizeof(attributes));
+						Debug("Keyvalues classname>addattribs: Got attrib set %s ; %s", attributes[key], attributes[key+1]);
+						attribCount++;
+					}
+
+					Debug("Keyvalues classname>addatribs: Final attrib count was %i", attribCount);
+					PrepareItemHandle2(weapon, _, _, attributes, attribCount);  //TODO: Get rid of this and don't forget OVERRIDE_ATTRIBUTES flag
+					KvGoBack(kvWeaponMods);
+				}
+				else
+				{
+					LogError("[FF2] There was nothing under \"Addattribs\" for classname %s!", classname);
+				}
+			}
+
+			if(KvJumpToKey(kvWeaponMods, "onhit"))
+			{
+				/*TODO*/
+			}
+
+			if(KvJumpToKey(kvWeaponMods, "ontakedamage"))
+			{
+				/*TODO*/
 			}
 		}
 
-		if (giveNew)
+		if(differentClass)
 		{
 			TF2Items_GiveNamedItem(client, weapon);
 			return Plugin_Stop;
 		}
 	}
-*/
+
 	switch(iItemDefinitionIndex)
 	{
 		case 38, 457:  //Axtinguisher, Postal Pummeler
@@ -2945,15 +3000,15 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-/*		case 132, 266, 482:
-		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "202 ; 0.5 ; 125 ; -15", true);
-			if(hItemOverride!=INVALID_HANDLE)
-			{
-				hItem=hItemOverride;
-				return Plugin_Changed;
-			}
-		}*/
+//		case 132, 266, 482:
+//		{
+//			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "202 ; 0.5 ; 125 ; -15", true);
+//			if(hItemOverride!=INVALID_HANDLE)
+//			{
+//				hItem=hItemOverride;
+//				return Plugin_Changed;
+//			}
+//		}
 		case 220:  //Shortstop
 		{
 			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "328 ; 1.0", true);
@@ -3032,23 +3087,95 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	return Plugin_Continue;
 }
 
-public Action:Timer_NoHonorBound(Handle:timer, any:userid)
+stock Handle:PrepareItemHandle2(Handle:item, String:classname[]="", index=-1, const String:attributes[][], attribCount, bool:preserve=true)
 {
-	new client=GetClientOfUserId(userid);
-	if(IsValidClient(client) && IsPlayerAlive(client))
+	static Handle:weapon;
+	new flags=OVERRIDE_ATTRIBUTES;
+	new addAttribs=0;
+	if(attribCount%2!=0)
 	{
-		new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
-		new index=((IsValidEntity(weapon) && weapon>MaxClients) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
-		new active=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-		new String:classname[64];
-		if(IsValidEdict(active)) GetEdictClassname(active, classname, sizeof(classname));
-		if(index==357 && active==weapon && strcmp(classname, "tf_weapon_katana", false)==0)
+		attribCount--;
+	}
+
+	if(preserve)
+	{
+		flags|=PRESERVE_ATTRIBUTES;
+	}
+
+	if(weapon==INVALID_HANDLE)
+	{
+		weapon=TF2Items_CreateItem(flags);
+	}
+	else
+	{
+		TF2Items_SetFlags(weapon, flags);
+	}
+
+	if(item!=INVALID_HANDLE)
+	{
+		addAttribs=TF2Items_GetNumAttributes(item);
+		if(addAttribs>0)
 		{
-			SetEntProp(weapon, Prop_Send, "m_bIsBloody", 1);
-			if(GetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy")<1)
-				SetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy", 1);
+			for(new value=0; value<2*addAttribs; value+=2)
+			{
+				new bool:dontAdd=false;
+				new attribIndex=TF2Items_GetAttributeId(item, value);
+				for(new attribute=0; attribute<attribCount+value; attribute+=2)
+				{
+					if(StringToInt(attributes[attribute])==attribIndex)
+					{
+						dontAdd=true;
+						break;
+					}
+				}
+
+				if(!dontAdd)
+				{
+					IntToString(attribIndex, attributes[value+attribCount], 32);
+					FloatToString(TF2Items_GetAttributeValue(item, value), attributes[value+1+attribCount], 32);
+				}
+			}
+			attribCount+=2*addAttribs;
+		}
+		CloseHandle(item);
+	}
+
+	if(classname[0]!='\0')
+	{
+		flags|=OVERRIDE_CLASSNAME;
+		TF2Items_SetClassname(weapon, classname);
+	}
+
+	if(index!=-1)
+	{
+		flags|=OVERRIDE_ITEM_DEF;
+		TF2Items_SetItemIndex(weapon, index);
+	}
+
+	if(attribCount>0)
+	{
+		TF2Items_SetNumAttributes(weapon, (attribCount/2));
+		new i=0;
+		for(new attribute=0; attribute<attribCount && i<16; attribute+=2)
+		{
+			new attrib=StringToInt(attributes[attribute]);
+			if(attrib==0)
+			{
+				LogError("Bad weapon attribute passed: %s ; %s", attributes[attribute], attributes[attribute+1]);
+				CloseHandle(weapon);
+				return INVALID_HANDLE;
+			}
+
+			TF2Items_SetAttribute(weapon, i, StringToInt(attributes[attribute]), StringToFloat(attributes[attribute+1]));
+			i++;
 		}
 	}
+	else
+	{
+		TF2Items_SetNumAttributes(weapon, 0);
+	}
+	TF2Items_SetFlags(weapon, flags);
+	return weapon;
 }
 
 stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const String:att[]="", bool:dontpreserve=false)
@@ -3131,6 +3258,25 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 	}
 	TF2Items_SetFlags(hWeapon, flags);
 	return hWeapon;
+}
+
+public Action:Timer_NoHonorBound(Handle:timer, any:userid)
+{
+	new client=GetClientOfUserId(userid);
+	if(IsValidClient(client) && IsPlayerAlive(client))
+	{
+		new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
+		new index=((IsValidEntity(weapon) && weapon>MaxClients) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+		new active=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+		new String:classname[64];
+		if(IsValidEdict(active)) GetEdictClassname(active, classname, sizeof(classname));
+		if(index==357 && active==weapon && strcmp(classname, "tf_weapon_katana", false)==0)
+		{
+			SetEntProp(weapon, Prop_Send, "m_bIsBloody", 1);
+			if(GetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy")<1)
+				SetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy", 1);
+		}
+	}
 }
 
 public Action:MakeNotBoss(Handle:hTimer, any:clientid)
