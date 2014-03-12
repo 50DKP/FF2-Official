@@ -34,6 +34,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "2.0.0 Alpha 1"
+#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -746,8 +747,8 @@ public OnPluginStart()
 	steamtools=LibraryExists("SteamTools");
 	#endif
 
-	#if defined _updater_included
-	if(LibraryExists("updater") && !GetConVarBool(cvarDebug))
+	#if defined _updater_included && !defined DEV_VERSION
+	if(LibraryExists("updater"))
 	{
 		Updater_AddPlugin(UPDATE_URL);
 	}
@@ -786,8 +787,8 @@ public OnLibraryAdded(const String:name[])
 	}
 	#endif
 
-	#if defined _updater_included
-	if(StrEqual(name, "updater") && !GetConVarBool(cvarDebug))
+	#if defined _updater_included && !defined DEV_VERSION
+	if(StrEqual(name, "updater"))
 	{
 		Updater_AddPlugin(UPDATE_URL);
 	}
