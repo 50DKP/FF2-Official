@@ -821,7 +821,7 @@ public OnConfigsExecuted()
 
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
-/*		
+		
 		new String:configFile[PLATFORM_MAX_PATH];
 		BuildPath(Path_SM, configFile, PLATFORM_MAX_PATH, "%s/%s", FF2_CONFIGS, WEAPONS_CONFIG);
 
@@ -834,7 +834,7 @@ public OnConfigsExecuted()
 		{
 			SetFailState("[FF2] Failed to load weapon configuration file.");
 		}
-*/
+
 		tf_arena_use_queue=GetConVarInt(FindConVar("tf_arena_use_queue"));
 		mp_teams_unbalance_limit=GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
 		tf_arena_first_blood=GetConVarInt(FindConVar("tf_arena_first_blood"));
