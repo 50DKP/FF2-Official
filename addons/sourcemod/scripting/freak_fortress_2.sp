@@ -747,7 +747,7 @@ public OnPluginStart()
 	#endif
 
 	#if defined _updater_included
-	if(LibraryExists("updater"))
+	if(LibraryExists("updater") && !GetConVarBool(cvarDebug))
 	{
 		Updater_AddPlugin(UPDATE_URL);
 	}
@@ -787,7 +787,7 @@ public OnLibraryAdded(const String:name[])
 	#endif
 
 	#if defined _updater_included
-	if(StrEqual(name, "updater"))
+	if(StrEqual(name, "updater") && !GetConVarBool(cvarDebug))
 	{
 		Updater_AddPlugin(UPDATE_URL);
 	}
