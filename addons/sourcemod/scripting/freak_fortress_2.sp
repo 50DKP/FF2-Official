@@ -822,18 +822,18 @@ public OnConfigsExecuted()
 
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
-		
-		new String:configFile[PLATFORM_MAX_PATH];
-		BuildPath(Path_SM, configFile, PLATFORM_MAX_PATH, "%s/%s", FF2_CONFIGS, WEAPONS_CONFIG);
+		new String:config[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "%s/%s", FF2_CONFIGS, WEAPONS_CONFIG);
 
 		if(kvWeaponMods!=INVALID_HANDLE)
 		{
 			CloseHandle(kvWeaponMods);
 		}
+		kvWeaponMods=CreateKeyValues("FF2 Weapon Modifications");
 
-		if(!FileToKeyValues(kvWeaponMods, configFile))
+		if(!FileToKeyValues(kvWeaponMods, config))
 		{
-			SetFailState("[FF2] Failed to load weapon configuration file.");
+			SetFailState("[FF2] Failed to load weapon configuration file!");
 		}
 
 		tf_arena_use_queue=GetConVarInt(FindConVar("tf_arena_use_queue"));
@@ -1103,7 +1103,6 @@ EnableSubPlugins(bool:force=false)
 
 DisableSubPlugins(bool:force=false)
 {
-	PrintToServer("DisableSubPlugins start");
 	if(!areSubPluginsEnabled && !force)
 	{
 		return;
@@ -1117,12 +1116,10 @@ DisableSubPlugins(bool:force=false)
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
-			PrintToServer("DisableSubPlugins: filename is %s", filename);
 			ServerCommand("sm plugins unload freaks/%s", filename);
 		}
 	}
 	areSubPluginsEnabled=false;
-	PrintToServer("DisableSubPlugins end");
 }
 
 public LoadCharacter(const String:character[])
