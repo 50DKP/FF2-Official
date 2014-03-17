@@ -11,7 +11,7 @@
 #define OBJECTS			"spawn_many_objects_on_kill"
 #define OBJECTS_DEATH	"spawn_many_objects_on_death"
 
-#define PLUGIN_VERSION "1.1.0"
+#define PLUGIN_VERSION "1.9.1"
 
 public Plugin:myinfo=
 {
@@ -24,6 +24,7 @@ public Plugin:myinfo=
 public OnPluginStart2()
 {
 	HookEvent("player_death", event_player_death);
+	PrecacheSound("items/pumpkin_pickup.wav", true);
 }
 
 public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)

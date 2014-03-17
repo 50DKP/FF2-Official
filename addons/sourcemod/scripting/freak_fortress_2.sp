@@ -25,6 +25,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include <tf2_stocks>
 #include <morecolors>
 #include <tf2items>
+#include <tf2attributes>
 #include <clientprefs>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
@@ -829,7 +830,7 @@ public OnConfigsExecuted()
 		{
 			CloseHandle(kvWeaponMods);
 		}
-		kvWeaponMods=CreateKeyValues("FF2 Weapon Modifications");
+		kvWeaponMods=CreateKeyValues("FF2Weapons");
 
 		if(!FileToKeyValues(kvWeaponMods, config))
 		{
@@ -2855,7 +2856,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				KvGetString(kvWeaponMods, "classname", newClass, sizeof(newClass));
 				Debug("Keyvalues classname>replace: New classname is %s", newClass);
 
-				new flags=OVERRIDE_ITEM_DEF|OVERRIDE_ATTRIBUTES;
+				new flags=OVERRIDE_ITEM_DEF|OVERRIDE_ATTRIBUTES|FORCE_GENERATION;
 				new index=KvGetNum(kvWeaponMods, "index", -1);
 				if(index==-1)
 				{
@@ -2895,20 +2896,68 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				TF2Items_SetQuality(weapon, quality);
 				TF2Items_SetLevel(weapon, level);
 				Debug("Keyvalues classname>replace: Gave new weapon with classname %s, quality %i, and level %i", classname, quality, level);
+				new entity=TF2Items_GiveNamedItem(client, weapon);
+				Debug("Keyvalues classname>replace: Entity was %i", entity);
+				//CloseHandle(weapon);
+				EquipPlayerWeapon(client, entity);
 				KvGoBack(kvWeaponMods);
 			}
 
-			if(KvJumpToKey(kvWeaponMods, "addattribs"))
+			if(KvJumpToKey(kvWeaponMods, "removeattribs"))  //TODO: remove-all (TF2Attrib)
+			{
+				Debug("Keyvalues classname: Entered removeattribs");
+				if(KvGotoFirstSubKey(kvWeaponMods, false))
+				{
+					Debug("Keyvalues classname>addattribs: Entered first subkey");
+					decl attributes[64];
+					new attribCount=1;
+
+					attributes[0]=KvGetNum(kvWeaponMods, "1");
+					Debug("Keyvalues classname>removeattribs: First attrib was %i", attributes[0]);
+
+					for(new key=2; KvGotoNextKey(kvWeaponMods, false); key++)  //TODO: Make this more user-friendly and check until the end of removeattribs
+					{
+						decl String:temp[4];
+						IntToString(key, temp, sizeof(temp));
+						attributes[key]=KvGetNum(kvWeaponMods, temp);
+						Debug("Keyvalues classname>removeattribs: Got attrib %i", attributes[key]);
+						attribCount++;
+					}
+					Debug("Keyvalues classname>removeatribs: Final attrib count was %i", attribCount);
+
+					if(attribCount>0)
+					{
+						new i=0;
+						for(new attribute=0; attribute<attribCount && i<16; attribute++)
+						{
+							if(attributes[attribute]==0)
+							{
+								LogError("[FF2 Weapons] Bad weapon attribute passed: %i", attributes[attribute]);
+								CloseHandle(weapon);
+								return Plugin_Stop;
+							}
+
+							Debug("Keyvalues classname>removeattribs: Removed attribute %i", attributes[attribute]);
+							new entity=FindEntityByClassname(-1, classname);
+							if(entity!=-1)
+							{
+								TF2Attrib_RemoveByDefIndex(entity, attributes[attribute]);
+							}
+							i++;
+						}
+					}
+				}
+				else
+				{
+					LogError("[FF2 Weapons] There was nothing under \"Removeattribs\" for classname %s!", classname);
+				}
+				KvGoBack(kvWeaponMods);
+			}
+
+			if(KvJumpToKey(kvWeaponMods, "addattribs"))  //TODO: Preserve attributes
 			{
 				Debug("Keyvalues classname: Entered addattribs");
-				new index=KvGetNum(kvWeaponMods, "index", -1);
-				if(index==-1)
-				{
-					LogError("[FF2 Weapons] \"Addattribs\" is missing item definition index for classname %s!", classname);
-					return Plugin_Stop;
-				}
-
-				if(KvGotoFirstSubKey(kvWeaponMods))
+				if(KvGotoFirstSubKey(kvWeaponMods, false))
 				{
 					Debug("Keyvalues classname>addattribs: Entered first subkey");
 					new String:attributes[64][64];
@@ -2918,7 +2967,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 					KvGetString(kvWeaponMods, attributes[0], attributes[1], sizeof(attributes));
 					Debug("Keyvalues classname>addattribs: First attrib set was %s ; %s", attributes[0], attributes[1]);
 
-					for(new key=3; KvGotoNextKey(kvWeaponMods); key+=2)
+					for(new key=3; KvGotoNextKey(kvWeaponMods, false); key+=2)
 					{
 						KvGetSectionName(kvWeaponMods, attributes[key], sizeof(attributes));
 						KvGetString(kvWeaponMods, attributes[key], attributes[key+1], sizeof(attributes));
@@ -2926,46 +2975,14 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 						attribCount++;
 					}
 					Debug("Keyvalues classname>addatribs: Final attrib count was %i", attribCount);
-					
-					new addAttribs=0;
+
 					if(attribCount%2!=0)
 					{
 						attribCount--;
 					}
 
-					if(item!=INVALID_HANDLE)
-					{
-						addAttribs=TF2Items_GetNumAttributes(item);
-						if(addAttribs>0)
-						{
-							for(new i=0; i<2*addAttribs; i+=2)
-							{
-								new bool:dontAdd=false;
-								new attribIndex=TF2Items_GetAttributeId(item, i);
-								for(new attribute=0; attribute<attribCount+i; attribute+=2)
-								{
-									if(StringToInt(attributes[attribute])==attribIndex)
-									{
-										dontAdd=true;
-										break;
-									}
-								}
-
-								if(!dontAdd)
-								{
-									IntToString(attribIndex, attributes[i+attribCount], 64);
-									FloatToString(TF2Items_GetAttributeValue(item, i), attributes[attribCount+i+1], 64);
-								}
-							}
-							attribCount+=2*addAttribs;
-						}
-						CloseHandle(item);
-					}
-
-					weapon=TF2Items_CreateItem(OVERRIDE_ATTRIBUTES);
 					if(attribCount>0)
 					{
-						TF2Items_SetNumAttributes(weapon, attribCount/2);
 						new i=0;
 						for(new attribute=0; attribute<attribCount && i<16; attribute+=2)
 						{
@@ -2976,20 +2993,21 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 								CloseHandle(weapon);
 								return Plugin_Stop;
 							}
-							TF2Items_SetAttribute(weapon, i, StringToInt(attributes[attribute]), StringToFloat(attributes[attribute+1]));
+
+							Debug("Keyvalues classname>addattribs: Added attrib set %s ; %s", attributes[attribute], attributes[attribute+1]);
+							new entity=FindEntityByClassname(-1, classname);
+							{
+								TF2Attrib_SetByDefIndex(entity, StringToInt(attributes[attribute]), StringToFloat(attributes[attribute+1]));
+							}
 							i++;
 						}
 					}
-					else
-					{
-						TF2Items_SetNumAttributes(weapon, 0);
-					}
-					KvGoBack(kvWeaponMods);
 				}
 				else
 				{
 					LogError("[FF2 Weapons] There was nothing under \"Addattribs\" for classname %s!", classname);
 				}
+				KvGoBack(kvWeaponMods);
 			}
 
 			if(KvJumpToKey(kvWeaponMods, "onhit"))
@@ -3003,11 +3021,12 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 			}
 		}
 
-		if(differentClass)
+		/*if(differentClass)
 		{
+			Debug("Keyvalues differentClass: Gave weapon!");
 			TF2Items_GiveNamedItem(client, weapon);
 			return Plugin_Stop;
-		}
+		}*/
 	}
 
 	switch(iItemDefinitionIndex)
@@ -5105,29 +5124,37 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damagetype, &weapon, Float:damageForce[3], Float:damagePosition[3], damagecustom)
 {
 	if(!Enabled || !IsValidEdict(attacker))
+	{
 		return Plugin_Continue;
-		
+	}
+
 	static bool:foundDmgCustom=false;
 	static bool:dmgCustomInOTD=false;
-	
+
 	if(!foundDmgCustom)
 	{
 		dmgCustomInOTD=(GetFeatureStatus(FeatureType_Capability, "SDKHook_DmgCustomInOTD")==FeatureStatus_Available);
 		foundDmgCustom=true;
 	}
-	
+
 	if((attacker<=0 || client==attacker) && IsBoss(client))
+	{
 		return Plugin_Handled;
+	}
+
 	if(TF2_IsPlayerInCondition(client, TFCond_Ubercharged))
+	{
 		return Plugin_Continue;
+	}
+
 	if(CheckRoundState()==0 && IsBoss(client))
 	{
 		damage*=0.0;
 		return Plugin_Changed;
 	}
 
-	decl Float:Pos[3];
-	GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", Pos);
+	decl Float:position[3];
+	GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
 	if(IsBoss(attacker))
 	{
 		if(IsValidClient(client) && !IsBoss(client) && !TF2_IsPlayerInCondition(client, TFCond_Bonked) && !TF2_IsPlayerInCondition(client, TFCond_Ubercharged))
@@ -5146,16 +5173,16 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				return Plugin_Changed;
 			}
 
-			new ent=-1;
-			while((ent=FindEntityByClassname2(ent, "tf_wearable_demoshield"))!=-1)
+			new entity=-1;
+			while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)  //TODO: Clean this code up
 			{
-				if(GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable"))
+				if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 				{
-					TF2_RemoveWearable(client, ent);
-					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+					TF2_RemoveWearable(client, entity);
+					EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
+					EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
+					EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
+					EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
 					TF2_AddCondition(client, TFCond_Bonked, 0.1);
 					return Plugin_Continue;
 				}
@@ -5167,37 +5194,52 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				{
 					if(GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 					{
-						if(damagetype & DMG_CRIT) damagetype&=~DMG_CRIT;
+						if(damagetype & DMG_CRIT)
+						{
+							damagetype&=~DMG_CRIT;
+						}
 						damage=620.0;
 						return Plugin_Changed;
 					}
+
 					if(TF2_IsPlayerInCondition(client, TFCond_Cloaked) && TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 					{
-						if(damagetype & DMG_CRIT) damagetype&=~DMG_CRIT;
+						if(damagetype & DMG_CRIT)
+						{
+							damagetype&=~DMG_CRIT;
+						}
 						damage=850.0;
 						return Plugin_Changed;
 					}
+
 					if(GetEntProp(client, Prop_Send, "m_bFeignDeathReady") || TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 					{
-						if(damagetype & DMG_CRIT) damagetype&=~DMG_CRIT;
+						if(damagetype & DMG_CRIT)
+						{
+							damagetype&=~DMG_CRIT;
+						}
 						damage=620.0;
 						return Plugin_Changed;
 					}
 				}
 				case TFClass_Soldier:
 				{
-					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, 1))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client]&FF2FLAG_ISBUFFED))
+					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, 1))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED)) //Battalion's Backup
 					{
-						SetEntPropFloat(client, Prop_Send, "m_flRageMeter",100.0);
+						SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 						FF2flags[client]|=FF2FLAG_ISBUFFED;
 					}
 				}
 			}
+
 			new buffweapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 			new buffindex=(IsValidEntity(buffweapon) && buffweapon>MaxClients ? GetEntProp(buffweapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 			if(buffindex==226)
+			{
 				CreateTimer(0.25, Timer_CheckBuffRage, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			if(damage<=160.0)
+			}
+
+			if(damage<=160.0)  //TODO: Wat
 			{
 				damage*=3;
 				return Plugin_Changed;
@@ -5213,7 +5255,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			{
 				new bool:bIsTelefrag=false;
 				new bool:bIsBackstab=false;
-				
+
 				if(dmgCustomInOTD)
 				{
 					if(damagecustom==TF_CUSTOM_BACKSTAB)
@@ -5227,8 +5269,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 				else if(weapon!=4095 && IsValidEdict(weapon) && weapon==GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee) && damage>1000.0)
 				{
-					decl String:wepclassname[32];
-					if(GetEdictClassname(weapon, wepclassname, sizeof(wepclassname)) && strcmp(wepclassname, "tf_weapon_knife", false)==0)
+					decl String:classname[32];
+					if(GetEdictClassname(weapon, classname, sizeof(classname)) && strcmp(classname, "tf_weapon_knife", false)==0)
 					{
 						bIsBackstab=true;
 					}
@@ -5272,7 +5314,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				new wepindex=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 				switch(wepindex)
 				{
-					case 593:	//Third Degree
+					case 593:  //Third Degree
 					{
 						new healers[MAXPLAYERS];
 						new healercount=0;
@@ -5313,11 +5355,11 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 						}
 					}
-					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966:
+					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Sydney Sleeper, Bazaar Bargain, Machina, Festive Sniper Rifle, Hitman's Heatmaker, Botkiller Sniper Rifles
 					{
 						switch(wepindex)
 						{
-							case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966:
+							case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Festive Sniper Rifle, Botkiller Sniper Rifles
 							{
 								if(CheckRoundState()!=2)
 								{
@@ -5466,8 +5508,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						BossCharge[boss][0]=100.0;
 					}
 
-					EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+					EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
+					EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
 					EmitSoundToClient(client, "player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, _, NULL_VECTOR, false, 0.0);
 					EmitSoundToClient(attacker, "player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, _, NULL_VECTOR, false, 0.0);
 					SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", GetGameTime()+2.0);
@@ -5663,20 +5705,21 @@ stock GetClientCloakIndex(client)
 		return -1;
 	}
 
-	new wep=GetPlayerWeaponSlot(client, 4);
-	if(!IsValidEntity(wep))
+	new weapon=GetPlayerWeaponSlot(client, 4);
+	if(!IsValidEntity(weapon))
 	{
 		return -1;
 	}
 
 	new String:classname[64];
-	GetEntityClassname(wep, classname, sizeof(classname));
+	GetEntityClassname(weapon, classname, sizeof(classname));
 	if(strncmp(classname, "tf_wea", 6, false)!=0)
 	{
 		return -1;
 	}
-	return GetEntProp(wep, Prop_Send, "m_iItemDefinitionIndex");
+	return GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 }
+
 stock SpawnSmallHealthPackAt(client, ownerteam=0)
 {
 	if(!IsValidClient(client, false) || !IsPlayerAlive(client))
