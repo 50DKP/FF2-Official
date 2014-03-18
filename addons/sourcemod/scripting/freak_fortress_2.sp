@@ -30,7 +30,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.9.0"
+#define PLUGIN_VERSION "1.9.1 Beta"
+#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -186,7 +187,8 @@ static const String:ff2versiontitles[][]=
 	"1.0.8",
 	"1.0.8",
 	"1.9.0",
-	"1.9.0"
+	"1.9.0",
+	"1.9.1"
 };
 
 static const String:ff2versiondates[][]=
@@ -221,13 +223,19 @@ static const String:ff2versiondates[][]=
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
 	"March 6, 2014",	//1.9.0
-	"March 6, 2014"		//1.9.0
+	"March 6, 2014",	//1.9.0
+	"March 17, 2014"	//1.9.1
 };
 
 stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
+		case 31:  //1.9.1
+		{
+			DrawPanelText(panel, "1) [Server] Fixed improper unloading of subplugins (Wliu/WildCard65)");
+			DrawPanelText(panel, "2) [Server] Fixed sound not precached warnings (Wliu)");
+		}
 		case 30:  //1.9.0
 		{
 			DrawPanelText(panel, "1) Removed checkFirstHale (Wliu)");
@@ -710,7 +718,7 @@ public OnPluginStart()
 	steamtools=LibraryExists("SteamTools");
 	#endif
 
-	#if defined _updater_included
+	#if defined _updater_included && !defined DEV_VERSION
 	if(LibraryExists("updater"))
 	{
 		Updater_AddPlugin(UPDATE_URL);
@@ -750,7 +758,7 @@ public OnLibraryAdded(const String:name[])
 	}
 	#endif
 
-	#if defined _updater_included
+	#if defined _updater_included && !defined DEV_VERSION
 	if(StrEqual(name, "updater"))
 	{
 		Updater_AddPlugin(UPDATE_URL);
@@ -1051,7 +1059,6 @@ EnableSubPlugins(bool:force=false)
 
 DisableSubPlugins(bool:force=false)
 {
-	PrintToServer("DisableSubPlugins start");
 	if(!areSubPluginsEnabled && !force)
 	{
 		return;
@@ -1065,12 +1072,11 @@ DisableSubPlugins(bool:force=false)
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
-			PrintToServer("DisableSubPlugins: filename is %s", filename);
-			ServerCommand("sm plugins unload freaks/%s", filename);
+			InsertServerCommand("sm plugins unload freaks/%s", filename);
 		}
 	}
+	ServerExecute();
 	areSubPluginsEnabled=false;
-	PrintToServer("DisableSubPlugins end");
 }
 
 public LoadCharacter(const String:character[])
