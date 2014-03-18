@@ -224,7 +224,8 @@ static const String:ff2versiontitles[][]=
 	"1.0.8",
 	"1.0.8",
 	"1.9.0",
-	"1.9.0"
+	"1.9.0",
+	"1.9.1"
 };
 
 static const String:ff2versiondates[][]=
@@ -259,13 +260,22 @@ static const String:ff2versiondates[][]=
 	"October 30, 2013",	//1.0.8
 	"October 30, 2013",	//1.0.8
 	"March 6, 2014",	//1.9.0
-	"March 6, 2014"		//1.9.0
+	"March 6, 2014",	//1.9.0
+	"March 18, 2014"	//1.9.1
 };
 
 stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
+		case 31:  //1.9.1
+		{
+			DrawPanelText(panel, "1) Fixed some minor leaderboard bugs and also improved the leaderboard text (Wliu)");
+			DrawPanelText(panel, "2) Fixed a minor round end bug (Wliu)");
+			DrawPanelText(panel, "3) [Server] Fixed improper unloading of subplugins (WildCard65)");
+			DrawPanelText(panel, "4) [Server] Removed leftover console messages (Wliu)");
+			DrawPanelText(panel, "5) [Server] Fixed sound not precached warnings (Wliu)");
+		}
 		case 30:  //1.9.0
 		{
 			DrawPanelText(panel, "1) Removed checkFirstHale (Wliu)");
@@ -1117,9 +1127,10 @@ DisableSubPlugins(bool:force=false)
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
-			ServerCommand("sm plugins unload freaks/%s", filename);
+			InsertServerCommand("sm plugins unload freaks/%s", filename);
 		}
 	}
+	ServerExecute();
 	areSubPluginsEnabled=false;
 }
 
@@ -1924,12 +1935,14 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 {
 	decl String:sound[512];
 	RoundCount++;
+
 	if(!Enabled)
 	{
 		return Plugin_Continue;
 	}
 
 	executed=false;
+	new bool:bossWin=false;
 	if((GetEventInt(event, "team")==BossTeam))
 	{
 		if(RandomSound("sound_win", sound, PLATFORM_MAX_PATH))
@@ -1950,7 +1963,12 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	new BossIsAlive=0;
 	for(new client=0; client<=MaxClients; client++)
 	{
-		SetClientGlow(client, 0.0, 0.0);
+		if(IsValidClient(client) && IsPlayerAlive(Boss[client]))
+		{
+			SetClientGlow(client, 0.0, 0.0);
+			BossIsAlive=client;
+		}
+
 		for(new boss=0; boss<=1; boss++)
 		{
 			if(BossInfoTimer[client][boss]!=INVALID_HANDLE)
@@ -1964,21 +1982,21 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	strcopy(sound, 2, "");
 	if(BossIsAlive)
 	{
-		decl String:name1[64];
-		decl String:s2[4];
+		decl String:bossName[64];
+		decl String:lives[4];
 		for(new client=0; Boss[client]; client++)
 		{
 			KvRewind(BossKV[Special[client]]);
-			KvGetString(BossKV[Special[client]], "name", name1, 64, "=Failed name=");
+			KvGetString(BossKV[Special[client]], "name", bossName, 64, "=Failed name=");
 			if(BossLives[client]>1)
 			{
-				Format(s2, 4, "x%client", BossLives[client]);
+				Format(lives, 4, "x%client", BossLives[client]);
 			}
 			else
 			{
-				strcopy(s2, 2, "");
+				strcopy(lives, 2, "");
 			}
-			Format(sound, 512, "%s\n%t", sound, "ff2_alive", name1, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client], s2);
+			Format(sound, 512, "%s\n%t", sound, "ff2_alive", bossName, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client], lives);
 		}
 
 		if(RandomSound("sound_fail", sound, PLATFORM_MAX_PATH, BossIsAlive))
@@ -1986,6 +2004,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
 		}
+		bossWin=true;
 	}
 
 	new top[3];
@@ -2014,36 +2033,36 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		CreateTimer(1.0, Timer_NineThousand, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 
-	decl String:s0[32];
-	if(IsValidClient(top[0]) && (GetClientTeam(top[0])>=1))
+	decl String:first[32];
+	if(IsValidClient(top[0]) && (GetClientTeam(top[0])==OtherTeam))
 	{
-		GetClientName(top[0], s0, 32);
+		GetClientName(top[0], first, 32);
 	}
 	else
 	{
-		Format(s0, 32, "---");
+		Format(first, 32, "---");
 		top[0]=0;
 	}
 
-	decl String:s1[32];
-	if(IsValidClient(top[1]) && (GetClientTeam(top[1])>=1))
+	decl String:second[32];
+	if(IsValidClient(top[1]) && (GetClientTeam(top[1])==OtherTeam))
 	{
-		GetClientName(top[1], s1, 32);
+		GetClientName(top[1], second, 32);
 	}
 	else
 	{
-		Format(s1, 32, "---");
+		Format(second, 32, "---");
 		top[1]=0;
 	}
 
-	decl String:s2[32];
-	if(IsValidClient(top[2]) && (GetClientTeam(top[2])>=1))
+	decl String:third[32];
+	if(IsValidClient(top[2]) && (GetClientTeam(top[2])==OtherTeam))
 	{
-		GetClientName(top[2], s2, 32);
+		GetClientName(top[2], third, 32);
 	}
 	else
 	{
-		Format(s2, 32, "---");
+		Format(third, 32, "---");
 		top[2]=0;
 	}
 
@@ -2054,9 +2073,24 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		if(IsValidClient(client) && !(FF2flags[client] & FF2FLAG_HUDDISABLED))
 		{
 			SetGlobalTransTarget(client);
-			ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t\n%t", sound, "top_3", Damage[top[0]], s0, Damage[top[1]], s1, Damage[top[2]], s2, "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
+			if(IsBoss(client))
+			{
+				if(bossWin)
+				{
+					ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t", sound, "top_3", Damage[top[0]], first, Damage[top[1]], second, Damage[top[2]], third, "boss_win");
+				}
+				else
+				{
+					ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t", sound, "top_3", Damage[top[0]], first, Damage[top[1]], second, Damage[top[2]], third, "boss_lose");
+				}
+			}
+			else
+			{
+				ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t\n%t", sound, "top_3", Damage[top[0]], first, Damage[top[1]], second, Damage[top[2]], third, "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
+			}
 		}
 	}
+
 	CreateTimer(3.0, Timer_CalcQueuePoints, _, TIMER_FLAG_NO_MAPCHANGE);
 	UpdateHealthBar();
 	return Plugin_Continue;

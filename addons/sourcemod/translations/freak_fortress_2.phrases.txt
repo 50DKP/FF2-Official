@@ -21,7 +21,7 @@
 	"damage"
 	{
 		"#format" "{1:i}"
-		"en"	"Dmg dealt by you - {1}"
+		"en"	"Damage dealt by you - {1}"
 	}
 	"point_enable"
 	{
@@ -145,7 +145,7 @@
 	"whatsnew"
 	{
 		"#format" "{1:s},{2:s}"
-		"en"	"Whats new in v.{1} from {2}"
+		"en"	"Whats new in v{1} from {2}"
 	}
 	"help_mode"
 	{
@@ -169,7 +169,7 @@
 	}
 	"menu_7"
 	{
-		"en"	"Changes to my class in FF2 (/ff2classinfo)" //shows info about whats changed in your character class by ff2 plugin
+		"en"	"Changes to my class in FF2 (/ff2classinfo)"
 	}
 	"damage_fx"
 	{
@@ -180,6 +180,14 @@
 	{
 		"#format" "{1:i}"
 		"en"	"You earned {1} points in this round"
+	}
+	"boss_win"
+	{
+		"en"	"Congratulations!  You won!"
+	}
+	"boss_lose"
+	{
+		"en"	"Oh no, you lost!  Don't worry, there's always next time"
 	}
 	"ff2_start"
 	{
