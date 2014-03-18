@@ -3,12 +3,13 @@
 
 [![Build Status](http://198.27.69.149/jenkins/buildStatus/icon?job=FF2-Official)](http://198.27.69.149/jenkins/job/FF2-Official/)
 
-All development work towards the next major version of FF2 is done in the [development](https://github.com/50DKP/FF2-Official/tree/development) branch.
-The [stable](https://github.com/50DKP/FF2-Official/tree/stable) branch contains bugfixes for the most recent version of FF2.
-Once changes are considered ready for release, they are merged into the [master](https://github.com/50DKP/FF2-Official/tree/master) branch.  This branch will always contain a released version of FF2.
-[Powerlord's](https://github.com/powerlord/) rewrite of FF2 is housed in the [rewrite](https://github.com/50DKP/FF2-Official/tree/rewrite) branch.  These changes are slowly being assimilated into the [v2](https://github.com/50DKP/FF2-Official/tree/) branch.
-Finally, the [experimental](https://github.com/50DKP/FF2-Official/tree/experimental) branch contains experimental work being done towards the next iteration of FF2.
-The default branch is changed to reflect where the most work is currently being done.
+FF2-Official features multiple branches, which are described below:
+* All development work towards the next major version of FF2 is done in the [development](https://github.com/50DKP/FF2-Official/tree/development) branch.
+* The [stable](https://github.com/50DKP/FF2-Official/tree/stable) branch contains bugfixes for the most recent version of FF2.
+* Once changes are considered ready for release, they are merged into the [master](https://github.com/50DKP/FF2-Official/tree/master) branch.  This branch will always contain a released version of FF2.
+* [Powerlord's](https://github.com/powerlord/) rewrite of FF2 is housed in the [rewrite](https://github.com/50DKP/FF2-Official/tree/rewrite) branch.  These changes are slowly being assimilated into the [experimental](https://github.com/50DKP/FF2-Official/tree/experimental) branch.
+* Finally, the [experimental](https://github.com/50DKP/FF2-Official/tree/experimental) branch contains experimental work being done towards the next iteration of FF2.
+* The default branch is changed to reflect where the most work is currently being done.
 
 ###Compiling FF2
 ***
