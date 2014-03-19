@@ -30,8 +30,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.9.1"
-//#define DEV_VERSION
+#define PLUGIN_VERSION "1.9.2 Beta"
+#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -50,6 +50,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #if defined _steamtools_included
 new bool:steamtools=false;
 #endif
+
+new bool:smac=false;
 
 new bool:b_allowBossChgClass=false;
 new bool:b_BossChgClassDetected=false;
@@ -188,7 +190,8 @@ static const String:ff2versiontitles[][]=
 	"1.0.8",
 	"1.9.0",
 	"1.9.0",
-	"1.9.1"
+	"1.9.1",
+	"1.9.2"
 };
 
 static const String:ff2versiondates[][]=
@@ -224,13 +227,19 @@ static const String:ff2versiondates[][]=
 	"October 30, 2013",	//1.0.8
 	"March 6, 2014",	//1.9.0
 	"March 6, 2014",	//1.9.0
-	"March 18, 2014"	//1.9.1
+	"March 18, 2014",	//1.9.1
+	"March 18, 2014"	//1.9.2
 };
 
 stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
+		case 32:  //1.9.2
+		{
+			DrawPanelText(panel, "1) [Server] SMAC's sv_cheats detection is now automatically disabled while FF2 is running (Wliu)");
+			DrawPanelText(panel, "            Servers can now safely have the smac_cvars plugin enabled");
+		}
 		case 31:  //1.9.1
 		{
 			DrawPanelText(panel, "1) Fixed some minor leaderboard bugs and also improved the leaderboard text (Wliu)");
@@ -712,11 +721,14 @@ public OnPluginStart()
 
 	LoadTranslations("freak_fortress_2.phrases");
 	LoadTranslations("common.phrases");
+
 	AddNormalSoundHook(HookSound);
+
 	AddMultiTargetFilter("@hale", BossTargetFilter, "all current Bosses", false);
 	AddMultiTargetFilter("@!hale", BossTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@boss", BossTargetFilter, "all current Bosses", false);
 	AddMultiTargetFilter("@!boss", BossTargetFilter, "all non-Boss players", false);
+
 	#if defined _steamtools_included
 	steamtools=LibraryExists("SteamTools");
 	#endif
@@ -767,6 +779,11 @@ public OnLibraryAdded(const String:name[])
 		Updater_AddPlugin(UPDATE_URL);
 	}
 	#endif
+
+	if(StrEqual(name, "smac"))
+	{
+		smac=true;
+	}
 }
 
 public OnLibraryRemoved(const String:name[])
@@ -777,6 +794,11 @@ public OnLibraryRemoved(const String:name[])
 		steamtools=false;
 	}
 	#endif
+
+	if(StrEqual(name, "smac"))
+	{
+		smac=false;
+	}
 }
 
 public OnConfigsExecuted()
@@ -793,7 +815,7 @@ public OnConfigsExecuted()
 	BossCrits=GetConVarBool(cvarCrits);
 	circuitStun=GetConVarFloat(cvarCircuitStun);
 	countdownHealth=GetConVarInt(cvarCountdownHealth);
-	
+
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
 		tf_arena_use_queue=GetConVarInt(FindConVar("tf_arena_use_queue"));
@@ -853,6 +875,11 @@ public OnConfigsExecuted()
 		AddToDownload();
 		strcopy(FF2CharSetStr, 2, "");
 
+		if(smac)
+		{
+			ServerCommand("smac_removecvar sv_cheats");
+		}
+
 		bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
 		FindHealthBar();
 	}
@@ -860,6 +887,10 @@ public OnConfigsExecuted()
 	{
 		Enabled=false;
 		Enabled2=false;
+		if(smac)
+		{
+			ServerCommand("smac_addcvar sv_cheats");
+		}
 	}
 }
 
@@ -1328,7 +1359,7 @@ public Action:Timer_Announce(Handle:hTimer)
 			}
 			case 3:
 			{
-				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) === ", ff2versiontitles[maxversion]);
+				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) === ", PLUGIN_VERSION);
 			}
 			case 4:
 			{
@@ -6466,27 +6497,41 @@ public Action:NewPanelCmd(client, args)
 public Action:NewPanel(client, versionindex)
 {
 	if(!Enabled2)
+	{
 		return Plugin_Continue;
+	}
+
 	curHelp[client]=versionindex;
 	new Handle:panel=CreatePanel();
-	decl String:s[90];
+	decl String:whatsNew[90];
+
 	SetGlobalTransTarget(client);
-	Format(s,90,"=%t:=","whatsnew", ff2versiontitles[versionindex],ff2versiondates[versionindex]);
-	SetPanelTitle(panel, s);
+	Format(whatsNew, 90, "=%t:=", "whatsnew", ff2versiontitles[versionindex], ff2versiondates[versionindex]);
+	SetPanelTitle(panel, whatsNew);
 	FindVersionData(panel, versionindex);
 	if(versionindex>0)
-		Format(s,90, "%t", "older");
+	{
+		Format(whatsNew, 90, "%t", "older");
+	}
 	else
-		Format(s,90, "%t", "noolder");
-	DrawPanelItem(panel, s);  
+	{
+		Format(whatsNew, 90, "%t", "noolder");
+	}
+
+	DrawPanelItem(panel, whatsNew);  
 	if(versionindex<maxversion)
-		Format(s,90, "%t", "newer");
+	{
+		Format(whatsNew, 90, "%t", "newer");
+	}
 	else
-		Format(s,90, "%t", "nonewer");
-	DrawPanelItem(panel, s);  
-	Format(s,512,"%t","menu_6");
-	DrawPanelItem(panel,s);    
-	SendPanelToClient(panel, client, NewPanelH, 9001);
+	{
+		Format(whatsNew, 90, "%t", "nonewer");
+	}
+
+	DrawPanelItem(panel, whatsNew);  
+	Format(whatsNew, 512, "%t", "menu_6");
+	DrawPanelItem(panel, whatsNew);    
+	SendPanelToClient(panel, client, NewPanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Continue;
 }
