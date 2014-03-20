@@ -228,7 +228,7 @@ static const String:ff2versiondates[][]=
 	"March 6, 2014",	//1.9.0
 	"March 6, 2014",	//1.9.0
 	"March 18, 2014",	//1.9.1
-	"March 19, 2014"	//1.9.2
+	"March 20, 2014"	//1.9.2
 };
 
 stock FindVersionData(Handle:panel, versionindex)
@@ -238,8 +238,10 @@ stock FindVersionData(Handle:panel, versionindex)
 		case 32:  //1.9.2
 		{
 			DrawPanelText(panel, "1) Fixed a bug in 1.9.1 that allowed the same player to be the boss over and over again (Wliu)");
-			DrawPanelText(panel, "2) [Server] Fixed possible special_noanims errors (Wliu)");
-			DrawPanelText(panel, "2) [Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)");
+			DrawPanelText(panel, "2) Fixed a bug where last player glow was being set incorrectly on the boss (Wliu)");
+			DrawPanelText(panel, "3) [Server] Fixed possible special_noanims errors (Wliu)");
+			DrawPanelText(panel, "4) [Server] Added new arguments to rage_cloneattack-no updates necessary (friagram/Wliu)");
+			DrawPanelText(panel, "5) [Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)");
 			DrawPanelText(panel, "            Servers can now safely have the smac_cvars plugin enabled");
 		}
 		case 31:  //1.9.1
@@ -4140,10 +4142,6 @@ public Action:BossTimer(Handle:hTimer)
 		}
 		SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 
-		if(RedAlivePlayers==1 && cvarLastPlayerGlow)
-		{
-			SetClientGlow(client, 3600.0);
-		}
 		SetClientGlow(client, -0.2);
 
 		decl String:lives[MAXRANDOMS][3];
@@ -4216,6 +4214,11 @@ public Action:BossTimer(Handle:hTimer)
 					SetGlobalTransTarget(client2);
 					PrintCenterText(client2, message); 	
 				}
+			}
+
+			if(GetConVarBool(cvarLastPlayerGlow))
+			{
+				SetClientGlow(client, 3600.0);
 			}
 		}
 

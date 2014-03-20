@@ -24,7 +24,7 @@ public Plugin:myinfo=
 #define FLAG_ONSLOMO			(1<<0)
 #define FLAG_SLOMOREADYCHANGE	(1<<1)
 
-new ff2flags[MAXPLAYERS+1];
+new FF2Flags[MAXPLAYERS+1];
 new TFClassType:LastClass[MAXPLAYERS+1];
 new CloneOwnerIndex[MAXPLAYERS+1];
 
@@ -68,7 +68,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	CreateTimer(0.3, Timer_GetBossTeam);
 	for(new client=0; client<=MaxClients; client++)
 	{
-		ff2flags[client]=0;
+		FF2Flags[client]=0;
 		CloneOwnerIndex[client]=-1;
 	}
 	return Plugin_Continue;
@@ -78,7 +78,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 {
 	for(new client=0; client<=MaxClients; client++)
 	{
-		if(ff2flags[client] & FLAG_ONSLOMO)
+		if(FF2Flags[client] & FLAG_ONSLOMO)
 		{
 			if(SloMoTimer)
 			{
@@ -91,7 +91,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	return Plugin_Continue;
 }
 
-public Action:Timer_GetBossTeam(Handle:hTimer)
+public Action:Timer_GetBossTeam(Handle:timer)
 {
 	if(cvarKAC && GetConVarBool(cvarKAC))
 	{
@@ -149,7 +149,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 	}
 	else if(!strcmp(ability_name, "rage_cbs_bowrage"))
 	{
-		Rage_UseBow(client);
+		Rage_Bow(client);
 	}
 	else if(!strcmp(ability_name, "rage_explosive_dance"))
 	{
@@ -171,8 +171,20 @@ Rage_Clone(const String:ability_name[], client)
 {
 	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
 	new Handle:bossKV[8];
-	new Float:position[3];
 	decl String:bossName[32];
+	new bool:changeModel=bool:FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 1);
+	new weaponMode=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 2);
+	decl String:model[PLATFORM_MAX_PATH];
+	FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 3, model, sizeof(model));
+	new class=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 4);
+	new Float:ratio=FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 5, 0.5);
+	new String:classname[64]="tf_weapon_bottle";
+	FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 6, classname, sizeof(classname));
+	new index=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 7, 191);
+	new String:attributes[64]="68 ; -1";
+	FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 8, attributes, sizeof(attributes));
+	new Float:position[3];
+	new Float:velocity[3];
 
 	GetEntPropVector(boss, Prop_Data, "m_vecOrigin", position);
 	FF2_GetBossSpecial(client, bossName, 32);
@@ -186,75 +198,102 @@ Rage_Clone(const String:ability_name[], client)
 		}
 	}
 
-	for(new clone=1; clone<=MaxClients; clone++)
+	new alive=0;
+	new dead=0;
+	new Handle:players=CreateArray();
+	for(new target=1; target<=MaxClients; target++)
 	{
-		if(IsValidEdict(clone) && IsClientConnected(clone) && !IsPlayerAlive(clone) && GetClientTeam(clone)>_:TFTeam_Spectator)
+		if(IsClientInGame(target))
 		{
-			new bool:changeModel=bool:FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 1);
-			new weaponMode=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 2);
-			new class=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 4);
-			new Float:velocity[3];
-			if(LastClass[clone]==TFClass_Unknown)
+			new team=GetClientTeam(target);
+			if(team>_:TFTeam_Spectator && team!=BossTeam)
 			{
-				LastClass[clone]=TF2_GetPlayerClass(clone);
-			}
-
-			FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM);
-			ChangeClientTeam(clone, BossTeam);
-			TF2_RespawnPlayer(clone);
-			CloneOwnerIndex[clone]=client;
-			if(class)
-			{
-				TF2_SetPlayerClass(client,TFClassType:class);
-			}
-			else
-			{
-				TF2_SetPlayerClass(clone, TFClassType:KvGetNum(bossKV[config], "class", 0));
-			}
-
-			if(changeModel)
-			{
-				decl String:model[PLATFORM_MAX_PATH];
-				FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 3, model, sizeof(model));
-				if(model="\0")
+				if(IsPlayerAlive(target))
 				{
-					new config=GetRandomInt(0, maxKV-1);
-					KvGetString(bossKV[config], "model", model, PLATFORM_MAX_PATH);
+					alive++;
 				}
-				SetVariantString(model);
-				AcceptEntityInput(clone, "SetCustomModel");
-				SetEntProp(clone, Prop_Send, "m_bUseClassAnimations", 1);
-			}
-
-			switch(weaponMode)
-			{
-				case 0:
+				else
 				{
-					TF2_RemoveAllWeapons2(clone);
-				}
-				case 1:
-				{
-					new weapon;
-					TF2_RemoveAllWeapons2(clone);
-					weapon=SpawnWeapon(clone, "tf_weapon_bottle", 191, 34, 0, "68 ; -1");
-					if(IsValidEdict(weapon))
-					{
-						SetEntPropEnt(clone, Prop_Send, "m_hActiveWeapon", weapon);
-						SetEntProp(weapon, Prop_Send, "m_iWorldModelIndex", -1);
-					}
+					PushArrayCell(players, client);
+					dead++;
 				}
 			}
-			
-			velocity[0]=GetRandomFloat(300.0, 500.0)*(GetRandomInt(0, 1) ? 1:-1);
-			velocity[1]=GetRandomFloat(300.0, 500.0)*(GetRandomInt(0, 1) ? 1:-1);
-			velocity[2]=GetRandomFloat(300.0, 500.0);
-			TeleportEntity(clone, position, NULL_VECTOR, velocity);
-			PrintHintText(clone, "%t", "seeldier_rage_message", bossName);
-			SetEntProp(clone, Prop_Data, "m_takedamage", 0);
-			SDKHook(clone, SDKHook_OnTakeDamage, SaveMinion);
-			CreateTimer(4.0, Timer_Enable_Damage, GetClientUserId(clone));
 		}
 	}
+
+	new totalMinions=RoundToCeil(alive*ratio);
+	new config=GetRandomInt(0, maxKV-1);
+	new clone, temp;
+	for(new i=1; i<dead && i<=totalMinions; i++)
+	{
+		temp=GetRandomInt(0, GetArraySize(players)-1);
+		clone=GetArrayCell(players, temp);
+		RemoveFromArray(players, temp);
+		if(LastClass[clone]==TFClass_Unknown)
+		{
+			LastClass[clone]=TF2_GetPlayerClass(clone);
+		}
+
+		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM);
+		ChangeClientTeam(clone, BossTeam);
+		TF2_RespawnPlayer(clone);
+		CloneOwnerIndex[clone]=client;
+		if(class)
+		{
+			TF2_SetPlayerClass(client, TFClassType:class);
+		}
+		else
+		{
+			TF2_SetPlayerClass(clone, TFClassType:KvGetNum(bossKV[config], "class", 0));
+		}
+
+		if(changeModel)
+		{
+			if(model[0]=='\0')
+			{
+				KvGetString(bossKV[config], "model", model, PLATFORM_MAX_PATH);
+			}
+			SetVariantString(model);
+			AcceptEntityInput(clone, "SetCustomModel");
+			SetEntProp(clone, Prop_Send, "m_bUseClassAnimations", 1);
+		}
+
+		switch(weaponMode)
+		{
+			case 0:
+			{
+				TF2_RemoveAllWeapons2(clone);
+			}
+			case 1:
+			{
+				new weapon;
+				TF2_RemoveAllWeapons2(clone);
+				weapon=SpawnWeapon(clone, classname, index, 101, 0, attributes);
+				if(IsValidEdict(weapon))
+				{
+					SetEntPropEnt(clone, Prop_Send, "m_hActiveWeapon", weapon);
+					SetEntProp(weapon, Prop_Send, "m_iWorldModelIndex", -1);
+				}
+			}
+		}
+		
+		velocity[0]=GetRandomFloat(300.0, 500.0)*(GetRandomInt(0, 1) ? 1:-1);
+		velocity[1]=GetRandomFloat(300.0, 500.0)*(GetRandomInt(0, 1) ? 1:-1);
+		velocity[2]=GetRandomFloat(300.0, 500.0);
+		TeleportEntity(clone, position, NULL_VECTOR, velocity);
+
+		PrintHintText(clone, "%t", "seeldier_rage_message", bossName);
+
+		SetEntProp(clone, Prop_Data, "m_takedamage", 0);
+		SDKHook(clone, SDKHook_OnTakeDamage, SaveMinion);
+		CreateTimer(4.0, Timer_Enable_Damage, GetClientUserId(clone));
+
+		new Handle:data;
+		CreateDataTimer(0.1, Timer_EquipModel, data, TIMER_FLAG_NO_MAPCHANGE);
+		WritePackCell(data, GetClientUserId(client));
+		WritePackString(data, model);
+	}
+	CloseHandle(players);
 
 	new entity;
 	new owner;
@@ -273,9 +312,31 @@ Rage_Clone(const String:ability_name[], client)
 			TF2_RemoveWearable(client, entity);
 		}
 	}
+
+	while((entity=FindEntityByClassname(entity, "tf_powerup_bottle"))!=-1)
+	{
+		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
+		{
+			TF2_RemoveWearable(client, entity);
+		}
+	}
 }
 
-public Action:Timer_Enable_Damage(Handle:hTimer, any:userid)
+public Action:Timer_EquipModel(Handle:timer, any:pack)
+{
+	ResetPack(pack);
+	new client=GetClientOfUserId(ReadPackCell(pack));
+	if(client && IsClientInGame(client) && IsPlayerAlive(client))
+	{
+		decl String:model[PLATFORM_MAX_PATH];
+		ReadPackString(pack, model, PLATFORM_MAX_PATH);
+		SetVariantString(model);
+		AcceptEntityInput(client, "SetCustomModel");
+		SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
+	}
+}
+
+public Action:Timer_Enable_Damage(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
 	if(client>0)
@@ -372,7 +433,7 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)
 	return Plugin_Continue;
 }
 
-Rage_UseBow(client)
+Rage_Bow(client)
 {
 	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
 	TF2_RemoveWeaponSlot2(boss, TFWeaponSlot_Primary);
@@ -493,7 +554,7 @@ Rage_Slowmo(client, const String:ability_name[])
 	SetConVarFloat(cvarTimeScale, FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 2, 0.1));
 	new Float:duration=FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 1, 1.0)+1.0;
 	SloMoTimer=CreateTimer(duration, Timer_StopSlomo, client);
-	ff2flags[client]=ff2flags[client]|FLAG_SLOMOREADYCHANGE|FLAG_ONSLOMO;
+	FF2Flags[client]=FF2Flags[client]|FLAG_SLOMOREADYCHANGE|FLAG_ONSLOMO;
 	UpdateClientCheatValue(1);
 	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
 	if(boss>0)
@@ -512,7 +573,7 @@ public Action:Timer_StopSlomo(Handle:timer, any:client)
 	UpdateClientCheatValue(0);
 	if(client!=-1)
 	{
-		ff2flags[client]&=~FLAG_ONSLOMO;
+		FF2Flags[client]&=~FLAG_ONSLOMO;
 	}
 	EmitSoundToAll("replay\\exitperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);
 	EmitSoundToAll("replay\\exitperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);
@@ -522,14 +583,14 @@ public Action:Timer_StopSlomo(Handle:timer, any:client)
 public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Float:angles[3], &weapon)
 {	
 	new boss=FF2_GetBossIndex(client);
-	if(boss==-1 || !(ff2flags[boss] & FLAG_ONSLOMO))
+	if(boss==-1 || !(FF2Flags[boss] & FLAG_ONSLOMO))
 	{
 		return Plugin_Continue;
 	}
 
 	if(buttons & IN_ATTACK)
 	{
-		ff2flags[boss]&=~FLAG_SLOMOREADYCHANGE;
+		FF2Flags[boss]&=~FLAG_SLOMOREADYCHANGE;
 		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "rage_matrix_attack", 3, 0.2),Timer_SlomoChange, boss);
 
 		new Float:bossPosition[3], Float:endPosition[3], Float:eyeAngles[3];
@@ -594,7 +655,7 @@ public bool:TraceRayDontHitSelf(entity, mask)
 
 public Action:Timer_SlomoChange(Handle:timer, any:client)
 {
-	ff2flags[client]|=FLAG_SLOMOREADYCHANGE;
+	FF2Flags[client]|=FLAG_SLOMOREADYCHANGE;
 	return Plugin_Continue;
 }
 
