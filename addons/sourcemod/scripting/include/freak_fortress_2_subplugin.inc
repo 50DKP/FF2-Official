@@ -2,44 +2,51 @@ new String:this_plugin_name[80];
 
 GetThisPluginName()
 {
-	decl String:s[80];
-	GetPluginFilename(INVALID_HANDLE,s,80);
-	ReplaceString(s, 80,".ff2", "",false);
-	new see=-1;
-	new see2=-1;
-	new see3=-1;
+	decl String:pluginName[80];
+	GetPluginFilename(INVALID_HANDLE, pluginName, 80);
+	ReplaceString(pluginName, 80, ".ff2", "", false);
+	new forwardSlash=-1;
+	new backwardSlash=-1;
+	new finalPluginName=-1;
 	for(;;)
 	{
-		see=StrContains(s[see3+1],"/");
-		see2=StrContains(s[see3+1],"\\");
-		if ((see2<see && see2!=-1) || see==-1)
+		forwardSlash=StrContains(pluginName[finalPluginName+1], "/");
+		backwardSlash=StrContains(pluginName[finalPluginName+1], "\\");
+		if((backwardSlash<forwardSlash && backwardSlash!=-1) || forwardSlash==-1)
 		{
-			if (see2==-1) break;
-			see3=see2;
+			if(backwardSlash==-1)
+			{
+				break;
+			}
+			finalPluginName=backwardSlash;
 		}
-		else if ((see<see2 && see!=-1) || see2==-1)
+		else if((forwardSlash<backwardSlash && forwardSlash!=-1) || backwardSlash==-1)
 		{
-			if (see==-1) break;
-			see3=see;
+			if(forwardSlash==-1)
+			{
+				break;
+			}
+			finalPluginName=forwardSlash;
 		}
 	}
-	strcopy(this_plugin_name,80,s[see3+1]);
+	strcopy(this_plugin_name, 80, pluginName[finalPluginName+1]);
 }
 
 public OnPluginStart()
 {
 	OnPluginStart2();
-	
 	GetThisPluginName();
 }
 
-public Action:FF2_OnAbility(index,const String:plugin_name[],const String:ability_name[],action)
+public Action:FF2_OnAbility(client, const String:plugin_name[], const String:ability_name[], status)
 {
-	if (plugin_name[0])
+	if(plugin_name[0])
 	{
-		if (strcmp(this_plugin_name,plugin_name))
-			return Plugin_Continue;	
+		if(strcmp(this_plugin_name, plugin_name))
+		{
+			return Plugin_Continue;
+		}
 	}
-	FF2_OnAbility2(index,plugin_name,ability_name,action);
+	FF2_OnAbility2(client, plugin_name, ability_name, status);
 	return Plugin_Continue;
 }

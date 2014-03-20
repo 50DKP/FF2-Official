@@ -228,7 +228,7 @@ static const String:ff2versiondates[][]=
 	"March 6, 2014",	//1.9.0
 	"March 6, 2014",	//1.9.0
 	"March 18, 2014",	//1.9.1
-	"March 18, 2014"	//1.9.2
+	"March 19, 2014"	//1.9.2
 };
 
 stock FindVersionData(Handle:panel, versionindex)
@@ -237,7 +237,9 @@ stock FindVersionData(Handle:panel, versionindex)
 	{
 		case 32:  //1.9.2
 		{
-			DrawPanelText(panel, "1) [Server] SMAC's sv_cheats detection is now automatically disabled while FF2 is running (Wliu)");
+			DrawPanelText(panel, "1) Fixed a bug in 1.9.1 that allowed the same player to be the boss over and over again (Wliu)");
+			DrawPanelText(panel, "2) [Server] Fixed possible special_noanims errors (Wliu)");
+			DrawPanelText(panel, "2) [Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)");
 			DrawPanelText(panel, "            Servers can now safely have the smac_cvars plugin enabled");
 		}
 		case 31:  //1.9.1
@@ -875,9 +877,10 @@ public OnConfigsExecuted()
 		AddToDownload();
 		strcopy(FF2CharSetStr, 2, "");
 
-		if(smac)
+		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
 		{
 			ServerCommand("smac_removecvar sv_cheats");
+			ServerCommand("smac_removecvar host_timescale");
 		}
 
 		bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
@@ -887,9 +890,10 @@ public OnConfigsExecuted()
 	{
 		Enabled=false;
 		Enabled2=false;
-		if(smac)
+		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
 		{
-			ServerCommand("smac_addcvar sv_cheats");
+			ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
+			ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
 		}
 	}
 }
@@ -1940,9 +1944,9 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	new BossIsAlive=0;
-	for(new client=0; client<=MaxClients; client++)
+	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && IsPlayerAlive(Boss[client]))
+		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
 			SetClientGlow(client, 0.0, 0.0);
 			BossIsAlive=client;
@@ -2711,7 +2715,7 @@ public OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 }
 
-public Action:MakeBoss(Handle:hTimer,any:client)
+public Action:MakeBoss(Handle:hTimer, any:client)
 {
 	if(!Boss[client] || !IsValidEdict(Boss[client]) || !IsClientInGame(Boss[client]))
 	{
@@ -4957,12 +4961,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				return Plugin_Changed;
 			}
 
-			new ent=-1;
-			while((ent=FindEntityByClassname2(ent, "tf_wearable_demoshield"))!=-1)
+			new entity=-1;
+			while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
 			{
-				if(GetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(ent, Prop_Send, "m_bDisguiseWearable"))
+				if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 				{
-					TF2_RemoveWearable(client, ent);
+					TF2_RemoveWearable(client, entity);
 					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 					EmitSoundToClient(attacker,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
