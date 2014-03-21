@@ -4284,7 +4284,7 @@ stock OnlyScoutsLeft()
 	new scouts=0;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(GetClientTeam(client)==BossTeam)
+		if(IsValidClient(client) && GetClientTeam(client)==BossTeam)
 		{
 			continue;
 		}
