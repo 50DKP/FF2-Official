@@ -4240,7 +4240,7 @@ public Action:BossTimer(Handle:hTimer)
 			BossCharge[client][0]+=OnlyScoutsLeft()*0.2;
 			if(BossCharge[client][0]>100)
 			{
-				BossCharge[client][0]=100;
+				BossCharge[client][0]=100.0;
 			}
 		}
 
