@@ -228,21 +228,28 @@ static const String:ff2versiondates[][]=
 	"March 6, 2014",	//1.9.0
 	"March 6, 2014",	//1.9.0
 	"March 18, 2014",	//1.9.1
-	"March 20, 2014"	//1.9.2
+	"March 21, 2014"	//1.9.2
 };
 
 stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
-		case 32:  //1.9.2
+		case 33:  //1.9.2
 		{
 			DrawPanelText(panel, "1) Fixed a bug in 1.9.1 that allowed the same player to be the boss over and over again (Wliu)");
-			DrawPanelText(panel, "2) Fixed a bug where last player glow was being set incorrectly on the boss (Wliu)");
-			DrawPanelText(panel, "3) [Server] Fixed possible special_noanims errors (Wliu)");
-			DrawPanelText(panel, "4) [Server] Added new arguments to rage_cloneattack-no updates necessary (friagram/Wliu)");
-			DrawPanelText(panel, "5) [Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)");
-			DrawPanelText(panel, "            Servers can now safely have the smac_cvars plugin enabled");
+			DrawPanelText(panel, "2) Fixed a bug where last player glow was being incorrectly removed on the boss (Wliu)");
+			DrawPanelText(panel, "3) Fixed a bug where the boss would be assumed dead (Wliu)");
+			DrawPanelText(panel, "4) Fixed having minions on the boss team interfering with certain rage calculations (Wliu)");
+			DrawPanelText(panel, "5) Fixed a rare bug where the rage percentage could go above 100% (Wliu)");
+			DrawPanelText(panel, "See next page for the server changelog (press 1)");
+		}
+		case 32:  //1.9.2
+		{
+			DrawPanelText(panel, "6) [Server] Fixed possible special_noanims errors (Wliu)");
+			DrawPanelText(panel, "7) [Server] Added new arguments to rage_cloneattack-no updates necessary (friagram/Wliu)");
+			DrawPanelText(panel, "8) [Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)");
+			DrawPanelText(panel, "            Servers can now safely have smac_cvars enabled");
 		}
 		case 31:  //1.9.1
 		{
@@ -609,7 +616,7 @@ public OnPluginStart()
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarHalloween=CreateConVar("ff2_halloween", "2", "0-Disable Halloween mode, 1-Enable Halloween mode, 2-Use TF2 logic (tf_forced_holiday 2)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
-	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "0", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
@@ -1945,13 +1952,19 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		MusicTimer=INVALID_HANDLE;
 	}
 
-	new BossIsAlive=0;
-	for(new client=1; client<=MaxClients; client++)
+	new bool:isBossAlive;
+	new temp;
+	for(new client=0; client<=MaxClients; client++)
 	{
 		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
 			SetClientGlow(client, 0.0, 0.0);
-			BossIsAlive=client;
+			isBossAlive=true;
+			temp=client;
+		}
+		else if(IsValidClient(client) && IsPlayerAlive(client))
+		{
+			SetClientGlow(client, 0.0, 0.0);
 		}
 
 		for(new boss=0; boss<=1; boss++)
@@ -1965,7 +1978,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	strcopy(sound, 2, "");
-	if(BossIsAlive)
+	if(isBossAlive)
 	{
 		decl String:bossName[64];
 		decl String:lives[4];
@@ -1984,7 +1997,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			Format(sound, 512, "%s\n%t", sound, "ff2_alive", bossName, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client], lives);
 		}
 
-		if(RandomSound("sound_fail", sound, PLATFORM_MAX_PATH, BossIsAlive))
+		if(RandomSound("sound_fail", sound, PLATFORM_MAX_PATH, temp))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
@@ -4225,6 +4238,10 @@ public Action:BossTimer(Handle:hTimer)
 		if(BossCharge[client][0]<100)
 		{
 			BossCharge[client][0]+=OnlyScoutsLeft()*0.2;
+			if(BossCharge[client][0]>100)
+			{
+				BossCharge[client][0]=100;
+			}
 		}
 
 		HPTime-=0.2;
@@ -4267,11 +4284,16 @@ stock OnlyScoutsLeft()
 	new scouts=0;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && IsPlayerAlive(client) && !IsBoss(client) && TF2_GetPlayerClass(client)!=TFClass_Scout)
+		if(GetClientTeam(client)==BossTeam)
+		{
+			continue;
+		}
+
+		if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)!=TFClass_Scout)
 		{
 			return 0;
 		}
-		else if(IsValidClient(client) && IsPlayerAlive(client) && !IsBoss(client) && TF2_GetPlayerClass(client)==TFClass_Scout)
+		else if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)==TFClass_Scout)
 		{
 			scouts++;
 		}

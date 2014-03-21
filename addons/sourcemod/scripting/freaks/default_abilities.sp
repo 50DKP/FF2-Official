@@ -189,7 +189,7 @@ Rage_Stun(const String:ability_name[], client)
 		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
 		{
 			GetEntPropVector(target, Prop_Send, "m_vecOrigin", clientPosition);
-			if(!TF2_IsPlayerInCondition(client, TFCond_Ubercharged) && (GetVectorDistance(bossPosition, clientPosition)<=distance))
+			if(!TF2_IsPlayerInCondition(target, TFCond_Ubercharged) && (GetVectorDistance(bossPosition, clientPosition)<=distance))
 			{
 				TF2_StunPlayer(target, duration, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, boss);
 				CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(target, "yikes_fx", 75.0)));	

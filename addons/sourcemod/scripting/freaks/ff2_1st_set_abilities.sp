@@ -214,7 +214,7 @@ Rage_Clone(const String:ability_name[], client)
 				}
 				else
 				{
-					PushArrayCell(players, client);
+					PushArrayCell(players, target);
 					dead++;
 				}
 			}
@@ -240,7 +240,7 @@ Rage_Clone(const String:ability_name[], client)
 		CloneOwnerIndex[clone]=client;
 		if(class)
 		{
-			TF2_SetPlayerClass(client, TFClassType:class);
+			TF2_SetPlayerClass(clone, TFClassType:class);
 		}
 		else
 		{
@@ -290,7 +290,7 @@ Rage_Clone(const String:ability_name[], client)
 
 		new Handle:data;
 		CreateDataTimer(0.1, Timer_EquipModel, data, TIMER_FLAG_NO_MAPCHANGE);
-		WritePackCell(data, GetClientUserId(client));
+		WritePackCell(data, GetClientUserId(clone));
 		WritePackString(data, model);
 	}
 	CloseHandle(players);
@@ -301,7 +301,7 @@ Rage_Clone(const String:ability_name[], client)
 	{
 		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
 		{
-			TF2_RemoveWearable(client, entity);
+			TF2_RemoveWearable(owner, entity);
 		}
 	}
 
@@ -309,7 +309,7 @@ Rage_Clone(const String:ability_name[], client)
 	{
 		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
 		{
-			TF2_RemoveWearable(client, entity);
+			TF2_RemoveWearable(owner, entity);
 		}
 	}
 
@@ -317,7 +317,7 @@ Rage_Clone(const String:ability_name[], client)
 	{
 		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
 		{
-			TF2_RemoveWearable(client, entity);
+			TF2_RemoveWearable(owner, entity);
 		}
 	}
 }
