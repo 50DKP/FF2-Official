@@ -30,8 +30,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.9.2 Beta"
-#define DEV_VERSION
+#define PLUGIN_VERSION "1.9.2"
+//#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -126,6 +126,7 @@ new bool:BossCrits=true;
 new Float:circuitStun=0.0;
 new countdownTime=120;
 new countdownHealth=2000;
+new bool:lastPlayerGlow=true;
 new bool:SpecForceBoss=false;
 
 new Handle:MusicTimer;
@@ -228,7 +229,7 @@ static const String:ff2versiondates[][]=
 	"March 6, 2014",	//1.9.0
 	"March 6, 2014",	//1.9.0
 	"March 18, 2014",	//1.9.1
-	"March 21, 2014"	//1.9.2
+	"March 22, 2014"	//1.9.2
 };
 
 stock FindVersionData(Handle:panel, versionindex)
@@ -644,6 +645,7 @@ public OnPluginStart()
 	HookConVarChange(cvarHealthBar, HealthbarEnableChanged);
 	HookConVarChange(cvarcountdownTime, CvarChange);
 	HookConVarChange(cvarCountdownHealth, CvarChange);
+	HookConVarChange(cvarLastPlayerGlow, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
 	cvarNextmap=FindConVar("sm_nextmap");
 	HookConVarChange(cvarNextmap, CvarChangeNextmap);
@@ -1316,6 +1318,10 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarCountdownHealth)
 	{
 		countdownHealth=StringToInt(newValue);
+	}
+	else if(convar==cvarLastPlayerGlow)
+	{
+		lastPlayerGlow=bool:StringToInt(newValue);
 	}
 	else if(convar==cvarSpecForceBoss)
 	{
@@ -3920,7 +3926,7 @@ public Action:ClientTimer(Handle:hTimer)
 				}
 				TF2_AddCondition(client, TFCond_Buffed, 0.3);
 
-				if(GetConVarBool(cvarLastPlayerGlow))
+				if(lastPlayerGlow)
 				{
 					SetClientGlow(client, 3600.0);
 				}
@@ -4229,7 +4235,7 @@ public Action:BossTimer(Handle:hTimer)
 				}
 			}
 
-			if(GetConVarBool(cvarLastPlayerGlow))
+			if(lastPlayerGlow)
 			{
 				SetClientGlow(client, 3600.0);
 			}

@@ -177,7 +177,7 @@ Rage_Clone(const String:ability_name[], client)
 	decl String:model[PLATFORM_MAX_PATH];
 	FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 3, model, sizeof(model));
 	new class=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 4);
-	new Float:ratio=FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 5, 0.5);
+	new Float:ratio=FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 5, 0.0);
 	new String:classname[64]="tf_weapon_bottle";
 	FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 6, classname, sizeof(classname));
 	new index=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 7, 191);
@@ -222,6 +222,10 @@ Rage_Clone(const String:ability_name[], client)
 	}
 
 	new totalMinions=RoundToCeil(alive*ratio);
+	if(ratio==0.0)
+	{
+		totalMinions=MaxClients;
+	}
 	new config=GetRandomInt(0, maxKV-1);
 	new clone, temp;
 	for(new i=1; i<dead && i<=totalMinions; i++)
@@ -268,6 +272,15 @@ Rage_Clone(const String:ability_name[], client)
 			{
 				new weapon;
 				TF2_RemoveAllWeapons2(clone);
+				if(classname[0]=='\0')
+				{
+					classname="tf_weapon_bottle";
+				}
+
+				if(attributes[0]=='\0')
+				{
+					attributes="68 ; -1";
+				}
 				weapon=SpawnWeapon(clone, classname, index, 101, 0, attributes);
 				if(IsValidEdict(weapon))
 				{
