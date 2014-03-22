@@ -1,7 +1,8 @@
-// rage_overlay:		arg0 - slot (def.0)
-//						arg1 - path to overlay ("root" is \tf\materials\)
-//						arg2 - duration (def.6)
-
+/*
+rage_overlay:	arg0 - slot (def.0)
+				arg1 - path to overlay ("root" is \tf\materials\)
+				arg2 - duration (def.6)
+*/
 #pragma semicolon 1
 
 #include <sourcemod>
@@ -12,13 +13,14 @@
 
 new BossTeam=_:TFTeam_Blue;
 
-#define PLUGIN_VERSION "1.07 beta 5"
+#define PLUGIN_VERSION "1.9.2"
 
-public Plugin:myinfo = {
-	name = "Freak Fortress 2: rage_overlay",
-	author = "Jery0987, RainBolt Dash",
-	description = "FF2: Ability that covers all living, non-boss team players screens with an image",
-	version = PLUGIN_VERSION,
+public Plugin:myinfo=
+{
+	name="Freak Fortress 2: rage_overlay",
+	author="Jery0987, RainBolt Dash",
+	description="FF2: Ability that covers all living, non-boss team players screens with an image",
+	version=PLUGIN_VERSION,
 };
 
 public OnPluginStart2()
@@ -28,7 +30,7 @@ public OnPluginStart2()
 
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	CreateTimer(0.3,Timer_GetBossTeam);
+	CreateTimer(0.3, Timer_GetBossTeam);
 	return Plugin_Continue;
 }
 
@@ -38,39 +40,43 @@ public Action:Timer_GetBossTeam(Handle:hTimer)
 	return Plugin_Continue;
 }
 
-public Action:FF2_OnAbility2(index,const String:plugin_name[],const String:ability_name[],action)
+public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ability_name[], status)
 {
-	if (!strcmp(ability_name,"rage_overlay"))
-		Rage_Overlay(index,ability_name);
+	if(!strcmp(ability_name, "rage_overlay"))
+	{
+		Rage_Overlay(client, ability_name);
+	}
 	return Plugin_Continue;
 }
 
-Rage_Overlay(index,const String:ability_name[])
+Rage_Overlay(client, const String:ability_name[])
 {
 	decl String:overlay[PLATFORM_MAX_PATH];
-	FF2_GetAbilityArgumentString(index,this_plugin_name,ability_name,1,overlay,PLATFORM_MAX_PATH);
-		//this_plugin_name is from freak_fortress_2_subplugin
-	Format(overlay,PLATFORM_MAX_PATH,"r_screenoverlay \"%s\"",overlay);
-	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & (~FCVAR_CHEAT));
-	for (new i = 1; i <= MaxClients; i++)
-		if (IsClientInGame(i) && IsPlayerAlive(i) && GetClientTeam(i)!=BossTeam)
-			//This is good place for GetClientTeam(i)!=BossTeam - we don't want attack blue teammates with overlays
+	FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 1, overlay, PLATFORM_MAX_PATH);
+	Format(overlay, PLATFORM_MAX_PATH, "r_screenoverlay \"%s\"", overlay);
+	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
+	for(new target=1; target<=MaxClients; target++)
+	{
+		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
 		{
-			ClientCommand(i, overlay);
+			ClientCommand(target, overlay);
 		}
-	CreateTimer(FF2_GetAbilityArgumentFloat(index,this_plugin_name,ability_name,2,6.0),Clean_Screen);	//Make one timer for all players, not for each.
+	}
+
+	CreateTimer(FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 2, 6.0), Timer_Remove_Overlay);
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
-	//return do not needed
 }
 
-public Action:Clean_Screen(Handle:hTimer)
+public Action:Timer_Remove_Overlay(Handle:timer)
 {
-	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & (~FCVAR_CHEAT));
-	for (new i = 1; i <= MaxClients; i++)
-		if (IsClientInGame(i) && IsPlayerAlive(i) && GetClientTeam(i)!=BossTeam)
+	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
+	for(new target=1; target<=MaxClients; target++)
+	{
+		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
 		{
-			ClientCommand(i, "r_screenoverlay \"\"");
+			ClientCommand(target, "r_screenoverlay \"\"");
 		}
+	}
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
 	return Plugin_Continue;
 }

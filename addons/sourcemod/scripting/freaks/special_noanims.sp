@@ -1,6 +1,6 @@
 /*
 special_noanims:	arg0 - unused.
-					arg1 - 1 = Custom Model Rotates (def.0)
+					arg1 - 1=Custom Model Rotates (def.0)
 
 rage_new_weapon:	arg0 - slot (def.0)
 					arg1 - weapon's classname
@@ -18,14 +18,14 @@ rage_new_weapon:	arg0 - slot (def.0)
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-#define PLUGIN_VERSION "1.1.0"
+#define PLUGIN_VERSION "1.9.2"
 
 public Plugin:myinfo=
 {
-	name = "Freak Fortress 2: special_noanims",
-	author = "RainBolt Dash",
-	description = "FF2: New Weapon and No Animations abilities",
-	version = PLUGIN_VERSION
+	name="Freak Fortress 2: special_noanims",
+	author="RainBolt Dash",
+	description="FF2: New Weapon and No Animations abilities",
+	version=PLUGIN_VERSION
 };
 
 public OnPluginStart2()
@@ -33,11 +33,11 @@ public OnPluginStart2()
 	HookEvent("teamplay_round_start", event_round_start);
 }
 
-public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], action)
+public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ability_name[], status)
 {
 	if(!strcmp(ability_name, "rage_new_weapon"))
 	{
-		Rage_NewWeapon(boss, ability_name);
+		Rage_New_Weapon(client, ability_name);
 	}
 	return Plugin_Continue;
 }
@@ -49,9 +49,9 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	return Plugin_Continue;
 }
 
-public Action:Timer_Disable_Anims(Handle:hTimer)
+public Action:Timer_Disable_Anims(Handle:timer)
 {
-	decl client;
+	new client;
 	for(new boss=0; (client=GetClientOfUserId(FF2_GetBossUserId(boss)))>0; boss++)
 	{
 		if(FF2_HasAbility(boss, this_plugin_name, "special_noanims"))
@@ -63,7 +63,7 @@ public Action:Timer_Disable_Anims(Handle:hTimer)
 	return Plugin_Continue;
 }
 
-Rage_NewWeapon(boss, const String:ability_name[])
+Rage_New_Weapon(boss, const String:ability_name[])
 {
 	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	if(client<0)
@@ -76,7 +76,7 @@ Rage_NewWeapon(boss, const String:ability_name[])
 	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 1, classname, 64);
 	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, attributes, 64);
 	new slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 4);
-	TF2_RemoveWeaponSlot(client, slot);
+	TF2_RemoveWeaponSlot2(client, slot);
 	new weapon=SpawnWeapon(client, classname, FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2, 56), 100, 5, attributes);
 	if(FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 6))
 	{
@@ -97,51 +97,62 @@ stock SetAmmo(client, weapon, ammo, clip=0)
 	{
 		SetEntProp(weapon, Prop_Send, "m_iClip1", clip);
 		new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1);
-		SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
+		if(offset!=-1)
+		{
+			SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
+		}
+		else
+		{
+			new String:classname[64];
+			GetEdictClassname(weapon, classname, sizeof(classname));
+			new String:bossName[32];
+			FF2_GetBossSpecial(client, bossName, sizeof(bossName));
+			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
+		}
 	}
 }
 
 stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute[])
 {
-	new Handle:hWeapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
-	TF2Items_SetClassname(hWeapon, name);
-	TF2Items_SetItemIndex(hWeapon, index);
-	TF2Items_SetLevel(hWeapon, level);
-	TF2Items_SetQuality(hWeapon, quality);
+	new Handle:weapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
+	TF2Items_SetClassname(weapon, name);
+	TF2Items_SetItemIndex(weapon, index);
+	TF2Items_SetLevel(weapon, level);
+	TF2Items_SetQuality(weapon, quality);
 	new String:attributes[32][32];
-	new count = ExplodeString(attribute, ";", attributes, 32, 32);
+	new count=ExplodeString(attribute, ";", attributes, 32, 32);
 	if(count%2!=0)
 	{
-		--count;
+		count--;
 	}
 
 	if(count>0)
 	{
-		TF2Items_SetNumAttributes(hWeapon, count/2);
+		TF2Items_SetNumAttributes(weapon, count/2);
 		new i2=0;
 		for(new i=0; i<count; i+=2)
 		{
 			new attrib=StringToInt(attributes[i]);
 			if(attrib==0)
 			{
-				LogError("Bad weapon attribute passed: %s;%s", attributes[i], attributes[i+1]);
+				LogError("Bad weapon attribute passed: %s ; %s", attributes[i], attributes[i+1]);
 				return -1;
 			}
-			TF2Items_SetAttribute(hWeapon, i2, attrib, StringToFloat(attributes[i+1]));
+			TF2Items_SetAttribute(weapon, i2, attrib, StringToFloat(attributes[i+1]));
 			i2++;
 		}
 	}
 	else
 	{
-		TF2Items_SetNumAttributes(hWeapon, 0);
+		TF2Items_SetNumAttributes(weapon, 0);
 	}
 
-	if(hWeapon==INVALID_HANDLE)
+	if(weapon==INVALID_HANDLE)
 	{
 		return -1;
 	}
-	new entity=TF2Items_GiveNamedItem(client, hWeapon);
-	CloseHandle(hWeapon);
+	new entity=TF2Items_GiveNamedItem(client, weapon);
+	CloseHandle(weapon);
 	EquipPlayerWeapon(client, entity);
 	return entity;
 }

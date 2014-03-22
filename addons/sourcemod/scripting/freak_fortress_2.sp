@@ -60,6 +60,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 new bool:steamtools=false;
 #endif
 
+new bool:smac=false;
+
 new bool:b_allowBossChgClass=false;
 new bool:b_BossChgClassDetected=false;
 new OtherTeam=2;
@@ -133,6 +135,7 @@ new bool:BossCrits=true;
 new Float:circuitStun=0.0;
 new countdownTime=120;
 new countdownHealth=2000;
+new bool:lastPlayerGlow=true;
 new bool:SpecForceBoss=false;
 
 new Handle:MusicTimer;
@@ -225,7 +228,8 @@ static const String:ff2versiontitles[][]=
 	"1.0.8",
 	"1.9.0",
 	"1.9.0",
-	"1.9.1"
+	"1.9.1",
+	"1.9.2"
 };
 
 static const String:ff2versiondates[][]=
@@ -261,13 +265,30 @@ static const String:ff2versiondates[][]=
 	"October 30, 2013",	//1.0.8
 	"March 6, 2014",	//1.9.0
 	"March 6, 2014",	//1.9.0
-	"March 18, 2014"	//1.9.1
+	"March 18, 2014",	//1.9.1
+	"March 22, 2014"	//1.9.2
 };
 
 stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
+		case 33:  //1.9.2
+		{
+			DrawPanelText(panel, "1) Fixed a bug in 1.9.1 that allowed the same player to be the boss over and over again (Wliu)");
+			DrawPanelText(panel, "2) Fixed a bug where last player glow was being incorrectly removed on the boss (Wliu)");
+			DrawPanelText(panel, "3) Fixed a bug where the boss would be assumed dead (Wliu)");
+			DrawPanelText(panel, "4) Fixed having minions on the boss team interfering with certain rage calculations (Wliu)");
+			DrawPanelText(panel, "5) Fixed a rare bug where the rage percentage could go above 100% (Wliu)");
+			DrawPanelText(panel, "See next page for the server changelog (press 1)");
+		}
+		case 32:  //1.9.2
+		{
+			DrawPanelText(panel, "6) [Server] Fixed possible special_noanims errors (Wliu)");
+			DrawPanelText(panel, "7) [Server] Added new arguments to rage_cloneattack-no updates necessary (friagram/Wliu)");
+			DrawPanelText(panel, "8) [Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)");
+			DrawPanelText(panel, "            Servers can now safely have smac_cvars enabled");
+		}
 		case 31:  //1.9.1
 		{
 			DrawPanelText(panel, "1) Fixed some minor leaderboard bugs and also improved the leaderboard text (Wliu)");
@@ -633,7 +654,7 @@ public OnPluginStart()
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarHalloween=CreateConVar("ff2_halloween", "2", "0-Disable Halloween mode, 1-Enable Halloween mode, 2-Use TF2 logic (tf_forced_holiday 2)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
-	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "0", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
@@ -661,6 +682,7 @@ public OnPluginStart()
 	HookConVarChange(cvarHealthBar, HealthbarEnableChanged);
 	HookConVarChange(cvarcountdownTime, CvarChange);
 	HookConVarChange(cvarCountdownHealth, CvarChange);
+	HookConVarChange(cvarLastPlayerGlow, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
 	cvarNextmap=FindConVar("sm_nextmap");
 	HookConVarChange(cvarNextmap, CvarChangeNextmap);
@@ -749,11 +771,14 @@ public OnPluginStart()
 
 	LoadTranslations("freak_fortress_2.phrases");
 	LoadTranslations("common.phrases");
+
 	AddNormalSoundHook(HookSound);
+
 	AddMultiTargetFilter("@hale", BossTargetFilter, "all current Bosses", false);
 	AddMultiTargetFilter("@!hale", BossTargetFilter, "all non-Boss players", false);
 	AddMultiTargetFilter("@boss", BossTargetFilter, "all current Bosses", false);
 	AddMultiTargetFilter("@!boss", BossTargetFilter, "all non-Boss players", false);
+
 	#if defined _steamtools_included
 	steamtools=LibraryExists("SteamTools");
 	#endif
@@ -804,6 +829,11 @@ public OnLibraryAdded(const String:name[])
 		Updater_AddPlugin(UPDATE_URL);
 	}
 	#endif
+
+	if(StrEqual(name, "smac"))
+	{
+		smac=true;
+	}
 }
 
 public OnLibraryRemoved(const String:name[])
@@ -814,6 +844,11 @@ public OnLibraryRemoved(const String:name[])
 		steamtools=false;
 	}
 	#endif
+
+	if(StrEqual(name, "smac"))
+	{
+		smac=false;
+	}
 }
 
 public OnConfigsExecuted()
@@ -905,6 +940,12 @@ public OnConfigsExecuted()
 		AddToDownload();
 		strcopy(FF2CharSetStr, 2, "");
 
+		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+		{
+			ServerCommand("smac_removecvar sv_cheats");
+			ServerCommand("smac_removecvar host_timescale");
+		}
+
 		bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
 		FindHealthBar();
 	}
@@ -912,6 +953,11 @@ public OnConfigsExecuted()
 	{
 		Enabled=false;
 		Enabled2=false;
+		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+		{
+			ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
+			ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
+		}
 	}
 }
 
@@ -1325,6 +1371,10 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		countdownHealth=StringToInt(newValue);
 	}
+	else if(convar==cvarLastPlayerGlow)
+	{
+		lastPlayerGlow=bool:StringToInt(newValue);
+	}
 	else if(convar==cvarSpecForceBoss)
 	{
 		SpecForceBoss=bool:StringToInt(newValue);
@@ -1380,7 +1430,7 @@ public Action:Timer_Announce(Handle:hTimer)
 			}
 			case 3:
 			{
-				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) === ", ff2versiontitles[maxversion]);
+				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) === ", PLUGIN_VERSION);
 			}
 			case 4:
 			{
@@ -1960,13 +2010,19 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		MusicTimer=INVALID_HANDLE;
 	}
 
-	new BossIsAlive=0;
+	new bool:isBossAlive;
+	new temp;
 	for(new client=0; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && IsPlayerAlive(Boss[client]))
+		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
 			SetClientGlow(client, 0.0, 0.0);
-			BossIsAlive=client;
+			isBossAlive=true;
+			temp=client;
+		}
+		else if(IsValidClient(client) && IsPlayerAlive(client))
+		{
+			SetClientGlow(client, 0.0, 0.0);
 		}
 
 		for(new boss=0; boss<=1; boss++)
@@ -1980,7 +2036,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	strcopy(sound, 2, "");
-	if(BossIsAlive)
+	if(isBossAlive)
 	{
 		decl String:bossName[64];
 		decl String:lives[4];
@@ -1999,7 +2055,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			Format(sound, 512, "%s\n%t", sound, "ff2_alive", bossName, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client], lives);
 		}
 
-		if(RandomSound("sound_fail", sound, PLATFORM_MAX_PATH, BossIsAlive))
+		if(RandomSound("sound_fail", sound, PLATFORM_MAX_PATH, temp))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
@@ -2732,7 +2788,7 @@ public OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 }
 
-public Action:MakeBoss(Handle:hTimer,any:client)
+public Action:MakeBoss(Handle:hTimer, any:client)
 {
 	if(!Boss[client] || !IsValidEdict(Boss[client]) || !IsClientInGame(Boss[client]))
 	{
@@ -4143,7 +4199,7 @@ public Action:ClientTimer(Handle:hTimer)
 				}
 				TF2_AddCondition(client, TFCond_Buffed, 0.3);
 
-				if(GetConVarBool(cvarLastPlayerGlow))
+				if(lastPlayerGlow)
 				{
 					SetClientGlow(client, 3600.0);
 				}
@@ -4378,10 +4434,6 @@ public Action:BossTimer(Handle:hTimer)
 		}
 		SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 
-		if(RedAlivePlayers==1 && cvarLastPlayerGlow)
-		{
-			SetClientGlow(client, 3600.0);
-		}
 		SetClientGlow(client, -0.2);
 
 		decl String:lives[MAXRANDOMS][3];
@@ -4455,11 +4507,20 @@ public Action:BossTimer(Handle:hTimer)
 					PrintCenterText(client2, message); 	
 				}
 			}
+
+			if(lastPlayerGlow)
+			{
+				SetClientGlow(client, 3600.0);
+			}
 		}
 
 		if(BossCharge[client][0]<100)
 		{
 			BossCharge[client][0]+=OnlyScoutsLeft()*0.2;
+			if(BossCharge[client][0]>100)
+			{
+				BossCharge[client][0]=100.0;
+			}
 		}
 
 		HPTime-=0.2;
@@ -4502,11 +4563,16 @@ stock OnlyScoutsLeft()
 	new scouts=0;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && IsPlayerAlive(client) && !IsBoss(client) && TF2_GetPlayerClass(client)!=TFClass_Scout)
+		if(IsValidClient(client) && GetClientTeam(client)==BossTeam)
+		{
+			continue;
+		}
+
+		if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)!=TFClass_Scout)
 		{
 			return 0;
 		}
-		else if(IsValidClient(client) && IsPlayerAlive(client) && !IsBoss(client) && TF2_GetPlayerClass(client)==TFClass_Scout)
+		else if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)==TFClass_Scout)
 		{
 			scouts++;
 		}
@@ -6763,27 +6829,41 @@ public Action:NewPanelCmd(client, args)
 public Action:NewPanel(client, versionindex)
 {
 	if(!Enabled2)
+	{
 		return Plugin_Continue;
+	}
+
 	curHelp[client]=versionindex;
 	new Handle:panel=CreatePanel();
-	decl String:s[90];
+	decl String:whatsNew[90];
+
 	SetGlobalTransTarget(client);
-	Format(s,90,"=%t:=","whatsnew", ff2versiontitles[versionindex],ff2versiondates[versionindex]);
-	SetPanelTitle(panel, s);
+	Format(whatsNew, 90, "=%t:=", "whatsnew", ff2versiontitles[versionindex], ff2versiondates[versionindex]);
+	SetPanelTitle(panel, whatsNew);
 	FindVersionData(panel, versionindex);
 	if(versionindex>0)
-		Format(s,90, "%t", "older");
+	{
+		Format(whatsNew, 90, "%t", "older");
+	}
 	else
-		Format(s,90, "%t", "noolder");
-	DrawPanelItem(panel, s);  
+	{
+		Format(whatsNew, 90, "%t", "noolder");
+	}
+
+	DrawPanelItem(panel, whatsNew);  
 	if(versionindex<maxversion)
-		Format(s,90, "%t", "newer");
+	{
+		Format(whatsNew, 90, "%t", "newer");
+	}
 	else
-		Format(s,90, "%t", "nonewer");
-	DrawPanelItem(panel, s);  
-	Format(s,512,"%t","menu_6");
-	DrawPanelItem(panel,s);    
-	SendPanelToClient(panel, client, NewPanelH, 9001);
+	{
+		Format(whatsNew, 90, "%t", "nonewer");
+	}
+
+	DrawPanelItem(panel, whatsNew);  
+	Format(whatsNew, 512, "%t", "menu_6");
+	DrawPanelItem(panel, whatsNew);    
+	SendPanelToClient(panel, client, NewPanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Continue;
 }
