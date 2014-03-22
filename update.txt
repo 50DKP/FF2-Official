@@ -25,6 +25,8 @@
 			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
 			"Source"	"Path_SM/scripting/freaks/rage_overlay.sp"
 			"Source"	"Path_SM/scripting/freaks/special_noanims.sp"
+			"Source"	"Path_SM/scripting/include/freak_fortress_2.inc"
+			"Source"	"Path_SM/scripting/include/freak_fortress_2_subplugin.inc"
 		}
 
 		"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
