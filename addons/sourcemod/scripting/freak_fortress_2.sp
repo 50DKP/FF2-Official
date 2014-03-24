@@ -30,8 +30,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.9.2"
-//#define DEV_VERSION
+#define PLUGIN_VERSION "1.9.3 Beta"
+#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -192,7 +192,9 @@ static const String:ff2versiontitles[][]=
 	"1.9.0",
 	"1.9.0",
 	"1.9.1",
-	"1.9.2"
+	"1.9.2",
+	"1.9.2",
+	"1.9.3"
 };
 
 static const String:ff2versiondates[][]=
@@ -229,13 +231,22 @@ static const String:ff2versiondates[][]=
 	"March 6, 2014",	//1.9.0
 	"March 6, 2014",	//1.9.0
 	"March 18, 2014",	//1.9.1
-	"March 22, 2014"	//1.9.2
+	"March 22, 2014",	//1.9.2
+	"March 22, 2014",	//1.9.2
+	"March 24, 2014"	//1.9.3
 };
 
 stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
+		case 34:  //1.9.3
+		{
+			DrawPanelText(panel, "1) Fixed a !ff2new bug in 1.9.1 where all versions would be shifted by one page (Wliu)");
+			DrawPanelText(panel, "2) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
+			DrawPanelText(panel, "3) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "4) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+		}
 		case 33:  //1.9.2
 		{
 			DrawPanelText(panel, "1) Fixed a bug in 1.9.1 that allowed the same player to be the boss over and over again (Wliu)");
@@ -700,7 +711,7 @@ public OnPluginStart()
 	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable CP. Only with ff2_point_type=0");
 	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable CP. Only with ff2_point_type=0");
 
-	RegAdminCmd("ff2_special", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Usage:  ff2_special <boss>.  Forces next round to use that boss");
+	RegAdminCmd("ff2_special", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  ff2_special <boss>.  Forces next round to use that boss");
 	RegAdminCmd("ff2_addpoints", Command_Points, ADMFLAG_CHEATS, "Usage:  ff2_addpoints <target> <points>.  Adds queue points to any player");
 	RegAdminCmd("ff2_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable the control point if ff2_point_type is 0");
 	RegAdminCmd("ff2_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable the control point if ff2_point_type is 0");
@@ -708,8 +719,8 @@ public OnPluginStart()
 	RegAdminCmd("ff2_charset", Command_CharSet, ADMFLAG_CHEATS, "Usage:  ff2_charset <charset>.  Forces FF2 to use a given character set");
 	RegAdminCmd("ff2_reload_subplugins", Command_ReloadSubPlugins, ADMFLAG_RCON, "Reload FF2's subplugins.");
 
-	RegAdminCmd("hale_select", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
-	RegAdminCmd("hale_special", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
+	RegAdminCmd("hale_select", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
+	RegAdminCmd("hale_special", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
 	RegAdminCmd("hale_addpoints", Command_Points, ADMFLAG_CHEATS, "Usage:  hale_addpoints <target> <points>.  Adds queue points to any player");
 	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable the control point if ff2_point_type is 0");
 	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable the control point if ff2_point_type is 0");
@@ -1962,13 +1973,16 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	new temp;
 	for(new client=0; client<=MaxClients; client++)
 	{
-		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
+		if(IsValidClient(Boss[client]))
 		{
 			SetClientGlow(client, 0.0, 0.0);
-			isBossAlive=true;
-			temp=client;
+			if(IsPlayerAlive(Boss[client]))
+			{
+				isBossAlive=true;
+				temp=client;
+			}
 		}
-		else if(IsValidClient(client) && IsPlayerAlive(client))
+		else if(IsValidClient(client))
 		{
 			SetClientGlow(client, 0.0, 0.0);
 		}
@@ -2038,7 +2052,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	decl String:first[32];
-	if(IsValidClient(top[0]) && (GetClientTeam(top[0])==OtherTeam))
+	if(IsValidClient(top[0]) && !IsBoss(top[0]))
 	{
 		GetClientName(top[0], first, 32);
 	}
@@ -2049,7 +2063,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	decl String:second[32];
-	if(IsValidClient(top[1]) && (GetClientTeam(top[1])==OtherTeam))
+	if(IsValidClient(top[1]) && !IsBoss(top[1]))
 	{
 		GetClientName(top[1], second, 32);
 	}
@@ -2060,7 +2074,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	decl String:third[32];
-	if(IsValidClient(top[2]) && (GetClientTeam(top[2])==OtherTeam))
+	if(IsValidClient(top[2]) && !IsBoss(top[2]))
 	{
 		GetClientName(top[2], third, 32);
 	}
@@ -3570,10 +3584,16 @@ public Action:Command_GetHP(client)
 	return Plugin_Continue;
 }
 
-public Action:Command_MakeNextSpecial(client, args)
+public Action:Command_SetNextBoss(client, args)
 {
 	decl String:name[32];
 	decl String:boss[64];
+	if(!IsValidClient(client))
+	{
+		CReplyToCommand(client, "{olive}[FF2]{default} This command must be used in-game and without RCON.");
+		return Plugin_Handled;
+	}
+
 	if(args<1)
 	{
 		CReplyToCommand(client, "{olive}FF2]{default} Usage: ff2_special <boss>");
@@ -3591,6 +3611,7 @@ public Action:Command_MakeNextSpecial(client, args)
 			CReplyToCommand(client, "{olive}[FF2]{default} Set the next boss to %s", boss);
 			return Plugin_Handled;
 		}
+
 		KvGetString(BossKV[config], "filename", boss, 64);
 		if(StrContains(boss, name, false)>=0)
 		{
