@@ -68,6 +68,7 @@ new MusicIndex;
 new Damage[MAXPLAYERS+1];
 new curHelp[MAXPLAYERS+1];	
 new uberTarget[MAXPLAYERS+1];
+new demoShield[MAXPLAYERS+1];
 
 new FF2flags[MAXPLAYERS+1];
 
@@ -1985,6 +1986,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		else if(IsValidClient(client))
 		{
 			SetClientGlow(client, 0.0, 0.0);
+			demoShield[client]=0;
 		}
 
 		for(new boss=0; boss<=1; boss++)
@@ -3226,6 +3228,15 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 	if(IsValidEntity(FindPlayerBack(client, {642}, 1)))  //Cozy Camper
 	{
 		weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
+	}
+
+	new entity=-1;
+	if((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
+	{
+		if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
+		{
+			demoShield[client]=entity;
+		}
 	}
 
 	weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
@@ -5013,19 +5024,15 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				return Plugin_Changed;
 			}
 
-			new entity=-1;
-			while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
+			if(demoShield[client])
 			{
-				if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
-				{
-					TF2_RemoveWearable(client, entity);
-					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					TF2_AddCondition(client, TFCond_Bonked, 0.1);
-					return Plugin_Continue;
-				}
+				TF2_RemoveWearable(client, demoShield[client]);
+				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+				TF2_AddCondition(client, TFCond_Bonked, 0.1);
+				return Plugin_Continue;
 			}
 
 			switch(TF2_GetPlayerClass(client))
