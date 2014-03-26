@@ -231,7 +231,7 @@ Rage_Clone(const String:ability_name[], client)
 	}
 	new config=GetRandomInt(0, maxKV-1);
 	new clone, temp;
-	for(new i=1; i<dead && i<=totalMinions; i++)
+	for(new i=1; i<=dead && i<=totalMinions; i++)
 	{
 		temp=GetRandomInt(0, GetArraySize(players)-1);
 		clone=GetArrayCell(players, temp);
@@ -291,15 +291,12 @@ Rage_Clone(const String:ability_name[], client)
 					SetEntProp(weapon, Prop_Send, "m_iWorldModelIndex", -1);
 				}
 
-				Debug("Clone: ammo was %i, clip was %i", ammo, clip);
 				SetAmmo(clone, weapon, ammo, clip);
 			}
 		}
 
-		Debug("Clone: health was %i", health);
 		if(health)
 		{
-			Debug("Clone: Entered health stuffs");
 			SetEntProp(clone, Prop_Data, "m_iMaxHealth", health);
 			SetEntProp(clone, Prop_Data, "m_iHealth", health);
 			SetEntProp(clone, Prop_Send, "m_iHealth", health);
