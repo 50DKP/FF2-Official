@@ -28,6 +28,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
 #tryinclude <updater>
+#tryinclude <goomba>
 #define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "1.9.3 Beta"
@@ -247,6 +248,7 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "2) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
 			DrawPanelText(panel, "3) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
 			DrawPanelText(panel, "4) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+			DrawPanelText(panel, "5) Added goomba plugin support so server owners won't have to adjust their goomba configs.");
 		}
 		case 33:  //1.9.2
 		{
@@ -974,6 +976,33 @@ public OnPluginEnd()
 {
 	OnMapEnd();
 }
+
+#if defined _goomba_included_
+public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
+{
+	if (!IsValidClient(attacker))
+		return Plugin_Continue;
+	if (!IsValidClient(victim))
+		return Plugin_Continue;
+	if (Boss[attacker])
+	{
+		Debug("%N is hale and goomba stomping %N.", attacker, victim);
+		damageMultiplier = 900.0;
+		JumpPower = 0.0;
+		return Plugin_Changed;
+	}
+	else if (Boss[victim])
+	{
+		Debug("%N is stomping the hale, %N.", attacker, victim);
+		new boss=GetBossIndex(victim);
+		damageMultiplier = 0.0;
+		damageBonus = (BossHealthMax[boss]*BossLivesMax[boss])*0.1;
+		JumpPower = 500.0;
+		return Plugin_Changed;
+	}
+	return Plugin_Continue;
+}
+#endif
 
 public AddToDownload()
 {
