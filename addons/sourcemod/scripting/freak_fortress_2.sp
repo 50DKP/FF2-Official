@@ -86,6 +86,7 @@ new KSpreeCount[MAXPLAYERS+1];
 new Float:GlowTimer[MAXPLAYERS+1];
 new TFClassType:LastClass[MAXPLAYERS+1];
 new shortname[MAXPLAYERS+1];
+new Float:GoombaDamage;
 
 new timeleft;
 
@@ -108,6 +109,7 @@ new Handle:cvarHalloween;
 new Handle:cvarLastPlayerGlow;
 new Handle:cvarCountdownHealth;
 new Handle:cvarDebug;
+new Handle:cvarGoombaDamage;
 
 new Handle:FF2Cookies;
 
@@ -634,8 +636,8 @@ public OnPluginStart()
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarGoombaDamage=CreateConVar("ff2_goombadmgmult", "0.05", "A float percentage of damage multiplier the goomba plugin applies in damage to hale between 0.01 and 1.0", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
-
 	HookEvent("player_changeclass", OnChangeClass);
 	HookEvent("teamplay_round_start", event_round_start);
 	HookEvent("teamplay_round_win", event_round_end);
@@ -842,6 +844,7 @@ public OnConfigsExecuted()
 	BossCrits=GetConVarBool(cvarCrits);
 	circuitStun=GetConVarFloat(cvarCircuitStun);
 	countdownHealth=GetConVarInt(cvarCountdownHealth);
+	GoombaDamage=GetConVarFloat(cvarGoombaDamage);
 
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
@@ -977,32 +980,47 @@ public OnPluginEnd()
 	OnMapEnd();
 }
 
-#if defined _goomba_included_
 public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
 {
+	Debug("Stomp happening!");
 	if (!IsValidClient(attacker))
 		return Plugin_Continue;
 	if (!IsValidClient(victim))
 		return Plugin_Continue;
-	if (Boss[attacker])
+	if (IsBoss(attacker))
 	{
+		decl Float:Pos[3];
+		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", Pos);
 		Debug("%N is hale and goomba stomping %N.", attacker, victim);
+		if(IsValidEntity(demoShield[victim]))
+		{
+			Debug("%N has shield!", victim);
+			TF2_RemoveWearable(victim, demoShield[victim]);
+			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+			TF2_AddCondition(victim, TFCond_Bonked, 0.1);
+			PrintCenterText(attacker, "Dam demoman and their shields.");
+			return Plugin_Handled;
+		}
 		damageMultiplier = 900.0;
 		JumpPower = 0.0;
+		PrintCenterText(victim, "You were just goomba stomped by the boss!");
+		PrintCenterText(attacker, "Nice one hale.");
 		return Plugin_Changed;
 	}
-	else if (Boss[victim])
+	else if (IsBoss(victim))
 	{
 		Debug("%N is stomping the hale, %N.", attacker, victim);
-		new boss=GetBossIndex(victim);
-		damageMultiplier = 0.0;
-		damageBonus = (BossHealthMax[boss]*BossLivesMax[boss])*0.1;
+		damageMultiplier = GoombaDamage;
 		JumpPower = 500.0;
+		PrintCenterText(victim, "You were just goomba stomped!");
+		PrintCenterText(attacker, "Good job on stomping the hale!");
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
 }
-#endif
 
 public AddToDownload()
 {
@@ -1327,6 +1345,10 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 		{
 			PointDelay*=-1;
 		}
+	}
+	else if(convar==cvarGoombaDamage)
+	{
+		GoombaDamage=StringToFloat(newValue);
 	}
 	else if(convar==cvarAnnounce)
 	{
@@ -7482,7 +7504,11 @@ public Native_SetClientGlow(Handle:plugin, numParams)
 
 public Native_Debug(Handle:plugin, numParams)
 {
-	return GetConVarBool(cvarDebug);
+	new bool:Debugging = GetConVarBool(cvarDebug);
+	#if defined DEV_VERSION
+		Debugging = true;
+	#endif
+	return Debugging;
 }
 
 public Native_IsVSHMap(Handle:plugin, numParams)
