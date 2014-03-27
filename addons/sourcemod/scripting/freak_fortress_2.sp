@@ -5026,6 +5026,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 			if(demoShield[client])
 			{
+				demoShield[client]=0;
 				TF2_RemoveWearable(client, demoShield[client]);
 				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
