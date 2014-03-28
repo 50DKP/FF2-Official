@@ -237,7 +237,7 @@ static const String:ff2versiondates[][]=
 	"March 18, 2014",	//1.9.1
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
-	"March 24, 2014"	//1.9.3
+	"March 27, 2014"	//1.9.3
 };
 
 stock FindVersionData(Handle:panel, versionindex)
@@ -248,9 +248,9 @@ stock FindVersionData(Handle:panel, versionindex)
 		{
 			DrawPanelText(panel, "1) Fixed a !ff2new bug in 1.9.1 where all versions would be shifted by one page (Wliu)");
 			DrawPanelText(panel, "2) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
-			DrawPanelText(panel, "3) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "4) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
-			DrawPanelText(panel, "5) Made use of Goomba Stomp plugin's forward. (WildCard65)");
+			DrawPanelText(panel, "3) Integrated Goomba Stomp (WildCard65)");
+			DrawPanelText(panel, "4) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "5) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
 		}
 		case 33:  //1.9.2
 		{
@@ -636,7 +636,7 @@ public OnPluginStart()
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "A float percentage of damage multiplier the goomba plugin applies in damage to hale between 0.01 and 1.0", FCVAR_PLUGIN, true, 0.01, true, 1.0);
+	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
 
 	HookEvent("player_changeclass", OnChangeClass);
@@ -2310,119 +2310,150 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 	{
-		decl String:s[PLATFORM_MAX_PATH];
+		decl String:music[PLATFORM_MAX_PATH];
 		MusicIndex=0;
 		do
 		{
 			MusicIndex++;
-			Format(s,10,"time%i",MusicIndex);
+			Format(music, 10, "time%i", MusicIndex);
 		}
-		while(KvGetFloat(BossKV[Special[0]], s,0.0)>1);
-		MusicIndex=GetRandomInt(1,MusicIndex-1);
-		Format(s,10,"time%i",MusicIndex);
-		new Float:time=KvGetFloat(BossKV[Special[0]], s);
-		Format(s,10,"path%i",MusicIndex);
-		KvGetString(BossKV[Special[0]], s,s, PLATFORM_MAX_PATH);
-		new Action:act=Plugin_Continue;
+		while(KvGetFloat(BossKV[Special[0]], music, 0.0)>1);
+
+		MusicIndex=GetRandomInt(1, MusicIndex-1);
+		Format(music, 10, "time%i", MusicIndex);
+		new Float:time=KvGetFloat(BossKV[Special[0]], music);
+		Format(music, 10, "path%i", MusicIndex);
+		KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
+
+		new Action:action=Plugin_Continue;
 		Call_StartForward(OnMusic);
 		decl String:sound2[PLATFORM_MAX_PATH];
 		new Float:time2=time;
-		strcopy(sound2, PLATFORM_MAX_PATH, s);
+		strcopy(sound2, PLATFORM_MAX_PATH, music);
 		Call_PushStringEx(sound2, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
 		Call_PushFloatRef(time2);
-		Call_Finish(act);
-		switch(act)
+		Call_Finish(action);
+		switch(action)
 		{
 			case Plugin_Stop, Plugin_Handled:
 			{
-				strcopy(s, sizeof(s), "");
+				strcopy(music, sizeof(music), "");
 				time=-1.0;
 			}
 			case Plugin_Changed:
 			{
-				strcopy(s, PLATFORM_MAX_PATH, sound2);
+				strcopy(music, PLATFORM_MAX_PATH, sound2);
 				time=time2;
 			}
 		}
-		if(strlen(s[0])>5)
+
+		if(strlen(music[0])>5)
 		{
 			if(!client)
-				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, s);
+			{
+				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music);
+			}
 			else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
-				EmitSoundToClient(client,s);
-			decl userid;
+			{
+				EmitSoundToClient(client, music);
+			}
+
+			new userid;
 			if(!client)
+			{
 				userid=0;
+			}
 			else
+			{
 				userid=GetClientUserId(client);
+			}
+
 			if(time>1)
-				MusicTimer=CreateTimer(time, Timer_MusicTheme,userid, TIMER_FLAG_NO_MAPCHANGE);
+			{
+				MusicTimer=CreateTimer(time, Timer_MusicTheme, userid, TIMER_FLAG_NO_MAPCHANGE);
+			}
 		}
 	}
 	return Plugin_Continue;
 }
 
-public Action:Timer_MusicTheme(Handle:timer,any:userid)
+public Action:Timer_MusicTheme(Handle:timer, any:userid)
 {
 	MusicTimer=INVALID_HANDLE;
 	if(Enabled && CheckRoundState()==1)
-	{	
+	{
 		KvRewind(BossKV[Special[0]]);
-		if(KvJumpToKey(BossKV[Special[0]],"sound_bgm"))
+		if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 		{
-			decl client;
+			new client;
 			if(!userid)
+			{
 				client=0;
+			}
 			else
+			{
 				client=GetClientOfUserId(userid);
-			decl String:s[PLATFORM_MAX_PATH];
+			}
+
+			decl String:music[PLATFORM_MAX_PATH];
 			MusicIndex=0;
 			do
 			{
 				MusicIndex++;
-				Format(s,10,"time%i",MusicIndex);
+				Format(music, 10, "time%i",MusicIndex);
 			}
-			while(KvGetFloat(BossKV[Special[0]], s)>1);
-			MusicIndex=GetRandomInt(1,MusicIndex-1);
-			Format(s,10,"time%i",MusicIndex);
-			new Float:time=KvGetFloat(BossKV[Special[0]],s);
-			Format(s,10,"path%i",MusicIndex);
-			KvGetString(BossKV[Special[0]], s,s, PLATFORM_MAX_PATH);
-			
-			new Action:act=Plugin_Continue;
+			while(KvGetFloat(BossKV[Special[0]], music)>1);
+
+			MusicIndex=GetRandomInt(1, MusicIndex-1);
+			Format(music, 10, "time%i", MusicIndex);
+			new Float:time=KvGetFloat(BossKV[Special[0]], music);
+			Format(music, 10, "path%i", MusicIndex);
+			KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
+
+			new Action:action=Plugin_Continue;
 			Call_StartForward(OnMusic);
 			decl String:sound2[PLATFORM_MAX_PATH];
 			new Float:time2=time;
-			strcopy(sound2, PLATFORM_MAX_PATH, s);
+			strcopy(sound2, PLATFORM_MAX_PATH, music);
 			Call_PushStringEx(sound2, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
 			Call_PushFloatRef(time2);
-			Call_Finish(act);
-			switch(act)
+			Call_Finish(action);
+			switch(action)
 			{
 				case Plugin_Stop, Plugin_Handled:
 				{
-					strcopy(s, sizeof(s), "");
+					strcopy(music, sizeof(music), "");
 					time=-1.0;
 				}
 				case Plugin_Changed:
 				{
-					strcopy(s, PLATFORM_MAX_PATH, sound2);
+					strcopy(music, PLATFORM_MAX_PATH, sound2);
 					time=time2;
 				}
 			}
-			if(strlen(s[0])>5)
+
+			if(strlen(music[0])>5)
 			{
 				if(!client)
-					EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, s,_, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+				{
+					EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+				}
 				else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
-					EmitSoundToClient(client,s);
+				{
+					EmitSoundToClient(client, music);
+				}
+
 				if(time>1)
-					MusicTimer=CreateTimer(time, Timer_MusicTheme,userid, TIMER_FLAG_NO_MAPCHANGE);
+				{
+					MusicTimer=CreateTimer(time, Timer_MusicTheme, userid, TIMER_FLAG_NO_MAPCHANGE);
+				}
 			}
 		}
 	}
 	else
+	{
 		return Plugin_Stop;
+	}
 	return Plugin_Continue;
 }
 
@@ -5534,30 +5565,34 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
 {
 	Debug("Stomp happening!");
-	if(!Enabled || !IsValidClient(attacker) || !IsValidClient(victim) || attacker == victim)
+	if(!Enabled || !IsValidClient(attacker) || !IsValidClient(victim) || attacker==victim)
+	{
 		return Plugin_Continue;
-	if (IsBoss(attacker))
+	}
+
+	if(IsBoss(attacker))
 	{
 		decl Float:Pos[3];
 		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", Pos);
-		Debug("%N is hale and goomba stomping %N.", attacker, victim);
-		damageMultiplier = 900.0;
-		JumpPower = 0.0;
-		//PrintCenterText(victim, "You were just goomba stomped by the boss!");
+		Debug("Boss is stomping");
+		damageMultiplier=900.0;
+		JumpPower=0.0;
+		PrintCenterText(victim, "Ouch!  Watch your head!");
 		PrintCenterText(attacker, "You just goomba stomped somebody!");
 		return Plugin_Changed;
 	}
-	else if (IsBoss(victim))
+	else if(IsBoss(victim))
 	{
-		Debug("%N is stomping the hale, %N.", attacker, victim);
-		damageMultiplier = GoombaDamage;
-		JumpPower = 5000.0;
+		Debug("Boss is being stomped");
+		damageMultiplier=GoombaDamage;
+		JumpPower=5000.0;
 		PrintCenterText(victim, "You were just goomba stomped!");
-		//PrintCenterText(attacker, "You just goomba stomped somebody!"); //Took out this line as it's pretty obvious that the boss was stomped.
+		PrintCenterText(attacker, "You just goomba stomped the boss!");
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
 }
+
 public Action:Timer_CheckBuffRage(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
@@ -7412,34 +7447,50 @@ public Native_StartMusic(Handle:plugin, numParams)
 
 public Native_StopMusic(Handle:plugin, numParams)
 {
-	if(!BossKV[Special[0]]) return;
+	if(!BossKV[Special[0]])
+	{
+		Debug("StopMusic: BossKV is invalid!");
+		return;
+	}
+
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
-	{	
-		decl String:s[PLATFORM_MAX_PATH];
-		Format(s,10,"path%i",MusicIndex);
-		KvGetString(BossKV[Special[0]], s,s, PLATFORM_MAX_PATH);
-		decl client;
+	{
+		Debug("StopMusic: Found sound_bgm");
+		decl String:music[PLATFORM_MAX_PATH];
+		Format(music, sizeof(music), "path%i", MusicIndex);
+		KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
+		Debug("StopMusic: Music path was %s", music);
+
+		new client;
 		if(plugin==INVALID_HANDLE)
+		{
 			client=0;
+		}
 		else
+		{
 			client=GetNativeCell(1);
+		}
+
 		if(!client)
 		{
-			for(new client2=1 ; client2<=MaxClients; client2++)
+			Debug("StopMusic: Client was invalid");
+			for(new target=1; target<=MaxClients; target++)
 			{
-				if(!IsValidClient(client2))
+				if(!IsValidClient(target))
 				{
 					continue;
 				}
-				StopSound(client2, SNDCHAN_AUTO, s);
-				StopSound(client2, SNDCHAN_AUTO, s);
+				Debug("StopMusic: Stopped music for target %i", target);
+				StopSound(target, SNDCHAN_AUTO, music);
+				StopSound(target, SNDCHAN_AUTO, music);
 			}
 		}
 		else
 		{
-			StopSound(client, SNDCHAN_AUTO, s);
-			StopSound(client, SNDCHAN_AUTO, s);
+			Debug("StopMusic: Stopped music for client %i", client);
+			StopSound(client, SNDCHAN_AUTO, music);
+			StopSound(client, SNDCHAN_AUTO, music);
 		}
 	}	
 }
