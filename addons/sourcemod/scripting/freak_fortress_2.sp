@@ -29,6 +29,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #undef REQUIRE_PLUGIN
 #tryinclude <updater>
 #tryinclude <goomba>
+#tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "1.9.3 Beta"
@@ -47,6 +48,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define HEALTHBAR_PROPERTY "m_iBossHealthPercentageByte"
 #define HEALTHBAR_MAX 255
 #define MONOCULUS "eyeball_boss"
+#define DISABLED_PERKS "toxic,noclip,uber,ammo,instant,jump,tinyplayer"
 
 #if defined _steamtools_included
 new bool:steamtools=false;
@@ -109,6 +111,10 @@ new Handle:cvarLastPlayerGlow;
 new Handle:cvarCountdownHealth;
 new Handle:cvarDebug;
 new Handle:cvarGoombaDamage;
+new Handle:cvarBossRTD;
+new Handle:cvarRTDMode;
+new Handle:cvarRTDTimeLimit;
+new Handle:cvarDisabledRTDPerks;
 
 new Handle:FF2Cookies;
 
@@ -132,6 +138,7 @@ new countdownHealth=2000;
 new bool:lastPlayerGlow=true;
 new bool:SpecForceBoss=false;
 new Float:GoombaDamage=0.05;
+new bool:canBossRTD = false;
 
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -244,13 +251,14 @@ stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
-		case 34:  //1.9.3
+		case 35:  //1.9.3
 		{
 			DrawPanelText(panel, "1) Fixed a !ff2new bug in 1.9.1 where all versions would be shifted by one page (Wliu)");
 			DrawPanelText(panel, "2) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
 			DrawPanelText(panel, "3) Integrated Goomba Stomp (WildCard65)");
-			DrawPanelText(panel, "4) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "5) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+			DrawPanelText(panel, "4) Integrated RTD for bosses (WildCard65)");
+			DrawPanelText(panel, "5) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "6) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
 		}
 		case 33:  //1.9.2
 		{
@@ -637,6 +645,7 @@ public OnPluginStart()
 	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
+	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (Requires RTD plugin)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
 
 	HookEvent("player_changeclass", OnChangeClass);
@@ -665,6 +674,7 @@ public OnPluginStart()
 	HookConVarChange(cvarLastPlayerGlow, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
 	HookConVarChange(cvarGoombaDamage, CvarChange);
+	HookConVarChange(cvarBossRTD, CvarChange);
 	cvarNextmap=FindConVar("sm_nextmap");
 	HookConVarChange(cvarNextmap, CvarChangeNextmap);
 
@@ -839,6 +849,7 @@ public OnConfigsExecuted()
 	PointType=GetConVarInt(cvarPointType);
 	PointDelay=GetConVarInt(cvarPointDelay);
 	GoombaDamage=GetConVarFloat(cvarGoombaDamage);
+	canBossRTD=GetConVarBool(cvarBossRTD);
 	if(PointDelay<0)
 	{
 		PointDelay*=-1;
@@ -873,6 +884,24 @@ public OnConfigsExecuted()
 			{
 				halloween=false;
 			}
+		}
+		cvarDisabledRTDPerks = FindConVar("sm_rtd_disabled");
+		cvarRTDMode = FindConVar("sm_rtd_mode");
+		cvarRTDTimeLimit = FindConVar("sm_rtd_timelimit");
+		if(cvarDisabledRTDPerks != INVALID_HANDLE)
+		{
+			SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
+			HookConVarChange(cvarDisabledRTDPerks, CvarChange);
+		}
+		if(cvarRTDMode!=INVALID_HANDLE)
+		{
+			SetConVarInt(cvarRTDMode, 0);
+			HookConVarChange(cvarRTDMode, CvarChange);
+		}
+		if(cvarRTDTimeLimit!=INVALID_HANDLE)
+		{
+			SetConVarInt(cvarRTDTimeLimit, 30);
+			HookConVarChange(cvarRTDTimeLimit, CvarChange);
 		}
 		SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
@@ -1306,6 +1335,18 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 			PointDelay*=-1;
 		}
 	}
+	else if(convar==cvarDisabledRTDPerks && !StrEqual(newValue, DISABLED_PERKS) && Enabled)
+	{
+		SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
+	}
+	else if(convar==cvarRTDTimeLimit && StringToInt(newValue)!=30 && Enabled)
+	{
+		SetConVarInt(cvarRTDTimeLimit, 30);
+	}
+	else if(convar==cvarRTDMode && StringToInt(newValue)!=0 && Enabled)
+	{
+		SetConVarInt(cvarRTDMode, 0);
+	}
 	else if(convar==cvarAnnounce)
 	{
 		Announce=StringToFloat(newValue);
@@ -1313,6 +1354,10 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarGoombaDamage)
 	{
 		GoombaDamage=StringToFloat(newValue);
+	}
+	else if(convar==cvarBossRTD)
+	{
+		canBossRTD=bool:StringToInt(newValue);
 	}
 	else if(convar==cvarPointType)
 	{
@@ -2137,6 +2182,22 @@ public Action:Timer_NineThousand(Handle:timer)
 public Action:Timer_CalcQueuePoints(Handle:timer)
 {
 	CalcQueuePoints();
+}
+
+public Action:RTD_CanRollDice(client)
+{
+	new Handle:message=CreateHudSynchronizer();
+	if(IsBoss(client) && Enabled)
+	{
+		if(!canBossRTD)
+		{
+			SetHudTextParams(-1.0, 0.5, 6.0, 255, 0, 0, 255, 2);
+			ShowSyncHudText(client, message, "You cannot roll the die as a boss!");
+			CloseHandle(message);
+			return Plugin_Handled;
+		}
+	}
+	return Plugin_Continue;
 }
 
 stock CalcQueuePoints()
