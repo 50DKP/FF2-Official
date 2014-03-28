@@ -28,6 +28,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
 #tryinclude <updater>
+#tryinclude <goomba>
 #define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "1.9.3 Beta"
@@ -107,6 +108,7 @@ new Handle:cvarHalloween;
 new Handle:cvarLastPlayerGlow;
 new Handle:cvarCountdownHealth;
 new Handle:cvarDebug;
+new Handle:cvarGoombaDamage;
 
 new Handle:FF2Cookies;
 
@@ -129,6 +131,7 @@ new countdownTime=120;
 new countdownHealth=2000;
 new bool:lastPlayerGlow=true;
 new bool:SpecForceBoss=false;
+new Float:GoombaDamage=0.05;
 
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -247,6 +250,7 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "2) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
 			DrawPanelText(panel, "3) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
 			DrawPanelText(panel, "4) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+			DrawPanelText(panel, "5) Made use of Goomba Stomp plugin's forward. (WildCard65)");
 		}
 		case 33:  //1.9.2
 		{
@@ -632,6 +636,7 @@ public OnPluginStart()
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "A float percentage of damage multiplier the goomba plugin applies in damage to hale between 0.01 and 1.0", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
 
 	HookEvent("player_changeclass", OnChangeClass);
@@ -659,6 +664,7 @@ public OnPluginStart()
 	HookConVarChange(cvarCountdownHealth, CvarChange);
 	HookConVarChange(cvarLastPlayerGlow, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
+	HookConVarChange(cvarGoombaDamage, CvarChange);
 	cvarNextmap=FindConVar("sm_nextmap");
 	HookConVarChange(cvarNextmap, CvarChangeNextmap);
 
@@ -832,6 +838,7 @@ public OnConfigsExecuted()
 	Announce=GetConVarFloat(cvarAnnounce);
 	PointType=GetConVarInt(cvarPointType);
 	PointDelay=GetConVarInt(cvarPointDelay);
+	GoombaDamage=GetConVarFloat(cvarGoombaDamage);
 	if(PointDelay<0)
 	{
 		PointDelay*=-1;
@@ -1303,6 +1310,10 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		Announce=StringToFloat(newValue);
 	}
+	else if(convar==cvarGoombaDamage)
+	{
+		GoombaDamage=StringToFloat(newValue);
+	}
 	else if(convar==cvarPointType)
 	{
 		PointType=StringToInt(newValue);
@@ -1521,7 +1532,6 @@ stock bool:CheckToChangeMapDoors()
 	}
 	CloseHandle(fileh);
 }
-
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!GetConVarBool(cvarEnabled))
@@ -5521,7 +5531,33 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 	}
 	return Plugin_Continue;
 }
-
+public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
+{
+	Debug("Stomp happening!");
+	if(!Enabled || !IsValidClient(attacker) || !IsValidClient(victim) || attacker == victim)
+		return Plugin_Continue;
+	if (IsBoss(attacker))
+	{
+		decl Float:Pos[3];
+		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", Pos);
+		Debug("%N is hale and goomba stomping %N.", attacker, victim);
+		damageMultiplier = 900.0;
+		JumpPower = 0.0;
+		//PrintCenterText(victim, "You were just goomba stomped by the boss!");
+		PrintCenterText(attacker, "You just goomba stomped somebody!");
+		return Plugin_Changed;
+	}
+	else if (IsBoss(victim))
+	{
+		Debug("%N is stomping the hale, %N.", attacker, victim);
+		damageMultiplier = GoombaDamage;
+		JumpPower = 5000.0;
+		PrintCenterText(victim, "You were just goomba stomped!");
+		//PrintCenterText(attacker, "You just goomba stomped somebody!"); //Took out this line as it's pretty obvious that the boss was stomped.
+		return Plugin_Changed;
+	}
+	return Plugin_Continue;
+}
 public Action:Timer_CheckBuffRage(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
