@@ -885,24 +885,9 @@ public OnConfigsExecuted()
 				halloween=false;
 			}
 		}
-		cvarDisabledRTDPerks = FindConVar("sm_rtd_disabled");
-		cvarRTDMode = FindConVar("sm_rtd_mode");
-		cvarRTDTimeLimit = FindConVar("sm_rtd_timelimit");
-		if(cvarDisabledRTDPerks != INVALID_HANDLE)
-		{
-			SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
-			HookConVarChange(cvarDisabledRTDPerks, CvarChange);
-		}
-		if(cvarRTDMode!=INVALID_HANDLE)
-		{
-			SetConVarInt(cvarRTDMode, 0);
-			HookConVarChange(cvarRTDMode, CvarChange);
-		}
-		if(cvarRTDTimeLimit!=INVALID_HANDLE)
-		{
-			SetConVarInt(cvarRTDTimeLimit, 30);
-			HookConVarChange(cvarRTDTimeLimit, CvarChange);
-		}
+
+		SetupRTD();
+
 		SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
 		SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
@@ -1335,29 +1320,9 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 			PointDelay*=-1;
 		}
 	}
-	else if(convar==cvarDisabledRTDPerks && !StrEqual(newValue, DISABLED_PERKS) && Enabled)
-	{
-		SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
-	}
-	else if(convar==cvarRTDTimeLimit && StringToInt(newValue)!=30 && Enabled)
-	{
-		SetConVarInt(cvarRTDTimeLimit, 30);
-	}
-	else if(convar==cvarRTDMode && StringToInt(newValue)!=0 && Enabled)
-	{
-		SetConVarInt(cvarRTDMode, 0);
-	}
 	else if(convar==cvarAnnounce)
 	{
 		Announce=StringToFloat(newValue);
-	}
-	else if(convar==cvarGoombaDamage)
-	{
-		GoombaDamage=StringToFloat(newValue);
-	}
-	else if(convar==cvarBossRTD)
-	{
-		canBossRTD=bool:StringToInt(newValue);
 	}
 	else if(convar==cvarPointType)
 	{
@@ -1390,6 +1355,26 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarLastPlayerGlow)
 	{
 		lastPlayerGlow=bool:StringToInt(newValue);
+	}
+	else if(convar==cvarGoombaDamage)
+	{
+		GoombaDamage=StringToFloat(newValue);
+	}
+	else if(convar==cvarBossRTD)
+	{
+		canBossRTD=bool:StringToInt(newValue);
+	}
+	else if(convar==cvarDisabledRTDPerks && !StrEqual(newValue, DISABLED_PERKS) && Enabled)
+	{
+		SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
+	}
+	else if(convar==cvarRTDTimeLimit && StringToInt(newValue)!=30 && Enabled)
+	{
+		SetConVarInt(cvarRTDTimeLimit, 30);
+	}
+	else if(convar==cvarRTDMode && StringToInt(newValue)!=0 && Enabled)
+	{
+		SetConVarInt(cvarRTDMode, 0);
 	}
 	else if(convar==cvarSpecForceBoss)
 	{
@@ -5639,6 +5624,30 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 	return Plugin_Continue;
 }
 
+SetupRTD()
+{
+	cvarDisabledRTDPerks=FindConVar("sm_rtd_disabled");
+	cvarRTDMode=FindConVar("sm_rtd_mode");
+	cvarRTDTimeLimit=FindConVar("sm_rtd_timelimit");
+	if(cvarDisabledRTDPerks!=INVALID_HANDLE)
+	{
+		SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
+		HookConVarChange(cvarDisabledRTDPerks, CvarChange);
+	}
+
+	if(cvarRTDMode!=INVALID_HANDLE)
+	{
+		SetConVarInt(cvarRTDMode, 0);
+		HookConVarChange(cvarRTDMode, CvarChange);
+	}
+
+	if(cvarRTDTimeLimit!=INVALID_HANDLE)
+	{
+		SetConVarInt(cvarRTDTimeLimit, 30);
+		HookConVarChange(cvarRTDTimeLimit, CvarChange);
+	}
+}
+
 public Action:RTD_CanRollDice(client)
 {
 	new Handle:message=CreateHudSynchronizer();
@@ -7527,10 +7536,12 @@ public Native_StopMusic(Handle:plugin, numParams)
 		new client;
 		if(plugin==INVALID_HANDLE)
 		{
+			Debug("StopMusic: Plugin was invalid, client is 0");
 			client=0;
 		}
 		else
 		{
+			Debug("StopMusic: Client was %i", client);
 			client=GetNativeCell(1);
 		}
 
@@ -7539,13 +7550,12 @@ public Native_StopMusic(Handle:plugin, numParams)
 			Debug("StopMusic: Client was invalid");
 			for(new target=1; target<=MaxClients; target++)
 			{
-				if(!IsValidClient(target))
+				if(IsValidClient(target))
 				{
-					continue;
+					Debug("StopMusic: Stopped music for target %i", target);
+					StopSound(target, SNDCHAN_AUTO, music);
+					StopSound(target, SNDCHAN_AUTO, music);
 				}
-				Debug("StopMusic: Stopped music for target %i", target);
-				StopSound(target, SNDCHAN_AUTO, music);
-				StopSound(target, SNDCHAN_AUTO, music);
 			}
 		}
 		else
