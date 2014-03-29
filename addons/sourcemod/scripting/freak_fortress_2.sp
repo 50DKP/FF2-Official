@@ -244,7 +244,7 @@ static const String:ff2versiondates[][]=
 	"March 18, 2014",	//1.9.1
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
-	"March 28, 2014"	//1.9.3
+	"March 29, 2014"	//1.9.3
 };
 
 stock FindVersionData(Handle:panel, versionindex)
@@ -1808,8 +1808,8 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		}
 	}
 	CreateTimer(0.2, Timer_GogoBoss);
-	CreateTimer(9.1, StartBossTimer);
 	CreateTimer(3.5, StartResponseTimer);
+	CreateTimer(9.1, StartBossTimer);
 	CreateTimer(9.6, MessageTimer);
 
 	for(new entity=MaxClients+1; entity<ME; entity++)
@@ -2004,6 +2004,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	Native_StopMusic(INVALID_HANDLE, 0);
+	CreateTimer(2.0, Timer_StopMusic);
 	if(MusicTimer!=INVALID_HANDLE)
 	{
 		KillTimer(MusicTimer);
@@ -2381,6 +2382,7 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 		{
 			if(!client)
 			{
+				Debug("Timer_MusicPlay: Starting BGM %s", music);
 				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music);
 			}
 			else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
@@ -3601,14 +3603,19 @@ public Action:Timer_Lazor2(Handle:hTimer,any:medigunid)
 		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel",GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+0.41);
 	return Plugin_Continue;
 }
+
 public Action:Command_GetHPCmd(client, args)
 {
-	if(!IsValidClient(client)) return Plugin_Continue;
+	if(!IsValidClient(client))
+	{
+		return Plugin_Continue;
+	}
+
 	Command_GetHP(client);
 	return Plugin_Handled;
 }
 
-public Action:Command_GetHP(client)
+public Action:Command_GetHP(client)  //TODO: This can rarely show a very large negative number if you time it right
 {
 	if(!Enabled || CheckRoundState()!=1)
 	{
@@ -3636,12 +3643,12 @@ public Action:Command_GetHP(client)
 			BossHealthLast[boss]=BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1);
 		}
 
-		for(new client2=1; client2<=MaxClients; client2++)
+		for(new target=1; target<=MaxClients; target++)
 		{
-			if(IsValidClient(client2) && !(FF2flags[client2] & FF2FLAG_HUDDISABLED))
+			if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
 			{
-				SetGlobalTransTarget(client2);
-				PrintCenterText(client2, health); 	
+				SetGlobalTransTarget(target);
+				PrintCenterText(target, health); 	
 			}
 		}
 		CPrintToChatAll("{olive}[FF2]{default} %s", health);
@@ -3649,7 +3656,7 @@ public Action:Command_GetHP(client)
 		if(GetGameTime()>=HPTime)
 		{
 			healthcheckused++;
-			HPTime=GetGameTime()+(healthcheckused<3 ? 20.0 : 80.0);
+			HPTime=GetGameTime()+(healthcheckused<3 ? 20.0:80.0);
 		}
 		return Plugin_Continue;
 	}
@@ -5097,13 +5104,13 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 			if(demoShield[client])
 			{
-				demoShield[client]=0;
 				TF2_RemoveWearable(client, demoShield[client]);
 				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
 				TF2_AddCondition(client, TFCond_Bonked, 0.1);
+				demoShield[client]=0;
 				return Plugin_Continue;
 			}
 
@@ -7155,6 +7162,11 @@ public Action:SayCmd(client, args)
 	return Plugin_Continue;	
 }
 
+public Action:Timer_StopMusic(Handle:timer)
+{
+	Native_StopMusic(INVALID_HANDLE, 0);
+}
+
 stock FindEntityByClassname2(startEnt, const String:classname[])
 {
 	while(startEnt>-1 && !IsValidEntity(startEnt))
@@ -7520,39 +7532,32 @@ public Native_StopMusic(Handle:plugin, numParams)
 {
 	if(!BossKV[Special[0]])
 	{
-		Debug("StopMusic: BossKV is invalid!");
 		return;
 	}
 
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 	{
-		Debug("StopMusic: Found sound_bgm");
 		decl String:music[PLATFORM_MAX_PATH];
 		Format(music, sizeof(music), "path%i", MusicIndex);
 		KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
-		Debug("StopMusic: Music path was %s", music);
 
 		new client;
 		if(plugin==INVALID_HANDLE)
 		{
-			Debug("StopMusic: Plugin was invalid, client is 0");
 			client=0;
 		}
 		else
 		{
-			Debug("StopMusic: Client was %i", client);
 			client=GetNativeCell(1);
 		}
 
 		if(!client)
 		{
-			Debug("StopMusic: Client was invalid");
 			for(new target=1; target<=MaxClients; target++)
 			{
 				if(IsValidClient(target))
 				{
-					Debug("StopMusic: Stopped music for target %i", target);
 					StopSound(target, SNDCHAN_AUTO, music);
 					StopSound(target, SNDCHAN_AUTO, music);
 				}
@@ -7560,7 +7565,6 @@ public Native_StopMusic(Handle:plugin, numParams)
 		}
 		else
 		{
-			Debug("StopMusic: Stopped music for client %i", client);
 			StopSound(client, SNDCHAN_AUTO, music);
 			StopSound(client, SNDCHAN_AUTO, music);
 		}
