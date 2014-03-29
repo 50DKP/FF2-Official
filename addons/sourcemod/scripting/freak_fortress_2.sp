@@ -32,7 +32,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.9.3 Beta"
+#define PLUGIN_VERSION "1.10.0 Beta 1"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -205,7 +205,8 @@ static const String:ff2versiontitles[][]=
 	"1.9.1",
 	"1.9.2",
 	"1.9.2",
-	"1.9.3"
+	"1.10.0",
+	"1.10.0"
 };
 
 static const String:ff2versiondates[][]=
@@ -244,21 +245,27 @@ static const String:ff2versiondates[][]=
 	"March 18, 2014",	//1.9.1
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
-	"March 29, 2014"	//1.9.3
+	"March 29, 2014",	//1.10.0
+	"March 29, 2014"	//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
-		case 34:  //1.9.3
+		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "1) Fixed a !ff2new bug in 1.9.1 where all versions would be shifted by one page (Wliu)");
+			DrawPanelText(panel, "1) Fixed a !ff2new bug in 1.9.2 where all versions would be shifted by one page (Wliu)");
 			DrawPanelText(panel, "2) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
 			DrawPanelText(panel, "3) Integrated Goomba Stomp (WildCard65)");
 			DrawPanelText(panel, "4) Integrated RTD for bosses (WildCard65)");
-			DrawPanelText(panel, "5) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "6) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+			DrawPanelText(panel, "5) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
+			DrawPanelText(panel, "See next page for the server changelog (press 1)");
+		}
+		case 34:  //1.10.0
+		{
+			DrawPanelText(panel, "6) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "7) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
 		}
 		case 33:  //1.9.2
 		{
@@ -2004,7 +2011,6 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	Native_StopMusic(INVALID_HANDLE, 0);
-	CreateTimer(2.0, Timer_StopMusic);
 	if(MusicTimer!=INVALID_HANDLE)
 	{
 		KillTimer(MusicTimer);
@@ -2083,7 +2089,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			top[2]=top[1];
 			top[1]=client;
 		}
-		else if(Damage[client]>=Damage[top[2]])
+		else if(Damage[client]>=Damage[top[2]] && Damage[client]!=0)
 		{
 			top[2]=client;
 		}
@@ -2327,6 +2333,11 @@ public Action:StartBossTimer(Handle:hTimer)
 
 public Action:Timer_MusicPlay(Handle:timer, any:client)
 {
+	if(CheckRoundState()!=1)
+	{
+		return Plugin_Continue;
+	}
+
 	if(MusicTimer!=INVALID_HANDLE)
 	{
 		KillTimer(MusicTimer);
@@ -2338,6 +2349,7 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 		MusicIndex=-1;
 		return Plugin_Continue;
 	}
+
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 	{
@@ -2382,7 +2394,6 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 		{
 			if(!client)
 			{
-				Debug("Timer_MusicPlay: Starting BGM %s", music);
 				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music);
 			}
 			else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
@@ -3675,17 +3686,18 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 
 public Action:Command_SetNextBoss(client, args)
 {
-	decl String:name[32];
-	decl String:boss[64];
 	if(!IsValidClient(client))
 	{
 		CReplyToCommand(client, "{olive}[FF2]{default} This command must be used in-game and without RCON.");
 		return Plugin_Handled;
 	}
 
+	decl String:name[32];
+	decl String:boss[64];
+
 	if(args<1)
 	{
-		CReplyToCommand(client, "{olive}FF2]{default} Usage: ff2_special <boss>");
+		CReplyToCommand(client, "{olive}[FF2]{default} Usage: ff2_special <boss>");
 		return Plugin_Handled;
 	}
 	GetCmdArgString(name, sizeof(name));
@@ -7160,11 +7172,6 @@ public Action:SayCmd(client, args)
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;	
-}
-
-public Action:Timer_StopMusic(Handle:timer)
-{
-	Native_StopMusic(INVALID_HANDLE, 0);
 }
 
 stock FindEntityByClassname2(startEnt, const String:classname[])
