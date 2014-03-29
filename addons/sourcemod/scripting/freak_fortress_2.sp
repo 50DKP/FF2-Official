@@ -244,14 +244,14 @@ static const String:ff2versiondates[][]=
 	"March 18, 2014",	//1.9.1
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
-	"March 27, 2014"	//1.9.3
+	"March 28, 2014"	//1.9.3
 };
 
 stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
-		case 35:  //1.9.3
+		case 34:  //1.9.3
 		{
 			DrawPanelText(panel, "1) Fixed a !ff2new bug in 1.9.1 where all versions would be shifted by one page (Wliu)");
 			DrawPanelText(panel, "2) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
@@ -2182,22 +2182,6 @@ public Action:Timer_NineThousand(Handle:timer)
 public Action:Timer_CalcQueuePoints(Handle:timer)
 {
 	CalcQueuePoints();
-}
-
-public Action:RTD_CanRollDice(client)
-{
-	new Handle:message=CreateHudSynchronizer();
-	if(IsBoss(client) && Enabled)
-	{
-		if(!canBossRTD)
-		{
-			SetHudTextParams(-1.0, 0.5, 6.0, 255, 0, 0, 255, 2);
-			ShowSyncHudText(client, message, "You cannot roll the die as a boss!");
-			CloseHandle(message);
-			return Plugin_Handled;
-		}
-	}
-	return Plugin_Continue;
 }
 
 stock CalcQueuePoints()
@@ -5623,6 +5607,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 	}
 	return Plugin_Continue;
 }
+
 public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
 {
 	Debug("Stomp happening!");
@@ -5650,6 +5635,22 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 		PrintCenterText(victim, "You were just goomba stomped!");
 		PrintCenterText(attacker, "You just goomba stomped the boss!");
 		return Plugin_Changed;
+	}
+	return Plugin_Continue;
+}
+
+public Action:RTD_CanRollDice(client)
+{
+	new Handle:message=CreateHudSynchronizer();
+	if(IsBoss(client) && Enabled)
+	{
+		if(!canBossRTD)
+		{
+			SetHudTextParams(-1.0, 0.5, 6.0, 255, 0, 0, 255, 2);
+			ShowSyncHudText(client, message, "You cannot roll the die as a boss!");
+			CloseHandle(message);
+			return Plugin_Handled;
+		}
 	}
 	return Plugin_Continue;
 }
