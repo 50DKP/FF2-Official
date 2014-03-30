@@ -59,6 +59,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define DOORS_CONFIG "doors.cfg"
 #define WEAPONS_CONFIG "weapons.cfg"
 
+#define CHANGELOG "data/ff2_changelog.txt"
+
 #if defined _steamtools_included
 new bool:steamtools=false;
 #endif

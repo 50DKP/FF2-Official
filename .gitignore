@@ -29,15 +29,8 @@
 /addons/stripper/
 /addons/*.*
 
-#SOURCEMOD CONFIGS
-/addons/sourcemod/configs/geoip/
-/addons/sourcemod/configs/sql-init-scripts/
-/addons/sourcemod/configs/sourcebans/
-/addons/sourcemod/configs/*.*
-
 #SOURCEMOD RANDOM STUFF
 /addons/sourcemod/bin/
-/addons/sourcemod/data/
 /addons/sourcemod/extensions/
 /addons/sourcemod/gamedata/*.games/
 /addons/sourcemod/gamedata/sm-tf2.games.txt
@@ -48,57 +41,22 @@
 /addons/sourcemod/GPL_*
 /addons/sourcemod/LICENSE*
 
+#SOURCEMOD CONFIGS
+/addons/sourcemod/configs/
+!/addons/sourcemod/configs/freak_fortress_2/
+
+#SOURCEMOD DATA
+/addons/sourcemod/data/*
+!/addons/sourcemod/data/ff2_changelog.txt
+
 #SOURCEMOD PLUGINS
 /addons/sourcemod/plugins/
 
 #SOURCEMOD SOURCE FILES
-/addons/sourcemod/scripting/a*/
-/addons/sourcemod/scripting/b*/
-/addons/sourcemod/scripting/c*/
-/addons/sourcemod/scripting/freaks/compiled/
-/addons/sourcemod/scripting/fun*/
-/addons/sourcemod/scripting/k*/
-/addons/sourcemod/scripting/include/a*
-/addons/sourcemod/scripting/include/b*
-/addons/sourcemod/scripting/include/c*
-/addons/sourcemod/scripting/include/d*
-/addons/sourcemod/scripting/include/e*
-/addons/sourcemod/scripting/include/fi*
-/addons/sourcemod/scripting/include/fl*
-/addons/sourcemod/scripting/include/fu*
-/addons/sourcemod/scripting/include/g*
-/addons/sourcemod/scripting/include/h*
-/addons/sourcemod/scripting/include/k*
-/addons/sourcemod/scripting/include/l*
-/addons/sourcemod/scripting/include/m*
-/addons/sourcemod/scripting/include/n*
-/addons/sourcemod/scripting/include/p*
-/addons/sourcemod/scripting/include/r*
-/addons/sourcemod/scripting/include/s*
-/addons/sourcemod/scripting/include/t*
-/addons/sourcemod/scripting/include/u*
-/addons/sourcemod/scripting/include/v*
-/addons/sourcemod/scripting/includes/
-/addons/sourcemod/scripting/p*/
-/addons/sourcemod/scripting/t*/
-/addons/sourcemod/scripting/a*.sp
-/addons/sourcemod/scripting/b*.sp
-/addons/sourcemod/scripting/c*.*
-/addons/sourcemod/scripting/fun*.sp
-/addons/sourcemod/scripting/d*.sp
-/addons/sourcemod/scripting/e*.sp
-/addons/sourcemod/scripting/g*.sp
-/addons/sourcemod/scripting/h*.sp
-/addons/sourcemod/scripting/k*.sp
-/addons/sourcemod/scripting/l*.sp
-/addons/sourcemod/scripting/m*.sp
-/addons/sourcemod/scripting/n*.sp
-/addons/sourcemod/scripting/p*.sp
-/addons/sourcemod/scripting/r*.sp
-/addons/sourcemod/scripting/s*
-/addons/sourcemod/scripting/t*.sp
-/addons/sourcemod/scripting/w*.sp
-/addons/sourcemod/scripting/u*.sp
+/addons/sourcemod/scripting/*
+!/addons/sourcemod/scripting/freak_fortress_2.sp
+/addons/sourcemod/scripting/
+!/addons/sourcemod/scripting/freaks/
 /addons/sourcemod/source/
 
 #SOURCEMOD TRANSLATIONS
