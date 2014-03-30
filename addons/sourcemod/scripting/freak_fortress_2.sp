@@ -288,9 +288,9 @@ static const String:ff2versiondates[][]=
 	"March 29, 2014"	//1.10.0
 };
 
-stock FindVersionData(Handle:panel, versionindex)
+stock FindVersionData(Handle:panel, versionIndex)
 {
-	switch(versionindex)
+	switch(versionIndex)
 	{
 		case 35:  //1.10.0
 		{
@@ -596,7 +596,7 @@ stock FindVersionData(Handle:panel, versionindex)
 	}
 }
 
-static const maxversion=(sizeof(ff2versiontitles)-1);
+static const maxVersion=(sizeof(ff2versiontitles)-1);
 
 new Specials=0;
 new Handle:BossKV[MAXSPECIALS];
@@ -1501,7 +1501,7 @@ public Action:Timer_Announce(Handle:hTimer)
 			case 5:
 			{
 				announcecount=0;
-				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxversion]);
+				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxVersion]);
 			}
 			default: 
 			{
@@ -6942,7 +6942,7 @@ public FF2PanelH(Handle:menu, MenuAction:action, param1, param2)
 			case 2:
 				HelpPanel2(param1);
 			case 3:
-				NewPanel(param1, maxversion);
+				NewPanel(param1, maxVersion);
 			case 4:
 				QueuePanelCmd(param1,0);
 			case 5:
@@ -7002,8 +7002,8 @@ public NewPanelH(Handle:menu, MenuAction:action, param1, param2)
 			}
 			case 2:
 			{
-				if(curHelp[param1]>=maxversion)
-					NewPanel(param1, maxversion);
+				if(curHelp[param1]>=maxVersion)
+					NewPanel(param1, maxVersion);
 				else
 					NewPanel(param1, ++curHelp[param1]);
 			}
@@ -7014,26 +7014,31 @@ public NewPanelH(Handle:menu, MenuAction:action, param1, param2)
 
 public Action:NewPanelCmd(client, args)
 {
-	if(!IsValidClient(client)) return Plugin_Continue;
-	NewPanel(client, maxversion);
+	if(!IsValidClient(client))
+	{
+		return Plugin_Continue;
+	}
+
+	NewPanel(client, maxVersion);
 	return Plugin_Handled;
 }
-public Action:NewPanel(client, versionindex)
+
+public Action:NewPanel(client, versionIndex)
 {
 	if(!Enabled2)
 	{
 		return Plugin_Continue;
 	}
 
-	curHelp[client]=versionindex;
+	curHelp[client]=versionIndex;
 	new Handle:panel=CreatePanel();
 	decl String:whatsNew[90];
 
 	SetGlobalTransTarget(client);
-	Format(whatsNew, 90, "=%t:=", "whatsnew", ff2versiontitles[versionindex], ff2versiondates[versionindex]);
+	Format(whatsNew, 90, "=%t:=", "whatsnew", ff2versiontitles[versionIndex], ff2versiondates[versionIndex]);
 	SetPanelTitle(panel, whatsNew);
-	FindVersionData(panel, versionindex);
-	if(versionindex>0)
+	FindVersionData(panel, versionIndex);
+	if(versionIndex>0)
 	{
 		Format(whatsNew, 90, "%t", "older");
 	}
@@ -7043,7 +7048,7 @@ public Action:NewPanel(client, versionindex)
 	}
 
 	DrawPanelItem(panel, whatsNew);  
-	if(versionindex<maxversion)
+	if(versionIndex<maxVersion)
 	{
 		Format(whatsNew, 90, "%t", "newer");
 	}
