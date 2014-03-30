@@ -32,9 +32,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
 #tryinclude <updater>
+#tryinclude <goomba>
+#tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.0.0 Alpha 1"
+#define PLUGIN_VERSION "2.0.0 Alpha 2"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -50,6 +52,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define HEALTHBAR_PROPERTY "m_iBossHealthPercentageByte"
 #define HEALTHBAR_MAX 255
 #define MONOCULUS "eyeball_boss"
+#define DISABLED_PERKS "toxic,noclip,uber,ammo,instant,jump,tinyplayer"
 
 #define FF2_CONFIGS "configs/freak_fortress_2"
 #define BOSS_CONFIG "characters.cfg"
@@ -77,6 +80,7 @@ new MusicIndex;
 new Damage[MAXPLAYERS+1];
 new curHelp[MAXPLAYERS+1];	
 new uberTarget[MAXPLAYERS+1];
+new demoShield[MAXPLAYERS+1];
 
 new FF2flags[MAXPLAYERS+1];
 
@@ -115,6 +119,11 @@ new Handle:cvarHalloween;
 new Handle:cvarLastPlayerGlow;
 new Handle:cvarCountdownHealth;
 new Handle:cvarDebug;
+new Handle:cvarGoombaDamage;
+new Handle:cvarBossRTD;
+new Handle:cvarRTDMode;
+new Handle:cvarRTDTimeLimit;
+new Handle:cvarDisabledRTDPerks;
 
 new Handle:FF2Cookies;
 
@@ -137,6 +146,8 @@ new countdownTime=120;
 new countdownHealth=2000;
 new bool:lastPlayerGlow=true;
 new bool:SpecForceBoss=false;
+new Float:GoombaDamage=0.05;
+new bool:canBossRTD = false;
 
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -229,7 +240,10 @@ static const String:ff2versiontitles[][]=
 	"1.9.0",
 	"1.9.0",
 	"1.9.1",
-	"1.9.2"
+	"1.9.2",
+	"1.9.2",
+	"1.10.0",
+	"1.10.0"
 };
 
 static const String:ff2versiondates[][]=
@@ -266,13 +280,30 @@ static const String:ff2versiondates[][]=
 	"March 6, 2014",	//1.9.0
 	"March 6, 2014",	//1.9.0
 	"March 18, 2014",	//1.9.1
-	"March 22, 2014"	//1.9.2
+	"March 22, 2014",	//1.9.2
+	"March 22, 2014",	//1.9.2
+	"March 29, 2014",	//1.10.0
+	"March 29, 2014"	//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionindex)
 {
 	switch(versionindex)
 	{
+		case 35:  //1.10.0
+		{
+			DrawPanelText(panel, "1) Fixed a !ff2new bug in 1.9.2 where all versions would be shifted by one page (Wliu)");
+			DrawPanelText(panel, "2) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
+			DrawPanelText(panel, "3) Integrated Goomba Stomp (WildCard65)");
+			DrawPanelText(panel, "4) Integrated RTD for bosses (WildCard65)");
+			DrawPanelText(panel, "5) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
+			DrawPanelText(panel, "See next page for the server changelog (press 1)");
+		}
+		case 34:  //1.10.0
+		{
+			DrawPanelText(panel, "6) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "7) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+		}
 		case 33:  //1.9.2
 		{
 			DrawPanelText(panel, "1) Fixed a bug in 1.9.1 that allowed the same player to be the boss over and over again (Wliu)");
@@ -657,6 +688,8 @@ public OnPluginStart()
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
+	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (Requires RTD plugin)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
 
 	HookEvent("player_changeclass", OnChangeClass);
@@ -684,6 +717,8 @@ public OnPluginStart()
 	HookConVarChange(cvarCountdownHealth, CvarChange);
 	HookConVarChange(cvarLastPlayerGlow, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
+	HookConVarChange(cvarGoombaDamage, CvarChange);
+	HookConVarChange(cvarBossRTD, CvarChange);
 	cvarNextmap=FindConVar("sm_nextmap");
 	HookConVarChange(cvarNextmap, CvarChangeNextmap);
 
@@ -737,7 +772,7 @@ public OnPluginStart()
 	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable CP. Only with ff2_point_type=0");
 	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable CP. Only with ff2_point_type=0");
 
-	RegAdminCmd("ff2_special", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Usage:  ff2_special <boss>.  Forces next round to use that boss");
+	RegAdminCmd("ff2_special", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  ff2_special <boss>.  Forces next round to use that boss");
 	RegAdminCmd("ff2_addpoints", Command_Points, ADMFLAG_CHEATS, "Usage:  ff2_addpoints <target> <points>.  Adds queue points to any player");
 	RegAdminCmd("ff2_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable the control point if ff2_point_type is 0");
 	RegAdminCmd("ff2_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable the control point if ff2_point_type is 0");
@@ -745,8 +780,8 @@ public OnPluginStart()
 	RegAdminCmd("ff2_charset", Command_CharSet, ADMFLAG_CHEATS, "Usage:  ff2_charset <charset>.  Forces FF2 to use a given character set");
 	RegAdminCmd("ff2_reload_subplugins", Command_ReloadSubPlugins, ADMFLAG_RCON, "Reload FF2's subplugins.");
 
-	RegAdminCmd("hale_select", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
-	RegAdminCmd("hale_special", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
+	RegAdminCmd("hale_select", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
+	RegAdminCmd("hale_special", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
 	RegAdminCmd("hale_addpoints", Command_Points, ADMFLAG_CHEATS, "Usage:  hale_addpoints <target> <points>.  Adds queue points to any player");
 	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable the control point if ff2_point_type is 0");
 	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable the control point if ff2_point_type is 0");
@@ -857,6 +892,8 @@ public OnConfigsExecuted()
 	Announce=GetConVarFloat(cvarAnnounce);
 	PointType=GetConVarInt(cvarPointType);
 	PointDelay=GetConVarInt(cvarPointDelay);
+	GoombaDamage=GetConVarFloat(cvarGoombaDamage);
+	canBossRTD=GetConVarBool(cvarBossRTD);
 	if(PointDelay<0)
 	{
 		PointDelay*=-1;
@@ -907,6 +944,9 @@ public OnConfigsExecuted()
 				halloween=false;
 			}
 		}
+
+		SetupRTD();
+
 		SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
 		SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
@@ -1375,6 +1415,26 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		lastPlayerGlow=bool:StringToInt(newValue);
 	}
+	else if(convar==cvarGoombaDamage)
+	{
+		GoombaDamage=StringToFloat(newValue);
+	}
+	else if(convar==cvarBossRTD)
+	{
+		canBossRTD=bool:StringToInt(newValue);
+	}
+	else if(convar==cvarDisabledRTDPerks && !StrEqual(newValue, DISABLED_PERKS) && Enabled)
+	{
+		SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
+	}
+	else if(convar==cvarRTDTimeLimit && StringToInt(newValue)!=30 && Enabled)
+	{
+		SetConVarInt(cvarRTDTimeLimit, 30);
+	}
+	else if(convar==cvarRTDMode && StringToInt(newValue)!=0 && Enabled)
+	{
+		SetConVarInt(cvarRTDMode, 0);
+	}
 	else if(convar==cvarSpecForceBoss)
 	{
 		SpecForceBoss=bool:StringToInt(newValue);
@@ -1561,7 +1621,6 @@ stock bool:CheckToChangeMapDoors()
 	}
 	CloseHandle(fileh);
 }
-
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!GetConVarBool(cvarEnabled))
@@ -1808,8 +1867,8 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		}
 	}
 	CreateTimer(0.2, Timer_GogoBoss);
-	CreateTimer(9.1, StartBossTimer);
 	CreateTimer(3.5, StartResponseTimer);
+	CreateTimer(9.1, StartBossTimer);
 	CreateTimer(9.6, MessageTimer);
 
 	for(new entity=MaxClients+1; entity<MAXENTITIES; entity++)
@@ -2014,15 +2073,19 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	new temp;
 	for(new client=0; client<=MaxClients; client++)
 	{
-		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
+		if(IsValidClient(Boss[client]))
 		{
 			SetClientGlow(client, 0.0, 0.0);
-			isBossAlive=true;
-			temp=client;
+			if(IsPlayerAlive(Boss[client]))
+			{
+				isBossAlive=true;
+				temp=client;
+			}
 		}
-		else if(IsValidClient(client) && IsPlayerAlive(client))
+		else if(IsValidClient(client))
 		{
 			SetClientGlow(client, 0.0, 0.0);
+			demoShield[client]=0;
 		}
 
 		for(new boss=0; boss<=1; boss++)
@@ -2078,7 +2141,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			top[2]=top[1];
 			top[1]=client;
 		}
-		else if(Damage[client]>=Damage[top[2]])
+		else if(Damage[client]>=Damage[top[2]] && Damage[client]!=0)
 		{
 			top[2]=client;
 		}
@@ -2090,7 +2153,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	decl String:first[32];
-	if(IsValidClient(top[0]) && (GetClientTeam(top[0])==OtherTeam))
+	if(IsValidClient(top[0]) && !IsBoss(top[0]))
 	{
 		GetClientName(top[0], first, 32);
 	}
@@ -2101,7 +2164,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	decl String:second[32];
-	if(IsValidClient(top[1]) && (GetClientTeam(top[1])==OtherTeam))
+	if(IsValidClient(top[1]) && !IsBoss(top[1]))
 	{
 		GetClientName(top[1], second, 32);
 	}
@@ -2112,7 +2175,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	decl String:third[32];
-	if(IsValidClient(top[2]) && (GetClientTeam(top[2])==OtherTeam))
+	if(IsValidClient(top[2]) && !IsBoss(top[2]))
 	{
 		GetClientName(top[2], third, 32);
 	}
@@ -2322,6 +2385,11 @@ public Action:StartBossTimer(Handle:hTimer)
 
 public Action:Timer_MusicPlay(Handle:timer, any:client)
 {
+	if(CheckRoundState()!=1)
+	{
+		return Plugin_Continue;
+	}
+
 	if(MusicTimer!=INVALID_HANDLE)
 	{
 		KillTimer(MusicTimer);
@@ -2333,122 +2401,154 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 		MusicIndex=-1;
 		return Plugin_Continue;
 	}
+
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 	{
-		decl String:s[PLATFORM_MAX_PATH];
+		decl String:music[PLATFORM_MAX_PATH];
 		MusicIndex=0;
 		do
 		{
 			MusicIndex++;
-			Format(s,10,"time%i",MusicIndex);
+			Format(music, 10, "time%i", MusicIndex);
 		}
-		while(KvGetFloat(BossKV[Special[0]], s,0.0)>1);
-		MusicIndex=GetRandomInt(1,MusicIndex-1);
-		Format(s,10,"time%i",MusicIndex);
-		new Float:time=KvGetFloat(BossKV[Special[0]], s);
-		Format(s,10,"path%i",MusicIndex);
-		KvGetString(BossKV[Special[0]], s,s, PLATFORM_MAX_PATH);
-		new Action:act=Plugin_Continue;
+		while(KvGetFloat(BossKV[Special[0]], music, 0.0)>1);
+
+		MusicIndex=GetRandomInt(1, MusicIndex-1);
+		Format(music, 10, "time%i", MusicIndex);
+		new Float:time=KvGetFloat(BossKV[Special[0]], music);
+		Format(music, 10, "path%i", MusicIndex);
+		KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
+
+		new Action:action=Plugin_Continue;
 		Call_StartForward(OnMusic);
 		decl String:sound2[PLATFORM_MAX_PATH];
 		new Float:time2=time;
-		strcopy(sound2, PLATFORM_MAX_PATH, s);
+		strcopy(sound2, PLATFORM_MAX_PATH, music);
 		Call_PushStringEx(sound2, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
 		Call_PushFloatRef(time2);
-		Call_Finish(act);
-		switch(act)
+		Call_Finish(action);
+		switch(action)
 		{
 			case Plugin_Stop, Plugin_Handled:
 			{
-				strcopy(s, sizeof(s), "");
+				strcopy(music, sizeof(music), "");
 				time=-1.0;
 			}
 			case Plugin_Changed:
 			{
-				strcopy(s, PLATFORM_MAX_PATH, sound2);
+				strcopy(music, PLATFORM_MAX_PATH, sound2);
 				time=time2;
 			}
 		}
-		if(strlen(s[0])>5)
+
+		if(strlen(music[0])>5)
 		{
 			if(!client)
-				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, s);
+			{
+				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music);
+			}
 			else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
-				EmitSoundToClient(client,s);
-			decl userid;
+			{
+				EmitSoundToClient(client, music);
+			}
+
+			new userid;
 			if(!client)
+			{
 				userid=0;
+			}
 			else
+			{
 				userid=GetClientUserId(client);
+			}
+
 			if(time>1)
-				MusicTimer=CreateTimer(time, Timer_MusicTheme,userid, TIMER_FLAG_NO_MAPCHANGE);
+			{
+				MusicTimer=CreateTimer(time, Timer_MusicTheme, userid, TIMER_FLAG_NO_MAPCHANGE);
+			}
 		}
 	}
 	return Plugin_Continue;
 }
 
-public Action:Timer_MusicTheme(Handle:timer,any:userid)
+public Action:Timer_MusicTheme(Handle:timer, any:userid)
 {
 	MusicTimer=INVALID_HANDLE;
 	if(Enabled && CheckRoundState()==1)
-	{	
+	{
 		KvRewind(BossKV[Special[0]]);
-		if(KvJumpToKey(BossKV[Special[0]],"sound_bgm"))
+		if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 		{
-			decl client;
+			new client;
 			if(!userid)
+			{
 				client=0;
+			}
 			else
+			{
 				client=GetClientOfUserId(userid);
-			decl String:s[PLATFORM_MAX_PATH];
+			}
+
+			decl String:music[PLATFORM_MAX_PATH];
 			MusicIndex=0;
 			do
 			{
 				MusicIndex++;
-				Format(s,10,"time%i",MusicIndex);
+				Format(music, 10, "time%i",MusicIndex);
 			}
-			while(KvGetFloat(BossKV[Special[0]], s)>1);
-			MusicIndex=GetRandomInt(1,MusicIndex-1);
-			Format(s,10,"time%i",MusicIndex);
-			new Float:time=KvGetFloat(BossKV[Special[0]],s);
-			Format(s,10,"path%i",MusicIndex);
-			KvGetString(BossKV[Special[0]], s,s, PLATFORM_MAX_PATH);
-			
-			new Action:act=Plugin_Continue;
+			while(KvGetFloat(BossKV[Special[0]], music)>1);
+
+			MusicIndex=GetRandomInt(1, MusicIndex-1);
+			Format(music, 10, "time%i", MusicIndex);
+			new Float:time=KvGetFloat(BossKV[Special[0]], music);
+			Format(music, 10, "path%i", MusicIndex);
+			KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
+
+			new Action:action=Plugin_Continue;
 			Call_StartForward(OnMusic);
 			decl String:sound2[PLATFORM_MAX_PATH];
 			new Float:time2=time;
-			strcopy(sound2, PLATFORM_MAX_PATH, s);
+			strcopy(sound2, PLATFORM_MAX_PATH, music);
 			Call_PushStringEx(sound2, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
 			Call_PushFloatRef(time2);
-			Call_Finish(act);
-			switch(act)
+			Call_Finish(action);
+			switch(action)
 			{
 				case Plugin_Stop, Plugin_Handled:
 				{
-					strcopy(s, sizeof(s), "");
+					strcopy(music, sizeof(music), "");
 					time=-1.0;
 				}
 				case Plugin_Changed:
 				{
-					strcopy(s, PLATFORM_MAX_PATH, sound2);
+					strcopy(music, PLATFORM_MAX_PATH, sound2);
 					time=time2;
 				}
 			}
-			if(strlen(s[0])>5)
+
+			if(strlen(music[0])>5)
 			{
 				if(!client)
-					EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, s,_, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+				{
+					EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+				}
 				else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
-					EmitSoundToClient(client,s);
+				{
+					EmitSoundToClient(client, music);
+				}
+
 				if(time>1)
-					MusicTimer=CreateTimer(time, Timer_MusicTheme,userid, TIMER_FLAG_NO_MAPCHANGE);
+				{
+					MusicTimer=CreateTimer(time, Timer_MusicTheme, userid, TIMER_FLAG_NO_MAPCHANGE);
+				}
 			}
 		}
 	}
 	else
+	{
 		return Plugin_Stop;
+	}
 	return Plugin_Continue;
 }
 
@@ -3487,6 +3587,15 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 		weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
 	}
 
+	new entity=-1;
+	if((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
+	{
+		if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
+		{
+			demoShield[client]=entity;
+		}
+	}
+
 	weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
 	if(weapon && IsValidEdict(weapon))
 	{
@@ -3778,14 +3887,19 @@ public Action:Timer_Lazor2(Handle:hTimer,any:medigunid)
 		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel",GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+0.41);
 	return Plugin_Continue;
 }
+
 public Action:Command_GetHPCmd(client, args)
 {
-	if(!IsValidClient(client)) return Plugin_Continue;
+	if(!IsValidClient(client))
+	{
+		return Plugin_Continue;
+	}
+
 	Command_GetHP(client);
 	return Plugin_Handled;
 }
 
-public Action:Command_GetHP(client)
+public Action:Command_GetHP(client)  //TODO: This can rarely show a very large negative number if you time it right
 {
 	if(!Enabled || CheckRoundState()!=1)
 	{
@@ -3813,12 +3927,12 @@ public Action:Command_GetHP(client)
 			BossHealthLast[boss]=BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1);
 		}
 
-		for(new client2=1; client2<=MaxClients; client2++)
+		for(new target=1; target<=MaxClients; target++)
 		{
-			if(IsValidClient(client2) && !(FF2flags[client2] & FF2FLAG_HUDDISABLED))
+			if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
 			{
-				SetGlobalTransTarget(client2);
-				PrintCenterText(client2, health); 	
+				SetGlobalTransTarget(target);
+				PrintCenterText(target, health); 	
 			}
 		}
 		CPrintToChatAll("{olive}[FF2]{default} %s", health);
@@ -3826,7 +3940,7 @@ public Action:Command_GetHP(client)
 		if(GetGameTime()>=HPTime)
 		{
 			healthcheckused++;
-			HPTime=GetGameTime()+(healthcheckused<3 ? 20.0 : 80.0);
+			HPTime=GetGameTime()+(healthcheckused<3 ? 20.0:80.0);
 		}
 		return Plugin_Continue;
 	}
@@ -3843,13 +3957,20 @@ public Action:Command_GetHP(client)
 	return Plugin_Continue;
 }
 
-public Action:Command_MakeNextSpecial(client, args)
+public Action:Command_SetNextBoss(client, args)
 {
+	if(!IsValidClient(client))
+	{
+		CReplyToCommand(client, "{olive}[FF2]{default} This command must be used in-game and without RCON.");
+		return Plugin_Handled;
+	}
+
 	decl String:name[32];
 	decl String:boss[64];
+
 	if(args<1)
 	{
-		CReplyToCommand(client, "{olive}FF2]{default} Usage: ff2_special <boss>");
+		CReplyToCommand(client, "{olive}[FF2]{default} Usage: ff2_special <boss>");
 		return Plugin_Handled;
 	}
 	GetCmdArgString(name, sizeof(name));
@@ -3864,6 +3985,7 @@ public Action:Command_MakeNextSpecial(client, args)
 			CReplyToCommand(client, "{olive}[FF2]{default} Set the next boss to %s", boss);
 			return Plugin_Handled;
 		}
+
 		KvGetString(BossKV[config], "filename", boss, 64);
 		if(StrContains(boss, name, false)>=0)
 		{
@@ -5273,19 +5395,16 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				return Plugin_Changed;
 			}
 
-			new entity=-1;
-			while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)  //TODO: Clean this code up
+			if(demoShield[client])
 			{
-				if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
-				{
-					TF2_RemoveWearable(client, entity);
-					EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
-					TF2_AddCondition(client, TFCond_Bonked, 0.1);
-					return Plugin_Continue;
-				}
+				TF2_RemoveWearable(client, demoShield[client]);
+				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
+				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
+				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
+				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
+				TF2_AddCondition(client, TFCond_Bonked, 0.1);
+				demoShield[client]=0;
+				return Plugin_Continue;
 			}
 
 			switch(TF2_GetPlayerClass(client))
@@ -5784,6 +5903,77 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						SetEntPropFloat(client, Prop_Send, "m_flRageMeter",0.0);
 				}*/
 			}
+		}
+	}
+	return Plugin_Continue;
+}
+
+public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
+{
+	Debug("Stomp happening!");
+	if(!Enabled || !IsValidClient(attacker) || !IsValidClient(victim) || attacker==victim)
+	{
+		return Plugin_Continue;
+	}
+
+	if(IsBoss(attacker))
+	{
+		decl Float:Pos[3];
+		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", Pos);
+		Debug("Boss is stomping");
+		damageMultiplier=900.0;
+		JumpPower=0.0;
+		PrintCenterText(victim, "Ouch!  Watch your head!");
+		PrintCenterText(attacker, "You just goomba stomped somebody!");
+		return Plugin_Changed;
+	}
+	else if(IsBoss(victim))
+	{
+		Debug("Boss is being stomped");
+		damageMultiplier=GoombaDamage;
+		JumpPower=5000.0;
+		PrintCenterText(victim, "You were just goomba stomped!");
+		PrintCenterText(attacker, "You just goomba stomped the boss!");
+		return Plugin_Changed;
+	}
+	return Plugin_Continue;
+}
+
+SetupRTD()
+{
+	cvarDisabledRTDPerks=FindConVar("sm_rtd_disabled");
+	cvarRTDMode=FindConVar("sm_rtd_mode");
+	cvarRTDTimeLimit=FindConVar("sm_rtd_timelimit");
+	if(cvarDisabledRTDPerks!=INVALID_HANDLE)
+	{
+		SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
+		HookConVarChange(cvarDisabledRTDPerks, CvarChange);
+	}
+
+	if(cvarRTDMode!=INVALID_HANDLE)
+	{
+		SetConVarInt(cvarRTDMode, 0);
+		HookConVarChange(cvarRTDMode, CvarChange);
+	}
+
+	if(cvarRTDTimeLimit!=INVALID_HANDLE)
+	{
+		SetConVarInt(cvarRTDTimeLimit, 30);
+		HookConVarChange(cvarRTDTimeLimit, CvarChange);
+	}
+}
+
+public Action:RTD_CanRollDice(client)
+{
+	new Handle:message=CreateHudSynchronizer();
+	if(IsBoss(client) && Enabled)
+	{
+		if(!canBossRTD)
+		{
+			SetHudTextParams(-1.0, 0.5, 6.0, 255, 0, 0, 255, 2);
+			ShowSyncHudText(client, message, "You cannot roll the die as a boss!");
+			CloseHandle(message);
+			return Plugin_Handled;
 		}
 	}
 	return Plugin_Continue;
@@ -7644,34 +7834,43 @@ public Native_StartMusic(Handle:plugin, numParams)
 
 public Native_StopMusic(Handle:plugin, numParams)
 {
-	if(!BossKV[Special[0]]) return;
+	if(!BossKV[Special[0]])
+	{
+		return;
+	}
+
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
-	{	
-		decl String:s[PLATFORM_MAX_PATH];
-		Format(s,10,"path%i",MusicIndex);
-		KvGetString(BossKV[Special[0]], s,s, PLATFORM_MAX_PATH);
-		decl client;
+	{
+		decl String:music[PLATFORM_MAX_PATH];
+		Format(music, sizeof(music), "path%i", MusicIndex);
+		KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
+
+		new client;
 		if(plugin==INVALID_HANDLE)
+		{
 			client=0;
+		}
 		else
+		{
 			client=GetNativeCell(1);
+		}
+
 		if(!client)
 		{
-			for(new client2=1 ; client2<=MaxClients; client2++)
+			for(new target=1; target<=MaxClients; target++)
 			{
-				if(!IsValidClient(client2))
+				if(IsValidClient(target))
 				{
-					continue;
+					StopSound(target, SNDCHAN_AUTO, music);
+					StopSound(target, SNDCHAN_AUTO, music);
 				}
-				StopSound(client2, SNDCHAN_AUTO, s);
-				StopSound(client2, SNDCHAN_AUTO, s);
 			}
 		}
 		else
 		{
-			StopSound(client, SNDCHAN_AUTO, s);
-			StopSound(client, SNDCHAN_AUTO, s);
+			StopSound(client, SNDCHAN_AUTO, music);
+			StopSound(client, SNDCHAN_AUTO, music);
 		}
 	}	
 }
