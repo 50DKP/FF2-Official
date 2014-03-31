@@ -32,7 +32,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 1"
+#define PLUGIN_VERSION "1.10.0 Beta 2"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -245,8 +245,8 @@ static const String:ff2versiondates[][]=
 	"March 18, 2014",	//1.9.1
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
-	"March 29, 2014",	//1.10.0
-	"March 29, 2014"	//1.10.0
+	"March 31, 2014",	//1.10.0
+	"March 31, 2014"	//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -265,6 +265,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 34:  //1.10.0
 		{
 			DrawPanelText(panel, "6) Fixed ability timers not resetting when the round was over (Wliu)");
+			DrawPanelText(panel, "7) Fixed sentries not re-activating after being stunned (Wliu)");
 			DrawPanelText(panel, "7) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
 			DrawPanelText(panel, "8) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
 		}
@@ -3769,7 +3770,7 @@ public Action:Command_Points(client, args)
 
 		SetClientQueuePoints(target_list[target], GetClientQueuePoints(target_list[target])+points);
 		LogAction(client, target_list[target], "\"%L\" added %d queue points to \"%L\"", client, points, target_list[target]);
-		ReplyToCommand(client, "[FF2] Added %d queue points to %s", points, target_name);
+		CReplyToCommand(client, "{olive}[FF2]{default} Added %d queue points to %s", points, target_name);
 	}
 
 	return Plugin_Handled;
