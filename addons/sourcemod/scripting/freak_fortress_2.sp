@@ -37,7 +37,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
-#define ME 2048
+#define MAXENTITIES 2048
 #define MAXSPECIALS 64
 #define MAXRANDOMS 16
 
@@ -249,23 +249,24 @@ static const String:ff2versiondates[][]=
 	"March 29, 2014"	//1.10.0
 };
 
-stock FindVersionData(Handle:panel, versionindex)
+stock FindVersionData(Handle:panel, versionIndex)
 {
-	switch(versionindex)
+	switch(versionIndex)
 	{
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "1) Fixed a !ff2new bug in 1.9.2 where all versions would be shifted by one page (Wliu)");
-			DrawPanelText(panel, "2) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
-			DrawPanelText(panel, "3) Integrated Goomba Stomp (WildCard65)");
-			DrawPanelText(panel, "4) Integrated RTD for bosses (WildCard65)");
-			DrawPanelText(panel, "5) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
-			DrawPanelText(panel, "See next page for the server changelog (press 1)");
+			DrawPanelText(panel, "1) Integrated Goomba Stomp and RTD (WildCard65)");
+			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicided at the beginning of the round (Wliu)");
+			DrawPanelText(panel, "3) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
+			DrawPanelText(panel, "4) Fixed players with 0 damage rarely showing up as 3rd place on the leaderboard (Wliu)");
+			DrawPanelText(panel, "5) Fixed a !ff2new bug in 1.9.2 where all versions would be shifted by one page (Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 34:  //1.10.0
 		{
-			DrawPanelText(panel, "6) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "7) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+			DrawPanelText(panel, "6) Fixed ability timers not resetting when the round was over (Wliu)");
+			DrawPanelText(panel, "7) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "8) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
 		}
 		case 33:  //1.9.2
 		{
@@ -557,7 +558,7 @@ stock FindVersionData(Handle:panel, versionindex)
 	}
 }
 
-static const maxversion=(sizeof(ff2versiontitles)-1);
+static const maxVersion=(sizeof(ff2versiontitles)-1);
 
 new Specials=0;
 new Handle:BossKV[MAXSPECIALS];
@@ -1447,7 +1448,7 @@ public Action:Timer_Announce(Handle:hTimer)
 			case 5:
 			{
 				announcecount=0;
-				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxversion]);
+				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxVersion]);
 			}
 			default: 
 			{
@@ -1819,7 +1820,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	CreateTimer(9.1, StartBossTimer);
 	CreateTimer(9.6, MessageTimer);
 
-	for(new entity=MaxClients+1; entity<ME; entity++)
+	for(new entity=MaxClients+1; entity<MAXENTITIES; entity++)
 	{
 		if(!IsValidEdict(entity))
 		{
@@ -2028,6 +2029,11 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			{
 				isBossAlive=true;
 				temp=client;
+			}
+
+			for(new slot=0; slot<8; slot++)
+			{
+				BossCharge[client][slot]=0.0;
 			}
 		}
 		else if(IsValidClient(client))
@@ -2936,7 +2942,6 @@ public Action:MakeBoss(Handle:hTimer, any:client)
 
 	EquipBoss(client); 	
 	KSpreeCount[client]=0;
-	BossCharge[client][0]=0.0;
 	SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
 	SetClientQueuePoints(Boss[client], 0);
 	return Plugin_Continue;
@@ -4460,74 +4465,95 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 public Action:DoTaunt(client, const String:command[], argc)
 {
 	if(!Enabled)
+	{
 		return Plugin_Continue;
+	}
 	else
 	{
 		if(CheckRoundState()==0)
-			return Plugin_Handled;
-		else
-			if(!IsBoss(client))
-				return Plugin_Continue;
-	}
-	if(!IsPlayerAlive(client) || TF2_IsPlayerInCondition(client, TFCond_Taunting))
-		return Plugin_Handled;
-	
-	new index=GetBossIndex(client);
-	if(index==-1 || !Boss[index] || !IsValidEdict(Boss[index]))
-		return Plugin_Continue;
-	if(RoundFloat(BossCharge[index][0])==100)
-	{
-		decl i,j,count;
-		decl String:s[10];
-		decl String:lives[MAXRANDOMS][3];
-		for(i=1; i<MAXRANDOMS; i++)
 		{
-			Format(s,10,"ability%i",i);
-			KvRewind(BossKV[Special[index]]);
-			if(KvJumpToKey(BossKV[Special[index]],s))
+			return Plugin_Handled;
+		}
+		else
+		{
+			if(!IsBoss(client))
 			{
-				if(KvGetNum(BossKV[Special[index]], "arg0",0))
-					continue;
-				KvGetString(BossKV[Special[index]], "life",s,10); 		
-				if(!s[0])
+				return Plugin_Continue;
+			}
+		}
+	}
+
+	if(!IsPlayerAlive(client) || TF2_IsPlayerInCondition(client, TFCond_Taunting))
+	{
+		return Plugin_Handled;
+	}
+
+	new boss=GetBossIndex(client);
+	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]))
+	{
+		return Plugin_Continue;
+	}
+
+	if(RoundFloat(BossCharge[boss][0])==100)
+	{
+		decl String:ability[10];
+		decl String:lives[MAXRANDOMS][3];
+		for(new i=1; i<MAXRANDOMS; i++)
+		{
+			Format(ability, sizeof(ability), "ability%i", i);
+			KvRewind(BossKV[Special[boss]]);
+			if(KvJumpToKey(BossKV[Special[boss]], ability))
+			{
+				if(KvGetNum(BossKV[Special[boss]], "arg0", 0))
 				{
-					decl String:ability_name[64], String:plugin_name[64];
-					KvGetString(BossKV[Special[index]], "plugin_name",plugin_name,64);
-					KvGetString(BossKV[Special[index]], "name",ability_name,64);
-					UseAbility(ability_name,plugin_name,index,0);
+					continue;
+				}
+
+				KvGetString(BossKV[Special[boss]], "life", ability, sizeof(ability));
+				if(!ability[0])
+				{
+					decl String:abilityName[64], String:pluginName[64];
+					KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+					KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+					UseAbility(abilityName, pluginName, boss, 0);
 				}
 				else	
 				{
-					count=ExplodeString(s, " ", lives, MAXRANDOMS, 3);
-					for(j=0; j<count; j++)
-						if(StringToInt(lives[j])==BossLives[index])
+					new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+					for(new j=0; j<count; j++)
+					{
+						if(StringToInt(lives[j])==BossLives[boss])
 						{
-							decl String:ability_name[64], String:plugin_name[64];
-							KvGetString(BossKV[Special[index]], "plugin_name",plugin_name,64);
-							KvGetString(BossKV[Special[index]], "name",ability_name,64);
-							UseAbility(ability_name,plugin_name,index,0);
+							decl String:abilityName[64], String:pluginName[64];
+							KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+							KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+							UseAbility(abilityName, pluginName, boss, 0);
 							break;
 						}
+					}
 				}					
 			}
 		}
 		
-		decl Float:pos[3];
-		GetEntPropVector(client, Prop_Send, "m_vecOrigin", pos);
-		decl String:s2[PLATFORM_MAX_PATH];
-		if(RandomSoundAbility("sound_ability",s2,PLATFORM_MAX_PATH))
+		decl Float:position[3];
+		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
+
+		decl String:sound[PLATFORM_MAX_PATH];
+		if(RandomSoundAbility("sound_ability", sound, PLATFORM_MAX_PATH))
 		{
-			FF2flags[Boss[index]]|=FF2FLAG_TALKING;
-			EmitSoundToAll(s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
-			EmitSoundToAll(s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
+			FF2flags[Boss[boss]]|=FF2FLAG_TALKING;
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
 		
-			for(i=1;  i<=MaxClients;  i++)
-				if(IsClientInGame(i) && i!=Boss[index])
+			for(new target=1; target<=MaxClients; target++)
+			{
+				if(IsClientInGame(target) && target!=Boss[boss])
 				{
-					EmitSoundToClient(i,s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
-					EmitSoundToClient(i,s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
 				}
-			FF2flags[Boss[index]]&=~FF2FLAG_TALKING;
+			}
+			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
 		}
 	}
 	return Plugin_Continue;
@@ -4699,7 +4725,7 @@ OnPlayerDeath(client, attacker, bool:fake=false)
 	{
 		decl String:name[PLATFORM_MAX_PATH];
 		FakeClientCommand(client, "destroy 2");
-		for(new entity=MaxClients+1; entity<ME; entity++)
+		for(new entity=MaxClients+1; entity<MAXENTITIES; entity++)
 		{
 			if(IsValidEdict(entity))
 			{
@@ -4768,13 +4794,18 @@ public Action:Timer_Damage(Handle:hTimer,any:id)
 public Action:event_deflect(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled || GetEventInt(event, "weaponid"))
-		return Plugin_Continue;
-	new index=GetBossIndex(GetClientOfUserId(GetEventInt(event, "ownerid")));
-	if(index!=-1)
 	{
-		BossCharge[index][0]+=7;
-		if(BossCharge[index][0]>100)
-			BossCharge[index][0]=100.0;
+		return Plugin_Continue;
+	}
+
+	new boss=GetBossIndex(GetClientOfUserId(GetEventInt(event, "ownerid")));
+	if(boss!=-1 && BossCharge[boss][0]<100)
+	{
+		BossCharge[boss][0]+=7;
+		if(BossCharge[boss][0]>100)
+		{
+			BossCharge[boss][0]=100.0;
+		}
 	}
 	return Plugin_Continue;
 }
@@ -4783,14 +4814,18 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 {
 	new client=BfReadByte(bf);
 	new victim=BfReadByte(bf);
-	new index=GetBossIndex(victim);
-	if(index==-1) return Plugin_Continue;
-	new jar=GetPlayerWeaponSlot(client, 1);
-	if(jar!=-1 && GetEntProp(jar, Prop_Send, "m_iItemDefinitionIndex")==58 && GetEntProp(jar, Prop_Send, "m_iEntityLevel")!=-122)
+	new boss=GetBossIndex(victim);
+	if(boss!=-1)
 	{
-		BossCharge[index][0]-=8.0;
-		if(BossCharge[index][0]<0)
-			BossCharge[index][0]=0.0;
+		new jarate=GetPlayerWeaponSlot(client, 1);
+		if(jarate!=-1 && GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex")==58 && GetEntProp(jarate, Prop_Send, "m_iEntityLevel")!=-122 && BossCharge[boss][0]>0)  //Obviously, Jarate
+		{
+			BossCharge[boss][0]-=8.0;
+			if(BossCharge[boss][0]<0)
+			{
+				BossCharge[boss][0]=0.0;
+			}
+		}
 	}
 	return Plugin_Continue;
 }
@@ -5332,10 +5367,13 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 355:  //Fan O' War
 					{
-						BossCharge[boss][0]-=5.0;
-						if(BossCharge[boss][0]<0)
+						if(BossCharge[boss][0]>0)
 						{
-							BossCharge[boss][0]=0.0;
+							BossCharge[boss][0]-=5.0;
+							if(BossCharge[boss][0]<0)
+							{
+								BossCharge[boss][0]=0.0;
+							}
 						}
 					}
 					case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander
@@ -6643,7 +6681,7 @@ public FF2PanelH(Handle:menu, MenuAction:action, param1, param2)
 			case 2:
 				HelpPanel2(param1);
 			case 3:
-				NewPanel(param1, maxversion);
+				NewPanel(param1, maxVersion);
 			case 4:
 				QueuePanelCmd(param1,0);
 			case 5:
@@ -6703,8 +6741,8 @@ public NewPanelH(Handle:menu, MenuAction:action, param1, param2)
 			}
 			case 2:
 			{
-				if(curHelp[param1]>=maxversion)
-					NewPanel(param1, maxversion);
+				if(curHelp[param1]>=maxVersion)
+					NewPanel(param1, maxVersion);
 				else
 					NewPanel(param1, ++curHelp[param1]);
 			}
@@ -6716,25 +6754,25 @@ public NewPanelH(Handle:menu, MenuAction:action, param1, param2)
 public Action:NewPanelCmd(client, args)
 {
 	if(!IsValidClient(client)) return Plugin_Continue;
-	NewPanel(client, maxversion);
+	NewPanel(client, maxVersion);
 	return Plugin_Handled;
 }
-public Action:NewPanel(client, versionindex)
+public Action:NewPanel(client, versionIndex)
 {
 	if(!Enabled2)
 	{
 		return Plugin_Continue;
 	}
 
-	curHelp[client]=versionindex;
+	curHelp[client]=versionIndex;
 	new Handle:panel=CreatePanel();
 	decl String:whatsNew[90];
 
 	SetGlobalTransTarget(client);
-	Format(whatsNew, 90, "=%t:=", "whatsnew", ff2versiontitles[versionindex], ff2versiondates[versionindex]);
+	Format(whatsNew, 90, "=%t:=", "whatsnew", ff2versiontitles[versionIndex], ff2versiondates[versionIndex]);
 	SetPanelTitle(panel, whatsNew);
-	FindVersionData(panel, versionindex);
-	if(versionindex>0)
+	FindVersionData(panel, versionIndex);
+	if(versionIndex>0)
 	{
 		Format(whatsNew, 90, "%t", "older");
 	}
@@ -6744,7 +6782,7 @@ public Action:NewPanel(client, versionindex)
 	}
 
 	DrawPanelItem(panel, whatsNew);  
-	if(versionindex<maxversion)
+	if(versionIndex<maxVersion)
 	{
 		Format(whatsNew, 90, "%t", "newer");
 	}
@@ -7189,11 +7227,11 @@ stock SetBossHealthFix(client, oldHealth)  //Wat.  TODO: 2.0.0
 	SetEntProp(client, Prop_Send, "m_iHealth", originalHealth);
 }
 
-UseAbility(const String:ability_name[],const String:plugin_name[], index, slot, buttonmode=0)
+UseAbility(const String:ability_name[], const String:plugin_name[], client, slot, buttonMode=0)
 {
 	new bool:enabled=true;
 	Call_StartForward(PreAbility);
-	Call_PushCell(index);
+	Call_PushCell(client);
 	Call_PushString(plugin_name);
 	Call_PushString(ability_name);
 	Call_PushCell(slot);
@@ -7201,97 +7239,114 @@ UseAbility(const String:ability_name[],const String:plugin_name[], index, slot, 
 	Call_Finish();
 
 	if(!enabled)
+	{
 		return;
-	
-	new Action:act=Plugin_Continue;
+	}
+
+	new Action:action=Plugin_Continue;
 	Call_StartForward(OnAbility);
-	Call_PushCell(index);
+	Call_PushCell(client);
 	Call_PushString(plugin_name);
 	Call_PushString(ability_name);
 	if(slot==-1)
 	{
 		Call_PushCell(0);
-		Call_Finish(act);
+		Call_Finish(action);
 	}
 	else if(!slot)
 	{
-		FF2flags[Boss[index]]&=~FF2FLAG_BOTRAGE; 	
+		FF2flags[Boss[client]]&=~FF2FLAG_BOTRAGE; 	
 		Call_PushCell(0);
-		Call_Finish(act);
-		BossCharge[index][slot]=0.0;
+		Call_Finish(action);
+		BossCharge[client][slot]=0.0;
 	}
 	else
 	{
 		SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-		new RainbowDash=GetClientButtons(Boss[index]);
-		decl button;
-		switch(buttonmode)
+		new button;
+		switch(buttonMode)
 		{
-			//case 0: it's a taunt!
-			case 2: button=IN_RELOAD;
-			default: button=IN_DUCK | IN_ATTACK2;
-		}
-		if(RainbowDash & button)
-		{
-			if(!(FF2flags[Boss[index]] & FF2FLAG_USINGABILITY))
+			case 2:
 			{
-				FF2flags[Boss[index]]|=FF2FLAG_USINGABILITY;
-				switch(buttonmode)
+				button=IN_RELOAD;
+			}
+			default:
+			{
+				button=IN_DUCK|IN_ATTACK2;
+			}
+		}
+
+		if(GetClientButtons(Boss[client]) & button)
+		{
+			if(!(FF2flags[Boss[client]] & FF2FLAG_USINGABILITY))
+			{
+				FF2flags[Boss[client]]|=FF2FLAG_USINGABILITY;
+				switch(buttonMode)
 				{
-					//case 0: it's a taunt!
-					case 2: SetInfoCookies(Boss[index],0,CheckInfoCookies(Boss[index],0)-1);
-					default: SetInfoCookies(Boss[index],1,CheckInfoCookies(Boss[index],1)-1);
+					case 2:
+					{
+						SetInfoCookies(Boss[client], 0, CheckInfoCookies(Boss[client], 0)-1);
+					}
+					default:
+					{
+						SetInfoCookies(Boss[client], 1, CheckInfoCookies(Boss[client], 1)-1);
+					}
 				}
 			}
-			if(BossCharge[index][slot]>=0)
+
+			if(BossCharge[client][slot]>=0)
 			{
 				Call_PushCell(2);
-				Call_Finish(act);
-				new Float:see=100.0*0.2/GetAbilityArgumentFloat(index,plugin_name,ability_name,1,1.5);
-				if(BossCharge[index][slot]+see<100)
-					BossCharge[index][slot]+=see;
+				Call_Finish(action);
+				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(client, plugin_name, ability_name, 1, 1.5);
+				if(BossCharge[client][slot]+charge<100)
+				{
+					BossCharge[client][slot]+=charge;
+				}
 				else
-					BossCharge[index][slot]=100.0;
+				{
+					BossCharge[client][slot]=100.0;
+				}
 			}
 			else
 			{
 				Call_PushCell(1);
-				Call_Finish(act);
-				BossCharge[index][slot]+=0.2;
+				Call_Finish(action);
+				BossCharge[client][slot]+=0.2;
 			}
 		}
-		else if(BossCharge[index][slot]>0.3)
+		else if(BossCharge[client][slot]>0.3)
 		{	
-			new Float:ang[3];
-			GetClientEyeAngles(Boss[index], ang);
-			if(ang[0]<-45.0)
+			new Float:angles[3];
+			GetClientEyeAngles(Boss[client], angles);
+			if(angles[0]<-45.0)
 			{
 				Call_PushCell(3);
-				Call_Finish(act);
+				Call_Finish(action);
 				new Handle:data;
-				CreateDataTimer(0.1,Timer_UseBossCharge,data);
-				WritePackCell(data, index);
+				CreateDataTimer(0.1, Timer_UseBossCharge, data);
+				WritePackCell(data, client);
 				WritePackCell(data, slot);
-				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(index,plugin_name,ability_name,2,5.0));
+				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(client, plugin_name, ability_name, 2, 5.0));
 				ResetPack(data);
 			}
 			else
 			{
 				Call_PushCell(0);
-				Call_Finish(act);
-				BossCharge[index][slot]=0.0;
+				Call_Finish(action);
+				BossCharge[client][slot]=0.0;
 			}
 		}
-		else if(BossCharge[index][slot]<0)
+		else if(BossCharge[client][slot]<0)
 		{
 			Call_PushCell(1);
-			Call_Finish(act);
-			BossCharge[index][slot]+=0.2;
+			Call_Finish(action);
+			BossCharge[client][slot]+=0.2;
 		}
 		else
 		{
 			Call_PushCell(0);
-			Call_Finish(act);
+			Call_Finish(action);
 		}
 	}
 }
@@ -7363,16 +7418,16 @@ public Native_GetHealthMax(Handle:plugin, numParams)
 
 public Native_GetBossCharge(Handle:plugin, numParams)
 {
-	new index=GetNativeCell(1);
+	new client=GetNativeCell(1);
 	new slot=GetNativeCell(2);
-	return _:BossCharge[index][slot];
+	return _:BossCharge[client][slot];
 }
 
 public Native_SetBossCharge(Handle:plugin, numParams)
 {
-	new index=GetNativeCell(1);
+	new client=GetNativeCell(1);
 	new slot=GetNativeCell(2);
-	BossCharge[index][slot]=Float:GetNativeCell(3);
+	BossCharge[client][slot]=Float:GetNativeCell(3);
 }
 
 public Native_GetRoundState(Handle:plugin, numParams)

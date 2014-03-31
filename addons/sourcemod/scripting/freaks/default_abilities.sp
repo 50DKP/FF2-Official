@@ -281,8 +281,8 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 		}
 		case 3:
 		{
-			new Action:action=Plugin_Continue;
 			new bool:superJump=enableSuperDuperJump[client];
+			new Action:action=Plugin_Continue;
 			Call_StartForward(OnHaleJump);
 			Call_PushCellRef(superJump);
 			Call_Finish(action);
@@ -297,10 +297,9 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 
 			decl Float:position[3];
 			decl Float:velocity[3];
-
 			GetEntPropVector(boss, Prop_Send, "m_vecOrigin", position);
 			GetEntPropVector(boss, Prop_Data, "m_vecVelocity", velocity);
-			
+
 			if(GetConVarBool(cvarOldJump))
 			{
 				if(enableSuperDuperJump[client])
