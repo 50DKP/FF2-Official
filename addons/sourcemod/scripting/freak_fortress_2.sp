@@ -32,7 +32,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 2"
+#define PLUGIN_VERSION "1.10.0 Beta 3"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -101,14 +101,15 @@ new Handle:cvarCrits;
 new Handle:cvarFirstRound;
 new Handle:cvarCircuitStun;
 new Handle:cvarSpecForceBoss;
-new Handle:cvarcountdownTime;
+new Handle:cvarCountdownPlayers;
+new Handle:cvarCountdownTime;
+new Handle:cvarCountdownHealth;
 new Handle:cvarEnableEurekaEffect;
 new Handle:cvarForceBossTeam;
 new Handle:cvarHealthBar;
 new Handle:cvarAllowSpectators;
 new Handle:cvarHalloween;
 new Handle:cvarLastPlayerGlow;
-new Handle:cvarCountdownHealth;
 new Handle:cvarDebug;
 new Handle:cvarGoombaDamage;
 new Handle:cvarBossRTD;
@@ -133,6 +134,7 @@ new AliveToEnable=5;
 new PointType=0;
 new bool:BossCrits=true;
 new Float:circuitStun=0.0;
+new countdownPlayers=1;
 new countdownTime=120;
 new countdownHealth=2000;
 new bool:lastPlayerGlow=true;
@@ -268,6 +270,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "7) Fixed sentries not re-activating after being stunned (Wliu)");
 			DrawPanelText(panel, "7) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
 			DrawPanelText(panel, "8) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+			DrawPanelText(panel, "9) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
 		}
 		case 33:  //1.9.2
 		{
@@ -644,14 +647,15 @@ public OnPluginStart()
 	cvarCrits=CreateConVar("ff2_crits", "1", "Can Boss get crits?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarFirstRound=CreateConVar("ff2_first_round", "0", "0-Make the first round arena so that more people can join, 1-Make all rounds FF2", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCircuitStun=CreateConVar("ff2_circuit_stun", "2", "Amount of seconds the Short Circuit stuns the boss for.  0 to disable", FCVAR_PLUGIN, true, 0.0);
-	cvarcountdownTime=CreateConVar("ff2_countdown", "120", "Amount of seconds until the round ends in a stalemate (begins when it becomes 1v1)", FCVAR_PLUGIN);
+	cvarCountdownPlayers=CreateConVar("ff2_countdown_players", "1", "Amount of players until the countdown timer starts (0 to disable)", FCVAR_PLUGIN, true, 0.0);
+	cvarCountdownTime=CreateConVar("ff2_countdown", "120", "Amount of seconds until the round ends in a stalemate", FCVAR_PLUGIN);
+	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops", FCVAR_PLUGIN, true, 0.0);
 	cvarSpecForceBoss=CreateConVar("ff2_spec_force_boss", "0", "0-Spectators are excluded from the queue system, 1-Spectators are counted in the queue system", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarEnableEurekaEffect=CreateConVar("ff2_enable_eureka", "0", "0-Disable the Eureka Effect, 1-Enable the Eureka Effect", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarHalloween=CreateConVar("ff2_halloween", "2", "0-Disable Halloween mode, 1-Enable Halloween mode, 2-Use TF2 logic (tf_forced_holiday 2)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (Requires RTD plugin)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -678,7 +682,8 @@ public OnPluginStart()
 	HookConVarChange(cvarCrits, CvarChange);
 	HookConVarChange(cvarCircuitStun, CvarChange);
 	HookConVarChange(cvarHealthBar, HealthbarEnableChanged);
-	HookConVarChange(cvarcountdownTime, CvarChange);
+	HookConVarChange(cvarCountdownPlayers, CvarChange);
+	HookConVarChange(cvarCountdownTime, CvarChange);
 	HookConVarChange(cvarCountdownHealth, CvarChange);
 	HookConVarChange(cvarLastPlayerGlow, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
@@ -1182,9 +1187,17 @@ public LoadCharacter(const String:character[])
 	}
 	BossKV[Specials]=CreateKeyValues("character");
 	FileToKeyValues(BossKV[Specials], config);
-	for(new n=1; ; n++)
+
+	new version=KvGetNum(BossKV[Specials], "version", 1);
+	if(version!=1)
+	{
+		LogError("[FF2] Character %s is only compatible with FF2 v%i!", version);
+		return;
+	}
+
+	for(new i=1; ; i++)
 	{		
-		Format(config, 10, "ability%i", n);
+		Format(config, 10, "ability%i", i);
 		if(KvJumpToKey(BossKV[Specials], config))
 		{
 			decl String:plugin_name[64];
@@ -1201,17 +1214,16 @@ public LoadCharacter(const String:character[])
 			break;
 		}
 	}
-
 	KvRewind(BossKV[Specials]);
-	decl String:s2[PLATFORM_MAX_PATH];
-	decl String:s3[64];
+
+	decl String:file[PLATFORM_MAX_PATH];
+	decl String:section[64];
 	KvSetString(BossKV[Specials], "filename", character);
 	KvGetString(BossKV[Specials], "name", config, PLATFORM_MAX_PATH);
 	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "sound_block_vo", 0);
 	BossSpeed[Specials]=KvGetFloat(BossKV[Specials], "maxspeed", 340.0);
 	BossRageDamage[Specials]=KvGetFloat(BossKV[Specials], "ragedamage", 1900.0);
 	KvGotoFirstSubKey(BossKV[Specials]);
-	decl i, is;
 	if(halloween)
 	{
 		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters_halloween.cfg");
@@ -1223,45 +1235,52 @@ public LoadCharacter(const String:character[])
 
 	while(KvGotoNextKey(BossKV[Specials]))
 	{	
-		KvGetSectionName(BossKV[Specials], s3, 64);
-		if(!strcmp(s3,"download"))
+		KvGetSectionName(BossKV[Specials], section, 64);
+		if(!strcmp(section, "download"))
 		{
-			for(i=1; ; i++)
+			for(new i=1; ; i++)
 			{
-				IntToString(i,s2,4);
-				KvGetString(BossKV[Specials], s2, config, PLATFORM_MAX_PATH);
+				IntToString(i, file, 4);
+				KvGetString(BossKV[Specials], file, config, PLATFORM_MAX_PATH);
 				if(!config[0])
+				{
 					break;
+				}
 				AddFileToDownloadsTable(config);
 			}
 		}
-		else if(!strcmp(s3,"mod_download"))
+		else if(!strcmp(section, "mod_download"))
 		{	
-			for(i=1; ; i++)
+			for(new i=1; ; i++)
 			{
-				IntToString(i,s2,4);
-				KvGetString(BossKV[Specials], s2, config, PLATFORM_MAX_PATH);
+				IntToString(i, file, 4);
+				KvGetString(BossKV[Specials], file, config, PLATFORM_MAX_PATH);
 				if(!config[0])
-					break;
-				for(is=0;  is<sizeof(extensions);  is++)
 				{
-					Format(s2,PLATFORM_MAX_PATH,"%s%s",config,extensions[is]);
-					AddFileToDownloadsTable(s2);
+					break;
+				}
+
+				for(new extension=0; extension<sizeof(extensions); extension++)
+				{
+					Format(file, PLATFORM_MAX_PATH, "%s%s", config, extensions[extension]);
+					AddFileToDownloadsTable(file);
 				}
 			}
 		}
-		else if(!strcmp(s3,"mat_download"))
+		else if(!strcmp(section, "mat_download"))
 		{	
-			for(i=1; ; i++)
+			for(new i=1; ; i++)
 			{
-				IntToString(i,s2,4);
-				KvGetString(BossKV[Specials], s2, config, PLATFORM_MAX_PATH);
+				IntToString(i, file, 4);
+				KvGetString(BossKV[Specials], file, config, PLATFORM_MAX_PATH);
 				if(!config[0])
+				{
 					break;
-				Format(s2,PLATFORM_MAX_PATH,"%s.vtf",config);
-				AddFileToDownloadsTable(s2);
-				Format(s2,PLATFORM_MAX_PATH,"%s.vmt",config);
-				AddFileToDownloadsTable(s2);
+				}
+				Format(file, PLATFORM_MAX_PATH, "%s.vtf", config);
+				AddFileToDownloadsTable(file);
+				Format(file, PLATFORM_MAX_PATH, "%s.vmt", config);
+				AddFileToDownloadsTable(file);
 			}
 		}
 	}
@@ -1353,7 +1372,11 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		circuitStun=StringToFloat(newValue);
 	}
-	else if(convar==cvarcountdownTime)
+	else if(convar==cvarCountdownPlayers)
+	{
+		countdownPlayers=StringToInt(newValue);
+	}
+	else if(convar==cvarCountdownTime)
 	{
 		countdownTime=StringToInt(newValue);
 	}
@@ -4859,30 +4882,14 @@ public Action:CheckAlivePlayers(Handle:hTimer)
 	{
 		ForceTeamWin(BossTeam);
 	}
-	else if(RedAlivePlayers==1 && BlueAlivePlayers && !DrawGameTimer)
+	else if(RedAlivePlayers==1 && BlueAlivePlayers && Boss[0] && !DrawGameTimer)
 	{
-		if(BossHealth[0]>countdownHealth && countdownTime>1)
+		decl String:sound[PLATFORM_MAX_PATH];
+		if(RandomSound("sound_lastman", sound, PLATFORM_MAX_PATH))
 		{
-			if(FindEntityByClassname2(-1, "team_control_point")!=-1)
-			{
-				timeleft=countdownTime;
-				DrawGameTimer=CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-				EmitSoundToAll("vo/announcer_ends_2min.wav");
-				EmitSoundToAll("vo/announcer_ends_2min.wav");
-			}
+			EmitSoundToAll(sound);
+			EmitSoundToAll(sound);
 		}
-		else if(Boss[0])
-		{
-			decl String:sound[PLATFORM_MAX_PATH];
-			if(RandomSound("sound_lastman", sound, PLATFORM_MAX_PATH))
-			{
-				decl Float:pos[3];
-				GetEntPropVector(Boss[0], Prop_Send, "m_vecOrigin", pos);
-				EmitSoundToAll(sound);
-				EmitSoundToAll(sound);
-			}
-		}
-		
 	}
 	else if(!PointType && RedAlivePlayers<=(AliveToEnable=GetConVarInt(cvarAliveToEnable)) && !executed)
 	{
@@ -4908,6 +4915,17 @@ public Action:CheckAlivePlayers(Handle:hTimer)
 		}
 		SetControlPoint(true);
 		executed=true;
+	}
+
+	if(RedAlivePlayers<=countdownPlayers && BossHealth[0]>countdownHealth && countdownTime>1)
+	{
+		if(FindEntityByClassname2(-1, "team_control_point")!=-1)
+		{
+			timeleft=countdownTime;
+			DrawGameTimer=CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+			EmitSoundToAll("vo/announcer_ends_2min.wav");
+			EmitSoundToAll("vo/announcer_ends_2min.wav");
+		}
 	}
 	return Plugin_Continue;
 }
