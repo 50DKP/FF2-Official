@@ -170,6 +170,7 @@ new healthBar=-1;
 new g_Monoculus=-1;
 
 static bool:executed=false;
+static bool:executed2=false;
 
 static const String:ff2versiontitles[][]=
 {
@@ -247,8 +248,8 @@ static const String:ff2versiondates[][]=
 	"March 18, 2014",	//1.9.1
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
-	"March 31, 2014",	//1.10.0
-	"March 31, 2014"	//1.10.0
+	"April 1, 2014",	//1.10.0
+	"April 1, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -257,7 +258,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 	{
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "1) Integrated Goomba Stomp and RTD (WildCard65)");
+			DrawPanelText(panel, "1) Balanced Goomba Stomp and RTD (WildCard65)");
 			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicided at the beginning of the round (Wliu)");
 			DrawPanelText(panel, "3) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
 			DrawPanelText(panel, "4) Fixed players with 0 damage rarely showing up as 3rd place on the leaderboard (Wliu)");
@@ -1191,7 +1192,7 @@ public LoadCharacter(const String:character[])
 	new version=KvGetNum(BossKV[Specials], "version", 1);
 	if(version!=1)
 	{
-		LogError("[FF2] Character %s is only compatible with FF2 v%i!", version);
+		LogError("[FF2] Character %s is only compatible with FF2 v%i!", character, version);
 		return;
 	}
 
@@ -2024,6 +2025,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	executed=false;
+	executed2=false;
 	new bool:bossWin=false;
 	if((GetEventInt(event, "team")==BossTeam))
 	{
@@ -2966,6 +2968,7 @@ public Action:MakeBoss(Handle:hTimer, any:client)
 
 	EquipBoss(client); 	
 	KSpreeCount[client]=0;
+	BossCharge[client][0]=0.0;
 	SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
 	SetClientQueuePoints(Boss[client], 0);
 	return Plugin_Continue;
@@ -3751,7 +3754,7 @@ public Action:Command_SetNextBoss(client, args)
 			return Plugin_Handled;
 		}
 	}
-	CReplyToCommand(client, "{olive}[FF2]{default} Boss could not be found");
+	CReplyToCommand(client, "{olive}[FF2]{default} Boss could not be found!");
 	return Plugin_Handled;
 }
 
@@ -3764,7 +3767,7 @@ public Action:Command_Points(client, args)
 
 	if(args!=2)
 	{
-		ReplyToCommand(client, "[FF2] Usage: ff2_addpoints <target> <points>");
+		CReplyToCommand(client, "{olive}[FF2]{default} Usage: ff2_addpoints <target> <points>");
 		return Plugin_Handled;
 	}
 
@@ -3807,7 +3810,7 @@ public Action:Command_StopMusic(client, args)
 	}
 
 	Native_StopMusic(INVALID_HANDLE, 0);
-	ReplyToCommand(client, "[FF2] Stopped boss music.");
+	CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music.");
 	return Plugin_Handled;
 }
 
@@ -3816,7 +3819,7 @@ public Action:Command_CharSet(client, args)
 	decl String:arg[32];
 	if(args<1)
 	{
-		ReplyToCommand(client, "[FF2] Usage: ff2_charset <charset>");
+		CReplyToCommand(client, "{olive}[FF2]{default} Usage: ff2_charset <charset>");
 		return Plugin_Handled;
 	}
 	GetCmdArgString(arg, 32);
@@ -3838,12 +3841,12 @@ public Action:Command_CharSet(client, args)
 		KvGetSectionName(Kv, s, 64);
 		if(StrContains(s,arg,false)>=0)
 		{
-			ReplyToCommand(client, "[FF2] Charset for nextmap is %s",s);
+			CReplyToCommand(client, "{default}[FF2]{olive} Charset for nextmap is %s",s);
 			break;
 		}
 		if(!KvGotoNextKey(Kv))
 		{
-			ReplyToCommand(client, "[FF2] ff2_charset: Charset not found ");
+			CReplyToCommand(client, "{default}[FF2]{olive} ff2_charset: Charset not found ");
 			return Plugin_Handled;			
 		}
 	}
@@ -3860,7 +3863,7 @@ public Action:Command_ReloadSubPlugins(client, args)
 		DisableSubPlugins(true);
 		EnableSubPlugins(true);
 	}	
-	ReplyToCommand(client, "[FF2] Subplugins reloaded.");	
+	CReplyToCommand(client, "{olive}[FF2]{default} Reloaded subplugins!");	
 	return Plugin_Handled;
 }
 
@@ -4807,11 +4810,13 @@ public Action:PlaySoundKill(Handle:hTimer,Handle:data)
 	return Plugin_Continue;
 }
 
-public Action:Timer_Damage(Handle:hTimer,any:id)
+public Action:Timer_Damage(Handle:hTimer, any:id)
 {
 	new client=GetClientOfUserId(id);
 	if(IsValidClient(client, false))
+	{
 		CPrintToChat(client,"{olive}[FF2] %t. %t{default}","damage",Damage[client],"scores",RoundFloat(Damage[client]/600.0));
+	}
 	return Plugin_Continue;
 }
 
@@ -4917,7 +4922,7 @@ public Action:CheckAlivePlayers(Handle:hTimer)
 		executed=true;
 	}
 
-	if(RedAlivePlayers<=countdownPlayers && BossHealth[0]>countdownHealth && countdownTime>1)
+	if(RedAlivePlayers<=countdownPlayers && BossHealth[0]>countdownHealth && countdownTime>1 && !executed2)
 	{
 		if(FindEntityByClassname2(-1, "team_control_point")!=-1)
 		{
@@ -4926,6 +4931,7 @@ public Action:CheckAlivePlayers(Handle:hTimer)
 			EmitSoundToAll("vo/announcer_ends_2min.wav");
 			EmitSoundToAll("vo/announcer_ends_2min.wav");
 		}
+		executed2=true;
 	}
 	return Plugin_Continue;
 }
@@ -6561,7 +6567,7 @@ public Action:ResetQueuePointsCmd(client, args)
 	//admins
 	if(args!=1)
 	{
-		ReplyToCommand(client, "[FF2] Usage: ff2_resetqueuepoints<target >");
+		CReplyToCommand(client, "{olive}[FF2]{default} Usage: ff2_resetqueuepoints <target>");
 		return Plugin_Handled;
 	}
 

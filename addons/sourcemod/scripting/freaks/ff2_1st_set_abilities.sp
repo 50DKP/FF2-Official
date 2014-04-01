@@ -616,7 +616,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Floa
 	if(buttons & IN_ATTACK)
 	{
 		FF2Flags[boss]&=~FLAG_SLOMOREADYCHANGE;
-		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "rage_matrix_attack", 3, 0.2),Timer_SlomoChange, boss);
+		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "rage_matrix_attack", 3, 0.2), Timer_SlomoChange, boss);
 
 		new Float:bossPosition[3], Float:endPosition[3], Float:eyeAngles[3];
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition); 
