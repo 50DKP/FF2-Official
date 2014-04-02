@@ -32,7 +32,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 3"
+#define PLUGIN_VERSION "1.10.0 Beta 4"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -52,6 +52,14 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #if defined _steamtools_included
 new bool:steamtools=false;
+#endif
+
+#if defined _rtd_included
+new bool:rtd=false;
+#endif
+
+#if defined _goomba_included
+new bool:goomba=false;
 #endif
 
 new bool:smac=false;
@@ -248,8 +256,8 @@ static const String:ff2versiondates[][]=
 	"March 18, 2014",	//1.9.1
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
-	"April 1, 2014",	//1.10.0
-	"April 1, 2014"		//1.10.0
+	"April 2, 2014",	//1.10.0
+	"April 2, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -829,6 +837,20 @@ public OnLibraryAdded(const String:name[])
 	}
 	#endif
 
+	#if defined _rtd_included
+	if(strcmp(name, "TF2: Roll the Dice", false)==0)
+	{
+		rtd=true;
+	}
+	#endif
+
+	#if defined _goomba_included
+	if(strcmp(name, "goomba", false)==0)
+	{
+		goomba=true;
+	}
+	#endif
+
 	#if defined _updater_included && !defined DEV_VERSION
 	if(StrEqual(name, "updater"))
 	{
@@ -848,6 +870,20 @@ public OnLibraryRemoved(const String:name[])
 	if(strcmp(name, "SteamTools", false)==0)
 	{
 		steamtools=false;
+	}
+	#endif
+
+	#if defined _rtd_included
+	if(strcmp(name, "TF2: Roll the Dice", false)==0)
+	{
+		rtd=false;
+	}
+	#endif
+
+	#if defined _goomba_included
+	if(strcmp(name, "goomba", false)==0)
+	{
+		goomba=false;
 	}
 	#endif
 
@@ -901,7 +937,12 @@ public OnConfigsExecuted()
 			}
 		}
 
-		SetupRTD();
+		#if defined _rtd_included
+		if(rtd)
+		{
+			SetupRTD();
+		}
+		#endif
 
 		SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
@@ -3347,7 +3388,7 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 	}
 
 	new entity=-1;
-	if((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
+	while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)  //Demoshields
 	{
 		if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 		{
@@ -5677,7 +5718,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
 {
-	Debug("Stomp happening!");
 	if(!Enabled || !IsValidClient(attacker) || !IsValidClient(victim) || attacker==victim)
 	{
 		return Plugin_Continue;
@@ -5687,7 +5727,6 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 	{
 		decl Float:Pos[3];
 		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", Pos);
-		Debug("Boss is stomping");
 		damageMultiplier=900.0;
 		JumpPower=0.0;
 		PrintCenterText(victim, "Ouch!  Watch your head!");
@@ -5696,11 +5735,11 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 	}
 	else if(IsBoss(victim))
 	{
-		Debug("Boss is being stomped");
 		damageMultiplier=GoombaDamage;
 		JumpPower=5000.0;
 		PrintCenterText(victim, "You were just goomba stomped!");
 		PrintCenterText(attacker, "You just goomba stomped the boss!");
+		UpdateHealthBar();
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
@@ -5732,14 +5771,10 @@ SetupRTD()
 
 public Action:RTD_CanRollDice(client)
 {
-	new Handle:message=CreateHudSynchronizer();
 	if(IsBoss(client) && Enabled)
 	{
 		if(!canBossRTD)
 		{
-			SetHudTextParams(-1.0, 0.5, 6.0, 255, 0, 0, 255, 2);
-			ShowSyncHudText(client, message, "You cannot roll the die as a boss!");
-			CloseHandle(message);
 			return Plugin_Handled;
 		}
 	}
