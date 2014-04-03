@@ -40,8 +40,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart2()
 {
-	cvarOldJump=CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-
 	jumpHUD=CreateHudSynchronizer();
 
 	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
@@ -49,6 +47,11 @@ public OnPluginStart2()
 	HookEvent("player_death", event_player_death);
 
 	LoadTranslations("freak_fortress_2.phrases");
+}
+
+public OnAllPluginsLoaded()
+{
+	cvarOldJump=FindConVar("ff2_oldjump");
 }
 
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
