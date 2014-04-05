@@ -32,7 +32,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 5"
+#define PLUGIN_VERSION "1.10.0 Beta 6"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -255,9 +255,9 @@ static const String:ff2versiondates[][]=
 	"March 18, 2014",	//1.9.1
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
-	"April 3, 2014",	//1.10.0
-	"April 3, 2014",	//1.10.0
-	"April 3, 2014"		//1.10.0
+	"April 4, 2014",	//1.10.0
+	"April 4, 2014",	//1.10.0
+	"April 4, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -286,6 +286,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "10) [Server] Removed ff2_halloween (Wliu)");
 			DrawPanelText(panel, "11) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "12) [Dev] Added more natives and one extra forward (Eggman)");
 		}
 		case 33:  //1.9.2
 		{
@@ -588,6 +589,7 @@ new Handle:OnTriggerHurt;
 new Handle:OnSpecialSelected;
 new Handle:OnAddQueuePoints;
 new Handle:OnLoadCharacterSet;
+new Handle:OnLoseLife;
 
 new bool:bBlockVoice[MAXSPECIALS];
 new Float:BossSpeed[MAXSPECIALS];
@@ -609,8 +611,14 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_GetBossIndex", Native_GetIndex);
 	CreateNative("FF2_GetBossTeam", Native_GetTeam);
 	CreateNative("FF2_GetBossSpecial", Native_GetSpecial);
-	CreateNative("FF2_GetBossMax", Native_GetHealth);
-	CreateNative("FF2_GetBossMaxHealth", Native_GetHealthMax);
+	CreateNative("FF2_GetBossHealth", Native_GetBossHealth);
+	CreateNative("FF2_SetBossHealth", Native_SetBossHealth);
+	CreateNative("FF2_GetBossMaxHealth", Native_GetBossMaxHealth);
+	CreateNative("FF2_SetBossMaxHealth", Native_SetBossMaxHealth);
+	CreateNative("FF2_GetBossLives", Native_GetBossLives);
+	CreateNative("FF2_SetBossLives", Native_SetBossLives);
+	CreateNative("FF2_GetBossMaxLives", Native_GetBossMaxLives);
+	CreateNative("FF2_SetBossMaxLives", Native_SetBossMaxLives);
 	CreateNative("FF2_GetBossCharge", Native_GetBossCharge);
 	CreateNative("FF2_SetBossCharge", Native_SetBossCharge);
 	CreateNative("FF2_GetClientDamage", Native_GetDamage);
@@ -639,6 +647,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	OnSpecialSelected=CreateGlobalForward("FF2_OnSpecialSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String);
 	OnAddQueuePoints=CreateGlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
 	OnLoadCharacterSet=CreateGlobalForward("FF2_OnLoadCharacterSet", ET_Hook, Param_CellByRef, Param_String);
+	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell);
 
 	RegPluginLibrary("freak_fortress_2");
 
@@ -901,80 +910,19 @@ public OnLibraryRemoved(const String:name[])
 
 public OnConfigsExecuted()
 {
-	SetConVarString(FindConVar("ff2_version"), PLUGIN_VERSION);
-	Announce=GetConVarFloat(cvarAnnounce);
-	PointType=GetConVarInt(cvarPointType);
-	PointDelay=GetConVarInt(cvarPointDelay);
-	GoombaDamage=GetConVarFloat(cvarGoombaDamage);
-	canBossRTD=GetConVarBool(cvarBossRTD);
-	if(PointDelay<0)
-	{
-		PointDelay*=-1;
-	}
-	AliveToEnable=GetConVarInt(cvarAliveToEnable);
-	BossCrits=GetConVarBool(cvarCrits);
-	circuitStun=GetConVarFloat(cvarCircuitStun);
-	countdownHealth=GetConVarInt(cvarCountdownHealth);
+	tf_arena_use_queue=GetConVarInt(FindConVar("tf_arena_use_queue"));
+	mp_teams_unbalance_limit=GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
+	tf_arena_first_blood=GetConVarInt(FindConVar("tf_arena_first_blood"));
+	mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
+	tf_scout_hype_pep_max=GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
 
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
-		tf_arena_use_queue=GetConVarInt(FindConVar("tf_arena_use_queue"));
-		mp_teams_unbalance_limit=GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
-		tf_arena_first_blood=GetConVarInt(FindConVar("tf_arena_first_blood"));
-		mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
-		tf_scout_hype_pep_max=GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
-
-		#if defined _rtd_included
-		if(rtd)
-		{
-			SetupRTD();
-		}
-		#endif
-
-		SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
-		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
-		SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
-		SetConVarInt(FindConVar("mp_forcecamera"), 0);
-		SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), 100.0);
-		#if defined _steamtools_included
-		if(steamtools)
-		{
-			decl String:gameDesc[64];
-			Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
-			Steam_SetGameDescription(gameDesc);
-		}
-		#endif
-		Enabled=true;
-		Enabled2=true;
-
-		new Float:time=Announce;
-		if(time>1.0)
-		{
-			CreateTimer(time, Timer_Announce, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-		}
-		CheckToChangeMapDoors();
-		MapHasMusic(true);
-		AddToDownload();
-		strcopy(FF2CharSetStr, 2, "");
-
-		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
-		{
-			ServerCommand("smac_removecvar sv_cheats");
-			ServerCommand("smac_removecvar host_timescale");
-		}
-
-		bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
-		FindHealthBar();
+		EnableFF2();
 	}
 	else
 	{
-		Enabled=false;
-		Enabled2=false;
-		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
-		{
-			ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
-			ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
-		}
+		DisableFF2();
 	}
 }
 
@@ -1024,12 +972,113 @@ public OnMapEnd()
 			KillTimer(MusicTimer);
 			MusicTimer=INVALID_HANDLE;
 		}
+
+		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+		{
+			ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
+			ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
+		}
 	}
 }
 
 public OnPluginEnd()
 {
 	OnMapEnd();
+}
+
+public EnableFF2()
+{
+	Enabled=true;
+	Enabled2=true;
+
+	SetConVarString(FindConVar("ff2_version"), PLUGIN_VERSION);
+	Announce=GetConVarFloat(cvarAnnounce);
+	PointType=GetConVarInt(cvarPointType);
+	PointDelay=GetConVarInt(cvarPointDelay);
+	if(PointDelay<0)
+	{
+		PointDelay*=-1;
+	}
+	GoombaDamage=GetConVarFloat(cvarGoombaDamage);
+	canBossRTD=GetConVarBool(cvarBossRTD);
+	AliveToEnable=GetConVarInt(cvarAliveToEnable);
+	BossCrits=GetConVarBool(cvarCrits);
+	circuitStun=GetConVarFloat(cvarCircuitStun);
+	countdownHealth=GetConVarInt(cvarCountdownHealth);
+
+	SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
+	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
+	SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
+	SetConVarInt(FindConVar("mp_forcecamera"), 0);
+	SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), 100.0);
+
+	new Float:time=Announce;
+	if(time>1.0)
+	{
+		CreateTimer(time, Timer_Announce, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	}
+	CheckToChangeMapDoors();
+	MapHasMusic(true);
+	AddToDownload();
+	strcopy(FF2CharSetStr, 2, "");
+
+	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+	{
+		ServerCommand("smac_removecvar sv_cheats");
+		ServerCommand("smac_removecvar host_timescale");
+	}
+
+	bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
+	FindHealthBar();
+
+	#if defined _rtd_included
+	if(rtd)
+	{
+		SetupRTD();
+	}
+	#endif
+
+	#if defined _steamtools_included
+	if(steamtools)
+	{
+		decl String:gameDesc[64];
+		Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
+		Steam_SetGameDescription(gameDesc);
+	}
+	#endif
+}
+
+public DisableFF2()
+{
+	Enabled=false;
+	Enabled2=false;
+
+	DisableSubPlugins();
+
+	SetConVarInt(FindConVar("tf_arena_use_queue"), tf_arena_use_queue);
+	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
+	SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
+	SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
+	SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), tf_scout_hype_pep_max);
+
+	if(MusicTimer!=INVALID_HANDLE)
+	{
+		KillTimer(MusicTimer);
+		MusicTimer=INVALID_HANDLE;
+	}
+
+	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+	{
+		ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
+		ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
+	}
+
+	#if defined _steamtools_included
+	if(steamtools)
+	{
+		Steam_SetGameDescription("Team Fortress");
+	}
+	#endif
 }
 
 public AddToDownload()
@@ -1041,7 +1090,6 @@ public AddToDownload()
 	if(!FileExists(config))
 	{
 		SetFailState("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
-		return;
 	}
 
 	new Handle:Kv=CreateKeyValues("");
@@ -1411,27 +1459,11 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		if(StringToInt(newValue))
 		{
-			Enabled2=true;
-			#if defined _steamtools_included
-			if(steamtools)
-			{
-				decl String:gameDesc[64];
-				Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
-				Steam_SetGameDescription(gameDesc);
-			}
-			#endif
+			EnableFF2();
 		}
 		else
 		{
-			Enabled2=false;
-			#if defined _steamtools_included
-			if(steamtools)
-			{
-				decl String:gameDesc[64];
-				Format(gameDesc, sizeof(gameDesc), "Team Fortress");
-				Steam_SetGameDescription(gameDesc);
-			}
-			#endif
+			DisableFF2();
 		}
 	}
 }
@@ -1496,26 +1528,20 @@ stock bool:IsFF2Map(bool:forceRecalc=false)
 		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
 		if(!FileExists(config))
 		{
-			LogError("[FF2] Unable to find %s, disabling plugin.", config);
-			isFF2Map=false;
-			found=true;
-			return false;
+			SetFailState("[FF2] Unable to find %s, disabling plugin.", config);
 		}
 
 		new Handle:file=OpenFile(config, "r");
 		if(file==INVALID_HANDLE)
 		{
-			LogError("[FF2] Error reading maps from %s, disabling plugin.", config);
-			isFF2Map=false;
-			found=true;
-			return false;
+			SetFailState("[FF2] Error reading maps from %s, disabling plugin.", config);
 		}
 
-		new pingas=0;
-		while(ReadFileLine(file, config, sizeof(config)) && pingas<100)
+		new tries=0;
+		while(ReadFileLine(file, config, sizeof(config)) && tries<100)
 		{
-			pingas++;
-			if(pingas==100)
+			tries++;
+			if(tries==100)
 			{
 				LogError("[FF2] Breaking infinite loop when trying to check the map.");
 			}
@@ -5036,115 +5062,156 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
+	new boss=GetBossIndex(client);
 	new damage=GetEventInt(event, "damageamount");
 	new custom=GetEventInt(event, "custom");
-	new index=GetBossIndex(client);
-	if(index==-1 || !Boss[index] || !IsValidEdict(Boss[index]) || client==attacker)
-		return Plugin_Continue;
-		
-	if(custom==TF_CUSTOM_TELEFRAG) damage=(IsPlayerAlive(attacker) ? 9001 : 1);
-	if(custom==TF_CUSTOM_BOOTS_STOMP) damage*=5;
-	if(GetEventBool(event, "minicrit") && GetEventBool(event, "allseecrit")) SetEventBool(event, "allseecrit", false);
-	if(custom==TF_CUSTOM_BACKSTAB)
-		damage=RoundFloat(BossHealthMax[index]*(LastBossIndex()+1)*BossLivesMax[index]*(0.12-Stabbed[index]/90));
-	if(custom==TF_CUSTOM_TELEFRAG || custom==TF_CUSTOM_BOOTS_STOMP) SetEventInt(event, "damageamount", damage);
-	
-	decl i;
-	for(i=1; i<BossLives[index]; i++)
+	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]) || client==attacker)
 	{
-		//if(BossHealth[index]>=BossHealthMax[index]*i && BossHealth[index]-damage<BossHealthMax[index]*i)
-		if(BossHealth[index]-damage<BossHealthMax[index]*i)
+		return Plugin_Continue;
+	}
+
+	if(custom==TF_CUSTOM_TELEFRAG)
+	{
+		damage=(IsPlayerAlive(attacker) ? 9001 : 1);
+	}
+	else if(custom==TF_CUSTOM_BOOTS_STOMP)
+	{
+		damage*=5;
+	}
+	else if(custom==TF_CUSTOM_BACKSTAB)
+	{
+		damage=RoundFloat(BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90));
+	}
+
+	if(GetEventBool(event, "minicrit") && GetEventBool(event, "allseecrit"))
+	{
+		SetEventBool(event, "allseecrit", false);
+	}
+
+	if(custom==TF_CUSTOM_TELEFRAG || custom==TF_CUSTOM_BOOTS_STOMP)
+	{
+		SetEventInt(event, "damageamount", damage);
+	}
+	else if(custom==16)
+	{
+		SetEventInt(event, "damageamount", 9001);
+	}
+
+	for(new i=1; i<BossLives[boss]; i++)
+	{
+		if(BossHealth[boss]-damage<BossHealthMax[boss]*i)
 		{	
-			decl String:s[PLATFORM_MAX_PATH];
+			decl String:ability[PLATFORM_MAX_PATH];
 			decl String:lives[MAXRANDOMS][3];
-			decl count,j;
+			new count;
 			for(new n=1; n<MAXRANDOMS; n++)
 			{
-				Format(s,10,"ability%i",n);
-				KvRewind(BossKV[Special[index]]);
-				if(KvJumpToKey(BossKV[Special[index]],s))
+				Format(ability, 10, "ability%i", n);
+				KvRewind(BossKV[Special[boss]]);
+				if(KvJumpToKey(BossKV[Special[boss]], ability))
 				{
-					if(KvGetNum(BossKV[Special[index]], "arg0",0)!=-1)
+					if(KvGetNum(BossKV[Special[boss]], "arg0", 0)!=-1)
+					{
 						continue;
-					KvGetString(BossKV[Special[index]], "life",s,10); 	
-					if(!s[0])
-					{
-						decl String:ability_name[64], String:plugin_name[64];
-						KvGetString(BossKV[Special[index]], "plugin_name",plugin_name,64);
-						KvGetString(BossKV[Special[index]], "name",ability_name,64);
-						UseAbility(ability_name,plugin_name,index,-1);
 					}
-					else		
+
+					KvGetString(BossKV[Special[boss]], "life", ability, 10);
+					if(!ability[0])
 					{
-						count=ExplodeString(s, " ", lives, MAXRANDOMS, 3);
-						for(j=0; j<count; j++)
-							if(StringToInt(lives[j])==BossLives[index])
+						decl String:abilityName[64], String:pluginName[64];
+						KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+						KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+						UseAbility(abilityName, pluginName, boss, -1);
+					}
+					else
+					{
+						count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+						for(new j=0; j<count; j++)
+						{
+							if(StringToInt(lives[j])==BossLives[boss])
 							{
-								decl String:ability_name[64], String:plugin_name[64];
-								KvGetString(BossKV[Special[index]], "plugin_name",plugin_name,64);
-								KvGetString(BossKV[Special[index]], "name",ability_name,64);
-								UseAbility(ability_name,plugin_name,index,-1);
+								decl String:abilityName[64], String:pluginName[64];
+								KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+								KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+								UseAbility(abilityName, pluginName, boss, -1);
 								break;
 							}
+						}
 					}
 				}
 			}
-				
-			BossLives[index]--;
-			decl String:aname[64];
-			KvRewind(BossKV[Special[index]]);
-			KvGetString(BossKV[Special[index]], "name", aname, 64,"=Failed name=");
-			if(BossLives[index]==1)
+
+			new Action:action=Plugin_Continue;
+			Call_StartForward(OnLoseLife);
+			Call_PushCell(boss);
+			Call_Finish(action);
+			if(action!=Plugin_Stop && action!=Plugin_Handled)
 			{
-				strcopy(s,256,"ff2_life_left");
-			}
-			else
-			{
-				strcopy(s,256,"ff2_lives_left");
-			}
-			//Format(s,256,"%t","ff2_lives_left",aname,BossLives[index]); 	
-			for(j=1;  j<=MaxClients; j++)
-				if(IsValidClient(j) && !(FF2flags[j] & FF2FLAG_HUDDISABLED))
+				BossLives[boss]--;
+				decl String:bossName[64];
+				KvRewind(BossKV[Special[boss]]);
+				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
+				if(BossLives[boss]==1)
 				{
-					//SetGlobalTransTarget(j);
-					//PrintCenterText(j,s);
-					PrintCenterText(j,"%t",s,aname,BossLives[index]);
+					strcopy(ability, 256, "ff2_life_left");
 				}
-			if(RandomSound("sound_nextlife",s,PLATFORM_MAX_PATH))
-			{		
-				EmitSoundToAll(s);
-				EmitSoundToAll(s);
+				else
+				{
+					strcopy(ability, 256, "ff2_lives_left");
+				}
+
+				for(new target=1; target<=MaxClients; target++)
+				{
+					if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
+					{
+						PrintCenterText(target, "%t", ability, bossName, BossLives[boss]);
+					}
+				}
+
+				if(RandomSound("sound_nextlife", ability, PLATFORM_MAX_PATH))
+				{		
+					EmitSoundToAll(ability);
+					EmitSoundToAll(ability);
+				}
+				UpdateHealthBar();
 			}
-			
-			UpdateHealthBar();
 		}
 	}
-	BossHealth[index]-=damage;
-	BossCharge[index][0]+=damage*100.0/BossRageDamage[Special[index]];
-	if(custom==16) SetEventInt(event, "damageamount", 9001);
+
+	BossHealth[boss]-=damage;
+	BossCharge[boss][0]+=damage*100.0/BossRageDamage[Special[boss]];
 	Damage[attacker]+=damage;
+
 	new healers[MAXPLAYERS];
-	new healercount=0;
-	for(i=1; i<=MaxClients; i++)
+	new healerCount=0;
+	for(new target=1; target<=MaxClients; target++)
 	{
-		if(IsValidClient(i) && IsPlayerAlive(i) && (GetHealingTarget(i,true)==attacker))
+		if(IsValidClient(target) && IsPlayerAlive(target) && (GetHealingTarget(target, true)==attacker))
 		{
-			healers[healercount]=i;
-			healercount++;
+			healers[healerCount]=target;
+			healerCount++;
 		}
 	}
-	for(i=0; i<healercount; i++)
+
+	for(new target=0; target<healerCount; target++)
 	{
-		if(IsValidClient(healers[i]) && IsPlayerAlive(healers[i]))
+		if(IsValidClient(healers[target]) && IsPlayerAlive(healers[target]))
 		{
-			if(damage<10 || uberTarget[healers[i]]==attacker)
-				Damage[healers[i]]+=damage;
+			if(damage<10 || uberTarget[healers[target]]==attacker)
+			{
+				Damage[healers[target]]+=damage;
+			}
 			else
-				Damage[healers[i]]+=damage/(healercount+1); 	
+			{
+				Damage[healers[target]]+=damage/(healerCount+1);
+			}
 		}
 	}
-	if(BossCharge[index][0]>100)
-		BossCharge[index][0]=100.0;
+
+	if(BossCharge[boss][0]>100)
+	{
+		BossCharge[boss][0]=100.0;
+	}
 	return Plugin_Continue;
 }
 
@@ -5318,17 +5385,17 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					case 593:	//Third Degree
 					{
 						new healers[MAXPLAYERS];
-						new healercount=0;
+						new healerCount=0;
 						for(new healer=1; healer<=MaxClients; healer++)
 						{
 							if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
 							{
-								healers[healercount]=healer;
-								healercount++;
+								healers[healerCount]=healer;
+								healerCount++;
 							}
 						}
 
-						for(new healer=0; healer<healercount; healer++)
+						for(new healer=0; healer<healerCount; healer++)
 						{
 							if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
 							{
@@ -5339,7 +5406,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 									GetEdictClassname(medigun, classname, sizeof(classname));
 									if(strcmp(classname, "tf_weapon_medigun", false)==0)
 									{
-										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healercount);
+										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healerCount);
 										new Float:max=1.0;
 										if(GetEntProp(medigun, Prop_Send, "m_bChargeRelease"))
 										{
@@ -5591,17 +5658,17 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 
 					new healers[MAXPLAYERS];
-					new healercount=0;
+					new healerCount=0;
 					for(new healer=1; healer<=MaxClients; healer++)
 					{
 						if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
 						{
-							healers[healercount]=healer;
-							healercount++;
+							healers[healerCount]=healer;
+							healerCount++;
 						}
 					}
 
-					for(new healer=0; healer<healercount; healer++)
+					for(new healer=0; healer<healerCount; healer++)
 					{
 						if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
 						{
@@ -5611,7 +5678,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 							else
 							{
-								Damage[healers[healer]]+=RoundFloat(changedamage/(healercount+1));
+								Damage[healers[healer]]+=RoundFloat(changedamage/(healerCount+1));
 							}
 						}
 					}
@@ -7437,14 +7504,44 @@ public Native_GetSpecial(Handle:plugin, numParams)
 	return true;
 }
 
-public Native_GetHealth(Handle:plugin, numParams)
+public Native_GetBossHealth(Handle:plugin, numParams)
 {
 	return BossHealth[GetNativeCell(1)];
 }
 
-public Native_GetHealthMax(Handle:plugin, numParams)
+public Native_SetBossHealth(Handle:plugin, numParams)
+{
+	BossHealth[GetNativeCell(1)]=GetNativeCell(2);
+}
+
+public Native_GetBossMaxHealth(Handle:plugin, numParams)
 {
 	return BossHealthMax[GetNativeCell(1)];
+}
+
+public Native_SetBossMaxHealth(Handle:plugin, numParams)
+{
+	BossHealthMax[GetNativeCell(1)]=GetNativeCell(2);
+}
+
+public Native_GetBossLives(Handle:plugin, numParams)
+{
+	return BossLives[GetNativeCell(1)];
+}
+
+public Native_SetBossLives(Handle:plugin, numParams)
+{
+	BossLives[GetNativeCell(1)]=GetNativeCell(2);
+}
+
+public Native_GetBossMaxLives(Handle:plugin, numParams)
+{
+	return BossLivesMax[GetNativeCell(1)];
+}
+
+public Native_SetBossMaxLives(Handle:plugin, numParams)
+{
+	BossLivesMax[GetNativeCell(1)]=GetNativeCell(2);
 }
 
 public Native_GetBossCharge(Handle:plugin, numParams)
