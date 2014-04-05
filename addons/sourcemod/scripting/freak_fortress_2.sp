@@ -6073,16 +6073,16 @@ stock CalcBossHealthMax(index)
 	decl String:formula[128];
 	new String:s[128];
 	new String:s2[2];
-	
+
 	new brackets;
 	new Float:summ[32];
 	new _operator[32];
-		
+
 	KvRewind(BossKV[Special[index]]);
-	KvGetString(BossKV[Special[index]], "health_formula",formula, 128,"((760+n)*n)^1.04");
-	ReplaceString(formula,128," ","");
-	new len=strlen(formula);
-	for(new i=0; i<=len; i++)
+	KvGetString(BossKV[Special[index]], "health_formula", formula, sizeof(formula), "((460+n)*n)^1.075");
+	ReplaceString(formula, sizeof(formula), " ", "");
+	new length=strlen(formula);
+	for(new i=0; i<=length; i++)
 	{			
 		strcopy(s2,2,formula[i]);
 		if((s2[0]>='0' && s2[0]<='9') || s2[0]=='.')
