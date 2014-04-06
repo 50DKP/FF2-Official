@@ -4321,7 +4321,7 @@ public Action:BossTimer(Handle:hTimer)
 			TF2_RemoveCondition(Boss[client], TFCond_MarkedForDeath);
 		}
 
-		if(TF2_IsPlayerInCondition(Boss[client], TFCond_DefenseBuffNoCritBlock) && TF2_IsPlayerInCondition(Boss[client], TFCond_Dazed))
+		if(TF2_IsPlayerInCondition(Boss[client], TFCond:42) && TF2_IsPlayerInCondition(Boss[client], TFCond_Dazed))
 		{
 			TF2_RemoveCondition(Boss[client], TFCond_Dazed);
 		}
