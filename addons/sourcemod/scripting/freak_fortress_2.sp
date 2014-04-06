@@ -214,6 +214,7 @@ static const String:ff2versiontitles[][]=
 	"1.9.1",
 	"1.9.2",
 	"1.9.2",
+	"1.9.3",
 	"1.10.0",
 	"1.10.0",
 	"1.10.0"
@@ -255,6 +256,7 @@ static const String:ff2versiondates[][]=
 	"March 18, 2014",	//1.9.1
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
+	"April 5, 2014",	//1.9.3
 	"April 4, 2014",	//1.10.0
 	"April 4, 2014",	//1.10.0
 	"April 4, 2014"		//1.10.0
@@ -264,7 +266,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 36:  //1.10.0
+		case 37:  //1.10.0
 		{
 			DrawPanelText(panel, "1) Balanced Goomba Stomp and RTD (WildCard65)");
 			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicided at the beginning of the round (Wliu)");
@@ -273,7 +275,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "5) Fixed a !ff2new bug in 1.9.2 where all versions would be shifted by one page (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 35:  //1.10.0
+		case 36:  //1.10.0
 		{
 			DrawPanelText(panel, "6) Fixed ability timers not resetting when the round was over (Wliu)");
 			DrawPanelText(panel, "7) Fixed sentries not re-activating after being stunned (Wliu)");
@@ -282,11 +284,18 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "9) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 34:  //1.10.0
+		case 35:  //1.10.0
 		{
 			DrawPanelText(panel, "10) [Server] Removed ff2_halloween (Wliu)");
 			DrawPanelText(panel, "11) [Server] Moved ff2_oldjump to the main config file (Wliu)");
 			DrawPanelText(panel, "12) [Dev] Added more natives and one extra forward (Eggman)");
+		}
+		case 34:  //1.9.3
+		{
+			DrawPanelText(panel, "1) Fixed a bug in 1.9.2 where the changelog was off by one version (Wliu)");
+			DrawPanelText(panel, "2) Fixed a bug in 1.9.2 where one dead player would not be cloned in rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "3) Fixed a bug in 1.9.2 where sentries would be permanently disabled after a rage (Wliu)");
+			DrawPanelText(panel, "4) [Server] Removed ff2_halloween (Wliu)");
 		}
 		case 33:  //1.9.2
 		{
@@ -294,11 +303,11 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Fixed a bug where last player glow was being incorrectly removed on the boss (Wliu)");
 			DrawPanelText(panel, "3) Fixed a bug where the boss would be assumed dead (Wliu)");
 			DrawPanelText(panel, "4) Fixed having minions on the boss team interfering with certain rage calculations (Wliu)");
-			DrawPanelText(panel, "5) Fixed a rare bug where the rage percentage could go above 100% (Wliu)");
-			DrawPanelText(panel, "See next page for the server changelog (press 1)");
+			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 32:  //1.9.2
 		{
+			DrawPanelText(panel, "5) Fixed a rare bug where the rage percentage could go above 100% (Wliu)");
 			DrawPanelText(panel, "6) [Server] Fixed possible special_noanims errors (Wliu)");
 			DrawPanelText(panel, "7) [Server] Added new arguments to rage_cloneattack-no updates necessary (friagram/Wliu)");
 			DrawPanelText(panel, "8) [Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)");
