@@ -4168,7 +4168,7 @@ public Action:ClientTimer(Handle:hTimer)
 
 			switch(index)
 			{
-				case 16, 56, 58, 203, 305, 1005, 1079, 1092:  //SMG, Huntsman, Jarate, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow, Fortified Compound
+				case 16, 56, 203, 305, 1005, 1079, 1092:  //SMG, Huntsman, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow, Fortified Compound
 				{
 					addthecrit=true;
 				}
@@ -4321,7 +4321,7 @@ public Action:BossTimer(Handle:hTimer)
 			TF2_RemoveCondition(Boss[client], TFCond_MarkedForDeath);
 		}
 
-		if(TF2_IsPlayerInCondition(Boss[client], TFCond:42) && TF2_IsPlayerInCondition(Boss[client], TFCond_Dazed))
+		if(TF2_IsPlayerInCondition(Boss[client], TFCond_DefenseBuffNoCritBlock) && TF2_IsPlayerInCondition(Boss[client], TFCond_Dazed))
 		{
 			TF2_RemoveCondition(Boss[client], TFCond_Dazed);
 		}
@@ -7905,11 +7905,7 @@ public OnTakeDamagePost(client, attacker, inflictor, Float:damage, damagetype)
 			return;
 		}
 
-		if(TF2_IsPlayerInCondition(Boss[boss],TFCond_Jarated))
-		{
-			TF2_RemoveCondition(Boss[boss],TFCond_Jarated);
-		}
-		else if(TF2_IsPlayerInCondition(Boss[boss], TFCond_MarkedForDeath))
+		if(TF2_IsPlayerInCondition(Boss[boss], TFCond_MarkedForDeath))
 		{
 			TF2_RemoveCondition(Boss[boss], TFCond_MarkedForDeath);
 		}

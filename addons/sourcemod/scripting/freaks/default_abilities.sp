@@ -213,9 +213,9 @@ public Action:Timer_StopTaunt(Handle:timer, any:client)
 	if(!GetEntProp(boss, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(boss, Prop_Send, "m_hHighFivePartner")))
 	{
 		TF2_RemoveCondition(boss, TFCond_Taunting);
-		new Float:up[3];
+		/*new Float:up[3];
 		up[2]=220.0;
-		TeleportEntity(boss, NULL_VECTOR, NULL_VECTOR, up);
+		TeleportEntity(boss, NULL_VECTOR, NULL_VECTOR, up);*/
 	}
 	return Plugin_Continue;
 }
