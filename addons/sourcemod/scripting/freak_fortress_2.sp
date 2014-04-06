@@ -30,8 +30,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.9.3 Beta"
-#define DEV_VERSION
+#define PLUGIN_VERSION "1.9.3"
+//#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -251,11 +251,11 @@ stock FindVersionData(Handle:panel, versionindex)
 			DrawPanelText(panel, "2) Fixed a bug where last player glow was being incorrectly removed on the boss (Wliu)");
 			DrawPanelText(panel, "3) Fixed a bug where the boss would be assumed dead (Wliu)");
 			DrawPanelText(panel, "4) Fixed having minions on the boss team interfering with certain rage calculations (Wliu)");
-			DrawPanelText(panel, "5) Fixed a rare bug where the rage percentage could go above 100% (Wliu)");
-			DrawPanelText(panel, "See next page for the server changelog (press 1)");
+			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 32:  //1.9.2
 		{
+			DrawPanelText(panel, "5) Fixed a rare bug where the rage percentage could go above 100% (Wliu)");
 			DrawPanelText(panel, "6) [Server] Fixed possible special_noanims errors (Wliu)");
 			DrawPanelText(panel, "7) [Server] Added new arguments to rage_cloneattack-no updates necessary (friagram/Wliu)");
 			DrawPanelText(panel, "8) [Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)");
