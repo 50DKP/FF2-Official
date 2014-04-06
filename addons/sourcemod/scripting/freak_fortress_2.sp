@@ -117,7 +117,6 @@ new Handle:cvarEnableEurekaEffect;
 new Handle:cvarForceBossTeam;
 new Handle:cvarHealthBar;
 new Handle:cvarAllowSpectators;
-new Handle:cvarHalloween;
 new Handle:cvarLastPlayerGlow;
 new Handle:cvarCountdownHealth;
 new Handle:cvarDebug;
@@ -134,7 +133,7 @@ new Handle:rageHUD;
 new Handle:healthHUD;
 new Handle:timeleftHUD;
 new Handle:abilitiesHUD;
-new Handle:doorchecktimer;
+new Handle:doorCheckTimer;
 
 new bool:Enabled=true;
 new bool:Enabled2=true;
@@ -159,7 +158,7 @@ new RoundCounter;
 new botqueuepoints=0;
 new Float:HPTime;
 new String:currentmap[99];
-new bool:checkdoors=false;
+new bool:checkDoors=false;
 new bool:bMedieval;
 new FF2CharSet;
 new String:FF2CharSetStr[42];
@@ -168,7 +167,6 @@ new tf_arena_use_queue;
 new mp_teams_unbalance_limit;
 new tf_arena_first_blood;
 new mp_forcecamera;
-new bool:halloween;
 new Float:tf_scout_hype_pep_max;
 new Handle:cvarNextmap;
 new bool:areSubPluginsEnabled;
@@ -244,6 +242,7 @@ static const String:ff2versiontitles[][]=
 	"1.9.1",
 	"1.9.2",
 	"1.9.2",
+	"1.9.3",
 	"1.10.0",
 	"1.10.0"
 };
@@ -284,6 +283,7 @@ static const String:ff2versiondates[][]=
 	"March 18, 2014",	//1.9.1
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
+	"April 5, 2014",	//1.9.3
 	"March 29, 2014",	//1.10.0
 	"March 29, 2014"	//1.10.0
 };
@@ -292,7 +292,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 35:  //1.10.0
+		case 36:  //1.10.0
 		{
 			DrawPanelText(panel, "1) Fixed a !ff2new bug in 1.9.2 where all versions would be shifted by one page (Wliu)");
 			DrawPanelText(panel, "2) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
@@ -301,10 +301,17 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "5) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
 			DrawPanelText(panel, "See next page for the server changelog (press 1)");
 		}
-		case 34:  //1.10.0
+		case 35:  //1.10.0
 		{
 			DrawPanelText(panel, "6) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
 			DrawPanelText(panel, "7) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+		}
+		case 34:  //1.9.3
+		{
+			DrawPanelText(panel, "1) Fixed a bug in 1.9.2 where the changelog was off by one version (Wliu)");
+			DrawPanelText(panel, "2) Fixed a bug in 1.9.2 where one dead player would not be cloned in rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "3) Fixed a bug in 1.9.2 where sentries would be permanently disabled after a rage (Wliu)");
+			DrawPanelText(panel, "4) [Server] Removed ff2_halloween (Wliu)");
 		}
 		case 33:  //1.9.2
 		{
@@ -312,11 +319,11 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Fixed a bug where last player glow was being incorrectly removed on the boss (Wliu)");
 			DrawPanelText(panel, "3) Fixed a bug where the boss would be assumed dead (Wliu)");
 			DrawPanelText(panel, "4) Fixed having minions on the boss team interfering with certain rage calculations (Wliu)");
-			DrawPanelText(panel, "5) Fixed a rare bug where the rage percentage could go above 100% (Wliu)");
-			DrawPanelText(panel, "See next page for the server changelog (press 1)");
+			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 32:  //1.9.2
 		{
+			DrawPanelText(panel, "5) Fixed a rare bug where the rage percentage could go above 100% (Wliu)");
 			DrawPanelText(panel, "6) [Server] Fixed possible special_noanims errors (Wliu)");
 			DrawPanelText(panel, "7) [Server] Added new arguments to rage_cloneattack-no updates necessary (friagram/Wliu)");
 			DrawPanelText(panel, "8) [Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)");
@@ -686,7 +693,6 @@ public OnPluginStart()
 	cvarEnableEurekaEffect=CreateConVar("ff2_enable_eureka", "0", "0-Disable the Eureka Effect, 1-Enable the Eureka Effect", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarHalloween=CreateConVar("ff2_halloween", "2", "0-Disable Halloween mode, 1-Enable Halloween mode, 2-Use TF2 logic (tf_forced_holiday 2)", FCVAR_PLUGIN, true, 0.0, true, 2.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -926,29 +932,6 @@ public OnConfigsExecuted()
 		tf_arena_first_blood=GetConVarInt(FindConVar("tf_arena_first_blood"));
 		mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
 		tf_scout_hype_pep_max=GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
-
-		switch(GetConVarInt(cvarHalloween))
-		{
-			case 1:
-			{
-				halloween=true;
-			}
-			case 2:
-			{
-				new TF2Halloween=GetConVarInt(FindConVar("tf_forced_holiday"));
-				if(TF2Halloween==2)
-				{
-					halloween=true;
-				}
-			}
-			default:
-			{
-				halloween=false;
-			}
-		}
-
-		SetupRTD();
-
 		SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
 		SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
@@ -958,14 +941,7 @@ public OnConfigsExecuted()
 		if(steamtools)
 		{
 			decl String:gameDesc[64];
-			if(halloween)
-			{
-				Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s-HALLOWEEN)", PLUGIN_VERSION);
-			}
-			else
-			{
-				Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
-			}
+			Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
 			Steam_SetGameDescription(gameDesc);
 		}
 		#endif
@@ -1008,7 +984,7 @@ public OnMapStart()
 	HPTime=0.0;
 	MusicTimer=INVALID_HANDLE;
 	RoundCounter=0;
-	doorchecktimer=INVALID_HANDLE;
+	doorCheckTimer=INVALID_HANDLE;
 	RoundCount=0;
 	for(new client=0; client<=MaxClients; client++)
 	{
@@ -1061,32 +1037,12 @@ public AddToDownload()
 {
 	Specials=0;
 	decl String:config[PLATFORM_MAX_PATH], String:i_str[4];
-	if(halloween)
-	{
-		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters_halloween.cfg");
-	}
-	else
-	{
-		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
-	}
+	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
 
 	if(!FileExists(config))
 	{
-		if(halloween)
-		{
-			BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
-			if(!FileExists(config))
-			{
-				LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg or characters_halloween.cfg!");
-				return;
-			}
-			PrintToServer("[FF2] Warning: Using default characters.cfg-can not find characters_halloween.cfg!");
-		}
-		else
-		{
-			LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
-			return;
-		}
+		SetFailState("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
+		return;
 	}
 
 	new Handle:Kv=CreateKeyValues("");
@@ -1264,14 +1220,6 @@ public LoadCharacter(const String:character[])
 	BossRageDamage[Specials]=KvGetFloat(BossKV[Specials], "ragedamage", 1900.0);
 	KvGotoFirstSubKey(BossKV[Specials]);
 	decl i, is;
-	if(halloween)
-	{
-		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters_halloween.cfg");
-	}
-	else
-	{
-		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
-	}
 
 	while(KvGotoNextKey(BossKV[Specials]))
 	{	
@@ -1450,14 +1398,7 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 			if(steamtools)
 			{
 				decl String:gameDesc[64];
-				if(halloween)
-				{
-					Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s-HALLOWEEN)", PLUGIN_VERSION);
-				}
-				else
-				{
-					Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
-				}
+				Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
 				Steam_SetGameDescription(gameDesc);
 			}
 			#endif
@@ -1525,7 +1466,7 @@ stock bool:IsFF2Map(bool:forceRecalc=false)
 
 	if(!found)
 	{
-		decl String:s[PLATFORM_MAX_PATH];
+		decl String:config[PLATFORM_MAX_PATH];
 		GetCurrentMap(currentmap, sizeof(currentmap));
 		if(FileExists("bNextMapToFF2"))
 		{
@@ -1533,39 +1474,43 @@ stock bool:IsFF2Map(bool:forceRecalc=false)
 			found=true;
 			return true;
 		}
-		BuildPath(Path_SM, s, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
-		if(!FileExists(s))
+
+		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
+		if(!FileExists(config))
 		{
-			LogError("[FF2] Unable to find %s, disabling plugin.", s);
-			isFF2Map=false;
-			found=true;
-			return false;
+			SetFailState("[FF2] Unable to find %s, disabling plugin.", config);
 		}
-		new Handle:fileh=OpenFile(s, "r");
-		if(fileh==INVALID_HANDLE)
+
+		new Handle:file=OpenFile(config, "r");
+		if(file==INVALID_HANDLE)
 		{
-			LogError("[FF2] Error reading maps from %s, disabling plugin.", s);
-			isFF2Map=false;
-			found=true;
-			return false;
+			SetFailState("[FF2] Error reading maps from %s, disabling plugin.", config);
 		}
+
 		new pingas=0;
-		while(ReadFileLine(fileh, s, sizeof(s)) && (pingas<100))
+		while(ReadFileLine(file, config, sizeof(config)) && pingas<100)
 		{
 			pingas++;
 			if(pingas==100)
-				LogError("[FF2] Breaking infinite loop when trying to check the map.");
-			Format(s, strlen(s)-1, s);
-			if(strncmp(s, "//", 2, false)==0) continue;
-			if((StrContains(currentmap, s, false)==0) || (StrContains(s, "all", false)==0))
 			{
-				CloseHandle(fileh);
+				LogError("[FF2] Breaking infinite loop when trying to check the map.");
+			}
+
+			Format(config, strlen(config)-1, config);
+			if(strncmp(config, "//", 2, false)==0)
+			{
+				continue;
+			}
+
+			if((StrContains(currentmap, config, false)==0) || (StrContains(config, "all", false)==0))
+			{
+				CloseHandle(file);
 				isFF2Map=true;
 				found=true;
 				return true;
 			}
 		}
-		CloseHandle(fileh);
+		CloseHandle(file);
 	}
 	return isFF2Map;
 }
@@ -1592,36 +1537,52 @@ stock bool:MapHasMusic(bool:forceRecalc=false)	//SAAAAAARGE
 	}
 	return hasMusic;
 }
+
 stock bool:CheckToChangeMapDoors()
 {
-	decl String:s[PLATFORM_MAX_PATH];
-	checkdoors=false;
-	BuildPath(Path_SM, s, PLATFORM_MAX_PATH, "configs/freak_fortress_2/doors.cfg");
-	if(!FileExists(s))
+	if(!Enabled || !Enabled2)
 	{
-		if(strncmp(currentmap, "vsh_lolcano_pb1", 15, false)==0)
-			checkdoors=true;
 		return;
 	}
-	new Handle:fileh=OpenFile(s, "r");
-	if(fileh==INVALID_HANDLE)
+
+	decl String:config[PLATFORM_MAX_PATH];
+	checkDoors=false;
+	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/doors.cfg");
+	if(!FileExists(config))
 	{
 		if(strncmp(currentmap, "vsh_lolcano_pb1", 15, false)==0)
-			checkdoors=true;
-		return;
-	}
-	while(!IsEndOfFile(fileh) && ReadFileLine(fileh, s, sizeof(s)))
-	{
-		Format(s, strlen(s)-1, s);
-		if(strncmp(s, "//", 2, false)==0) continue;
-		if(StrContains(currentmap, s, false)!=-1 || StrContains(s, "all", false)==0)
 		{
-			CloseHandle(fileh);
-			checkdoors=true;
+			checkDoors=true;
+		}
+		return;
+	}
+
+	new Handle:file=OpenFile(config, "r");
+	if(file==INVALID_HANDLE)
+	{
+		if(strncmp(currentmap, "vsh_lolcano_pb1", 15, false)==0)
+		{
+			checkDoors=true;
+		}
+		return;
+	}
+
+	while(!IsEndOfFile(file) && ReadFileLine(file, config, sizeof(config)))
+	{
+		Format(config, strlen(config)-1, config);
+		if(strncmp(config, "//", 2, false)==0)
+		{
+			continue;
+		}
+
+		if(StrContains(currentmap, config, false)!=-1 || StrContains(config, "all", false)==0)
+		{
+			CloseHandle(file);
+			checkDoors=true;
 			return;
 		}
 	}
-	CloseHandle(fileh);
+	CloseHandle(file);
 }
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -1907,10 +1868,10 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 public Action:Timer_EnableCap(Handle:timer)
 {
-	if(CheckRoundState()==-1)
+	if(CheckRoundState()==-1 && (Enabled || Enabled2))
 	{
 		SetControlPoint(true);
-		if(checkdoors)
+		if(checkDoors)
 		{
 			new ent=-1;
 			while((ent=FindEntityByClassname2(ent, "func_door"))!=-1)
@@ -1918,8 +1879,11 @@ public Action:Timer_EnableCap(Handle:timer)
 				AcceptEntityInput(ent, "Open");
 				AcceptEntityInput(ent, "Unlock");
 			}
-			if(doorchecktimer==INVALID_HANDLE)
-				doorchecktimer=CreateTimer(5.0, Timer_CheckDoors, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+
+			if(doorCheckTimer==INVALID_HANDLE)
+			{
+				doorCheckTimer=CreateTimer(5.0, Timer_CheckDoors, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+			}
 		}
 	}
 }
@@ -2014,19 +1978,22 @@ public Action:BossInfoTimer_ShowInfo(Handle:hTimer, any:client)
 
 public Action:Timer_CheckDoors(Handle:hTimer)
 {
-	if(!checkdoors)
+	if(!checkDoors)
 	{
-		doorchecktimer=INVALID_HANDLE;
+		doorCheckTimer=INVALID_HANDLE;
 		return Plugin_Stop;
 	}
 
 	if((!Enabled && CheckRoundState()!=-1) || (Enabled && CheckRoundState()!=1))
-		return Plugin_Continue;
-	new ent=-1;
-	while((ent=FindEntityByClassname2(ent, "func_door"))!=-1)
 	{
-		AcceptEntityInput(ent, "Open");
-		AcceptEntityInput(ent, "Unlock");
+		return Plugin_Continue;
+	}
+
+	new entity=-1;
+	while((entity=FindEntityByClassname2(entity, "func_door"))!=-1)
+	{
+		AcceptEntityInput(entity, "Open");
+		AcceptEntityInput(entity, "Unlock");
 	}
 	return Plugin_Continue;
 }
@@ -2132,6 +2099,11 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	Damage[0]=0;
 	for(new client=0; client<=MaxClients; client++)
 	{
+		if(Damage[client]<=0)
+		{
+			continue;
+		}
+
 		if(Damage[client]>=Damage[top[0]])
 		{
 			top[2]=top[1];
@@ -2738,7 +2710,7 @@ public Action:MessageTimer(Handle:hTimer)
 		return Plugin_Continue;
 	}
 
-	if(checkdoors)
+	if(checkDoors)
 	{
 		new entity=-1;
 		while((entity=FindEntityByClassname2(entity, "func_door"))!=-1)
@@ -2747,9 +2719,9 @@ public Action:MessageTimer(Handle:hTimer)
 			AcceptEntityInput(entity, "Unlock");
 		}
 
-		if(doorchecktimer==INVALID_HANDLE)
+		if(doorCheckTimer==INVALID_HANDLE)
 		{
-			doorchecktimer=CreateTimer(5.0, Timer_CheckDoors, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+			doorCheckTimer=CreateTimer(5.0, Timer_CheckDoors, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 		}
 	}
 
@@ -4039,7 +4011,7 @@ public Action:Command_Points(client, args)
 
 		SetClientQueuePoints(target_list[target], GetClientQueuePoints(target_list[target])+points);
 		LogAction(client, target_list[target], "\"%L\" added %d queue points to \"%L\"", client, points, target_list[target]);
-		ReplyToCommand(client, "[FF2] Added %d queue points to %s", points, target_name);
+		CReplyToCommand(client, "{olive}[FF2]{default} Added %d queue points to %s", points, target_name);
 	}
 
 	return Plugin_Handled;
@@ -4067,14 +4039,7 @@ public Action:Command_CharSet(client, args)
 	}
 	GetCmdArgString(arg, 32);
 	decl String:s[PLATFORM_MAX_PATH];
-	if(halloween)
-	{
-		BuildPath(Path_SM,s,PLATFORM_MAX_PATH,"configs/freak_fortress_2/characters_halloween.cfg");
-	}
-	else
-	{
-		BuildPath(Path_SM,s,PLATFORM_MAX_PATH,"configs/freak_fortress_2/characters.cfg");
-	}
+	BuildPath(Path_SM,s,PLATFORM_MAX_PATH,"configs/freak_fortress_2/characters.cfg");
 
 	new Handle:Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, s);
@@ -7407,14 +7372,8 @@ public Action:Timer_CvarChangeNextmap(Handle:hTimer)
 	SetVoteResultCallback(dVoteMenu, NextmapPanelH2);
 
 	decl String:config[PLATFORM_MAX_PATH], String:s2[64];
-	if(halloween)
-	{
-		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters_halloween.cfg");
-	}
-	else
-	{
-		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
-	}
+	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
+
 	new Handle:Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, config);
 	AddMenuItem(dVoteMenu, "0 Random", "Random");

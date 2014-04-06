@@ -8,7 +8,7 @@
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-#define PLUGIN_VERSION "1.9.2"
+#define PLUGIN_VERSION "1.9.3"
 
 public Plugin:myinfo=
 {
@@ -232,7 +232,7 @@ Rage_StunSentry(const String:ability_name[], client)
 		{
 			SetEntProp(sentry, Prop_Send, "m_bDisabled", 1);
 			CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(sentry, "yikes_fx", 75.0)));
-			CreateTimer(duration, Timer_EnableSentry, EntIndexToEntRef(client));
+			CreateTimer(duration, Timer_EnableSentry, EntIndexToEntRef(sentry));
 		}
 	}
 }
