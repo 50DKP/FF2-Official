@@ -11,13 +11,13 @@
 
 #define CBS_MAX_ARROWS 9
 
-#define PLUGIN_VERSION "1.9.2"
+#define PLUGIN_VERSION "1.9.3"
 
 public Plugin:myinfo=
 {
 	name="Freak Fortress 2: Abilities of 1st set",
 	author="RainBolt Dash",
-	description="FF2: Abilities used by Seeldier, Seeman, Demopan, and Ninja Spy",
+	description="FF2: Abilities used by Seeldier, Seeman, Demopan, CBS, and Ninja Spy",
 	version=PLUGIN_VERSION,
 };
 
@@ -228,7 +228,7 @@ Rage_Clone(const String:ability_name[], client)
 	}
 	new config=GetRandomInt(0, maxKV-1);
 	new clone, temp;
-	for(new i=1; i<dead && i<=totalMinions; i++)
+	for(new i=1; i<=dead && i<=totalMinions; i++)
 	{
 		temp=GetRandomInt(0, GetArraySize(players)-1);
 		clone=GetArrayCell(players, temp);
@@ -289,7 +289,7 @@ Rage_Clone(const String:ability_name[], client)
 				}
 			}
 		}
-		
+
 		velocity[0]=GetRandomFloat(300.0, 500.0)*(GetRandomInt(0, 1) ? 1:-1);
 		velocity[1]=GetRandomFloat(300.0, 500.0)*(GetRandomInt(0, 1) ? 1:-1);
 		velocity[2]=GetRandomFloat(300.0, 500.0);

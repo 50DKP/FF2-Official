@@ -4,11 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.9.2"
-			"Previous"	"1.9.1"
+			"Latest"	"1.9.3"
+			"Previous"	"1.9.2"
 		}
 
-		"Notes"	"Lots of bugfixes"
+		"Notes"	"Minor bugfixes for 1.9.2."
 	}
 
 	"Files"
@@ -18,13 +18,9 @@
 			"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
 			"Plugin"	"Path_SM/plugins/freaks/default_abilities.ff2"
 			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
-			"Plugin"	"Path_SM/plugins/freaks/rage_overlay.ff2"
-			"Plugin"	"Path_SM/plugins/freaks/special_noanims.ff2"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
 			"Source"	"Path_SM/scripting/freaks/default_abilities.sp"
 			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
-			"Source"	"Path_SM/scripting/freaks/rage_overlay.sp"
-			"Source"	"Path_SM/scripting/freaks/special_noanims.sp"
 		}
 
 		"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
