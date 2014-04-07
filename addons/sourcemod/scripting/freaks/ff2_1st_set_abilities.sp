@@ -183,6 +183,9 @@ Rage_Clone(const String:ability_name[], client)
 	new index=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 7, 191);
 	new String:attributes[64]="68 ; -1";
 	FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 8, attributes, sizeof(attributes));
+	new ammo=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 9, 0);
+	new clip=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 10, 0);
+	new health=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 11, 0);
 	new Float:position[3];
 	new Float:velocity[3];
 
@@ -287,7 +290,16 @@ Rage_Clone(const String:ability_name[], client)
 					SetEntPropEnt(clone, Prop_Send, "m_hActiveWeapon", weapon);
 					SetEntProp(weapon, Prop_Send, "m_iWorldModelIndex", -1);
 				}
+
+				SetAmmo(clone, weapon, ammo, clip);
 			}
+		}
+
+		if(health)
+		{
+			SetEntProp(clone, Prop_Data, "m_iMaxHealth", health);
+			SetEntProp(clone, Prop_Data, "m_iHealth", health);
+			SetEntProp(clone, Prop_Send, "m_iHealth", health);
 		}
 
 		velocity[0]=GetRandomFloat(300.0, 500.0)*(GetRandomInt(0, 1) ? 1:-1);
@@ -604,7 +616,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Floa
 	if(buttons & IN_ATTACK)
 	{
 		FF2Flags[boss]&=~FLAG_SLOMOREADYCHANGE;
-		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "rage_matrix_attack", 3, 0.2),Timer_SlomoChange, boss);
+		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "rage_matrix_attack", 3, 0.2), Timer_SlomoChange, boss);
 
 		new Float:bossPosition[3], Float:endPosition[3], Float:eyeAngles[3];
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition); 
@@ -905,16 +917,27 @@ stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute
 	return entity;
 }
 
-stock SetAmmo(client, weapon, ammo, clip=0)
+stock SetAmmo(client, weapon, ammo=0, clip=0)
 {
 	if(IsValidEntity(weapon))
 	{
-		if(clip)
-		{
-			SetEntProp(weapon, Prop_Send, "m_iClip1", clip);
-		}
+		SetEntProp(weapon, Prop_Send, "m_iClip1", clip);
 		new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1);
-		SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
+		if(offset!=-1)
+		{
+			if(ammo>0)
+			{
+				SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
+			}
+		}
+		else
+		{
+			new String:classname[64];
+			GetEdictClassname(weapon, classname, sizeof(classname));
+			new String:bossName[32];
+			FF2_GetBossSpecial(client, bossName, sizeof(bossName));
+			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
+		}
 	}
 }
 

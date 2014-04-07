@@ -28,14 +28,16 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
 #tryinclude <updater>
+#tryinclude <goomba>
+#tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.9.3"
-//#define DEV_VERSION
+#define PLUGIN_VERSION "1.10.0 Beta 6"
+#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
-#define ME 2048
+#define MAXENTITIES 2048
 #define MAXSPECIALS 64
 #define MAXRANDOMS 16
 
@@ -46,9 +48,18 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define HEALTHBAR_PROPERTY "m_iBossHealthPercentageByte"
 #define HEALTHBAR_MAX 255
 #define MONOCULUS "eyeball_boss"
+#define DISABLED_PERKS "toxic,noclip,uber,ammo,instant,jump,tinyplayer"
 
 #if defined _steamtools_included
 new bool:steamtools=false;
+#endif
+
+#if defined _rtd_included
+new bool:rtd=false;
+#endif
+
+#if defined _goomba_included
+new bool:goomba=false;
 #endif
 
 new bool:smac=false;
@@ -68,6 +79,7 @@ new MusicIndex;
 new Damage[MAXPLAYERS+1];
 new curHelp[MAXPLAYERS+1];	
 new uberTarget[MAXPLAYERS+1];
+new demoShield[MAXPLAYERS+1];
 
 new FF2flags[MAXPLAYERS+1];
 
@@ -97,14 +109,20 @@ new Handle:cvarCrits;
 new Handle:cvarFirstRound;
 new Handle:cvarCircuitStun;
 new Handle:cvarSpecForceBoss;
-new Handle:cvarcountdownTime;
+new Handle:cvarCountdownPlayers;
+new Handle:cvarCountdownTime;
+new Handle:cvarCountdownHealth;
 new Handle:cvarEnableEurekaEffect;
 new Handle:cvarForceBossTeam;
 new Handle:cvarHealthBar;
 new Handle:cvarAllowSpectators;
 new Handle:cvarLastPlayerGlow;
-new Handle:cvarCountdownHealth;
 new Handle:cvarDebug;
+new Handle:cvarGoombaDamage;
+new Handle:cvarBossRTD;
+new Handle:cvarRTDMode;
+new Handle:cvarRTDTimeLimit;
+new Handle:cvarDisabledRTDPerks;
 
 new Handle:FF2Cookies;
 
@@ -123,10 +141,13 @@ new AliveToEnable=5;
 new PointType=0;
 new bool:BossCrits=true;
 new Float:circuitStun=0.0;
+new countdownPlayers=1;
 new countdownTime=120;
 new countdownHealth=2000;
 new bool:lastPlayerGlow=true;
 new bool:SpecForceBoss=false;
+new Float:GoombaDamage=0.05;
+new bool:canBossRTD = false;
 
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -155,6 +176,7 @@ new healthBar=-1;
 new g_Monoculus=-1;
 
 static bool:executed=false;
+static bool:executed2=false;
 
 static const String:ff2versiontitles[][]=
 {
@@ -192,7 +214,10 @@ static const String:ff2versiontitles[][]=
 	"1.9.1",
 	"1.9.2",
 	"1.9.2",
-	"1.9.3"
+	"1.9.3",
+	"1.10.0",
+	"1.10.0",
+	"1.10.0"
 };
 
 static const String:ff2versiondates[][]=
@@ -231,13 +256,40 @@ static const String:ff2versiondates[][]=
 	"March 18, 2014",	//1.9.1
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
-	"April 5, 2014"		//1.9.3
+	"April 5, 2014",	//1.9.3
+	"April 4, 2014",	//1.10.0
+	"April 4, 2014",	//1.10.0
+	"April 4, 2014"		//1.10.0
 };
 
-stock FindVersionData(Handle:panel, versionindex)
+stock FindVersionData(Handle:panel, versionIndex)
 {
-	switch(versionindex)
+	switch(versionIndex)
 	{
+		case 37:  //1.10.0
+		{
+			DrawPanelText(panel, "1) Balanced Goomba Stomp and RTD (WildCard65)");
+			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicided at the beginning of the round (Wliu)");
+			DrawPanelText(panel, "3) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
+			DrawPanelText(panel, "4) Fixed players with 0 damage rarely showing up as 3rd place on the leaderboard (Wliu)");
+			DrawPanelText(panel, "5) Fixed a !ff2new bug in 1.9.2 where all versions would be shifted by one page (Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
+		case 36:  //1.10.0
+		{
+			DrawPanelText(panel, "6) Fixed ability timers not resetting when the round was over (Wliu)");
+			DrawPanelText(panel, "7) Fixed sentries not re-activating after being stunned (Wliu)");
+			DrawPanelText(panel, "7) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "8) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+			DrawPanelText(panel, "9) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
+		case 35:  //1.10.0
+		{
+			DrawPanelText(panel, "10) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "11) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "12) [Dev] Added more natives and one extra forward (Eggman)");
+		}
 		case 34:  //1.9.3
 		{
 			DrawPanelText(panel, "1) Fixed a bug in 1.9.2 where the changelog was off by one version (Wliu)");
@@ -535,7 +587,7 @@ stock FindVersionData(Handle:panel, versionindex)
 	}
 }
 
-static const maxversion=(sizeof(ff2versiontitles)-1);
+static const maxVersion=(sizeof(ff2versiontitles)-1);
 
 new Specials=0;
 new Handle:BossKV[MAXSPECIALS];
@@ -546,6 +598,7 @@ new Handle:OnTriggerHurt;
 new Handle:OnSpecialSelected;
 new Handle:OnAddQueuePoints;
 new Handle:OnLoadCharacterSet;
+new Handle:OnLoseLife;
 
 new bool:bBlockVoice[MAXSPECIALS];
 new Float:BossSpeed[MAXSPECIALS];
@@ -567,8 +620,14 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_GetBossIndex", Native_GetIndex);
 	CreateNative("FF2_GetBossTeam", Native_GetTeam);
 	CreateNative("FF2_GetBossSpecial", Native_GetSpecial);
-	CreateNative("FF2_GetBossMax", Native_GetHealth);
-	CreateNative("FF2_GetBossMaxHealth", Native_GetHealthMax);
+	CreateNative("FF2_GetBossHealth", Native_GetBossHealth);
+	CreateNative("FF2_SetBossHealth", Native_SetBossHealth);
+	CreateNative("FF2_GetBossMaxHealth", Native_GetBossMaxHealth);
+	CreateNative("FF2_SetBossMaxHealth", Native_SetBossMaxHealth);
+	CreateNative("FF2_GetBossLives", Native_GetBossLives);
+	CreateNative("FF2_SetBossLives", Native_SetBossLives);
+	CreateNative("FF2_GetBossMaxLives", Native_GetBossMaxLives);
+	CreateNative("FF2_SetBossMaxLives", Native_SetBossMaxLives);
 	CreateNative("FF2_GetBossCharge", Native_GetBossCharge);
 	CreateNative("FF2_SetBossCharge", Native_SetBossCharge);
 	CreateNative("FF2_GetClientDamage", Native_GetDamage);
@@ -597,6 +656,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	OnSpecialSelected=CreateGlobalForward("FF2_OnSpecialSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String);
 	OnAddQueuePoints=CreateGlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
 	OnLoadCharacterSet=CreateGlobalForward("FF2_OnLoadCharacterSet", ET_Hook, Param_CellByRef, Param_String);
+	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell);
 
 	RegPluginLibrary("freak_fortress_2");
 
@@ -620,13 +680,17 @@ public OnPluginStart()
 	cvarCrits=CreateConVar("ff2_crits", "1", "Can Boss get crits?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarFirstRound=CreateConVar("ff2_first_round", "0", "0-Make the first round arena so that more people can join, 1-Make all rounds FF2", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCircuitStun=CreateConVar("ff2_circuit_stun", "2", "Amount of seconds the Short Circuit stuns the boss for.  0 to disable", FCVAR_PLUGIN, true, 0.0);
-	cvarcountdownTime=CreateConVar("ff2_countdown", "120", "Amount of seconds until the round ends in a stalemate (begins when it becomes 1v1)", FCVAR_PLUGIN);
+	cvarCountdownPlayers=CreateConVar("ff2_countdown_players", "1", "Amount of players until the countdown timer starts (0 to disable)", FCVAR_PLUGIN, true, 0.0);
+	cvarCountdownTime=CreateConVar("ff2_countdown", "120", "Amount of seconds until the round ends in a stalemate", FCVAR_PLUGIN);
+	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops", FCVAR_PLUGIN, true, 0.0);
 	cvarSpecForceBoss=CreateConVar("ff2_spec_force_boss", "0", "0-Spectators are excluded from the queue system, 1-Spectators are counted in the queue system", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarEnableEurekaEffect=CreateConVar("ff2_enable_eureka", "0", "0-Disable the Eureka Effect, 1-Enable the Eureka Effect", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops (use with ff2_countdown)", FCVAR_PLUGIN, true, 0.0);
+	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
+	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarAllowSpectators=FindConVar("mp_allowspectators");
 
@@ -651,10 +715,13 @@ public OnPluginStart()
 	HookConVarChange(cvarCrits, CvarChange);
 	HookConVarChange(cvarCircuitStun, CvarChange);
 	HookConVarChange(cvarHealthBar, HealthbarEnableChanged);
-	HookConVarChange(cvarcountdownTime, CvarChange);
+	HookConVarChange(cvarCountdownPlayers, CvarChange);
+	HookConVarChange(cvarCountdownTime, CvarChange);
 	HookConVarChange(cvarCountdownHealth, CvarChange);
 	HookConVarChange(cvarLastPlayerGlow, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
+	HookConVarChange(cvarGoombaDamage, CvarChange);
+	HookConVarChange(cvarBossRTD, CvarChange);
 	cvarNextmap=FindConVar("sm_nextmap");
 	HookConVarChange(cvarNextmap, CvarChangeNextmap);
 
@@ -708,7 +775,7 @@ public OnPluginStart()
 	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable CP. Only with ff2_point_type=0");
 	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable CP. Only with ff2_point_type=0");
 
-	RegAdminCmd("ff2_special", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Usage:  ff2_special <boss>.  Forces next round to use that boss");
+	RegAdminCmd("ff2_special", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  ff2_special <boss>.  Forces next round to use that boss");
 	RegAdminCmd("ff2_addpoints", Command_Points, ADMFLAG_CHEATS, "Usage:  ff2_addpoints <target> <points>.  Adds queue points to any player");
 	RegAdminCmd("ff2_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable the control point if ff2_point_type is 0");
 	RegAdminCmd("ff2_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable the control point if ff2_point_type is 0");
@@ -716,8 +783,8 @@ public OnPluginStart()
 	RegAdminCmd("ff2_charset", Command_CharSet, ADMFLAG_CHEATS, "Usage:  ff2_charset <charset>.  Forces FF2 to use a given character set");
 	RegAdminCmd("ff2_reload_subplugins", Command_ReloadSubPlugins, ADMFLAG_RCON, "Reload FF2's subplugins.");
 
-	RegAdminCmd("hale_select", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
-	RegAdminCmd("hale_special", Command_MakeNextSpecial, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
+	RegAdminCmd("hale_select", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
+	RegAdminCmd("hale_special", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
 	RegAdminCmd("hale_addpoints", Command_Points, ADMFLAG_CHEATS, "Usage:  hale_addpoints <target> <points>.  Adds queue points to any player");
 	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable the control point if ff2_point_type is 0");
 	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable the control point if ff2_point_type is 0");
@@ -794,6 +861,20 @@ public OnLibraryAdded(const String:name[])
 	}
 	#endif
 
+	#if defined _rtd_included
+	if(strcmp(name, "TF2: Roll the Dice", false)==0)
+	{
+		rtd=true;
+	}
+	#endif
+
+	#if defined _goomba_included
+	if(strcmp(name, "goomba", false)==0)
+	{
+		goomba=true;
+	}
+	#endif
+
 	#if defined _updater_included && !defined DEV_VERSION
 	if(StrEqual(name, "updater"))
 	{
@@ -816,6 +897,20 @@ public OnLibraryRemoved(const String:name[])
 	}
 	#endif
 
+	#if defined _rtd_included
+	if(strcmp(name, "TF2: Roll the Dice", false)==0)
+	{
+		rtd=false;
+	}
+	#endif
+
+	#if defined _goomba_included
+	if(strcmp(name, "goomba", false)==0)
+	{
+		goomba=false;
+	}
+	#endif
+
 	if(StrEqual(name, "smac"))
 	{
 		smac=false;
@@ -824,70 +919,19 @@ public OnLibraryRemoved(const String:name[])
 
 public OnConfigsExecuted()
 {
-	SetConVarString(FindConVar("ff2_version"), PLUGIN_VERSION);
-	Announce=GetConVarFloat(cvarAnnounce);
-	PointType=GetConVarInt(cvarPointType);
-	PointDelay=GetConVarInt(cvarPointDelay);
-	if(PointDelay<0)
-	{
-		PointDelay*=-1;
-	}
-	AliveToEnable=GetConVarInt(cvarAliveToEnable);
-	BossCrits=GetConVarBool(cvarCrits);
-	circuitStun=GetConVarFloat(cvarCircuitStun);
-	countdownHealth=GetConVarInt(cvarCountdownHealth);
+	tf_arena_use_queue=GetConVarInt(FindConVar("tf_arena_use_queue"));
+	mp_teams_unbalance_limit=GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
+	tf_arena_first_blood=GetConVarInt(FindConVar("tf_arena_first_blood"));
+	mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
+	tf_scout_hype_pep_max=GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
 
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
-		tf_arena_use_queue=GetConVarInt(FindConVar("tf_arena_use_queue"));
-		mp_teams_unbalance_limit=GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
-		tf_arena_first_blood=GetConVarInt(FindConVar("tf_arena_first_blood"));
-		mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
-		tf_scout_hype_pep_max=GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
-		SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
-		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
-		SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
-		SetConVarInt(FindConVar("mp_forcecamera"), 0);
-		SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), 100.0);
-		#if defined _steamtools_included
-		if(steamtools)
-		{
-			decl String:gameDesc[64];
-			Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
-			Steam_SetGameDescription(gameDesc);
-		}
-		#endif
-		Enabled=true;
-		Enabled2=true;
-
-		new Float:time=Announce;
-		if(time>1.0)
-		{
-			CreateTimer(time, Timer_Announce, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-		}
-		CheckToChangeMapDoors();
-		MapHasMusic(true);
-		AddToDownload();
-		strcopy(FF2CharSetStr, 2, "");
-
-		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
-		{
-			ServerCommand("smac_removecvar sv_cheats");
-			ServerCommand("smac_removecvar host_timescale");
-		}
-
-		bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
-		FindHealthBar();
+		EnableFF2();
 	}
 	else
 	{
-		Enabled=false;
-		Enabled2=false;
-		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
-		{
-			ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
-			ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
-		}
+		DisableFF2();
 	}
 }
 
@@ -937,12 +981,113 @@ public OnMapEnd()
 			KillTimer(MusicTimer);
 			MusicTimer=INVALID_HANDLE;
 		}
+
+		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+		{
+			ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
+			ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
+		}
 	}
 }
 
 public OnPluginEnd()
 {
 	OnMapEnd();
+}
+
+public EnableFF2()
+{
+	Enabled=true;
+	Enabled2=true;
+
+	SetConVarString(FindConVar("ff2_version"), PLUGIN_VERSION);
+	Announce=GetConVarFloat(cvarAnnounce);
+	PointType=GetConVarInt(cvarPointType);
+	PointDelay=GetConVarInt(cvarPointDelay);
+	if(PointDelay<0)
+	{
+		PointDelay*=-1;
+	}
+	GoombaDamage=GetConVarFloat(cvarGoombaDamage);
+	canBossRTD=GetConVarBool(cvarBossRTD);
+	AliveToEnable=GetConVarInt(cvarAliveToEnable);
+	BossCrits=GetConVarBool(cvarCrits);
+	circuitStun=GetConVarFloat(cvarCircuitStun);
+	countdownHealth=GetConVarInt(cvarCountdownHealth);
+
+	SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
+	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
+	SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
+	SetConVarInt(FindConVar("mp_forcecamera"), 0);
+	SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), 100.0);
+
+	new Float:time=Announce;
+	if(time>1.0)
+	{
+		CreateTimer(time, Timer_Announce, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	}
+	CheckToChangeMapDoors();
+	MapHasMusic(true);
+	AddToDownload();
+	strcopy(FF2CharSetStr, 2, "");
+
+	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+	{
+		ServerCommand("smac_removecvar sv_cheats");
+		ServerCommand("smac_removecvar host_timescale");
+	}
+
+	bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
+	FindHealthBar();
+
+	#if defined _rtd_included
+	if(rtd)
+	{
+		SetupRTD();
+	}
+	#endif
+
+	#if defined _steamtools_included
+	if(steamtools)
+	{
+		decl String:gameDesc[64];
+		Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
+		Steam_SetGameDescription(gameDesc);
+	}
+	#endif
+}
+
+public DisableFF2()
+{
+	Enabled=false;
+	Enabled2=false;
+
+	DisableSubPlugins();
+
+	SetConVarInt(FindConVar("tf_arena_use_queue"), tf_arena_use_queue);
+	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
+	SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
+	SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
+	SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), tf_scout_hype_pep_max);
+
+	if(MusicTimer!=INVALID_HANDLE)
+	{
+		KillTimer(MusicTimer);
+		MusicTimer=INVALID_HANDLE;
+	}
+
+	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+	{
+		ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
+		ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
+	}
+
+	#if defined _steamtools_included
+	if(steamtools)
+	{
+		Steam_SetGameDescription("Team Fortress");
+	}
+	#endif
 }
 
 public AddToDownload()
@@ -954,7 +1099,6 @@ public AddToDownload()
 	if(!FileExists(config))
 	{
 		SetFailState("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
-		return;
 	}
 
 	new Handle:Kv=CreateKeyValues("");
@@ -1102,9 +1246,17 @@ public LoadCharacter(const String:character[])
 	}
 	BossKV[Specials]=CreateKeyValues("character");
 	FileToKeyValues(BossKV[Specials], config);
-	for(new n=1; ; n++)
+
+	new version=KvGetNum(BossKV[Specials], "version", 1);
+	if(version!=1)
+	{
+		LogError("[FF2] Character %s is only compatible with FF2 v%i!", character, version);
+		return;
+	}
+
+	for(new i=1; ; i++)
 	{		
-		Format(config, 10, "ability%i", n);
+		Format(config, 10, "ability%i", i);
 		if(KvJumpToKey(BossKV[Specials], config))
 		{
 			decl String:plugin_name[64];
@@ -1121,59 +1273,65 @@ public LoadCharacter(const String:character[])
 			break;
 		}
 	}
-
 	KvRewind(BossKV[Specials]);
-	decl String:s2[PLATFORM_MAX_PATH];
-	decl String:s3[64];
+
+	decl String:file[PLATFORM_MAX_PATH];
+	decl String:section[64];
 	KvSetString(BossKV[Specials], "filename", character);
 	KvGetString(BossKV[Specials], "name", config, PLATFORM_MAX_PATH);
 	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "sound_block_vo", 0);
 	BossSpeed[Specials]=KvGetFloat(BossKV[Specials], "maxspeed", 340.0);
 	BossRageDamage[Specials]=KvGetFloat(BossKV[Specials], "ragedamage", 1900.0);
 	KvGotoFirstSubKey(BossKV[Specials]);
-	decl i, is;
 
 	while(KvGotoNextKey(BossKV[Specials]))
 	{	
-		KvGetSectionName(BossKV[Specials], s3, 64);
-		if(!strcmp(s3,"download"))
+		KvGetSectionName(BossKV[Specials], section, 64);
+		if(!strcmp(section, "download"))
 		{
-			for(i=1; ; i++)
+			for(new i=1; ; i++)
 			{
-				IntToString(i,s2,4);
-				KvGetString(BossKV[Specials], s2, config, PLATFORM_MAX_PATH);
+				IntToString(i, file, 4);
+				KvGetString(BossKV[Specials], file, config, PLATFORM_MAX_PATH);
 				if(!config[0])
+				{
 					break;
+				}
 				AddFileToDownloadsTable(config);
 			}
 		}
-		else if(!strcmp(s3,"mod_download"))
+		else if(!strcmp(section, "mod_download"))
 		{	
-			for(i=1; ; i++)
+			for(new i=1; ; i++)
 			{
-				IntToString(i,s2,4);
-				KvGetString(BossKV[Specials], s2, config, PLATFORM_MAX_PATH);
+				IntToString(i, file, 4);
+				KvGetString(BossKV[Specials], file, config, PLATFORM_MAX_PATH);
 				if(!config[0])
-					break;
-				for(is=0;  is<sizeof(extensions);  is++)
 				{
-					Format(s2,PLATFORM_MAX_PATH,"%s%s",config,extensions[is]);
-					AddFileToDownloadsTable(s2);
+					break;
+				}
+
+				for(new extension=0; extension<sizeof(extensions); extension++)
+				{
+					Format(file, PLATFORM_MAX_PATH, "%s%s", config, extensions[extension]);
+					AddFileToDownloadsTable(file);
 				}
 			}
 		}
-		else if(!strcmp(s3,"mat_download"))
+		else if(!strcmp(section, "mat_download"))
 		{	
-			for(i=1; ; i++)
+			for(new i=1; ; i++)
 			{
-				IntToString(i,s2,4);
-				KvGetString(BossKV[Specials], s2, config, PLATFORM_MAX_PATH);
+				IntToString(i, file, 4);
+				KvGetString(BossKV[Specials], file, config, PLATFORM_MAX_PATH);
 				if(!config[0])
+				{
 					break;
-				Format(s2,PLATFORM_MAX_PATH,"%s.vtf",config);
-				AddFileToDownloadsTable(s2);
-				Format(s2,PLATFORM_MAX_PATH,"%s.vmt",config);
-				AddFileToDownloadsTable(s2);
+				}
+				Format(file, PLATFORM_MAX_PATH, "%s.vtf", config);
+				AddFileToDownloadsTable(file);
+				Format(file, PLATFORM_MAX_PATH, "%s.vmt", config);
+				AddFileToDownloadsTable(file);
 			}
 		}
 	}
@@ -1265,7 +1423,11 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		circuitStun=StringToFloat(newValue);
 	}
-	else if(convar==cvarcountdownTime)
+	else if(convar==cvarCountdownPlayers)
+	{
+		countdownPlayers=StringToInt(newValue);
+	}
+	else if(convar==cvarCountdownTime)
 	{
 		countdownTime=StringToInt(newValue);
 	}
@@ -1277,6 +1439,26 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		lastPlayerGlow=bool:StringToInt(newValue);
 	}
+	else if(convar==cvarGoombaDamage)
+	{
+		GoombaDamage=StringToFloat(newValue);
+	}
+	else if(convar==cvarBossRTD)
+	{
+		canBossRTD=bool:StringToInt(newValue);
+	}
+	else if(convar==cvarDisabledRTDPerks && !StrEqual(newValue, DISABLED_PERKS) && Enabled)
+	{
+		SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
+	}
+	else if(convar==cvarRTDTimeLimit && StringToInt(newValue)!=30 && Enabled)
+	{
+		SetConVarInt(cvarRTDTimeLimit, 30);
+	}
+	else if(convar==cvarRTDMode && StringToInt(newValue)!=0 && Enabled)
+	{
+		SetConVarInt(cvarRTDMode, 0);
+	}
 	else if(convar==cvarSpecForceBoss)
 	{
 		SpecForceBoss=bool:StringToInt(newValue);
@@ -1285,27 +1467,11 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		if(StringToInt(newValue))
 		{
-			Enabled2=true;
-			#if defined _steamtools_included
-			if(steamtools)
-			{
-				decl String:gameDesc[64];
-				Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
-				Steam_SetGameDescription(gameDesc);
-			}
-			#endif
+			EnableFF2();
 		}
 		else
 		{
-			Enabled2=false;
-			#if defined _steamtools_included
-			if(steamtools)
-			{
-				decl String:gameDesc[64];
-				Format(gameDesc, sizeof(gameDesc), "Team Fortress");
-				Steam_SetGameDescription(gameDesc);
-			}
-			#endif
+			DisableFF2();
 		}
 	}
 }
@@ -1334,7 +1500,7 @@ public Action:Timer_Announce(Handle:hTimer)
 			case 5:
 			{
 				announcecount=0;
-				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxversion]);
+				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxVersion]);
 			}
 			default: 
 			{
@@ -1379,11 +1545,11 @@ stock bool:IsFF2Map(bool:forceRecalc=false)
 			SetFailState("[FF2] Error reading maps from %s, disabling plugin.", config);
 		}
 
-		new pingas=0;
-		while(ReadFileLine(file, config, sizeof(config)) && pingas<100)
+		new tries=0;
+		while(ReadFileLine(file, config, sizeof(config)) && tries<100)
 		{
-			pingas++;
-			if(pingas==100)
+			tries++;
+			if(tries==100)
 			{
 				LogError("[FF2] Breaking infinite loop when trying to check the map.");
 			}
@@ -1723,11 +1889,11 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		}
 	}
 	CreateTimer(0.2, Timer_GogoBoss);
-	CreateTimer(9.1, StartBossTimer);
 	CreateTimer(3.5, StartResponseTimer);
+	CreateTimer(9.1, StartBossTimer);
 	CreateTimer(9.6, MessageTimer);
 
-	for(new entity=MaxClients+1; entity<ME; entity++)
+	for(new entity=MaxClients+1; entity<MAXENTITIES; entity++)
 	{
 		if(!IsValidEdict(entity))
 		{
@@ -1913,6 +2079,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	executed=false;
+	executed2=false;
 	new bool:bossWin=false;
 	if((GetEventInt(event, "team")==BossTeam))
 	{
@@ -1943,10 +2110,16 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 				isBossAlive=true;
 				temp=client;
 			}
+
+			for(new slot=0; slot<8; slot++)
+			{
+				BossCharge[client][slot]=0.0;
+			}
 		}
 		else if(IsValidClient(client))
 		{
 			SetClientGlow(client, 0.0, 0.0);
+			demoShield[client]=0;
 		}
 
 		for(new boss=0; boss<=1; boss++)
@@ -2019,7 +2192,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	decl String:first[32];
-	if(IsValidClient(top[0]) && (GetClientTeam(top[0])==OtherTeam))
+	if(IsValidClient(top[0]) && !IsBoss(top[0]))
 	{
 		GetClientName(top[0], first, 32);
 	}
@@ -2030,7 +2203,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	decl String:second[32];
-	if(IsValidClient(top[1]) && (GetClientTeam(top[1])==OtherTeam))
+	if(IsValidClient(top[1]) && !IsBoss(top[1]))
 	{
 		GetClientName(top[1], second, 32);
 	}
@@ -2041,7 +2214,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	decl String:third[32];
-	if(IsValidClient(top[2]) && (GetClientTeam(top[2])==OtherTeam))
+	if(IsValidClient(top[2]) && !IsBoss(top[2]))
 	{
 		GetClientName(top[2], third, 32);
 	}
@@ -2251,6 +2424,11 @@ public Action:StartBossTimer(Handle:hTimer)
 
 public Action:Timer_MusicPlay(Handle:timer, any:client)
 {
+	if(CheckRoundState()!=1)
+	{
+		return Plugin_Continue;
+	}
+
 	if(MusicTimer!=INVALID_HANDLE)
 	{
 		KillTimer(MusicTimer);
@@ -2262,122 +2440,154 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 		MusicIndex=-1;
 		return Plugin_Continue;
 	}
+
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 	{
-		decl String:s[PLATFORM_MAX_PATH];
+		decl String:music[PLATFORM_MAX_PATH];
 		MusicIndex=0;
 		do
 		{
 			MusicIndex++;
-			Format(s,10,"time%i",MusicIndex);
+			Format(music, 10, "time%i", MusicIndex);
 		}
-		while(KvGetFloat(BossKV[Special[0]], s,0.0)>1);
-		MusicIndex=GetRandomInt(1,MusicIndex-1);
-		Format(s,10,"time%i",MusicIndex);
-		new Float:time=KvGetFloat(BossKV[Special[0]], s);
-		Format(s,10,"path%i",MusicIndex);
-		KvGetString(BossKV[Special[0]], s,s, PLATFORM_MAX_PATH);
-		new Action:act=Plugin_Continue;
+		while(KvGetFloat(BossKV[Special[0]], music, 0.0)>1);
+
+		MusicIndex=GetRandomInt(1, MusicIndex-1);
+		Format(music, 10, "time%i", MusicIndex);
+		new Float:time=KvGetFloat(BossKV[Special[0]], music);
+		Format(music, 10, "path%i", MusicIndex);
+		KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
+
+		new Action:action=Plugin_Continue;
 		Call_StartForward(OnMusic);
 		decl String:sound2[PLATFORM_MAX_PATH];
 		new Float:time2=time;
-		strcopy(sound2, PLATFORM_MAX_PATH, s);
+		strcopy(sound2, PLATFORM_MAX_PATH, music);
 		Call_PushStringEx(sound2, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
 		Call_PushFloatRef(time2);
-		Call_Finish(act);
-		switch(act)
+		Call_Finish(action);
+		switch(action)
 		{
 			case Plugin_Stop, Plugin_Handled:
 			{
-				strcopy(s, sizeof(s), "");
+				strcopy(music, sizeof(music), "");
 				time=-1.0;
 			}
 			case Plugin_Changed:
 			{
-				strcopy(s, PLATFORM_MAX_PATH, sound2);
+				strcopy(music, PLATFORM_MAX_PATH, sound2);
 				time=time2;
 			}
 		}
-		if(strlen(s[0])>5)
+
+		if(strlen(music[0])>5)
 		{
 			if(!client)
-				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, s);
+			{
+				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music);
+			}
 			else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
-				EmitSoundToClient(client,s);
-			decl userid;
+			{
+				EmitSoundToClient(client, music);
+			}
+
+			new userid;
 			if(!client)
+			{
 				userid=0;
+			}
 			else
+			{
 				userid=GetClientUserId(client);
+			}
+
 			if(time>1)
-				MusicTimer=CreateTimer(time, Timer_MusicTheme,userid, TIMER_FLAG_NO_MAPCHANGE);
+			{
+				MusicTimer=CreateTimer(time, Timer_MusicTheme, userid, TIMER_FLAG_NO_MAPCHANGE);
+			}
 		}
 	}
 	return Plugin_Continue;
 }
 
-public Action:Timer_MusicTheme(Handle:timer,any:userid)
+public Action:Timer_MusicTheme(Handle:timer, any:userid)
 {
 	MusicTimer=INVALID_HANDLE;
 	if(Enabled && CheckRoundState()==1)
-	{	
+	{
 		KvRewind(BossKV[Special[0]]);
-		if(KvJumpToKey(BossKV[Special[0]],"sound_bgm"))
+		if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 		{
-			decl client;
+			new client;
 			if(!userid)
+			{
 				client=0;
+			}
 			else
+			{
 				client=GetClientOfUserId(userid);
-			decl String:s[PLATFORM_MAX_PATH];
+			}
+
+			decl String:music[PLATFORM_MAX_PATH];
 			MusicIndex=0;
 			do
 			{
 				MusicIndex++;
-				Format(s,10,"time%i",MusicIndex);
+				Format(music, 10, "time%i",MusicIndex);
 			}
-			while(KvGetFloat(BossKV[Special[0]], s)>1);
-			MusicIndex=GetRandomInt(1,MusicIndex-1);
-			Format(s,10,"time%i",MusicIndex);
-			new Float:time=KvGetFloat(BossKV[Special[0]],s);
-			Format(s,10,"path%i",MusicIndex);
-			KvGetString(BossKV[Special[0]], s,s, PLATFORM_MAX_PATH);
-			
-			new Action:act=Plugin_Continue;
+			while(KvGetFloat(BossKV[Special[0]], music)>1);
+
+			MusicIndex=GetRandomInt(1, MusicIndex-1);
+			Format(music, 10, "time%i", MusicIndex);
+			new Float:time=KvGetFloat(BossKV[Special[0]], music);
+			Format(music, 10, "path%i", MusicIndex);
+			KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
+
+			new Action:action=Plugin_Continue;
 			Call_StartForward(OnMusic);
 			decl String:sound2[PLATFORM_MAX_PATH];
 			new Float:time2=time;
-			strcopy(sound2, PLATFORM_MAX_PATH, s);
+			strcopy(sound2, PLATFORM_MAX_PATH, music);
 			Call_PushStringEx(sound2, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
 			Call_PushFloatRef(time2);
-			Call_Finish(act);
-			switch(act)
+			Call_Finish(action);
+			switch(action)
 			{
 				case Plugin_Stop, Plugin_Handled:
 				{
-					strcopy(s, sizeof(s), "");
+					strcopy(music, sizeof(music), "");
 					time=-1.0;
 				}
 				case Plugin_Changed:
 				{
-					strcopy(s, PLATFORM_MAX_PATH, sound2);
+					strcopy(music, PLATFORM_MAX_PATH, sound2);
 					time=time2;
 				}
 			}
-			if(strlen(s[0])>5)
+
+			if(strlen(music[0])>5)
 			{
 				if(!client)
-					EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, s,_, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+				{
+					EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+				}
 				else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
-					EmitSoundToClient(client,s);
+				{
+					EmitSoundToClient(client, music);
+				}
+
 				if(time>1)
-					MusicTimer=CreateTimer(time, Timer_MusicTheme,userid, TIMER_FLAG_NO_MAPCHANGE);
+				{
+					MusicTimer=CreateTimer(time, Timer_MusicTheme, userid, TIMER_FLAG_NO_MAPCHANGE);
+				}
 			}
 		}
 	}
 	else
+	{
 		return Plugin_Stop;
+	}
 	return Plugin_Continue;
 }
 
@@ -3195,6 +3405,15 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 		weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
 	}
 
+	new entity=-1;
+	while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)  //Demoshields
+	{
+		if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
+		{
+			demoShield[client]=entity;
+		}
+	}
+
 	weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
 	if(weapon && IsValidEdict(weapon))
 	{
@@ -3486,14 +3705,19 @@ public Action:Timer_Lazor2(Handle:hTimer,any:medigunid)
 		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel",GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+0.41);
 	return Plugin_Continue;
 }
+
 public Action:Command_GetHPCmd(client, args)
 {
-	if(!IsValidClient(client)) return Plugin_Continue;
+	if(!IsValidClient(client))
+	{
+		return Plugin_Continue;
+	}
+
 	Command_GetHP(client);
 	return Plugin_Handled;
 }
 
-public Action:Command_GetHP(client)
+public Action:Command_GetHP(client)  //TODO: This can rarely show a very large negative number if you time it right
 {
 	if(!Enabled || CheckRoundState()!=1)
 	{
@@ -3521,12 +3745,12 @@ public Action:Command_GetHP(client)
 			BossHealthLast[boss]=BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1);
 		}
 
-		for(new client2=1; client2<=MaxClients; client2++)
+		for(new target=1; target<=MaxClients; target++)
 		{
-			if(IsValidClient(client2) && !(FF2flags[client2] & FF2FLAG_HUDDISABLED))
+			if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
 			{
-				SetGlobalTransTarget(client2);
-				PrintCenterText(client2, health); 	
+				SetGlobalTransTarget(target);
+				PrintCenterText(target, health); 	
 			}
 		}
 		CPrintToChatAll("{olive}[FF2]{default} %s", health);
@@ -3534,7 +3758,7 @@ public Action:Command_GetHP(client)
 		if(GetGameTime()>=HPTime)
 		{
 			healthcheckused++;
-			HPTime=GetGameTime()+(healthcheckused<3 ? 20.0 : 80.0);
+			HPTime=GetGameTime()+(healthcheckused<3 ? 20.0:80.0);
 		}
 		return Plugin_Continue;
 	}
@@ -3551,13 +3775,20 @@ public Action:Command_GetHP(client)
 	return Plugin_Continue;
 }
 
-public Action:Command_MakeNextSpecial(client, args)
+public Action:Command_SetNextBoss(client, args)
 {
+	if(!IsValidClient(client))
+	{
+		CReplyToCommand(client, "{olive}[FF2]{default} This command must be used in-game and without RCON.");
+		return Plugin_Handled;
+	}
+
 	decl String:name[32];
 	decl String:boss[64];
+
 	if(args<1)
 	{
-		CReplyToCommand(client, "{olive}FF2]{default} Usage: ff2_special <boss>");
+		CReplyToCommand(client, "{olive}[FF2]{default} Usage: ff2_special <boss>");
 		return Plugin_Handled;
 	}
 	GetCmdArgString(name, sizeof(name));
@@ -3572,6 +3803,7 @@ public Action:Command_MakeNextSpecial(client, args)
 			CReplyToCommand(client, "{olive}[FF2]{default} Set the next boss to %s", boss);
 			return Plugin_Handled;
 		}
+
 		KvGetString(BossKV[config], "filename", boss, 64);
 		if(StrContains(boss, name, false)>=0)
 		{
@@ -3581,7 +3813,7 @@ public Action:Command_MakeNextSpecial(client, args)
 			return Plugin_Handled;
 		}
 	}
-	CReplyToCommand(client, "{olive}[FF2]{default} Boss could not be found");
+	CReplyToCommand(client, "{olive}[FF2]{default} Boss could not be found!");
 	return Plugin_Handled;
 }
 
@@ -3594,7 +3826,7 @@ public Action:Command_Points(client, args)
 
 	if(args!=2)
 	{
-		ReplyToCommand(client, "[FF2] Usage: ff2_addpoints <target> <points>");
+		CReplyToCommand(client, "{olive}[FF2]{default} Usage: ff2_addpoints <target> <points>");
 		return Plugin_Handled;
 	}
 
@@ -3637,7 +3869,7 @@ public Action:Command_StopMusic(client, args)
 	}
 
 	Native_StopMusic(INVALID_HANDLE, 0);
-	ReplyToCommand(client, "[FF2] Stopped boss music.");
+	CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music.");
 	return Plugin_Handled;
 }
 
@@ -3646,7 +3878,7 @@ public Action:Command_CharSet(client, args)
 	decl String:arg[32];
 	if(args<1)
 	{
-		ReplyToCommand(client, "[FF2] Usage: ff2_charset <charset>");
+		CReplyToCommand(client, "{olive}[FF2]{default} Usage: ff2_charset <charset>");
 		return Plugin_Handled;
 	}
 	GetCmdArgString(arg, 32);
@@ -3661,12 +3893,12 @@ public Action:Command_CharSet(client, args)
 		KvGetSectionName(Kv, s, 64);
 		if(StrContains(s,arg,false)>=0)
 		{
-			ReplyToCommand(client, "[FF2] Charset for nextmap is %s",s);
+			CReplyToCommand(client, "{default}[FF2]{olive} Charset for nextmap is %s",s);
 			break;
 		}
 		if(!KvGotoNextKey(Kv))
 		{
-			ReplyToCommand(client, "[FF2] ff2_charset: Charset not found ");
+			CReplyToCommand(client, "{default}[FF2]{olive} ff2_charset: Charset not found ");
 			return Plugin_Handled;			
 		}
 	}
@@ -3683,7 +3915,7 @@ public Action:Command_ReloadSubPlugins(client, args)
 		DisableSubPlugins(true);
 		EnableSubPlugins(true);
 	}	
-	ReplyToCommand(client, "[FF2] Subplugins reloaded.");	
+	CReplyToCommand(client, "{olive}[FF2]{default} Reloaded subplugins!");	
 	return Plugin_Handled;
 }
 
@@ -3944,7 +4176,7 @@ public Action:ClientTimer(Handle:hTimer)
 
 			switch(index)
 			{
-				case 16, 56, 58, 203, 305, 1005, 1079, 1092:  //SMG, Huntsman, Jarate, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow, Fortified Compound
+				case 16, 56, 203, 305, 1005, 1079, 1092:  //SMG, Huntsman, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow, Fortified Compound
 				{
 					addthecrit=true;
 				}
@@ -4312,74 +4544,95 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 public Action:DoTaunt(client, const String:command[], argc)
 {
 	if(!Enabled)
+	{
 		return Plugin_Continue;
+	}
 	else
 	{
 		if(CheckRoundState()==0)
-			return Plugin_Handled;
-		else
-			if(!IsBoss(client))
-				return Plugin_Continue;
-	}
-	if(!IsPlayerAlive(client) || TF2_IsPlayerInCondition(client, TFCond_Taunting))
-		return Plugin_Handled;
-	
-	new index=GetBossIndex(client);
-	if(index==-1 || !Boss[index] || !IsValidEdict(Boss[index]))
-		return Plugin_Continue;
-	if(RoundFloat(BossCharge[index][0])==100)
-	{
-		decl i,j,count;
-		decl String:s[10];
-		decl String:lives[MAXRANDOMS][3];
-		for(i=1; i<MAXRANDOMS; i++)
 		{
-			Format(s,10,"ability%i",i);
-			KvRewind(BossKV[Special[index]]);
-			if(KvJumpToKey(BossKV[Special[index]],s))
+			return Plugin_Handled;
+		}
+		else
+		{
+			if(!IsBoss(client))
 			{
-				if(KvGetNum(BossKV[Special[index]], "arg0",0))
-					continue;
-				KvGetString(BossKV[Special[index]], "life",s,10); 		
-				if(!s[0])
+				return Plugin_Continue;
+			}
+		}
+	}
+
+	if(!IsPlayerAlive(client) || TF2_IsPlayerInCondition(client, TFCond_Taunting))
+	{
+		return Plugin_Handled;
+	}
+
+	new boss=GetBossIndex(client);
+	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]))
+	{
+		return Plugin_Continue;
+	}
+
+	if(RoundFloat(BossCharge[boss][0])==100)
+	{
+		decl String:ability[10];
+		decl String:lives[MAXRANDOMS][3];
+		for(new i=1; i<MAXRANDOMS; i++)
+		{
+			Format(ability, sizeof(ability), "ability%i", i);
+			KvRewind(BossKV[Special[boss]]);
+			if(KvJumpToKey(BossKV[Special[boss]], ability))
+			{
+				if(KvGetNum(BossKV[Special[boss]], "arg0", 0))
 				{
-					decl String:ability_name[64], String:plugin_name[64];
-					KvGetString(BossKV[Special[index]], "plugin_name",plugin_name,64);
-					KvGetString(BossKV[Special[index]], "name",ability_name,64);
-					UseAbility(ability_name,plugin_name,index,0);
+					continue;
+				}
+
+				KvGetString(BossKV[Special[boss]], "life", ability, sizeof(ability));
+				if(!ability[0])
+				{
+					decl String:abilityName[64], String:pluginName[64];
+					KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+					KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+					UseAbility(abilityName, pluginName, boss, 0);
 				}
 				else	
 				{
-					count=ExplodeString(s, " ", lives, MAXRANDOMS, 3);
-					for(j=0; j<count; j++)
-						if(StringToInt(lives[j])==BossLives[index])
+					new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+					for(new j=0; j<count; j++)
+					{
+						if(StringToInt(lives[j])==BossLives[boss])
 						{
-							decl String:ability_name[64], String:plugin_name[64];
-							KvGetString(BossKV[Special[index]], "plugin_name",plugin_name,64);
-							KvGetString(BossKV[Special[index]], "name",ability_name,64);
-							UseAbility(ability_name,plugin_name,index,0);
+							decl String:abilityName[64], String:pluginName[64];
+							KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+							KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+							UseAbility(abilityName, pluginName, boss, 0);
 							break;
 						}
+					}
 				}					
 			}
 		}
 		
-		decl Float:pos[3];
-		GetEntPropVector(client, Prop_Send, "m_vecOrigin", pos);
-		decl String:s2[PLATFORM_MAX_PATH];
-		if(RandomSoundAbility("sound_ability",s2,PLATFORM_MAX_PATH))
+		decl Float:position[3];
+		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
+
+		decl String:sound[PLATFORM_MAX_PATH];
+		if(RandomSoundAbility("sound_ability", sound, PLATFORM_MAX_PATH))
 		{
-			FF2flags[Boss[index]]|=FF2FLAG_TALKING;
-			EmitSoundToAll(s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
-			EmitSoundToAll(s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
+			FF2flags[Boss[boss]]|=FF2FLAG_TALKING;
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
 		
-			for(i=1;  i<=MaxClients;  i++)
-				if(IsClientInGame(i) && i!=Boss[index])
+			for(new target=1; target<=MaxClients; target++)
+			{
+				if(IsClientInGame(target) && target!=Boss[boss])
 				{
-					EmitSoundToClient(i,s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
-					EmitSoundToClient(i,s2, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, pos, NULL_VECTOR, true, 0.0);
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
 				}
-			FF2flags[Boss[index]]&=~FF2FLAG_TALKING;
+			}
+			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
 		}
 	}
 	return Plugin_Continue;
@@ -4551,7 +4804,7 @@ OnPlayerDeath(client, attacker, bool:fake=false)
 	{
 		decl String:name[PLATFORM_MAX_PATH];
 		FakeClientCommand(client, "destroy 2");
-		for(new entity=MaxClients+1; entity<ME; entity++)
+		for(new entity=MaxClients+1; entity<MAXENTITIES; entity++)
 		{
 			if(IsValidEdict(entity))
 			{
@@ -4609,24 +4862,31 @@ public Action:PlaySoundKill(Handle:hTimer,Handle:data)
 	return Plugin_Continue;
 }
 
-public Action:Timer_Damage(Handle:hTimer,any:id)
+public Action:Timer_Damage(Handle:hTimer, any:id)
 {
 	new client=GetClientOfUserId(id);
 	if(IsValidClient(client, false))
+	{
 		CPrintToChat(client,"{olive}[FF2] %t. %t{default}","damage",Damage[client],"scores",RoundFloat(Damage[client]/600.0));
+	}
 	return Plugin_Continue;
 }
 
 public Action:event_deflect(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled || GetEventInt(event, "weaponid"))
-		return Plugin_Continue;
-	new index=GetBossIndex(GetClientOfUserId(GetEventInt(event, "ownerid")));
-	if(index!=-1)
 	{
-		BossCharge[index][0]+=7;
-		if(BossCharge[index][0]>100)
-			BossCharge[index][0]=100.0;
+		return Plugin_Continue;
+	}
+
+	new boss=GetBossIndex(GetClientOfUserId(GetEventInt(event, "ownerid")));
+	if(boss!=-1 && BossCharge[boss][0]<100)
+	{
+		BossCharge[boss][0]+=7;
+		if(BossCharge[boss][0]>100)
+		{
+			BossCharge[boss][0]=100.0;
+		}
 	}
 	return Plugin_Continue;
 }
@@ -4635,14 +4895,18 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 {
 	new client=BfReadByte(bf);
 	new victim=BfReadByte(bf);
-	new index=GetBossIndex(victim);
-	if(index==-1) return Plugin_Continue;
-	new jar=GetPlayerWeaponSlot(client, 1);
-	if(jar!=-1 && GetEntProp(jar, Prop_Send, "m_iItemDefinitionIndex")==58 && GetEntProp(jar, Prop_Send, "m_iEntityLevel")!=-122)
+	new boss=GetBossIndex(victim);
+	if(boss!=-1)
 	{
-		BossCharge[index][0]-=8.0;
-		if(BossCharge[index][0]<0)
-			BossCharge[index][0]=0.0;
+		new jarate=GetPlayerWeaponSlot(client, 1);
+		if(jarate!=-1 && GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex")==58 && GetEntProp(jarate, Prop_Send, "m_iEntityLevel")!=-122 && BossCharge[boss][0]>0)  //Obviously, Jarate
+		{
+			BossCharge[boss][0]-=8.0;
+			if(BossCharge[boss][0]<0)
+			{
+				BossCharge[boss][0]=0.0;
+			}
+		}
 	}
 	return Plugin_Continue;
 }
@@ -4675,30 +4939,14 @@ public Action:CheckAlivePlayers(Handle:hTimer)
 	{
 		ForceTeamWin(BossTeam);
 	}
-	else if(RedAlivePlayers==1 && BlueAlivePlayers && !DrawGameTimer)
+	else if(RedAlivePlayers==1 && BlueAlivePlayers && Boss[0] && !DrawGameTimer)
 	{
-		if(BossHealth[0]>countdownHealth && countdownTime>1)
+		decl String:sound[PLATFORM_MAX_PATH];
+		if(RandomSound("sound_lastman", sound, PLATFORM_MAX_PATH))
 		{
-			if(FindEntityByClassname2(-1, "team_control_point")!=-1)
-			{
-				timeleft=countdownTime;
-				DrawGameTimer=CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-				EmitSoundToAll("vo/announcer_ends_2min.wav");
-				EmitSoundToAll("vo/announcer_ends_2min.wav");
-			}
+			EmitSoundToAll(sound);
+			EmitSoundToAll(sound);
 		}
-		else if(Boss[0])
-		{
-			decl String:sound[PLATFORM_MAX_PATH];
-			if(RandomSound("sound_lastman", sound, PLATFORM_MAX_PATH))
-			{
-				decl Float:pos[3];
-				GetEntPropVector(Boss[0], Prop_Send, "m_vecOrigin", pos);
-				EmitSoundToAll(sound);
-				EmitSoundToAll(sound);
-			}
-		}
-		
 	}
 	else if(!PointType && RedAlivePlayers<=(AliveToEnable=GetConVarInt(cvarAliveToEnable)) && !executed)
 	{
@@ -4724,6 +4972,18 @@ public Action:CheckAlivePlayers(Handle:hTimer)
 		}
 		SetControlPoint(true);
 		executed=true;
+	}
+
+	if(RedAlivePlayers<=countdownPlayers && BossHealth[0]>countdownHealth && countdownTime>1 && !executed2)
+	{
+		if(FindEntityByClassname2(-1, "team_control_point")!=-1)
+		{
+			timeleft=countdownTime;
+			DrawGameTimer=CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+			EmitSoundToAll("vo/announcer_ends_2min.wav");
+			EmitSoundToAll("vo/announcer_ends_2min.wav");
+		}
+		executed2=true;
 	}
 	return Plugin_Continue;
 }
@@ -4810,115 +5070,156 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
+	new boss=GetBossIndex(client);
 	new damage=GetEventInt(event, "damageamount");
 	new custom=GetEventInt(event, "custom");
-	new index=GetBossIndex(client);
-	if(index==-1 || !Boss[index] || !IsValidEdict(Boss[index]) || client==attacker)
-		return Plugin_Continue;
-		
-	if(custom==TF_CUSTOM_TELEFRAG) damage=(IsPlayerAlive(attacker) ? 9001 : 1);
-	if(custom==TF_CUSTOM_BOOTS_STOMP) damage*=5;
-	if(GetEventBool(event, "minicrit") && GetEventBool(event, "allseecrit")) SetEventBool(event, "allseecrit", false);
-	if(custom==TF_CUSTOM_BACKSTAB)
-		damage=RoundFloat(BossHealthMax[index]*(LastBossIndex()+1)*BossLivesMax[index]*(0.12-Stabbed[index]/90));
-	if(custom==TF_CUSTOM_TELEFRAG || custom==TF_CUSTOM_BOOTS_STOMP) SetEventInt(event, "damageamount", damage);
-	
-	decl i;
-	for(i=1; i<BossLives[index]; i++)
+	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]) || client==attacker)
 	{
-		//if(BossHealth[index]>=BossHealthMax[index]*i && BossHealth[index]-damage<BossHealthMax[index]*i)
-		if(BossHealth[index]-damage<BossHealthMax[index]*i)
+		return Plugin_Continue;
+	}
+
+	if(custom==TF_CUSTOM_TELEFRAG)
+	{
+		damage=(IsPlayerAlive(attacker) ? 9001 : 1);
+	}
+	else if(custom==TF_CUSTOM_BOOTS_STOMP)
+	{
+		damage*=5;
+	}
+	else if(custom==TF_CUSTOM_BACKSTAB)
+	{
+		damage=RoundFloat(BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90));
+	}
+
+	if(GetEventBool(event, "minicrit") && GetEventBool(event, "allseecrit"))
+	{
+		SetEventBool(event, "allseecrit", false);
+	}
+
+	if(custom==TF_CUSTOM_TELEFRAG || custom==TF_CUSTOM_BOOTS_STOMP)
+	{
+		SetEventInt(event, "damageamount", damage);
+	}
+	else if(custom==16)
+	{
+		SetEventInt(event, "damageamount", 9001);
+	}
+
+	for(new i=1; i<BossLives[boss]; i++)
+	{
+		if(BossHealth[boss]-damage<BossHealthMax[boss]*i)
 		{	
-			decl String:s[PLATFORM_MAX_PATH];
+			decl String:ability[PLATFORM_MAX_PATH];
 			decl String:lives[MAXRANDOMS][3];
-			decl count,j;
+			new count;
 			for(new n=1; n<MAXRANDOMS; n++)
 			{
-				Format(s,10,"ability%i",n);
-				KvRewind(BossKV[Special[index]]);
-				if(KvJumpToKey(BossKV[Special[index]],s))
+				Format(ability, 10, "ability%i", n);
+				KvRewind(BossKV[Special[boss]]);
+				if(KvJumpToKey(BossKV[Special[boss]], ability))
 				{
-					if(KvGetNum(BossKV[Special[index]], "arg0",0)!=-1)
+					if(KvGetNum(BossKV[Special[boss]], "arg0", 0)!=-1)
+					{
 						continue;
-					KvGetString(BossKV[Special[index]], "life",s,10); 	
-					if(!s[0])
-					{
-						decl String:ability_name[64], String:plugin_name[64];
-						KvGetString(BossKV[Special[index]], "plugin_name",plugin_name,64);
-						KvGetString(BossKV[Special[index]], "name",ability_name,64);
-						UseAbility(ability_name,plugin_name,index,-1);
 					}
-					else		
+
+					KvGetString(BossKV[Special[boss]], "life", ability, 10);
+					if(!ability[0])
 					{
-						count=ExplodeString(s, " ", lives, MAXRANDOMS, 3);
-						for(j=0; j<count; j++)
-							if(StringToInt(lives[j])==BossLives[index])
+						decl String:abilityName[64], String:pluginName[64];
+						KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+						KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+						UseAbility(abilityName, pluginName, boss, -1);
+					}
+					else
+					{
+						count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+						for(new j=0; j<count; j++)
+						{
+							if(StringToInt(lives[j])==BossLives[boss])
 							{
-								decl String:ability_name[64], String:plugin_name[64];
-								KvGetString(BossKV[Special[index]], "plugin_name",plugin_name,64);
-								KvGetString(BossKV[Special[index]], "name",ability_name,64);
-								UseAbility(ability_name,plugin_name,index,-1);
+								decl String:abilityName[64], String:pluginName[64];
+								KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+								KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+								UseAbility(abilityName, pluginName, boss, -1);
 								break;
 							}
+						}
 					}
 				}
 			}
-				
-			BossLives[index]--;
-			decl String:aname[64];
-			KvRewind(BossKV[Special[index]]);
-			KvGetString(BossKV[Special[index]], "name", aname, 64,"=Failed name=");
-			if(BossLives[index]==1)
+
+			new Action:action=Plugin_Continue;
+			Call_StartForward(OnLoseLife);
+			Call_PushCell(boss);
+			Call_Finish(action);
+			if(action!=Plugin_Stop && action!=Plugin_Handled)
 			{
-				strcopy(s,256,"ff2_life_left");
-			}
-			else
-			{
-				strcopy(s,256,"ff2_lives_left");
-			}
-			//Format(s,256,"%t","ff2_lives_left",aname,BossLives[index]); 	
-			for(j=1;  j<=MaxClients; j++)
-				if(IsValidClient(j) && !(FF2flags[j] & FF2FLAG_HUDDISABLED))
+				BossLives[boss]--;
+				decl String:bossName[64];
+				KvRewind(BossKV[Special[boss]]);
+				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
+				if(BossLives[boss]==1)
 				{
-					//SetGlobalTransTarget(j);
-					//PrintCenterText(j,s);
-					PrintCenterText(j,"%t",s,aname,BossLives[index]);
+					strcopy(ability, 256, "ff2_life_left");
 				}
-			if(RandomSound("sound_nextlife",s,PLATFORM_MAX_PATH))
-			{		
-				EmitSoundToAll(s);
-				EmitSoundToAll(s);
+				else
+				{
+					strcopy(ability, 256, "ff2_lives_left");
+				}
+
+				for(new target=1; target<=MaxClients; target++)
+				{
+					if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
+					{
+						PrintCenterText(target, "%t", ability, bossName, BossLives[boss]);
+					}
+				}
+
+				if(RandomSound("sound_nextlife", ability, PLATFORM_MAX_PATH))
+				{		
+					EmitSoundToAll(ability);
+					EmitSoundToAll(ability);
+				}
+				UpdateHealthBar();
 			}
-			
-			UpdateHealthBar();
 		}
 	}
-	BossHealth[index]-=damage;
-	BossCharge[index][0]+=damage*100.0/BossRageDamage[Special[index]];
-	if(custom==16) SetEventInt(event, "damageamount", 9001);
+
+	BossHealth[boss]-=damage;
+	BossCharge[boss][0]+=damage*100.0/BossRageDamage[Special[boss]];
 	Damage[attacker]+=damage;
+
 	new healers[MAXPLAYERS];
-	new healercount=0;
-	for(i=1; i<=MaxClients; i++)
+	new healerCount=0;
+	for(new target=1; target<=MaxClients; target++)
 	{
-		if(IsValidClient(i) && IsPlayerAlive(i) && (GetHealingTarget(i,true)==attacker))
+		if(IsValidClient(target) && IsPlayerAlive(target) && (GetHealingTarget(target, true)==attacker))
 		{
-			healers[healercount]=i;
-			healercount++;
+			healers[healerCount]=target;
+			healerCount++;
 		}
 	}
-	for(i=0; i<healercount; i++)
+
+	for(new target=0; target<healerCount; target++)
 	{
-		if(IsValidClient(healers[i]) && IsPlayerAlive(healers[i]))
+		if(IsValidClient(healers[target]) && IsPlayerAlive(healers[target]))
 		{
-			if(damage<10 || uberTarget[healers[i]]==attacker)
-				Damage[healers[i]]+=damage;
+			if(damage<10 || uberTarget[healers[target]]==attacker)
+			{
+				Damage[healers[target]]+=damage;
+			}
 			else
-				Damage[healers[i]]+=damage/(healercount+1); 	
+			{
+				Damage[healers[target]]+=damage/(healerCount+1);
+			}
 		}
 	}
-	if(BossCharge[index][0]>100)
-		BossCharge[index][0]=100.0;
+
+	if(BossCharge[boss][0]>100)
+	{
+		BossCharge[boss][0]=100.0;
+	}
 	return Plugin_Continue;
 }
 
@@ -4966,19 +5267,16 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				return Plugin_Changed;
 			}
 
-			new entity=-1;
-			while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
+			if(demoShield[client])
 			{
-				if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
-				{
-					TF2_RemoveWearable(client, entity);
-					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(client,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker,"player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
-					TF2_AddCondition(client, TFCond_Bonked, 0.1);
-					return Plugin_Continue;
-				}
+				TF2_RemoveWearable(client, demoShield[client]);
+				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, Pos, NULL_VECTOR, false, 0.0);
+				TF2_AddCondition(client, TFCond_Bonked, 0.1);
+				demoShield[client]=0;
+				return Plugin_Continue;
 			}
 
 			switch(TF2_GetPlayerClass(client))
@@ -5095,17 +5393,17 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					case 593:	//Third Degree
 					{
 						new healers[MAXPLAYERS];
-						new healercount=0;
+						new healerCount=0;
 						for(new healer=1; healer<=MaxClients; healer++)
 						{
 							if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
 							{
-								healers[healercount]=healer;
-								healercount++;
+								healers[healerCount]=healer;
+								healerCount++;
 							}
 						}
 
-						for(new healer=0; healer<healercount; healer++)
+						for(new healer=0; healer<healerCount; healer++)
 						{
 							if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
 							{
@@ -5116,7 +5414,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 									GetEdictClassname(medigun, classname, sizeof(classname));
 									if(strcmp(classname, "tf_weapon_medigun", false)==0)
 									{
-										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healercount);
+										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healerCount);
 										new Float:max=1.0;
 										if(GetEntProp(medigun, Prop_Send, "m_bChargeRelease"))
 										{
@@ -5187,10 +5485,13 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 355:  //Fan O' War
 					{
-						BossCharge[boss][0]-=5.0;
-						if(BossCharge[boss][0]<0)
+						if(BossCharge[boss][0]>0)
 						{
-							BossCharge[boss][0]=0.0;
+							BossCharge[boss][0]-=5.0;
+							if(BossCharge[boss][0]<0)
+							{
+								BossCharge[boss][0]=0.0;
+							}
 						}
 					}
 					case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander
@@ -5365,17 +5666,17 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 
 					new healers[MAXPLAYERS];
-					new healercount=0;
+					new healerCount=0;
 					for(new healer=1; healer<=MaxClients; healer++)
 					{
 						if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
 						{
-							healers[healercount]=healer;
-							healercount++;
+							healers[healerCount]=healer;
+							healerCount++;
 						}
 					}
 
-					for(new healer=0; healer<healercount; healer++)
+					for(new healer=0; healer<healerCount; healer++)
 					{
 						if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
 						{
@@ -5385,7 +5686,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 							else
 							{
-								Damage[healers[healer]]+=RoundFloat(changedamage/(healercount+1));
+								Damage[healers[healer]]+=RoundFloat(changedamage/(healerCount+1));
 							}
 						}
 					}
@@ -5462,6 +5763,71 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						SetEntPropFloat(client, Prop_Send, "m_flRageMeter",0.0);
 				}*/
 			}
+		}
+	}
+	return Plugin_Continue;
+}
+
+public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
+{
+	if(!Enabled || !IsValidClient(attacker) || !IsValidClient(victim) || attacker==victim)
+	{
+		return Plugin_Continue;
+	}
+
+	if(IsBoss(attacker))
+	{
+		decl Float:Pos[3];
+		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", Pos);
+		damageMultiplier=900.0;
+		JumpPower=0.0;
+		PrintCenterText(victim, "Ouch!  Watch your head!");
+		PrintCenterText(attacker, "You just goomba stomped somebody!");
+		return Plugin_Changed;
+	}
+	else if(IsBoss(victim))
+	{
+		damageMultiplier=GoombaDamage;
+		JumpPower=5000.0;
+		PrintCenterText(victim, "You were just goomba stomped!");
+		PrintCenterText(attacker, "You just goomba stomped the boss!");
+		UpdateHealthBar();
+		return Plugin_Changed;
+	}
+	return Plugin_Continue;
+}
+
+SetupRTD()
+{
+	cvarDisabledRTDPerks=FindConVar("sm_rtd_disabled");
+	cvarRTDMode=FindConVar("sm_rtd_mode");
+	cvarRTDTimeLimit=FindConVar("sm_rtd_timelimit");
+	if(cvarDisabledRTDPerks!=INVALID_HANDLE)
+	{
+		SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
+		HookConVarChange(cvarDisabledRTDPerks, CvarChange);
+	}
+
+	if(cvarRTDMode!=INVALID_HANDLE)
+	{
+		SetConVarInt(cvarRTDMode, 0);
+		HookConVarChange(cvarRTDMode, CvarChange);
+	}
+
+	if(cvarRTDTimeLimit!=INVALID_HANDLE)
+	{
+		SetConVarInt(cvarRTDTimeLimit, 30);
+		HookConVarChange(cvarRTDTimeLimit, CvarChange);
+	}
+}
+
+public Action:RTD_CanRollDice(client)
+{
+	if(IsBoss(client) && Enabled)
+	{
+		if(!canBossRTD)
+		{
+			return Plugin_Handled;
 		}
 	}
 	return Plugin_Continue;
@@ -5715,16 +6081,16 @@ stock CalcBossHealthMax(index)
 	decl String:formula[128];
 	new String:s[128];
 	new String:s2[2];
-	
+
 	new brackets;
 	new Float:summ[32];
 	new _operator[32];
-		
+
 	KvRewind(BossKV[Special[index]]);
-	KvGetString(BossKV[Special[index]], "health_formula",formula, 128,"((760+n)*n)^1.04");
-	ReplaceString(formula,128," ","");
-	new len=strlen(formula);
-	for(new i=0; i<=len; i++)
+	KvGetString(BossKV[Special[index]], "health_formula", formula, sizeof(formula), "((460+n)*n)^1.075");
+	ReplaceString(formula, sizeof(formula), " ", "");
+	new length=strlen(formula);
+	for(new i=0; i<=length; i++)
 	{			
 		strcopy(s2,2,formula[i]);
 		if((s2[0]>='0' && s2[0]<='9') || s2[0]=='.')
@@ -6288,7 +6654,7 @@ public Action:ResetQueuePointsCmd(client, args)
 	//admins
 	if(args!=1)
 	{
-		ReplyToCommand(client, "[FF2] Usage: ff2_resetqueuepoints<target >");
+		CReplyToCommand(client, "{olive}[FF2]{default} Usage: ff2_resetqueuepoints <target>");
 		return Plugin_Handled;
 	}
 
@@ -6427,7 +6793,7 @@ public FF2PanelH(Handle:menu, MenuAction:action, param1, param2)
 			case 2:
 				HelpPanel2(param1);
 			case 3:
-				NewPanel(param1, maxversion);
+				NewPanel(param1, maxVersion);
 			case 4:
 				QueuePanelCmd(param1,0);
 			case 5:
@@ -6487,8 +6853,8 @@ public NewPanelH(Handle:menu, MenuAction:action, param1, param2)
 			}
 			case 2:
 			{
-				if(curHelp[param1]>=maxversion)
-					NewPanel(param1, maxversion);
+				if(curHelp[param1]>=maxVersion)
+					NewPanel(param1, maxVersion);
 				else
 					NewPanel(param1, ++curHelp[param1]);
 			}
@@ -6500,25 +6866,25 @@ public NewPanelH(Handle:menu, MenuAction:action, param1, param2)
 public Action:NewPanelCmd(client, args)
 {
 	if(!IsValidClient(client)) return Plugin_Continue;
-	NewPanel(client, maxversion);
+	NewPanel(client, maxVersion);
 	return Plugin_Handled;
 }
-public Action:NewPanel(client, versionindex)
+public Action:NewPanel(client, versionIndex)
 {
 	if(!Enabled2)
 	{
 		return Plugin_Continue;
 	}
 
-	curHelp[client]=versionindex;
+	curHelp[client]=versionIndex;
 	new Handle:panel=CreatePanel();
 	decl String:whatsNew[90];
 
 	SetGlobalTransTarget(client);
-	Format(whatsNew, 90, "=%t:=", "whatsnew", ff2versiontitles[versionindex], ff2versiondates[versionindex]);
+	Format(whatsNew, 90, "=%t:=", "whatsnew", ff2versiontitles[versionIndex], ff2versiondates[versionIndex]);
 	SetPanelTitle(panel, whatsNew);
-	FindVersionData(panel, versionindex);
-	if(versionindex>0)
+	FindVersionData(panel, versionIndex);
+	if(versionIndex>0)
 	{
 		Format(whatsNew, 90, "%t", "older");
 	}
@@ -6528,7 +6894,7 @@ public Action:NewPanel(client, versionindex)
 	}
 
 	DrawPanelItem(panel, whatsNew);  
-	if(versionindex<maxversion)
+	if(versionIndex<maxVersion)
 	{
 		Format(whatsNew, 90, "%t", "newer");
 	}
@@ -6967,11 +7333,11 @@ stock SetBossHealthFix(client, oldHealth)  //Wat.  TODO: 2.0.0
 	SetEntProp(client, Prop_Send, "m_iHealth", originalHealth);
 }
 
-UseAbility(const String:ability_name[],const String:plugin_name[], index, slot, buttonmode=0)
+UseAbility(const String:ability_name[], const String:plugin_name[], client, slot, buttonMode=0)
 {
 	new bool:enabled=true;
 	Call_StartForward(PreAbility);
-	Call_PushCell(index);
+	Call_PushCell(client);
 	Call_PushString(plugin_name);
 	Call_PushString(ability_name);
 	Call_PushCell(slot);
@@ -6979,97 +7345,114 @@ UseAbility(const String:ability_name[],const String:plugin_name[], index, slot, 
 	Call_Finish();
 
 	if(!enabled)
+	{
 		return;
-	
-	new Action:act=Plugin_Continue;
+	}
+
+	new Action:action=Plugin_Continue;
 	Call_StartForward(OnAbility);
-	Call_PushCell(index);
+	Call_PushCell(client);
 	Call_PushString(plugin_name);
 	Call_PushString(ability_name);
 	if(slot==-1)
 	{
 		Call_PushCell(0);
-		Call_Finish(act);
+		Call_Finish(action);
 	}
 	else if(!slot)
 	{
-		FF2flags[Boss[index]]&=~FF2FLAG_BOTRAGE; 	
+		FF2flags[Boss[client]]&=~FF2FLAG_BOTRAGE; 	
 		Call_PushCell(0);
-		Call_Finish(act);
-		BossCharge[index][slot]=0.0;
+		Call_Finish(action);
+		BossCharge[client][slot]=0.0;
 	}
 	else
 	{
 		SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-		new RainbowDash=GetClientButtons(Boss[index]);
-		decl button;
-		switch(buttonmode)
+		new button;
+		switch(buttonMode)
 		{
-			//case 0: it's a taunt!
-			case 2: button=IN_RELOAD;
-			default: button=IN_DUCK | IN_ATTACK2;
-		}
-		if(RainbowDash & button)
-		{
-			if(!(FF2flags[Boss[index]] & FF2FLAG_USINGABILITY))
+			case 2:
 			{
-				FF2flags[Boss[index]]|=FF2FLAG_USINGABILITY;
-				switch(buttonmode)
+				button=IN_RELOAD;
+			}
+			default:
+			{
+				button=IN_DUCK|IN_ATTACK2;
+			}
+		}
+
+		if(GetClientButtons(Boss[client]) & button)
+		{
+			if(!(FF2flags[Boss[client]] & FF2FLAG_USINGABILITY))
+			{
+				FF2flags[Boss[client]]|=FF2FLAG_USINGABILITY;
+				switch(buttonMode)
 				{
-					//case 0: it's a taunt!
-					case 2: SetInfoCookies(Boss[index],0,CheckInfoCookies(Boss[index],0)-1);
-					default: SetInfoCookies(Boss[index],1,CheckInfoCookies(Boss[index],1)-1);
+					case 2:
+					{
+						SetInfoCookies(Boss[client], 0, CheckInfoCookies(Boss[client], 0)-1);
+					}
+					default:
+					{
+						SetInfoCookies(Boss[client], 1, CheckInfoCookies(Boss[client], 1)-1);
+					}
 				}
 			}
-			if(BossCharge[index][slot]>=0)
+
+			if(BossCharge[client][slot]>=0)
 			{
 				Call_PushCell(2);
-				Call_Finish(act);
-				new Float:see=100.0*0.2/GetAbilityArgumentFloat(index,plugin_name,ability_name,1,1.5);
-				if(BossCharge[index][slot]+see<100)
-					BossCharge[index][slot]+=see;
+				Call_Finish(action);
+				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(client, plugin_name, ability_name, 1, 1.5);
+				if(BossCharge[client][slot]+charge<100)
+				{
+					BossCharge[client][slot]+=charge;
+				}
 				else
-					BossCharge[index][slot]=100.0;
+				{
+					BossCharge[client][slot]=100.0;
+				}
 			}
 			else
 			{
 				Call_PushCell(1);
-				Call_Finish(act);
-				BossCharge[index][slot]+=0.2;
+				Call_Finish(action);
+				BossCharge[client][slot]+=0.2;
 			}
 		}
-		else if(BossCharge[index][slot]>0.3)
+		else if(BossCharge[client][slot]>0.3)
 		{	
-			new Float:ang[3];
-			GetClientEyeAngles(Boss[index], ang);
-			if(ang[0]<-45.0)
+			new Float:angles[3];
+			GetClientEyeAngles(Boss[client], angles);
+			if(angles[0]<-45.0)
 			{
 				Call_PushCell(3);
-				Call_Finish(act);
+				Call_Finish(action);
 				new Handle:data;
-				CreateDataTimer(0.1,Timer_UseBossCharge,data);
-				WritePackCell(data, index);
+				CreateDataTimer(0.1, Timer_UseBossCharge, data);
+				WritePackCell(data, client);
 				WritePackCell(data, slot);
-				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(index,plugin_name,ability_name,2,5.0));
+				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(client, plugin_name, ability_name, 2, 5.0));
 				ResetPack(data);
 			}
 			else
 			{
 				Call_PushCell(0);
-				Call_Finish(act);
-				BossCharge[index][slot]=0.0;
+				Call_Finish(action);
+				BossCharge[client][slot]=0.0;
 			}
 		}
-		else if(BossCharge[index][slot]<0)
+		else if(BossCharge[client][slot]<0)
 		{
 			Call_PushCell(1);
-			Call_Finish(act);
-			BossCharge[index][slot]+=0.2;
+			Call_Finish(action);
+			BossCharge[client][slot]+=0.2;
 		}
 		else
 		{
 			Call_PushCell(0);
-			Call_Finish(act);
+			Call_Finish(action);
 		}
 	}
 }
@@ -7129,28 +7512,58 @@ public Native_GetSpecial(Handle:plugin, numParams)
 	return true;
 }
 
-public Native_GetHealth(Handle:plugin, numParams)
+public Native_GetBossHealth(Handle:plugin, numParams)
 {
 	return BossHealth[GetNativeCell(1)];
 }
 
-public Native_GetHealthMax(Handle:plugin, numParams)
+public Native_SetBossHealth(Handle:plugin, numParams)
+{
+	BossHealth[GetNativeCell(1)]=GetNativeCell(2);
+}
+
+public Native_GetBossMaxHealth(Handle:plugin, numParams)
 {
 	return BossHealthMax[GetNativeCell(1)];
 }
 
+public Native_SetBossMaxHealth(Handle:plugin, numParams)
+{
+	BossHealthMax[GetNativeCell(1)]=GetNativeCell(2);
+}
+
+public Native_GetBossLives(Handle:plugin, numParams)
+{
+	return BossLives[GetNativeCell(1)];
+}
+
+public Native_SetBossLives(Handle:plugin, numParams)
+{
+	BossLives[GetNativeCell(1)]=GetNativeCell(2);
+}
+
+public Native_GetBossMaxLives(Handle:plugin, numParams)
+{
+	return BossLivesMax[GetNativeCell(1)];
+}
+
+public Native_SetBossMaxLives(Handle:plugin, numParams)
+{
+	BossLivesMax[GetNativeCell(1)]=GetNativeCell(2);
+}
+
 public Native_GetBossCharge(Handle:plugin, numParams)
 {
-	new index=GetNativeCell(1);
+	new client=GetNativeCell(1);
 	new slot=GetNativeCell(2);
-	return _:BossCharge[index][slot];
+	return _:BossCharge[client][slot];
 }
 
 public Native_SetBossCharge(Handle:plugin, numParams)
 {
-	new index=GetNativeCell(1);
+	new client=GetNativeCell(1);
 	new slot=GetNativeCell(2);
-	BossCharge[index][slot]=Float:GetNativeCell(3);
+	BossCharge[client][slot]=Float:GetNativeCell(3);
 }
 
 public Native_GetRoundState(Handle:plugin, numParams)
@@ -7315,34 +7728,43 @@ public Native_StartMusic(Handle:plugin, numParams)
 
 public Native_StopMusic(Handle:plugin, numParams)
 {
-	if(!BossKV[Special[0]]) return;
+	if(!BossKV[Special[0]])
+	{
+		return;
+	}
+
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
-	{	
-		decl String:s[PLATFORM_MAX_PATH];
-		Format(s,10,"path%i",MusicIndex);
-		KvGetString(BossKV[Special[0]], s,s, PLATFORM_MAX_PATH);
-		decl client;
+	{
+		decl String:music[PLATFORM_MAX_PATH];
+		Format(music, sizeof(music), "path%i", MusicIndex);
+		KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
+
+		new client;
 		if(plugin==INVALID_HANDLE)
+		{
 			client=0;
+		}
 		else
+		{
 			client=GetNativeCell(1);
+		}
+
 		if(!client)
 		{
-			for(new client2=1 ; client2<=MaxClients; client2++)
+			for(new target=1; target<=MaxClients; target++)
 			{
-				if(!IsValidClient(client2))
+				if(IsValidClient(target))
 				{
-					continue;
+					StopSound(target, SNDCHAN_AUTO, music);
+					StopSound(target, SNDCHAN_AUTO, music);
 				}
-				StopSound(client2, SNDCHAN_AUTO, s);
-				StopSound(client2, SNDCHAN_AUTO, s);
 			}
 		}
 		else
 		{
-			StopSound(client, SNDCHAN_AUTO, s);
-			StopSound(client, SNDCHAN_AUTO, s);
+			StopSound(client, SNDCHAN_AUTO, music);
+			StopSound(client, SNDCHAN_AUTO, music);
 		}
 	}	
 }
@@ -7491,11 +7913,7 @@ public OnTakeDamagePost(client, attacker, inflictor, Float:damage, damagetype)
 			return;
 		}
 
-		if(TF2_IsPlayerInCondition(Boss[boss],TFCond_Jarated))
-		{
-			TF2_RemoveCondition(Boss[boss],TFCond_Jarated);
-		}
-		else if(TF2_IsPlayerInCondition(Boss[boss], TFCond_MarkedForDeath))
+		if(TF2_IsPlayerInCondition(Boss[boss], TFCond_MarkedForDeath))
 		{
 			TF2_RemoveCondition(Boss[boss], TFCond_MarkedForDeath);
 		}

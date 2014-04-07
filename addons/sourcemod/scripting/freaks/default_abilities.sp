@@ -8,7 +8,7 @@
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-#define PLUGIN_VERSION "1.9.3"
+#define PLUGIN_VERSION "1.10.0"
 
 public Plugin:myinfo=
 {
@@ -40,8 +40,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart2()
 {
-	cvarOldJump=CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-
 	jumpHUD=CreateHudSynchronizer();
 
 	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
@@ -49,6 +47,11 @@ public OnPluginStart2()
 	HookEvent("player_death", event_player_death);
 
 	LoadTranslations("freak_fortress_2.phrases");
+}
+
+public OnAllPluginsLoaded()
+{
+	cvarOldJump=FindConVar("ff2_oldjump");
 }
 
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
@@ -210,9 +213,9 @@ public Action:Timer_StopTaunt(Handle:timer, any:client)
 	if(!GetEntProp(boss, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(boss, Prop_Send, "m_hHighFivePartner")))
 	{
 		TF2_RemoveCondition(boss, TFCond_Taunting);
-		new Float:up[3];
+		/*new Float:up[3];
 		up[2]=220.0;
-		TeleportEntity(boss, NULL_VECTOR, NULL_VECTOR, up);
+		TeleportEntity(boss, NULL_VECTOR, NULL_VECTOR, up);*/
 	}
 	return Plugin_Continue;
 }
@@ -281,8 +284,8 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 		}
 		case 3:
 		{
-			new Action:action=Plugin_Continue;
 			new bool:superJump=enableSuperDuperJump[client];
+			new Action:action=Plugin_Continue;
 			Call_StartForward(OnHaleJump);
 			Call_PushCellRef(superJump);
 			Call_Finish(action);
@@ -297,10 +300,9 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 
 			decl Float:position[3];
 			decl Float:velocity[3];
-
 			GetEntPropVector(boss, Prop_Send, "m_vecOrigin", position);
 			GetEntPropVector(boss, Prop_Data, "m_vecVelocity", velocity);
-			
+
 			if(GetConVarBool(cvarOldJump))
 			{
 				if(enableSuperDuperJump[client])
