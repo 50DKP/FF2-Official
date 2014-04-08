@@ -278,17 +278,19 @@ stock FindVersionData(Handle:panel, versionIndex)
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "6) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "7) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
-			DrawPanelText(panel, "8) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "9) [Server] Moved ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "10) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "6) Made Jarate actually jarate bosses, but kept the 8% rage deduction (Eggman/Wliu)");
+			DrawPanelText(panel, "7) Slightly tweaked default boss health formula to be more balanced (Eggman)");
+			DrawPanelText(panel, "8) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "9) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+			DrawPanelText(panel, "10) [Server] Removed ff2_halloween (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "11) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
-			DrawPanelText(panel, "12) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "11) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "12) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "13) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "14) [Dev] Added more natives and one additional forward (Eggman)");
 		}
 		case 34:  //1.9.3
 		{
