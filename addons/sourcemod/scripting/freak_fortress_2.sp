@@ -117,12 +117,13 @@ new Handle:cvarForceBossTeam;
 new Handle:cvarHealthBar;
 new Handle:cvarAllowSpectators;
 new Handle:cvarLastPlayerGlow;
-new Handle:cvarDebug;
 new Handle:cvarGoombaDamage;
 new Handle:cvarBossRTD;
 new Handle:cvarRTDMode;
 new Handle:cvarRTDTimeLimit;
 new Handle:cvarDisabledRTDPerks;
+new Handle:cvarUpdater;
+new Handle:cvarDebug;
 
 new Handle:FF2Cookies;
 
@@ -147,7 +148,7 @@ new countdownHealth=2000;
 new bool:lastPlayerGlow=true;
 new bool:SpecForceBoss=false;
 new Float:GoombaDamage=0.05;
-new bool:canBossRTD = false;
+new bool:canBossRTD=false;
 
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -272,23 +273,22 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicided at the beginning of the round (Wliu)");
 			DrawPanelText(panel, "3) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
 			DrawPanelText(panel, "4) Fixed players with 0 damage rarely showing up as 3rd place on the leaderboard (Wliu)");
-			DrawPanelText(panel, "5) Fixed a !ff2new bug in 1.9.2 where all versions would be shifted by one page (Wliu)");
+			DrawPanelText(panel, "5) Fixed ability timers not resetting when the round was over (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "6) Fixed ability timers not resetting when the round was over (Wliu)");
-			DrawPanelText(panel, "7) Fixed sentries not re-activating after being stunned (Wliu)");
-			DrawPanelText(panel, "7) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "8) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
-			DrawPanelText(panel, "9) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "6) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "7) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
+			DrawPanelText(panel, "8) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "9) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "10) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "10) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "11) [Server] Moved ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "12) [Dev] Added more natives and one extra forward (Eggman)");
+			DrawPanelText(panel, "11) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "12) [Dev] Added more natives and one additional forward (Eggman)");
 		}
 		case 34:  //1.9.3
 		{
@@ -687,12 +687,14 @@ public OnPluginStart()
 	cvarEnableEurekaEffect=CreateConVar("ff2_enable_eureka", "0", "0-Disable the Eureka Effect, 1-Enable the Eureka Effect", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarAllowSpectators=FindConVar("mp_allowspectators");
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarAllowSpectators=FindConVar("mp_allowspectators");
+
+	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
 	HookEvent("player_changeclass", OnChangeClass);
 	HookEvent("teamplay_round_start", event_round_start);
@@ -722,6 +724,7 @@ public OnPluginStart()
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
 	HookConVarChange(cvarGoombaDamage, CvarChange);
 	HookConVarChange(cvarBossRTD, CvarChange);
+	HookConVarChange(cvarUpdater, CvarChange);
 	cvarNextmap=FindConVar("sm_nextmap");
 	HookConVarChange(cvarNextmap, CvarChangeNextmap);
 
@@ -822,7 +825,7 @@ public OnPluginStart()
 	#endif
 
 	#if defined _updater_included && !defined DEV_VERSION
-	if(LibraryExists("updater"))
+	if(LibraryExists("updater") && GetConVarBool(cvarUpdater))
 	{
 		Updater_AddPlugin(UPDATE_URL);
 	}
@@ -876,7 +879,7 @@ public OnLibraryAdded(const String:name[])
 	#endif
 
 	#if defined _updater_included && !defined DEV_VERSION
-	if(StrEqual(name, "updater"))
+	if(StrEqual(name, "updater") && GetConVarBool(cvarUpdater))
 	{
 		Updater_AddPlugin(UPDATE_URL);
 	}
@@ -1462,6 +1465,19 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarSpecForceBoss)
 	{
 		SpecForceBoss=bool:StringToInt(newValue);
+	}
+	else if(convar==cvarUpdater)
+	{
+		#if defined _updater_included && !defined DEV_VERSION
+		if(GetConVarInt(cvarUpdater))
+		{
+			Updater_AddPlugin(UPDATER_URL);
+		}
+		else
+		{
+			Updater_RemovePlugin();
+		}
+		#endif
 	}
 	else if(convar==cvarEnabled)
 	{
