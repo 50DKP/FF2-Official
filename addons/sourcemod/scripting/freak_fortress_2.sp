@@ -917,6 +917,11 @@ public OnLibraryRemoved(const String:name[])
 	}
 	#endif
 
+	if(StrEqual(name, "updater"))
+	{
+		Updater_RemovePlugin();
+	}
+
 	if(StrEqual(name, "smac"))
 	{
 		smac=false;
@@ -1061,6 +1066,8 @@ public EnableFF2()
 		Steam_SetGameDescription(gameDesc);
 	}
 	#endif
+
+	ServerCommand("mp_restartround 1");
 }
 
 public DisableFF2()
@@ -1094,6 +1101,8 @@ public DisableFF2()
 		Steam_SetGameDescription("Team Fortress");
 	}
 	#endif
+
+	ServerCommand("mp_restartround 1");
 }
 
 public AddToDownload()
@@ -3850,8 +3859,8 @@ public Action:Command_Points(client, args)
 	}
 
 	decl String:queuePoints[80];
-	decl String:targetname[PLATFORM_MAX_PATH];
-	GetCmdArg(1, targetname, sizeof(targetname));
+	decl String:targetName[PLATFORM_MAX_PATH];
+	GetCmdArg(1, targetName, sizeof(targetName));
 	GetCmdArg(2, queuePoints, sizeof(queuePoints));
 	new points=StringToInt(queuePoints);
 
@@ -3859,7 +3868,7 @@ public Action:Command_Points(client, args)
 	new target_list[MAXPLAYERS], target_count;
 	new bool:tn_is_ml;
 
-	if((target_count=ProcessTargetString(targetname, client, target_list, MaxClients, 0, target_name, sizeof(target_name), tn_is_ml))<=0)
+	if((target_count=ProcessTargetString(targetName, client, target_list, MaxClients, 0, target_name, sizeof(target_name), tn_is_ml))<=0)
 	{
 		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
@@ -3876,7 +3885,6 @@ public Action:Command_Points(client, args)
 		LogAction(client, target_list[target], "\"%L\" added %d queue points to \"%L\"", client, points, target_list[target]);
 		CReplyToCommand(client, "{olive}[FF2]{default} Added %d queue points to %s", points, target_name);
 	}
-
 	return Plugin_Handled;
 }
 
@@ -4056,7 +4064,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 public Action:ClientTimer(Handle:hTimer)
 {
-	if(CheckRoundState()==2 || CheckRoundState()==-1)
+	if(CheckRoundState()==2 || CheckRoundState()==-1 || !Enabled || !Enabled2)
 	{
 		return Plugin_Stop;
 	}
@@ -4325,6 +4333,11 @@ stock FindSentry(client)
 
 public Action:BossTimer(Handle:hTimer)
 {
+	if(!Enabled || !Enabled2)
+	{
+		return Plugin_Stop;
+	}
+
 	new bool:bIsEveryponyDead=true;
 	for(new client=0; client<=MaxClients; client++)
 	{
