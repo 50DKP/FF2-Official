@@ -258,9 +258,9 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 4, 2014",	//1.10.0
-	"April 4, 2014",	//1.10.0
-	"April 4, 2014"		//1.10.0
+	"April 9, 2014",	//1.10.0
+	"April 9, 2014",	//1.10.0
+	"April 9, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -279,8 +279,8 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 36:  //1.10.0
 		{
 			DrawPanelText(panel, "6) Fixed bosses losing momentum when raging while in the air (Wliu)");
-			DrawPanelText(panel, "7) Made Jarate actually jarate bosses, but kept the 8% rage deduction (Eggman/Wliu)");
-			DrawPanelText(panel, "8) Slightly tweaked default boss health formula to be more balanced (Eggman)");
+			DrawPanelText(panel, "7) Slightly tweaked default boss health formula to be more balanced (Eggman)");
+			DrawPanelText(panel, "8) [Server] Fixed the ff2_enable cvar (Wliu)");
 			DrawPanelText(panel, "9) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
 			DrawPanelText(panel, "10) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
