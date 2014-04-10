@@ -128,12 +128,13 @@ new Handle:cvarForceBossTeam;
 new Handle:cvarHealthBar;
 new Handle:cvarAllowSpectators;
 new Handle:cvarLastPlayerGlow;
-new Handle:cvarDebug;
 new Handle:cvarGoombaDamage;
 new Handle:cvarBossRTD;
 new Handle:cvarRTDMode;
 new Handle:cvarRTDTimeLimit;
 new Handle:cvarDisabledRTDPerks;
+new Handle:cvarUpdater;
+new Handle:cvarDebug;
 
 new Handle:FF2Cookies;
 
@@ -158,7 +159,7 @@ new countdownHealth=2000;
 new bool:lastPlayerGlow=true;
 new bool:SpecForceBoss=false;
 new Float:GoombaDamage=0.05;
-new bool:canBossRTD = false;
+new bool:canBossRTD=false;
 
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -296,9 +297,9 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 4, 2014",	//1.10.0
-	"April 4, 2014",	//1.10.0
-	"April 4, 2014"		//1.10.0
+	"April 9, 2014",	//1.10.0
+	"April 9, 2014",	//1.10.0
+	"April 9, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -311,23 +312,25 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicided at the beginning of the round (Wliu)");
 			DrawPanelText(panel, "3) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
 			DrawPanelText(panel, "4) Fixed players with 0 damage rarely showing up as 3rd place on the leaderboard (Wliu)");
-			DrawPanelText(panel, "5) Fixed a !ff2new bug in 1.9.2 where all versions would be shifted by one page (Wliu)");
+			DrawPanelText(panel, "5) Fixed ability timers not resetting when the round was over (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "6) Fixed ability timers not resetting when the round was over (Wliu)");
-			DrawPanelText(panel, "7) Fixed sentries not re-activating after being stunned (Wliu)");
-			DrawPanelText(panel, "7) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "8) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
-			DrawPanelText(panel, "9) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "6) Fixed bosses losing momentum when raging while in the air (Wliu)");
+			DrawPanelText(panel, "7) Slightly tweaked default boss health formula to be more balanced (Eggman)");
+			DrawPanelText(panel, "8) [Server] Fixed the ff2_enable cvar (Wliu)");
+			DrawPanelText(panel, "9) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "10) [Server] Made !ff2_special display a warning instead of throwing an error when used with rcon (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "10) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "11) [Server] Moved ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "12) [Dev] Added more natives and one extra forward (Eggman)");
+			DrawPanelText(panel, "11) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "12) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "13) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "14) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "15) [Dev] Added more natives and one additional forward (Eggman)");
 		}
 		case 34:  //1.9.3
 		{
@@ -726,14 +729,14 @@ public OnPluginStart()
 	cvarEnableEurekaEffect=CreateConVar("ff2_enable_eureka", "0", "0-Disable the Eureka Effect, 1-Enable the Eureka Effect", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarAllowSpectators=FindConVar("mp_allowspectators");
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
-	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (Requires RTD plugin)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarAllowSpectators=FindConVar("mp_allowspectators");
+
+	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
 	HookEvent("player_changeclass", OnChangeClass);
 	HookEvent("teamplay_round_start", event_round_start);
@@ -763,6 +766,7 @@ public OnPluginStart()
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
 	HookConVarChange(cvarGoombaDamage, CvarChange);
 	HookConVarChange(cvarBossRTD, CvarChange);
+	HookConVarChange(cvarUpdater, CvarChange);
 	cvarNextmap=FindConVar("sm_nextmap");
 	HookConVarChange(cvarNextmap, CvarChangeNextmap);
 
@@ -863,7 +867,7 @@ public OnPluginStart()
 	#endif
 
 	#if defined _updater_included && !defined DEV_VERSION
-	if(LibraryExists("updater"))
+	if(LibraryExists("updater") && GetConVarBool(cvarUpdater))
 	{
 		Updater_AddPlugin(UPDATE_URL);
 	}
@@ -917,7 +921,7 @@ public OnLibraryAdded(const String:name[])
 	#endif
 
 	#if defined _updater_included && !defined DEV_VERSION
-	if(StrEqual(name, "updater"))
+	if(StrEqual(name, "updater") && GetConVarBool(cvarUpdater))
 	{
 		Updater_AddPlugin(UPDATE_URL);
 	}
@@ -951,6 +955,11 @@ public OnLibraryRemoved(const String:name[])
 		goomba=false;
 	}
 	#endif
+
+	if(StrEqual(name, "updater"))
+	{
+		Updater_RemovePlugin();
+	}
 
 	if(StrEqual(name, "smac"))
 	{
@@ -1081,6 +1090,7 @@ public EnableFF2()
 	{
 		CreateTimer(time, Timer_Announce, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	}
+
 	CheckToChangeMapDoors();
 	MapHasMusic(true);
 	AddToDownload();
@@ -1091,6 +1101,69 @@ public EnableFF2()
 		ServerCommand("smac_removecvar sv_cheats");
 		ServerCommand("smac_removecvar host_timescale");
 	}
+
+	bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
+	FindHealthBar();
+
+	#if defined _rtd_included
+	if(rtd)
+	{
+		SetupRTD();
+	}
+	#endif
+
+	#if defined _steamtools_included
+	if(steamtools)
+	{
+		decl String:gameDesc[64];
+		Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
+		Steam_SetGameDescription(gameDesc);
+	}
+	#endif
+
+	ServerCommand("mp_restartround 1");
+}
+
+public DisableFF2()
+{
+	Enabled=false;
+	Enabled2=false;
+
+	DisableSubPlugins();
+
+	SetConVarInt(FindConVar("tf_arena_use_queue"), tf_arena_use_queue);
+	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
+	SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
+	SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
+	SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), tf_scout_hype_pep_max);
+
+	if(MusicTimer!=INVALID_HANDLE)
+	{
+		KillTimer(MusicTimer);
+		MusicTimer=INVALID_HANDLE;
+	}
+
+	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+	{
+		ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
+		ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
+	}
+
+	#if defined _steamtools_included
+	if(steamtools)
+	{
+		Steam_SetGameDescription("Team Fortress");
+	}
+	#endif
+
+	ServerCommand("mp_restartround 1");
+}
+
+public AddToDownload()
+{
+	Specials=0;
+	decl String:config[PLATFORM_MAX_PATH], String:i_str[4];
+	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
 
 	bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
 	FindHealthBar();
@@ -1518,6 +1591,19 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		SpecForceBoss=bool:StringToInt(newValue);
 	}
+	else if(convar==cvarUpdater)
+	{
+		#if defined _updater_included && !defined DEV_VERSION
+		if(GetConVarInt(cvarUpdater))
+		{
+			Updater_AddPlugin(UPDATER_URL);
+		}
+		else
+		{
+			Updater_RemovePlugin();
+		}
+		#endif
+	}
 	else if(convar==cvarEnabled)
 	{
 		if(StringToInt(newValue))
@@ -1599,6 +1685,7 @@ stock bool:IsFF2Map(bool:forceRecalc=false)
 		{
 			SetFailState("[FF2] Error reading maps from %s, disabling plugin.", config);
 		}
+
 		new tries=0;
 		while(ReadFileLine(file, config, sizeof(config)) && tries<100)
 		{
@@ -1683,21 +1770,12 @@ stock bool:CheckToChangeMapDoors()
 	{
 		Format(config, strlen(config)-1, config);
 		if(strncmp(config, "//", 2, false)==0)
-<<<<<<< HEAD
 		{
 			continue;
 		}
 
 		if(StrContains(currentmap, config, false)!=-1 || StrContains(config, "all", false)==0)
 		{
-=======
-		{
-			continue;
-		}
-
-		if(StrContains(currentmap, config, false)!=-1 || StrContains(config, "all", false)==0)
-		{
->>>>>>> refs/heads/development
 			CloseHandle(file);
 			checkDoors=true;
 			return;
@@ -1705,6 +1783,7 @@ stock bool:CheckToChangeMapDoors()
 	}
 	CloseHandle(file);
 }
+
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!GetConVarBool(cvarEnabled))
@@ -4114,8 +4193,8 @@ public Action:Command_Points(client, args)
 	}
 
 	decl String:queuePoints[80];
-	decl String:targetname[PLATFORM_MAX_PATH];
-	GetCmdArg(1, targetname, sizeof(targetname));
+	decl String:targetName[PLATFORM_MAX_PATH];
+	GetCmdArg(1, targetName, sizeof(targetName));
 	GetCmdArg(2, queuePoints, sizeof(queuePoints));
 	new points=StringToInt(queuePoints);
 
@@ -4123,7 +4202,7 @@ public Action:Command_Points(client, args)
 	new target_list[MAXPLAYERS], target_count;
 	new bool:tn_is_ml;
 
-	if((target_count=ProcessTargetString(targetname, client, target_list, MaxClients, 0, target_name, sizeof(target_name), tn_is_ml))<=0)
+	if((target_count=ProcessTargetString(targetName, client, target_list, MaxClients, 0, target_name, sizeof(target_name), tn_is_ml))<=0)
 	{
 		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
@@ -4140,7 +4219,6 @@ public Action:Command_Points(client, args)
 		LogAction(client, target_list[target], "\"%L\" added %d queue points to \"%L\"", client, points, target_list[target]);
 		CReplyToCommand(client, "{olive}[FF2]{default} Added %d queue points to %s", points, target_name);
 	}
-
 	return Plugin_Handled;
 }
 
@@ -4320,7 +4398,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 public Action:ClientTimer(Handle:hTimer)
 {
-	if(CheckRoundState()==2 || CheckRoundState()==-1)
+	if(CheckRoundState()==2 || CheckRoundState()==-1 || !Enabled || !Enabled2)
 	{
 		return Plugin_Stop;
 	}
@@ -4589,6 +4667,11 @@ stock FindSentry(client)
 
 public Action:BossTimer(Handle:hTimer)
 {
+	if(!Enabled || !Enabled2)
+	{
+		return Plugin_Stop;
+	}
+
 	new bool:bIsEveryponyDead=true;
 	for(new client=0; client<=MaxClients; client++)
 	{
