@@ -32,7 +32,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 6"
+#define PLUGIN_VERSION "1.10.0 Beta 7"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -179,6 +179,8 @@ new g_Monoculus=-1;
 static bool:executed=false;
 static bool:executed2=false;
 
+new changeFF2=0;
+
 static const String:ff2versiontitles[][]=
 {
 	"1.0",
@@ -258,9 +260,9 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 9, 2014",	//1.10.0
-	"April 9, 2014",	//1.10.0
-	"April 9, 2014"		//1.10.0
+	"April 10, 2014",	//1.10.0
+	"April 10, 2014",	//1.10.0
+	"April 10, 2014"	//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -705,7 +707,7 @@ public OnPluginStart()
 	HookEvent("player_changeclass", event_change_class);
 	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
 	HookEvent("player_death", event_player_death, EventHookMode_Pre);
-	HookEvent("player_chargedeployed", event_uberdeployed);
+	HookEvent("player_chargedeployed", event_uber_deployed);
 	HookEvent("player_hurt", event_hurt, EventHookMode_Pre);
 	HookEvent("object_destroyed", event_destroy, EventHookMode_Pre);
 	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
@@ -1037,6 +1039,7 @@ public EnableFF2()
 	{
 		CreateTimer(time, Timer_Announce, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	}
+
 	CheckToChangeMapDoors();
 	MapHasMusic(true);
 	AddToDownload();
@@ -1067,7 +1070,7 @@ public EnableFF2()
 	}
 	#endif
 
-	ServerCommand("mp_restartround 1");
+	changeFF2=0;
 }
 
 public DisableFF2()
@@ -1082,6 +1085,24 @@ public DisableFF2()
 	SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
 	SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
 	SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), tf_scout_hype_pep_max);
+
+	if(doorCheckTimer!=INVALID_HANDLE)
+	{
+		KillTimer(doorCheckTimer);
+		doorCheckTimer=INVALID_HANDLE;
+	}
+
+	for(new client=1; client<=MaxClients; client++)
+	{
+		if(IsValidClient(client))
+		{
+			if(BossInfoTimer[client][1]!=INVALID_HANDLE)
+			{
+			KillTimer(BossInfoTimer[client][1]);
+			BossInfoTimer[client][1]=INVALID_HANDLE;
+			}
+		}
+	}
 
 	if(MusicTimer!=INVALID_HANDLE)
 	{
@@ -1102,7 +1123,7 @@ public DisableFF2()
 	}
 	#endif
 
-	ServerCommand("mp_restartround 1");
+	changeFF2=0;
 }
 
 public AddToDownload()
@@ -1495,11 +1516,11 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		if(StringToInt(newValue))
 		{
-			EnableFF2();
+			changeFF2=1;
 		}
 		else
 		{
-			DisableFF2();
+			changeFF2=2;
 		}
 	}
 }
@@ -1673,6 +1694,15 @@ stock bool:CheckToChangeMapDoors()
 
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
 {
+	if(changeFF2==1)
+	{
+		EnableFF2();
+	}
+	else if(changeFF2==2)
+	{
+		DisableFF2();
+	}
+
 	if(!GetConVarBool(cvarEnabled))
 	{
 		#if defined _steamtools_included
@@ -2098,7 +2128,6 @@ public CheckArena()
 
 public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	decl String:sound[512];
 	RoundCount++;
 
 	if(!Enabled)
@@ -2106,6 +2135,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		return Plugin_Continue;
 	}
 
+	decl String:sound[512];
 	executed=false;
 	executed2=false;
 	new bool:bossWin=false;
@@ -3661,82 +3691,94 @@ public Action:Timer_Change_Class(Handle:hTimer, any:userid)
 	return Plugin_Continue;
 }
 
-public Action:event_uberdeployed(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:event_uber_deployed(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled)
+	{
 		return Plugin_Continue;
+	}
+
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	if(IsValidClient(client) && IsPlayerAlive(client))
 	{
 		new medigun=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 		if(IsValidEntity(medigun))
 		{
-			decl String:s[64];
-			GetEdictClassname(medigun, s, sizeof(s));
-			if(!strcmp(s,"tf_weapon_medigun"))
+			decl String:classname[64];
+			GetEdictClassname(medigun, classname, sizeof(classname));
+			if(!strcmp(classname, "tf_weapon_medigun"))
 			{
-				TF2_AddCondition(client,TFCond_HalloweenCritCandy,0.5, client);
+				TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.5, client);
 				new target=GetHealingTarget(client);
 				if(IsValidClient(target, false) && IsPlayerAlive(target))
 				{
 					TF2_AddCondition(target, TFCond_HalloweenCritCandy, 0.5, client);
 					uberTarget[client]=target;
 				}
-				else uberTarget[client]=-1;
-				SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel",1.51);
-				CreateTimer(0.4,Timer_Lazor,EntIndexToEntRef(medigun),TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+				else
+				{
+					uberTarget[client]=-1;
+				}
+				SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", 1.50);
+				CreateTimer(0.4, Timer_Uber, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 	}
 	return Plugin_Continue;
 }
 
-public Action:Timer_Lazor(Handle:hTimer,any:medigunid)
+public Action:Timer_Uber(Handle:timer, any:medigunid)
 {
 	new medigun=EntRefToEntIndex(medigunid);
 	if(medigun && IsValidEntity(medigun) && CheckRoundState()==1)
 	{
 		new client=GetEntPropEnt(medigun, Prop_Send, "m_hOwnerEntity");
-		if(client<1)
-			return Plugin_Stop;
 		new Float:charge=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
 		if(IsValidClient(client, false) && IsPlayerAlive(client) && GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon")==medigun)
 		{
 			new target=GetHealingTarget(client);
 			if(charge>0.05)
 			{
-				TF2_AddCondition(client,TFCond_HalloweenCritCandy,0.5);
+				TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.5);
 				if(IsValidClient(target, false) && IsPlayerAlive(target))
 				{
 					TF2_AddCondition(target, TFCond_HalloweenCritCandy, 0.5);
 					uberTarget[client]=target;
 				}
-				else uberTarget[client]=-1;
+				else
+				{
+					uberTarget[client]=-1;
+				}
 			}
 		}
+
 		if(charge<=0.05)
 		{
-			CreateTimer(3.0,Timer_Lazor2,EntIndexToEntRef(medigun));
+			CreateTimer(3.0, Timer_ResetUberCharge, EntIndexToEntRef(medigun));
 			FF2flags[client]&=~FF2FLAG_UBERREADY;
 			return Plugin_Stop;
 		}
 	}
 	else
+	{
 		return Plugin_Stop;
+	}
 	return Plugin_Continue;
 }
 
-public Action:Timer_Lazor2(Handle:hTimer,any:medigunid)
+public Action:Timer_ResetUberCharge(Handle:timer, any:medigunid)
 {
 	new medigun=EntRefToEntIndex(medigunid);
 	if(IsValidEntity(medigun))
-		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel",GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+0.41);
+	{
+		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+0.40);
+	}
 	return Plugin_Continue;
 }
 
 public Action:Command_GetHPCmd(client, args)
 {
-	if(!IsValidClient(client))
+	if(!IsValidClient(client) || !Enabled || CheckRoundState()!=1)
 	{
 		return Plugin_Continue;
 	}
@@ -3747,11 +3789,6 @@ public Action:Command_GetHPCmd(client, args)
 
 public Action:Command_GetHP(client)  //TODO: This can rarely show a very large negative number if you time it right
 {
-	if(!Enabled || CheckRoundState()!=1)
-	{
-		return Plugin_Continue;
-	}
-
 	if(IsBoss(client) || GetGameTime()>=HPTime)
 	{
 		new String:health[512];
@@ -3805,12 +3842,6 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 
 public Action:Command_SetNextBoss(client, args)
 {
-	if(!IsValidClient(client))
-	{
-		CReplyToCommand(client, "{olive}[FF2]{default} This command must be used in-game and without RCON.");
-		return Plugin_Handled;
-	}
-
 	decl String:name[32];
 	decl String:boss[64];
 
@@ -4062,9 +4093,9 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	return Plugin_Continue;
 }
 
-public Action:ClientTimer(Handle:hTimer)
+public Action:ClientTimer(Handle:timer)
 {
-	if(CheckRoundState()==2 || CheckRoundState()==-1 || !Enabled || !Enabled2)
+	if(CheckRoundState()==2 || CheckRoundState()==-1 || !Enabled)
 	{
 		return Plugin_Stop;
 	}
@@ -4331,9 +4362,9 @@ stock FindSentry(client)
 	return -1;
 }
 
-public Action:BossTimer(Handle:hTimer)
+public Action:BossTimer(Handle:timer)
 {
-	if(!Enabled || !Enabled2)
+	if(!Enabled)
 	{
 		return Plugin_Stop;
 	}
@@ -8039,12 +8070,11 @@ UpdateHealthBar()
 	{
 		return;
 	}
+
 	new healthAmount=0;
 	new maxHealthAmount=0;
-	
 	new count=0;
-	
-	for(new client=0; client<MaxClients; client++)
+	for(new client=0; client<=MaxClients; client++)
 	{
 		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
