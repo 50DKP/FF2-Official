@@ -179,7 +179,9 @@ new g_Monoculus=-1;
 static bool:executed=false;
 static bool:executed2=false;
 
-new changeFF2=0;
+static bool:emitRageSound=true;
+
+new changeGamemode=0;
 
 static const String:ff2versiontitles[][]=
 {
@@ -260,9 +262,9 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 10, 2014",	//1.10.0
-	"April 10, 2014",	//1.10.0
-	"April 10, 2014"	//1.10.0
+	"April 11, 2014",	//1.10.0
+	"April 11, 2014",	//1.10.0
+	"April 11, 2014"	//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -294,6 +296,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "13) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
 			DrawPanelText(panel, "14) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
 			DrawPanelText(panel, "15) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "16) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
 		}
 		case 34:  //1.9.3
 		{
@@ -828,13 +831,6 @@ public OnPluginStart()
 	#if defined _steamtools_included
 	steamtools=LibraryExists("SteamTools");
 	#endif
-
-	#if defined _updater_included && !defined DEV_VERSION
-	if(LibraryExists("updater") && GetConVarBool(cvarUpdater))
-	{
-		Updater_AddPlugin(UPDATE_URL);
-	}
-	#endif
 }
 
 public bool:BossTargetFilter(const String:pattern[], Handle:clients)
@@ -938,7 +934,7 @@ public OnConfigsExecuted()
 	mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
 	tf_scout_hype_pep_max=GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
 
-	if(IsFF2Map() && GetConVarBool(cvarEnabled))
+	if(IsFF2Map(true) && GetConVarBool(cvarEnabled))
 	{
 		EnableFF2();
 	}
@@ -946,6 +942,13 @@ public OnConfigsExecuted()
 	{
 		DisableFF2();
 	}
+
+	#if defined _updater_included && !defined DEV_VERSION
+	if(LibraryExists("updater") && GetConVarBool(cvarUpdater))
+	{
+		Updater_AddPlugin(UPDATE_URL);
+	}
+	#endif
 }
 
 public OnMapStart()
@@ -1070,7 +1073,7 @@ public EnableFF2()
 	}
 	#endif
 
-	changeFF2=0;
+	changeGamemode=0;
 }
 
 public DisableFF2()
@@ -1123,7 +1126,7 @@ public DisableFF2()
 	}
 	#endif
 
-	changeFF2=0;
+	changeGamemode=0;
 }
 
 public AddToDownload()
@@ -1504,7 +1507,7 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 		#if defined _updater_included && !defined DEV_VERSION
 		if(GetConVarInt(cvarUpdater))
 		{
-			Updater_AddPlugin(UPDATER_URL);
+			Updater_AddPlugin(UPDATE_URL);
 		}
 		else
 		{
@@ -1516,11 +1519,25 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		if(StringToInt(newValue))
 		{
-			changeFF2=1;
+			if(Enabled)
+			{
+				changeGamemode=0;
+			}
+			else
+			{
+				changeGamemode=1;
+			}
 		}
 		else
 		{
-			changeFF2=2;
+			if(!Enabled)
+			{
+				changeGamemode=0;
+			}
+			else
+			{
+				changeGamemode=2;
+			}
 		}
 	}
 }
@@ -1694,11 +1711,11 @@ stock bool:CheckToChangeMapDoors()
 
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(changeFF2==1)
+	if(changeGamemode==1)
 	{
 		EnableFF2();
 	}
-	else if(changeFF2==2)
+	else if(changeGamemode==2)
 	{
 		DisableFF2();
 	}
@@ -4426,6 +4443,29 @@ public Action:BossTimer(Handle:timer)
 			{
 				SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255);
 				ShowSyncHudText(Boss[client], rageHUD, "%t", "rage_meter", RoundFloat(BossCharge[client][0]));
+
+				decl String:sound[PLATFORM_MAX_PATH];
+				if(RandomSoundAbility("sound_full_rage", sound, PLATFORM_MAX_PATH) && emitRageSound)
+				{
+					new boss=GetBossIndex(client);
+					new Float:position[3];
+					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
+
+					FF2flags[Boss[boss]]|=FF2FLAG_TALKING;
+					EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+					EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+				
+					for(new target=1; target<=MaxClients; target++)
+					{
+						if(IsClientInGame(target) && target!=Boss[boss])
+						{
+							EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+							EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+						}
+					}
+					FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
+					emitRageSound=false;
+				}
 			}	
 		}
 		SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
@@ -4676,7 +4716,7 @@ public Action:DoTaunt(client, const String:command[], argc)
 				}					
 			}
 		}
-		
+
 		decl Float:position[3];
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 
@@ -4697,6 +4737,7 @@ public Action:DoTaunt(client, const String:command[], argc)
 			}
 			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
 		}
+		emitRageSound=true;
 	}
 	return Plugin_Continue;
 }
@@ -4780,13 +4821,13 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 
 OnPlayerDeath(client, attacker, bool:fake=false)
 {
-	if(CheckRoundState()!=1)
+	if(CheckRoundState()!=1 || !Enabled)
 	{
 		return;
 	}
 
 	CreateTimer(0.1, CheckAlivePlayers);
-	DoOverlay(client,"");
+	DoOverlay(client, "");
 	decl String:sound[PLATFORM_MAX_PATH];
 	if(!IsBoss(client))
 	{
@@ -7968,7 +8009,7 @@ public Action:VSH_OnGetRoundState(&result)
 
 public OnTakeDamagePost(client, attacker, inflictor, Float:damage, damagetype)
 {
-	if(IsBoss(client))
+	if(IsBoss(client) && Enabled)
 	{
 		new boss=GetBossIndex(client);
 		if(boss==-1)
@@ -8054,7 +8095,7 @@ FindHealthBar()
 
 public HealthbarEnableChanged(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	if(GetConVarBool(cvarHealthBar))
+	if(GetConVarBool(cvarHealthBar) && Enabled)
 	{
 		UpdateHealthBar();
 	}
@@ -8066,7 +8107,7 @@ public HealthbarEnableChanged(Handle:convar, const String:oldValue[], const Stri
 
 UpdateHealthBar()
 {
-	if(!GetConVarBool(cvarHealthBar) || g_Monoculus!=-1 || CheckRoundState()==-1)
+	if(!GetConVarBool(cvarHealthBar) || g_Monoculus!=-1 || CheckRoundState()==-1 || !Enabled)
 	{
 		return;
 	}
