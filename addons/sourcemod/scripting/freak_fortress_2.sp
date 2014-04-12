@@ -300,6 +300,14 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 }
 #endif
 
+#if defined _Amplifier_included
+public Action:OnAmplify(builder,client,TFCond:condition)
+{
+	if (TF2_GetPlayerClass(client) == TFClass_Engineer && !TF2_IsPlayerInCondition(client, TFCond_Buffed))
+		TF2_AddCondition(client, TFCond_Buffed, 0.3);
+}
+#endif
+
 public Native_FF2_IsEnabled(Handle:plugin, numParams)
 {
 	return _:g_bCEnabled;

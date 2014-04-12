@@ -10,7 +10,7 @@
 #undef REQUIRE_PLUGIN
 #tryinclude <tf2attributes>
 #tryinclude <rtd>
-//#tryinclude <Amplifier>
+#tryinclude <Amplifier>
 //#tryinclude <friendly>
 #tryinclude <goomba>
 //#tryinclude <nativevotes>
