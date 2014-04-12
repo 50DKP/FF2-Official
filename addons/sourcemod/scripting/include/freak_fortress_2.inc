@@ -2,6 +2,23 @@
   #endinput
 #endif
 #define _freak_fortress_2_included
+#include <sourcemod>
+#include <tf2>
+#include <tf2_stocks>
+#include <tf2items>
+#include <morecolors>
+#undef REQUIRE_PLUGIN
+#tryinclude <tf2attributes>
+#tryinclude <rtd>
+//#tryinclude <Amplifier>
+//#tryinclude <friendly>
+#tryinclude <goomba>
+//#tryinclude <nativevotes>
+#tryinclude <smac>
+#undef REQUIRE_EXTENSIONS
+#tryinclude <steamtools>
+#define REQUIRE_PLUGIN
+#define REQUIRE_EXTENSIONS
 
 enum FF2_SubPluginFlags
 {
@@ -89,6 +106,14 @@ native bool:FF2_IsEnabled();
  * @return Handle for ConVar.
  */
 native Handle:CreateFF2Cvar(const String:name[], const String:defaultValue[], ConVarChanged:callback, const String:description[]="", flags=FCVAR_PLUGIN, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
+
+#if defined _smac_included
+/*
+ *  This forward is only useful if your going to change a cvar on a client that smac protects.
+ * @return	Return anything greater then Plugin_Continue if the cvar string is one of yours.
+ */
+forward Action:GetSmacProtectedCvars(const String:cvarName[]);
+#endif
 
 public SharedPlugin:__pl_FF2 =
 {

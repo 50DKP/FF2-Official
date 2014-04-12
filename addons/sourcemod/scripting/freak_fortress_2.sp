@@ -8,22 +8,7 @@
 //And one of two creators of Floral Defence: http://www.polycount.com/forum/showthread.php?t=73688
 //And author of VS Saxton Hale Mode
 
-#include <sourcemod>
-#include <tf2>
-#include <tf2_stocks>
-#include <tf2items>
-#include <morecolors>
 #include <freak_fortress_2>
-#undef REQUIRE_PLUGIN
-#tryinclude <tf2attributes>
-#tryinclude <rtd>
-//#tryinclude <Amplifier>
-//#tryinclude <friendly>
-#tryinclude <goomba>
-//#tryinclude <nativevotes>
-#tryinclude <smac>
-#undef REQUIRE_EXTENSIONS
-#tryinclude <steamtools>
 
 // STEAM_0:0:123456789 plus terminator
 #define STEAM_LENGTH 20
@@ -73,11 +58,16 @@ new Float:g_fGoomaJump=500.0;
 new Float:g_fGoombaDMGMultiplier=0.05;
 #endif
 
+#if defined _smac_included
+//Smac Forward
+new Handle:g_hSmacSafety;
+#endif
+
 //Cvars:
 new Handle:g_hFF2Version;
 new Handle:g_hFF2Enabled;
 
-//Support related cvars:
+//Incless plugin support related cvars:
 new Handle:g_hBRDistance;
 new Handle:g_hBRTick;
 new Handle:g_hBRRepairRates;
@@ -86,8 +76,10 @@ new Handle:g_hGMThirdPerson;
 new Handle:g_hGMPowers;
 new Handle:g_hGMTaunt;
 new Handle:g_hGM_Alpha;
+
 //Vars
 new bool:g_bCEnabled=true;
+new bool:g_bAbilityUsed=false;
 
 enum FF2PlayerPrefs
 {
@@ -127,6 +119,9 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	RegPluginLibrary("freak_fortress_2");
 	CreateNative("FF2_IsEnabled", Native_FF2_IsEnabled);
 	CreateNative("CreateFF2Cvar", Native_CreateFF2Cvar);
+	#if defined _smac_included
+	g_hSmacSafety = CreateGlobalForward("GetSmacProtectedCvars", ET_Event, Param_String);
+	#endif
 	return APLRes_Success;
 }
 
@@ -190,6 +185,23 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 		SetConVarString(g_hFF2Version, PLUGIN_VERSION, true, true);
 	}
 }
+
+#if defined _smac_included
+public Action:SMAC_OnCheatDetected(client, const String:module[], DetectionType:type, Handle:info)
+{
+	if (type == Detection_CvarViolation && g_bAbilityUsed)
+	{
+		decl String:CVarName[256];
+		KvGetString(info, "cvar", CVarName, sizeof(CVarName));
+		new Action:result = Plugin_Continue;
+		Call_StartForward(g_hSmacSafety);
+		Call_PushString(CVarName);
+		Call_Finish(_:result);
+		return result;
+	}
+	return Plugin_Continue;
+}
+#endif
 
 #if defined _rtd_included
 SetupRTD()
