@@ -13,7 +13,7 @@
 #tryinclude <Amplifier>
 //#tryinclude <friendly>
 #tryinclude <goomba>
-//#tryinclude <nativevotes>
+#tryinclude <nativevotes>
 #tryinclude <smac>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
@@ -88,12 +88,6 @@ enum FF2_AbilityMode
 #define FF2_BOSSFLAG_ALLOW_HEALTH_AND_AMMO_PICKUP ((1<<0)|(1<<1))
 #define FF2_BOSSFLAGS_NONE (0)
 
-#define FF2_CHARGE_OTHER 0
-#define FF2_CHARGE_RAGE 0
-#define FF2_CHARGE_WEIGHDOWN 1
-#define FF2_CHARGE_TELEPORT 1
-
-
 /*
  * Is FF2 enabled?
  * @return		Boolean of either true for it being enabled or false for it not being enabled.
@@ -112,7 +106,7 @@ native Handle:CreateFF2Cvar(const String:name[], const String:defaultValue[], Co
  *  This forward is only useful if your going to change a cvar on a client that smac protects.
  * @return	Return anything greater then Plugin_Continue if the cvar string is one of yours.
  */
-forward Action:GetSmacProtectedCvars(const String:cvarName[]);
+forward Action:CheckCvar(const String:cvarName[]);
 #endif
 
 public SharedPlugin:__pl_FF2 =

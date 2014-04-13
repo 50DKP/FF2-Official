@@ -18,6 +18,7 @@
 #define REPAIR_RATES "2,4,8"
 #define REPAIR_DISTANCE 300
 #define REPAIR_TICK 0.5
+#define REPAIR_SENTRY 1
 #define GHOST_ALPHA 0
 #define GHOST_TAUNT 0
 #define GHOST_TP 1
@@ -66,11 +67,13 @@ new Handle:g_hSmacSafety;
 //Cvars:
 new Handle:g_hFF2Version;
 new Handle:g_hFF2Enabled;
+new Handle:g_hFF2SpyDamage;
 
 //Incless plugin support related cvars:
 new Handle:g_hBRDistance;
-new Handle:g_hBRTick;
+new Handle:g_hBRRepairTick;
 new Handle:g_hBRRepairRates;
+new Handle:g_hBRRepairSentry;
 new Handle:g_hGMEnabled;
 new Handle:g_hGMThirdPerson;
 new Handle:g_hGMPowers;
@@ -80,6 +83,7 @@ new Handle:g_hGM_Alpha;
 //Vars
 new bool:g_bCEnabled=true;
 new bool:g_bAbilityUsed=false;
+new Float:g_fSpyDamage=0.1;
 
 enum FF2PlayerPrefs
 {
@@ -120,7 +124,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_IsEnabled", Native_FF2_IsEnabled);
 	CreateNative("CreateFF2Cvar", Native_CreateFF2Cvar);
 	#if defined _smac_included
-	g_hSmacSafety = CreateGlobalForward("GetSmacProtectedCvars", ET_Event, Param_String);
+	g_hSmacSafety = CreateGlobalForward("CheckCvar", ET_Event, Param_String);
 	#endif
 	return APLRes_Success;
 }
@@ -130,14 +134,16 @@ public OnPluginStart()
 	LogMessageEx("Freak Fortress 2 V%s loaded.", PLUGIN_VERSION);
 	g_hFF2Version = CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version.", FCVAR_REPLICATED|FCVAR_CHEAT|FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_DONTRECORD);
 	g_hFF2Enabled = CreateConVar("ff2_enabled", "1", "Can we play FF2? 1=yes; 0=no", FCVAR_NOTIFY|FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	g_hFF2SpyDamage = CreateConVar("ff2_spydamage", "0.1", "How much damage do spy backstabs do to hale.", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	HookConVarChange(g_hFF2Version, CvarChange);
 	HookConVarChange(g_hFF2Enabled, CvarChange);
+	HookConVarChange(g_hFF2SpyDamage, CvarChange);
 	#if defined _rtd_included
 	g_hFF2RTD = CreateConVar("ff2_bossrtd", "0", "Allow the boss to roll the dice. 1=Yes 0=No", FCVAR_PLUGIN,  true, 0.0, true, 1.0);
 	HookConVarChange(g_hFF2RTD, RTDCvars);
 	#endif
 	#if defined _goomba_included_
-	g_hFF2GoombaMultiplier = CreateConVar("ff2_goombadmg", "0.05", "Damage multiplier to override goomba with when hale is stomped.", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	g_hFF2GoombaMultiplier = CreateConVar("ff2_goombadmg", "0.05", "Damage multiplier to override goomba with when hale is stomped.", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	g_hFF2GoombaJumpPower = CreateConVar("ff2_goombajump", "500.0", "Jump power to override goomba with when the hale is stomped.", FCVAR_PLUGIN, true, 0.0);
 	HookConVarChange(g_hFF2GoombaMultiplier, GoombaCvars);
 	HookConVarChange(g_hFF2GoombaJumpPower, GoombaCvars);
@@ -165,6 +171,7 @@ public OnPluginStart()
 public OnConfigsExecuted()
 {
 	g_bCEnabled = GetConVarBool(g_hFF2Enabled);
+	g_fSpyDamage = GetConVarFloat(g_hFF2SpyDamage);
 	#if defined _rtd_included
 	g_bBossRTD = GetConVarBool(g_hFF2RTD);
 	#endif
@@ -172,13 +179,54 @@ public OnConfigsExecuted()
 	g_fGoomaJump = GetConVarFloat(g_hFF2GoombaJumpPower);
 	g_fGoombaDMGMultiplier = GetConVarFloat(g_hFF2GoombaMultiplier);
 	#endif
+	#if defined _rtd_included
 	SetupRTD();
+	#endif
+	SetupInclessSupports();
+}
+
+SetupInclessSupports()
+{
+	g_hBRDistance = FindConVar("br_max_distance");
+	g_hBRRepairSentry = FindConVar("br_repair_sentry");
+	g_hBRRepairTick = FindConVar("br_tick_seconds");
+	g_hBRRepairRates = FindConVar("br_repair_rates");
+	if (g_hBRDistance != INVALID_HANDLE)
+	{
+		SetConVarInt(g_hBRDistance, REPAIR_DISTANCE);
+		HookConVarChange(g_hBRDistance, CvarChange);
+	}
+	if (g_hBRRepairSentry != INVALID_HANDLE)
+	{
+		SetConVarInt(g_hBRRepairSentry, REPAIR_SENTRY);
+		HookConVarChange(g_hBRRepairSentry, CvarChange);
+	}
+	if (g_hBRRepairRates != INVALID_HANDLE)
+	{
+		SetConVarString(g_hBRRepairRates, REPAIR_RATES);
+		HookConVarChange(g_hBRRepairRates, CvarChange);
+	}
+	if (g_hBRRepairTick != INVALID_HANDLE)
+	{
+		SetConVarFloat(g_hBRRepairTick, REPAIR_TICK);
+		HookConVarChange(g_hBRRepairTick, CvarChange);
+	}
 }
 
 public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[])
 {
 	if (convar == g_hFF2Enabled)
 		g_bCEnabled = bool:StringToInt(newValue);
+	if (convar == g_hFF2SpyDamage)
+		g_fSpyDamage = StringToFloat(newValue);
+	if (convar == g_hBRDistance && StringToInt(newValue) != REPAIR_DISTANCE)
+		SetConVarInt(g_hBRDistance, REPAIR_DISTANCE);
+	if (convar == g_hBRRepairSentry && StringToInt(newValue) != REPAIR_SENTRY)
+		SetConVarInt(g_hBRRepairSentry, REPAIR_SENTRY);
+	if (convar == g_hBRRepairTick && StringToFloat(newValue) != REPAIR_TICK)
+		SetConVarFloat(g_hBRRepairTick, REPAIR_TICK);
+	if (convar == g_hBRRepairRates && !StrEqual(newValue, REPAIR_RATES))
+		SetConVarString(g_hBRRepairRates, REPAIR_RATES);
 	if (convar == g_hFF2Version && !StrEqual(newValue, PLUGIN_VERSION))
 	{
 		LogMessage("PLEASE DO NOT CHANGE ff2_version!");
@@ -254,17 +302,17 @@ public RTDCvars(Handle:convar, const String:oldValue[], const String:newValue[])
 {
 	if (convar == g_hFF2RTD)
 		g_bBossRTD = bool:StringToInt(newValue);
-	if (convar == g_hRTD_Mode && !(StringToInt(newValue) == RTD_MODE))
+	if (convar == g_hRTD_Mode && StringToInt(newValue) != RTD_MODE)
 		SetConVarInt(g_hRTD_Mode, RTD_MODE);
-	if (convar == g_hRTD_TimeLimit && !(StringToInt(newValue) == RTD_TIMELIMIT))
+	if (convar == g_hRTD_TimeLimit && StringToInt(newValue) != RTD_TIMELIMIT)
 		SetConVarInt(g_hRTD_TimeLimit, RTD_TIMELIMIT);
-	if (convar == g_hRTD_DChance && !(StringToFloat(newValue) == RTD_CHANCE))
+	if (convar == g_hRTD_DChance && StringToFloat(newValue) != RTD_CHANCE)
 		SetConVarInt(g_hRTD_DChance, RTD_TIMELIMIT);
-	if (convar == g_hRTD_Chance && !(StringToFloat(newValue) == RTD_CHANCE))
+	if (convar == g_hRTD_Chance && StringToFloat(newValue) != RTD_CHANCE)
 		SetConVarInt(g_hRTD_Chance, RTD_TIMELIMIT);
-	if (convar == g_hRTD_Health && !(StringToInt(newValue) == RTD_HEALTH))
+	if (convar == g_hRTD_Health && StringToInt(newValue) != RTD_HEALTH)
 		SetConVarInt(g_hRTD_Health, RTD_HEALTH);
-	if (convar == g_hRTD_Setup && !(StringToInt(newValue) == RTD_SETUP))
+	if (convar == g_hRTD_Setup && StringToInt(newValue) != RTD_SETUP)
 		SetConVarInt(g_hRTD_Setup, RTD_SETUP);
 	if (convar == g_hRTD_DisabledPerks && !StrEqual(newValue, RTD_DISABLEDPERKS))
 		SetConVarString(g_hRTD_DisabledPerks, RTD_DISABLEDPERKS);
