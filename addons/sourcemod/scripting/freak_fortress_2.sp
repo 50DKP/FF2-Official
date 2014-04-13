@@ -60,6 +60,9 @@ new Float:g_fGoombaDMGMultiplier=0.05;
 #endif
 
 #if defined _smac_included
+//Smac related vars
+new bool:g_bAbilityUsed=false;
+
 //Smac Forward
 new Handle:g_hSmacSafety;
 #endif
@@ -83,7 +86,6 @@ new Handle:g_hGMAlpha;
 //Vars
 new bool:g_bCEnabled=true;
 new bool:g_bMEnabled=false;
-new bool:g_bAbilityUsed=false;
 new Float:g_fSpyDamage=0.1;
 new Handle:g_hMaps;
 new Handle:g_hSubPlugins;
@@ -138,7 +140,7 @@ public OnPluginStart()
 {
 	g_hMaps = CreateArray(PLATFORM_MAX_PATH);
 	ParseMaps();
-	LogMessageEx("Freak Fortress 2 V%s loaded.", PLUGIN_VERSION);
+	LogMessage("Freak Fortress 2 V%s loaded.", PLUGIN_VERSION);
 	g_hFF2Version = CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version.", FCVAR_REPLICATED|FCVAR_CHEAT|FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_DONTRECORD);
 	g_hFF2Enabled = CreateConVar("ff2_enabled", "1", "Can we play FF2? 1=yes; 0=no", FCVAR_NOTIFY|FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	g_hFF2SpyDamage = CreateConVar("ff2_spydamage", "0.1", "How much damage do spy backstabs do to hale.", FCVAR_PLUGIN, true, 0.01, true, 1.0);
