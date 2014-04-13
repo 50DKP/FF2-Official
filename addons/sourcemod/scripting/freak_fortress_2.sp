@@ -197,26 +197,31 @@ public OnMapEnd()
 
 CheckMap()
 {
+	new bool:done = false;
 	decl String:mapName[PLATFORM_MAX_PATH], String:strBuffer[PLATFORM_MAX_PATH];
 	GetCurrentMap(mapName, PLATFORM_MAX_PATH);
 	for (new i = 0; i < GetArraySize(g_hMaps); i++)
 	{
 		GetArrayString(g_hMaps, i, strBuffer, PLATFORM_MAX_PATH);
+		if (done)
+			break;
 		if (StrContains(strBuffer, "!") == 0)
 		{
 			ReplaceString(strBuffer, PLATFORM_MAX_PATH, "!", "");
 			if (StrContains(mapName, strBuffer) == 0)
 			{
-				PrintToServer("Denying map %s", mapName);
 				g_bMEnabled = false;
+				done = true;
 			}
 		}
 		else if (StrContains(mapName, strBuffer) == 0)
 		{
 			g_bMEnabled = true;
+			done = true;
 		}
 	}
-	g_bMEnabled = false;
+	if (!done)
+		g_bMEnabled = false;
 }
 
 ParseMaps()
@@ -233,6 +238,7 @@ ParseMaps()
 	while (!IsEndOfFile(mapHandle))
 	{
 		ReadFileLine(mapHandle, mapName, PLATFORM_MAX_PATH);
+		Format(mapName, strlen(mapName), mapName);
 		PushArrayString(g_hMaps, mapName);
 	}
 	CloseHandle(mapHandle);
