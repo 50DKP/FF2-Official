@@ -8,13 +8,14 @@
 #include <tf2items>
 #include <morecolors>
 #undef REQUIRE_PLUGIN
-#tryinclude <tf2attributes>
+//#tryinclude <tf2attributes>
 #tryinclude <rtd>
 #tryinclude <Amplifier>
-//#tryinclude <friendly>
+//#tryinclude <friendly> //Got to suggest to friendly plugin maker for better forwards.
 #tryinclude <goomba>
-#tryinclude <nativevotes>
+//#tryinclude <nativevotes>
 #tryinclude <smac>
+#tryinclude <updater>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_PLUGIN

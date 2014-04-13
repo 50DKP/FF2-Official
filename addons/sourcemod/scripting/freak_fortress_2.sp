@@ -23,6 +23,7 @@
 #define GHOST_TAUNT 0
 #define GHOST_TP 1
 #define GHOST_MODE 3
+#define GHOST_ENABLED 1
 #define DEBUG
 
 #if defined _rtd_included
@@ -78,7 +79,7 @@ new Handle:g_hGMEnabled;
 new Handle:g_hGMThirdPerson;
 new Handle:g_hGMPowers;
 new Handle:g_hGMTaunt;
-new Handle:g_hGM_Alpha;
+new Handle:g_hGMAlpha;
 
 //Vars
 new bool:g_bCEnabled=true;
@@ -191,6 +192,11 @@ SetupInclessSupports()
 	g_hBRRepairSentry = FindConVar("br_repair_sentry");
 	g_hBRRepairTick = FindConVar("br_tick_seconds");
 	g_hBRRepairRates = FindConVar("br_repair_rates");
+	g_hGMEnabled = FindConVar("ghostmode_enablemode");
+	g_hGMThirdPerson = FindConVar("ghostmode_thirdperson");
+	g_hGMPowers = FindConVar("ghostmode_powers");
+	g_hGMTaunt = FindConVar("ghostmode_taunt");
+	g_hGMAlpha = FindConVar("ghostmode_alpha");
 	if (g_hBRDistance != INVALID_HANDLE)
 	{
 		SetConVarInt(g_hBRDistance, REPAIR_DISTANCE);
@@ -211,6 +217,31 @@ SetupInclessSupports()
 		SetConVarFloat(g_hBRRepairTick, REPAIR_TICK);
 		HookConVarChange(g_hBRRepairTick, CvarChange);
 	}
+	if (g_hGMEnabled != INVALID_HANDLE)
+	{
+		SetConVarInt(g_hGMEnabled, GHOST_ENABLED);
+		HookConVarChange(g_hGMEnabled, CvarChange);
+	}
+	if (g_hGMThirdPerson != INVALID_HANDLE)
+	{
+		SetConVarInt(g_hGMThirdPerson, GHOST_TP);
+		HookConVarChange(g_hGMThirdPerson, CvarChange);
+	}
+	if (g_hGMPowers != INVALID_HANDLE)
+	{
+		SetConVarInt(g_hGMPowers, GHOST_MODE);
+		HookConVarChange(g_hGMPowers, CvarChange);
+	}
+	if (g_hGMTaunt != INVALID_HANDLE)
+	{
+		SetConVarInt(g_hGMTaunt, GHOST_TAUNT);
+		HookConVarChange(g_hGMTaunt, CvarChange);
+	}
+	if (g_hGMAlpha != INVALID_HANDLE)
+	{
+		SetConVarInt(g_hGMAlpha, GHOST_ALPHA);
+		HookConVarChange(g_hGMAlpha, CvarChange);
+	}
 }
 
 public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[])
@@ -225,6 +256,16 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 		SetConVarInt(g_hBRRepairSentry, REPAIR_SENTRY);
 	if (convar == g_hBRRepairTick && StringToFloat(newValue) != REPAIR_TICK)
 		SetConVarFloat(g_hBRRepairTick, REPAIR_TICK);
+	if (convar == g_hGMEnabled && StringToInt(newValue) != GHOST_ENABLED)
+		SetConVarInt(g_hGMEnabled, GHOST_ENABLED);
+	if (convar == g_hGMThirdPerson && StringToInt(newValue) != GHOST_TP)
+		SetConVarInt(g_hGMThirdPerson, GHOST_TP);
+	if (convar == g_hGMPowers && StringToInt(newValue) != GHOST_MODE)
+		SetConVarInt(g_hGMPowers, GHOST_MODE);
+	if (convar == g_hGMTaunt && StringToInt(newValue) != GHOST_TAUNT)
+		SetConVarInt(g_hGMTaunt, GHOST_TAUNT);
+	if (convar == g_hGMAlpha && StringToInt(newValue) != GHOST_ALPHA)
+		SetConVarInt(g_hGMAlpha, GHOST_ALPHA);
 	if (convar == g_hBRRepairRates && !StrEqual(newValue, REPAIR_RATES))
 		SetConVarString(g_hBRRepairRates, REPAIR_RATES);
 	if (convar == g_hFF2Version && !StrEqual(newValue, PLUGIN_VERSION))
