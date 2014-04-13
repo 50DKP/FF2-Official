@@ -1,6 +1,7 @@
 #if defined _freak_fortress_2_included
   #endinput
 #endif
+#pragma semicolon 1
 #define _freak_fortress_2_included
 #include <sourcemod>
 #include <tf2>
@@ -28,7 +29,16 @@ enum FF2_SubPluginFlags
 	FF2_SubPluginFlags_UnloadMapEnd=(1<<2),
 	FF2_SubPluginFlags_StartMapStart=(1<<3),
 	FF2_SubPluginFlags_StartRoundStart=(1<<4),
-}
+	FF2_SubPluginFlags_Normal=FF2_SubPluginFlags_UnloadNormal|FF2_SubPluginFlags_StartRoundStart,
+};
+
+enum FF2_SubReasons
+{
+	FF2_SubReasons_None=0, //This will be returned if all goes right.
+	FF2_SubReasons_NotCoded, //This will be returned until native is coded.
+	FF2_SubReasons_Exists, //This will be returned when your already registered. Mate.
+	FF2_SubReasons_TrieError, //This will be returned if it failed to get added to trie.
+};
 
 enum FF2_Flags
 {
@@ -61,7 +71,7 @@ enum FF2_AbilityActionType
 	FF2_AbilityAction_Charging,
 	FF2_AbilityAction_FullyCharged,
 	FF2_AbilityAction_OnUse,
-}
+};
 
 enum FF2_AbilityHookMode
 {
@@ -76,18 +86,20 @@ enum FF2_ButtonMode
 	FF2_ButtonMode_DuckOrAttack2,
 	FF2_ButtonMode_Reload,
 	FF2_ButtonMode_Duck,
-}
+};
 
 enum FF2_AbilityMode
 {
 	FF2_AbilityMode_Active,
 	FF2_AbilityMode_Passive,
-}
+};
 
 #define FF2_BOSSFLAG_ALLOW_HEALTH_PICKUP (1<<0)
 #define FF2_BOSSFLAG_ALLOW_AMMO_PICKUP (1<<1)
 #define FF2_BOSSFLAG_ALLOW_HEALTH_AND_AMMO_PICKUP ((1<<0)|(1<<1))
 #define FF2_BOSSFLAGS_NONE (0)
+#define FF2_CONFIGS "configs/freak_fortress_2/"
+#define FF2_MAPFILE "maps.cfg"
 
 /*
  * Is FF2 enabled?
@@ -101,6 +113,21 @@ native bool:FF2_IsEnabled();
  * @return Handle for ConVar.
  */
 native Handle:CreateFF2Cvar(const String:name[], const String:defaultValue[], ConVarChanged:callback, const String:description[]="", flags=FCVAR_PLUGIN, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
+
+/*
+ * Returns either true or false if the current map can be ff2.
+ */
+native bool:IsFF2Map();
+
+/*
+ * Subplugins must 100% call this in order for there abilities to be registered.
+ * @subPluginName	Unique string to name your subplugin as.
+ * @subFlags		Flags that'll control how subplugin should be loaded and unloaded.
+ * @reason		Buffer string to return reason for register failure.
+ * @reasonLength	Size of buffer.
+ * @return		Boolean if it's registered or not.
+ */
+native bool:RegisterSubPlugin(const String:subPluginName[], FF2_SubPluginFlags:subFlags=FF2_SubPluginFlags_Normal, &FF2_SubReasons:reasons);
 
 #if defined _smac_included
 /*

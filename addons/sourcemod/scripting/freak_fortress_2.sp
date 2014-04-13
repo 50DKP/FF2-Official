@@ -14,7 +14,6 @@
 #define STEAM_LENGTH 20
 #define SOUND_SHIELD_ZAP "player/spy_shield_break.wav"
 #define PLUGIN_VERSION "2.0 alpha"
-#pragma semicolon 1
 #define REPAIR_RATES "2,4,8"
 #define REPAIR_DISTANCE 300
 #define REPAIR_TICK 0.5
@@ -83,8 +82,11 @@ new Handle:g_hGMAlpha;
 
 //Vars
 new bool:g_bCEnabled=true;
+new bool:g_bMEnabled=false;
 new bool:g_bAbilityUsed=false;
 new Float:g_fSpyDamage=0.1;
+new Handle:g_hMaps;
+new Handle:g_hSubPlugins;
 
 enum FF2PlayerPrefs
 {
@@ -124,6 +126,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	RegPluginLibrary("freak_fortress_2");
 	CreateNative("FF2_IsEnabled", Native_FF2_IsEnabled);
 	CreateNative("CreateFF2Cvar", Native_CreateFF2Cvar);
+	CreateNative("IsFF2Map", Native_IsFF2Map);
+	CreateNative("RegisterSubPlugin", Native_RegisterSubPlugin);
 	#if defined _smac_included
 	g_hSmacSafety = CreateGlobalForward("CheckCvar", ET_Event, Param_String);
 	#endif
@@ -132,6 +136,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
+	g_hMaps = CreateArray(PLATFORM_MAX_PATH);
+	ParseMaps();
 	LogMessageEx("Freak Fortress 2 V%s loaded.", PLUGIN_VERSION);
 	g_hFF2Version = CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version.", FCVAR_REPLICATED|FCVAR_CHEAT|FCVAR_NOTIFY|FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_DONTRECORD);
 	g_hFF2Enabled = CreateConVar("ff2_enabled", "1", "Can we play FF2? 1=yes; 0=no", FCVAR_NOTIFY|FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -167,23 +173,86 @@ public OnPluginStart()
 	{
 		LogError("[FF2] Warning: Your config may be outdated. Back up tf/cfg/sourcemod/FreakFortress2.cfg and delete it, and this plugin will generate a new one that you can then modify to your original values.");
 	}
+	g_bCEnabled = GetConVarBool(g_hFF2Enabled);
+}
+
+public OnPluginEnd()
+{
+	CloseHandle(g_hMaps);
+}
+
+public OnMapStart()
+{
+	CheckMap();
+	if (g_bMEnabled)
+	{
+	}
+}
+
+public OnMapEnd()
+{
+}
+
+CheckMap()
+{
+	decl String:mapName[PLATFORM_MAX_PATH], String:strBuffer[PLATFORM_MAX_PATH];
+	GetCurrentMap(mapName, PLATFORM_MAX_PATH);
+	for (new i = 0; i < GetArraySize(g_hMaps); i++)
+	{
+		GetArrayString(g_hMaps, i, strBuffer, PLATFORM_MAX_PATH);
+		if (StrContains(strBuffer, "!") == 0)
+		{
+			ReplaceString(strBuffer, PLATFORM_MAX_PATH, "!", "");
+			if (StrContains(mapName, strBuffer) == 0)
+			{
+				PrintToServer("Denying map %s", mapName);
+				g_bMEnabled = false;
+			}
+		}
+		else if (StrContains(mapName, strBuffer) == 0)
+		{
+			g_bMEnabled = true;
+		}
+	}
+	g_bMEnabled = false;
+}
+
+ParseMaps()
+{
+	decl String:mapsPath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, mapsPath, PLATFORM_MAX_PATH, "%s%s", FF2_CONFIGS, FF2_MAPFILE);
+	if (!FileExists(mapsPath))
+	{
+		g_bMEnabled = false;
+		SetFailState("We can't find file %s", mapsPath);
+	}
+	new Handle:mapHandle = OpenFile(mapsPath, "r");
+	decl String:mapName[PLATFORM_MAX_PATH];
+	while (!IsEndOfFile(mapHandle))
+	{
+		ReadFileLine(mapHandle, mapName, PLATFORM_MAX_PATH);
+		PushArrayString(g_hMaps, mapName);
+	}
+	CloseHandle(mapHandle);
 }
 
 public OnConfigsExecuted()
 {
-	g_bCEnabled = GetConVarBool(g_hFF2Enabled);
-	g_fSpyDamage = GetConVarFloat(g_hFF2SpyDamage);
-	#if defined _rtd_included
-	g_bBossRTD = GetConVarBool(g_hFF2RTD);
-	#endif
-	#if defined _goomba_included
-	g_fGoomaJump = GetConVarFloat(g_hFF2GoombaJumpPower);
-	g_fGoombaDMGMultiplier = GetConVarFloat(g_hFF2GoombaMultiplier);
-	#endif
-	#if defined _rtd_included
-	SetupRTD();
-	#endif
-	SetupInclessSupports();
+	if (g_bMEnabled)
+	{
+		g_fSpyDamage = GetConVarFloat(g_hFF2SpyDamage);
+		#if defined _rtd_included
+		g_bBossRTD = GetConVarBool(g_hFF2RTD);
+		#endif
+		#if defined _goomba_included
+		g_fGoomaJump = GetConVarFloat(g_hFF2GoombaJumpPower);
+		g_fGoombaDMGMultiplier = GetConVarFloat(g_hFF2GoombaMultiplier);
+		#endif
+		#if defined _rtd_included
+		SetupRTD();
+		#endif
+		SetupInclessSupports();
+	}
 }
 
 SetupInclessSupports()
@@ -278,6 +347,8 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 #if defined _smac_included
 public Action:SMAC_OnCheatDetected(client, const String:module[], DetectionType:type, Handle:info)
 {
+	if (!g_bCEnabled || !g_bMEnabled)
+		return Plugin_Continue;
 	if (type == Detection_CvarViolation && g_bAbilityUsed)
 	{
 		decl String:CVarName[256];
@@ -361,6 +432,8 @@ public RTDCvars(Handle:convar, const String:oldValue[], const String:newValue[])
 
 public Action:RTD_CanRollDice(client)
 {
+	if (!g_bCEnabled || !g_bMEnabled)
+		return Plugin_Continue;
 	//TODO: Code function to check if client is the boss.
 	if (!g_bBossRTD)
 	{
@@ -381,6 +454,8 @@ public GoombaCvars(Handle:convar, const String:oldValue[], const String:newValue
 
 public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
 {
+	if (!g_bCEnabled || !g_bMEnabled)
+		return Plugin_Continue;
 	//TODO: Code function to check if attacker or victim is the boss.
 	JumpPower = g_fGoomaJump;
 	damageBonus = 0.0;
@@ -392,14 +467,19 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 #if defined _Amplifier_included
 public Action:OnAmplify(builder,client,TFCond:condition)
 {
+	if (!g_bCEnabled || !g_bMEnabled)
+		return Plugin_Continue;
 	if (TF2_GetPlayerClass(client) == TFClass_Engineer && !TF2_IsPlayerInCondition(client, TFCond_Buffed))
 		TF2_AddCondition(client, TFCond_Buffed, 0.3);
+	return Plugin_Continue;
 }
 #endif
 
 public Native_FF2_IsEnabled(Handle:plugin, numParams)
 {
-	return _:g_bCEnabled;
+	if (!g_bCEnabled || !g_bMEnabled)
+		return _:false;
+	return _:true;
 }
 
 public Native_CreateFF2Cvar(Handle:plugin, numParams)
@@ -423,4 +503,15 @@ public Native_CreateFF2Cvar(Handle:plugin, numParams)
 	new Handle:tempCvar = CreateConVar(cName, cDefaultValue, desc, flags, hMin, min, hMax, max);
 	HookConVarChange(tempCvar, func);
 	return _:tempCvar;
+}
+
+public Native_IsFF2Map(Handle:plugin, numParams)
+{
+	return _:g_bMEnabled;
+}
+
+public Native_RegisterSubPlugin(Handle:plugin, numParams)
+{
+	SetNativeCellRef(3, FF2_SubReasons_NotCoded);
+	return _:false; //TODO: Code subplugin registering.
 }
