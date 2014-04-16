@@ -21,6 +21,7 @@
 #tryinclude <steamtools>
 #define REQUIRE_PLUGIN
 #define REQUIRE_EXTENSIONS
+#define MAX_SUBPLUGIN_NAME 256
 
 enum FF2_SubPluginFlags
 {
@@ -32,12 +33,13 @@ enum FF2_SubPluginFlags
 	FF2_SubPluginFlags_Normal=FF2_SubPluginFlags_UnloadNormal|FF2_SubPluginFlags_StartRoundStart,
 };
 
-enum FF2_SubReasons
+enum FF2_SubReason
 {
-	FF2_SubReasons_None=0, //This will be returned if all goes right.
-	FF2_SubReasons_NotCoded, //This will be returned until native is coded.
-	FF2_SubReasons_Exists, //This will be returned when your already registered. Mate.
-	FF2_SubReasons_TrieError, //This will be returned if it failed to get added to trie.
+	FF2_SubReason_None=0, //This will be returned if all goes right.
+	FF2_SubReason_NotCoded, //This will be returned until native is coded.
+	FF2_SubReason_Exists, //This will be returned when your already registered. Mate.
+	FF2_SubReason_TrieError, //This will be returned if it failed to get added to trie.
+	FF2_SubReason_UnKnown, //This will be returned if someone bugged out in code.
 };
 
 enum FF2_Flags
@@ -120,21 +122,40 @@ native Handle:CreateFF2Cvar(const String:name[], const String:defaultValue[], Co
 native bool:IsFF2Map();
 
 /*
+ * This function tag replaces OnPluginStart();
+ * Still need OnPluginStart(); to call native to see if your registered, if not call your start function, will pester for an extension to block sm plugins load from being used on your subplugin.
+ */
+functag public FF2SubStart();
+
+/*
+ * This function tag replaces OnPluginEnd();
+ * Please note you 100% still need OnPluginEnd(); for when your plugin is unloaded from sm plugins unload, will pester for an extension to block sm plugins unload from being used on your subplugin.
+ */
+functag public FF2SubEnd();
+
+/*
  * Subplugins must 100% call this in order for there abilities to be registered.
  * @subPluginName	Unique string to name your subplugin as.
  * @subFlags		Flags that'll control how subplugin should be loaded and unloaded.
- * @reason		Buffer string to return reason for register failure.
- * @reasonLength	Size of buffer.
+ * @onStart		See functag FF2SubStart
+ * @onEnd		See functag FF2SubEnd
+ * @reason		A reason from FF2_SubReason enum that explains why it returned false.
  * @return		Boolean if it's registered or not.
  */
-native bool:RegisterSubPlugin(const String:subPluginName[], FF2_SubPluginFlags:subFlags=FF2_SubPluginFlags_Normal, &FF2_SubReasons:reasons);
+native bool:RegisterSubPlugin(const String:subPluginName[MAX_SUBPLUGIN_NAME], FF2_SubPluginFlags:subFlags=FF2_SubPluginFlags_Normal, FF2SubStart:onStart, FF2SubEnd:onEnd, &FF2_SubReason:reason);
+
+/*
+ * This function is called before FF2 Configs are executed, all cvars for your subplugin must be registered here as well as registering yourself.
+ * It replaces AskPluginToLoad2();
+ */
+forward FF2_SubPluginPreLoad();
 
 #if defined _smac_included
 /*
  *  This forward is only useful if your going to change a cvar on a client that smac protects.
  * @return	Return anything greater then Plugin_Continue if the cvar string is one of yours.
  */
-forward Action:CheckCvar(const String:cvarName[]);
+forward Action:FF2_CheckCvar(const String:cvarName[]);
 #endif
 
 public SharedPlugin:__pl_FF2 =

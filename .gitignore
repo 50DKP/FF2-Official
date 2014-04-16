@@ -21,10 +21,10 @@ addons/sourcemod/GPLv3.txt
 addons/sourcemod/LICENSE.txt
 addons/sourcemod/scripting/**
 !addons/sourcemod/scripting/include/
-!addons/sourcemod/scripting/ff2_boss_selection.sp
+!addons/sourcemod/scripting/freaks/
+!addons/sourcemod/scripting/freaks/ff2_boss_selection.sp
 !addons/sourcemod/scripting/freak_fortress_2.sp
 !addons/sourcemod/scripting/rtd.sp
-!addons/sourcemod/scripting/freaks/
 addons/sourcemod/scripting/include/**
 !addons/sourcemod/scripting/include/freak_fortress_2.inc
 !addons/sourcemod/scripting/include/rtd.inc

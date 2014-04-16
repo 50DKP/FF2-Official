@@ -72,6 +72,9 @@ new Handle:g_hFF2Version;
 new Handle:g_hFF2Enabled;
 new Handle:g_hFF2SpyDamage;
 
+//Forwards
+new Handle:g_hSubPreLoad;
+
 //Incless plugin support related cvars:
 new Handle:g_hBRDistance;
 new Handle:g_hBRRepairTick;
@@ -130,8 +133,9 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("CreateFF2Cvar", Native_CreateFF2Cvar);
 	CreateNative("IsFF2Map", Native_IsFF2Map);
 	CreateNative("RegisterSubPlugin", Native_RegisterSubPlugin);
+	g_hSubPreLoad = CreateGlobalForward("FF2_SubPluginPreLoad", ET_Ignore);
 	#if defined _smac_included
-	g_hSmacSafety = CreateGlobalForward("CheckCvar", ET_Event, Param_String);
+	g_hSmacSafety = CreateGlobalForward("FF2_CheckCvar", ET_Event, Param_String);
 	#endif
 	return APLRes_Success;
 }
@@ -157,6 +161,8 @@ public OnPluginStart()
 	HookConVarChange(g_hFF2GoombaMultiplier, GoombaCvars);
 	HookConVarChange(g_hFF2GoombaJumpPower, GoombaCvars);
 	#endif
+	Call_StartForward(g_hSubPreLoad);
+	Call_Finish();
 	/*g_Cvar_ArenaQueue = FindConVar("tf_arena_use_queue");
 	g_Cvar_UnbalanceLimit = FindConVar("mp_teams_unbalance_limit");
 	g_Cvar_Autobalance = FindConVar("mp_autobalance");
@@ -180,19 +186,80 @@ public OnPluginStart()
 
 public OnPluginEnd()
 {
+	FreeSubPluginsHandle();
 	CloseHandle(g_hMaps);
 }
 
 public OnMapStart()
 {
 	CheckMap();
-	if (g_bMEnabled)
+	if (g_bCEnabled && g_bMEnabled)
 	{
+		new Handle:pluginNames, Handle:tempHandle, FF2_SubPluginFlags:flags, FF2SubStart:onStart, Handle:plugin;
+		decl String:subName[MAX_SUBPLUGIN_NAME];
+		if (!GetTrieValue(g_hSubPlugins, "pluginNames", pluginNames))
+			SetFailState("Who was the wise of guy to pass me an arrayless trie?");
+		for (new i=0; i < GetArraySize(pluginNames); i++)
+		{
+			GetArrayString(pluginNames, i, subName, MAX_SUBPLUGIN_NAME);
+			GetTrieValue(g_hSubPlugins, subName, tempHandle);
+			GetTrieValue(tempHandle, "subFlags", flags);
+			GetTrieValue(tempHandle, "pluginHandle", plugin);
+			GetTrieValue(tempHandle, "onStart", onStart);
+			if (flags & FF2_SubPluginFlags_StartMapStart)
+			{
+				Call_StartFunction(plugin, onStart);
+				Call_Finish();
+			}
+		}
 	}
 }
 
 public OnMapEnd()
 {
+	if (g_bCEnabled && g_bMEnabled)
+	{
+		new Handle:pluginNames, Handle:tempHandle, FF2_SubPluginFlags:flags, FF2SubEnd:onEnd, Handle:plugin;
+		decl String:subName[MAX_SUBPLUGIN_NAME];
+		if (!GetTrieValue(g_hSubPlugins, "pluginNames", pluginNames))
+			SetFailState("Who was the wise of guy to pass me an arrayless trie?");
+		for (new i=0; i < GetArraySize(pluginNames); i++)
+		{
+			GetArrayString(pluginNames, i, subName, MAX_SUBPLUGIN_NAME);
+			GetTrieValue(g_hSubPlugins, subName, tempHandle);
+			GetTrieValue(tempHandle, "subFlags", flags);
+			GetTrieValue(tempHandle, "pluginHandle", plugin);
+			GetTrieValue(tempHandle, "onEnd", onEnd);
+			if (flags & FF2_SubPluginFlags_UnloadMapEnd)
+			{
+				Call_StartFunction(plugin, onEnd);
+				Call_Finish();
+			}
+		}
+	}
+}
+
+FreeSubPluginsHandle()
+{
+	if (g_hSubPlugins != INVALID_HANDLE)
+	{
+		new Handle:pluginNames, Handle:tempHandle;
+		if (!GetTrieValue(g_hSubPlugins, "pluginNames", pluginNames))
+			SetFailState("Uh oh... We leaked handles O_O.");
+		decl String:subName[MAX_SUBPLUGIN_NAME];
+		for (new i=0; i < GetArraySize(pluginNames); i++)
+		{
+			GetArrayString(pluginNames, i, subName, MAX_SUBPLUGIN_NAME);
+			if (!GetTrieValue(g_hSubPlugins, subName, tempHandle))
+				SetFailState("Where did %s go?", subName);
+			CloseHandle(tempHandle);
+			tempHandle = INVALID_HANDLE; //Just incase sourcemod does not.
+		}
+		CloseHandle(pluginNames);
+		pluginNames = INVALID_HANDLE;
+		CloseHandle(g_hSubPlugins);
+		g_hSubPlugins = INVALID_HANDLE;
+	}
 }
 
 CheckMap()
@@ -478,7 +545,7 @@ public Action:OnAmplify(builder,client,TFCond:condition)
 	if (!g_bCEnabled || !g_bMEnabled)
 		return Plugin_Continue;
 	if (TF2_GetPlayerClass(client) == TFClass_Engineer && !TF2_IsPlayerInCondition(client, TFCond_Buffed))
-		TF2_AddCondition(client, TFCond_Buffed, 0.3);
+		TF2_AddCondition(client, TFCond_Buffed, 0.05);
 	return Plugin_Continue;
 }
 #endif
@@ -520,6 +587,43 @@ public Native_IsFF2Map(Handle:plugin, numParams)
 
 public Native_RegisterSubPlugin(Handle:plugin, numParams)
 {
-	SetNativeCellRef(3, FF2_SubReasons_NotCoded);
-	return _:false; //TODO: Code subplugin registering.
+	if (g_hSubPlugins == INVALID_HANDLE)
+	{
+		g_hSubPlugins = CreateTrie();
+	}
+	new Handle:pluginNames;
+	if (!GetTrieValue(g_hSubPlugins, "pluginNames", pluginNames))
+	{
+		pluginNames = CreateArray(MAX_SUBPLUGIN_NAME);
+		SetTrieValue(g_hSubPlugins, "pluginNames", pluginNames, false); //I always do this, saves on a global variable. WildCard65
+	}
+	decl String:subName[MAX_SUBPLUGIN_NAME];
+	GetNativeString(1, subName, MAX_SUBPLUGIN_NAME);
+	new Handle:tempHandle;
+	if (GetTrieValue(g_hSubPlugins, subName, tempHandle))
+	{
+		//Well mate, your already registered in our books.
+		SetNativeCellRef(5, FF2_SubReason_Exists);
+		return _:false;
+	}
+	else
+	{
+		new FF2_SubPluginFlags:subFlags, FF2SubStart:onStart, FF2SubEnd:onEnd;
+		subFlags =GetNativeCell(2);
+		onStart = GetNativeCell(3);
+		onEnd = GetNativeCell(4);
+		new Handle:subHandle = CreateTrie();
+		SetTrieValue(subHandle, "pluginHandle", plugin);
+		SetTrieValue(subHandle, "subFlags", subFlags);
+		SetTrieValue(subHandle, "onStart", onStart);
+		SetTrieValue(subHandle, "onEnd", onEnd);
+		if (!SetTrieValue(g_hSubPlugins, subName, subHandle, false))
+		{
+			SetNativeCellRef(5, FF2_SubReason_TrieError);
+			return _:false;
+		}
+		PushArrayString(pluginNames, subName);
+		SetNativeCellRef(5, FF2_SubReason_None);
+		return _:true;
+	}
 }
