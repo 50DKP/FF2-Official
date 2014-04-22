@@ -262,9 +262,9 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 21, 2014",	//1.10.0
-	"April 21, 2014",	//1.10.0
-	"April 21, 2014"	//1.10.0
+	"April 22, 2014",	//1.10.0
+	"April 22, 2014",	//1.10.0
+	"April 22, 2014"	//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -2186,7 +2186,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 				temp=client;
 			}
 
-			for(new slot=0; slot<8; slot++)
+			for(new slot=1; slot<8; slot++)
 			{
 				BossCharge[client][slot]=0.0;
 			}
@@ -4448,23 +4448,22 @@ public Action:BossTimer(Handle:timer)
 					decl String:sound[PLATFORM_MAX_PATH];
 					if(RandomSound("sound_full_rage", sound, PLATFORM_MAX_PATH, client) && emitRageSound[client])
 					{
-						new boss=GetBossIndex(client);
 						new Float:position[3];
-						GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
+						GetEntPropVector(Boss[client], Prop_Send, "m_vecOrigin", position);
 
-						FF2flags[Boss[boss]]|=FF2FLAG_TALKING;
-						EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
-						EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+						FF2flags[Boss[client]]|=FF2FLAG_TALKING;
+						EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
+						EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
 
 						for(new target=1; target<=MaxClients; target++)
 						{
 							if(IsClientInGame(target) && target!=Boss[client])
 							{
-								EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
-								EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+								EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
+								EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
 							}
 						}
-						FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
+						FF2flags[Boss[client]]&=~FF2FLAG_TALKING;
 						emitRageSound[client]=false;
 					}
 				}
@@ -4731,15 +4730,15 @@ public Action:DoTaunt(client, const String:command[], argc)
 		if(RandomSoundAbility("sound_ability", sound, PLATFORM_MAX_PATH, boss))
 		{
 			FF2flags[Boss[boss]]|=FF2FLAG_TALKING;
-			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
-			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
 
 			for(new target=1; target<=MaxClients; target++)
 			{
 				if(IsClientInGame(target) && target!=Boss[boss])
 				{
-					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
-					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
 				}
 			}
 			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
