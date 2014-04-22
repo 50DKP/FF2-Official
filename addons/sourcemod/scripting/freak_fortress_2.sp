@@ -179,7 +179,7 @@ new g_Monoculus=-1;
 static bool:executed=false;
 static bool:executed2=false;
 
-static bool:emitRageSound=true;
+new bool:emitRageSound[MAXPLAYERS+1]=true;
 
 new changeGamemode=0;
 
@@ -262,9 +262,9 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 20, 2014",	//1.10.0
-	"April 20, 2014",	//1.10.0
-	"April 20, 2014"	//1.10.0
+	"April 21, 2014",	//1.10.0
+	"April 21, 2014",	//1.10.0
+	"April 21, 2014"	//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -1908,7 +1908,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	}
 
 	Boss[0]=FindBosses(see);
-	PickSpecial(0, 0);
+	PickCharacter(0, 0);
 	see[Boss[0]]=true;
 	if((Special[0]<0) || !BossKV[Special[0]])
 	{
@@ -1942,7 +1942,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			}
 			Boss[client]=tempBoss;
 
-			if(PickSpecial(client, client-1))
+			if(PickCharacter(client, client-1))
 			{
 				KvRewind(BossKV[Special[client]]);
 				for(new pingas=0; Boss[client]==Boss[client-1] && pingas<100; pingas++)
@@ -2344,7 +2344,7 @@ public Action:Timer_CalcQueuePoints(Handle:timer)
 
 stock CalcQueuePoints()
 {
-	decl damage;
+	new damage;
 	botqueuepoints+=5;
 	new add_points[MAXPLAYERS+1];
 	new add_points2[MAXPLAYERS+1];
@@ -2357,8 +2357,10 @@ stock CalcQueuePoints()
 			SetEventInt(event, "player", client);
 
 			new points;
-			for(points=0; damage-600>0; damage-=600, points++)
+			while(damage-600>0)
 			{
+				damage-=600;
+				points++;
 			}
 			SetEventInt(event, "points", points);
 			FireEvent(event);
@@ -2383,11 +2385,11 @@ stock CalcQueuePoints()
 		}
 	}
 
-	new Action:act=Plugin_Continue;
+	new Action:action=Plugin_Continue;
 	Call_StartForward(OnAddQueuePoints);
 	Call_PushArrayEx(add_points2, MAXPLAYERS+1, SM_PARAM_COPYBACK);
-	Call_Finish(act);
-	switch(act)
+	Call_Finish(action);
+	switch(action)
 	{
 		case Plugin_Stop, Plugin_Handled:
 		{
@@ -4444,7 +4446,7 @@ public Action:BossTimer(Handle:timer)
 					ShowSyncHudText(Boss[client], rageHUD, "%t", "do_rage");
 
 					decl String:sound[PLATFORM_MAX_PATH];
-					if(RandomSoundAbility("sound_full_rage", sound, PLATFORM_MAX_PATH, client) && emitRageSound)
+					if(RandomSound("sound_full_rage", sound, PLATFORM_MAX_PATH, client) && emitRageSound[client])
 					{
 						new boss=GetBossIndex(client);
 						new Float:position[3];
@@ -4463,7 +4465,7 @@ public Action:BossTimer(Handle:timer)
 							}
 						}
 						FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
-						emitRageSound=false;
+						emitRageSound[client]=false;
 					}
 				}
 			}
@@ -4742,7 +4744,7 @@ public Action:DoTaunt(client, const String:command[], argc)
 			}
 			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
 		}
-		emitRageSound=true;
+		emitRageSound[client]=true;
 	}
 	return Plugin_Continue;
 }
@@ -6150,23 +6152,25 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 
 stock FindBosses(bool:array[])
 {
-	new tBoss; 	
-	for(new i=1; i<=MaxClients; i++)
+	new boss; 	
+	for(new client=1; client<=MaxClients; client++)
 	{
 		if(SpecForceBoss)
 		{
-			if(IsValidEdict(i) && IsClientConnected(i) &&
-				GetClientQueuePoints(i)>=GetClientQueuePoints(tBoss) && !array[i])
-					tBoss=i;
+			if(IsValidEdict(client) && IsClientConnected(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !array[client])
+			{
+				boss=client;
+			}
 		}
 		else
 		{
-			if(IsValidEdict(i) && IsClientConnected(i) && GetClientTeam(i)>_:TFTeam_Spectator &&
-				GetClientQueuePoints(i)>=GetClientQueuePoints(tBoss) && !array[i])
-					tBoss=i;
+			if(IsValidEdict(client) && IsClientConnected(client) && GetClientTeam(client)>_:TFTeam_Spectator && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !array[client])
+			{
+				boss=client;
+			}
 		}
 	}
-	return tBoss;
+	return boss;
 }
 
 stock LastBossIndex()
@@ -6506,123 +6510,125 @@ ForceTeamWin(team)
 	AcceptEntityInput(ent, "SetWinner");
 }
 
-public bool:PickSpecial(index, index2)
+public bool:PickCharacter(client, client2)  //TODO: Clean this up ._.
 {
-	if(index==index2)
+	if(client==client2)
 	{
-		Special[index]=Incoming[index];
-		Incoming[index]=-1;
-		if(Special[index]!=-1)
+		Special[client]=Incoming[client];
+		Incoming[client]=-1;
+		if(Special[client]!=-1)
 		{
-			PrecacheCharacter(Special[index]);
+			PrecacheCharacter(Special[client]);
 			return true;
 		}
 
 		new chances[MAXSPECIALS];
-		new chances_index;
+		new chancesIndex;
 		new String:s_chances[MAXSPECIALS*2][8];
 		if(ChancesString[0])
 		{
 			ExplodeString(ChancesString, ";", s_chances, MAXSPECIALS*2, 8);
 			chances[0]=StringToInt(s_chances[1]);
-			for(chances_index=3; s_chances[chances_index][0]; chances_index+=2)
+			for(chancesIndex=3; s_chances[chancesIndex][0]; chancesIndex+=2)
 			{
-				chances[chances_index/2]=StringToInt(s_chances[chances_index])+chances[chances_index/2-1];
+				chances[chancesIndex/2]=StringToInt(s_chances[chancesIndex])+chances[chancesIndex/2-1];
 			}
-			chances_index-=2;
+			chancesIndex-=2;
 		}
 
-		new pingas;
+		new tries;
 		do
 		{
 			if(ChancesString[0])
 			{
-				new random_num=GetRandomInt(0, chances[chances_index/2]);
-				decl see;
-				for(see=0; random_num>chances[see]; see++)
+				new see;
+				new i=GetRandomInt(0, chances[chancesIndex/2]);
+				for(see=0; i>chances[see]; see++)
 				{
 				}
 
-				decl String:name1[64];
-				Special[index]=StringToInt(s_chances[see*2])-1;
-				KvRewind(BossKV[Special[index]]);
-				KvGetString(BossKV[Special[index]], "name", name1, 64, "=Failed name=");
+				decl String:name[64];
+				Special[client]=StringToInt(s_chances[see*2])-1;
+				KvRewind(BossKV[Special[client]]);
+				KvGetString(BossKV[Special[client]], "name", name, 64, "=Failed name=");
 			}
 			else
 			{
-				Special[index]=GetRandomInt(0, Specials-1);
-				KvRewind(BossKV[Special[index]]);
+				Special[client]=GetRandomInt(0, Specials-1);
+				KvRewind(BossKV[Special[client]]);
 			}
-			pingas++;
+			tries++;
 		}
-		while(pingas<100 && KvGetNum(BossKV[Special[index]], "blocked", 0));
+		while(tries<100 && KvGetNum(BossKV[Special[client]], "blocked", 0));
 
-		if(pingas==100)
+		if(tries==100)
 		{
-			Special[index]=0;
+			Special[client]=0;
 		}
 	}
 	else
 	{	
-		decl String:s2[64];
-		decl String:s1[64];
-		KvRewind(BossKV[Special[index2]]);
-		KvGetString(BossKV[Special[index2]], "companion", s2, 64, "=Failed name2=");
-		decl i;
-		for(i=0; i<Specials; i++)
+		decl String:name[64];
+		decl String:companion[64];
+		KvRewind(BossKV[Special[client2]]);
+		KvGetString(BossKV[Special[client2]], "companion", companion, 64, "=Failed companion name=");
+		new character;
+		for(character=0; character<Specials; character++)
 		{
-			KvRewind(BossKV[i]);
-			KvGetString(BossKV[i], "name", s1, 64, "=Failed name1=");
-			if(!strcmp(s1,s2,false))
+			KvRewind(BossKV[character]);
+			KvGetString(BossKV[character], "name", name, 64, "=Failed name=");
+			if(!strcmp(name, companion, false))
 			{
-				Special[index]=i;
+				Special[client]=character;
 				break;
 			}
-			KvGetString(BossKV[i], "filename", s1, 64, "=Failed name1=");
-			if(!strcmp(s1, s2, false))
+
+			KvGetString(BossKV[character], "filename", name, 64, "=Failed name=");
+			if(!strcmp(name, companion, false))
 			{
-				Special[index]=i;
+				Special[client]=character;
 				break;
 			}
 		}
 
-		if(i==Specials)
+		if(character==Specials)
 		{
 			return false;
 		}
 	}
-	new Action:act=Plugin_Continue;
+
+	new Action:action=Plugin_Continue;
 	Call_StartForward(OnSpecialSelected);
-	Call_PushCell(index);
-	new SpecialNum=Special[index];
-	Call_PushCellRef(SpecialNum);
-	decl String:s[64];
-	KvRewind(BossKV[Special[index]]);
-	KvGetString(BossKV[Special[index]], "name", s, 64);
-	Call_PushStringEx(s, 64, 0, SM_PARAM_COPYBACK);
-	Call_Finish(act);
-	if(act==Plugin_Changed)
+	Call_PushCell(client);
+	new characterIndex=Special[client];
+	Call_PushCellRef(characterIndex);
+	decl String:name[64];
+	KvRewind(BossKV[Special[client]]);
+	KvGetString(BossKV[Special[client]], "name", name, 64);
+	Call_PushStringEx(name, 64, 0, SM_PARAM_COPYBACK);
+	Call_Finish(action);
+	if(action==Plugin_Changed)
 	{
-		if(s[0])
+		if(name[0])  //Wat
 		{
-			decl String:s2[64];
-			for(new j=0; BossKV[j] && j<MAXSPECIALS; j++)
+			decl String:name2[64];
+			for(new character=0; BossKV[character] && character<MAXSPECIALS; character++)
 			{
-				KvRewind(BossKV[j]);
-				KvGetString(BossKV[j], "name", s2, 64);
-				if(!strcmp(s,s2))
+				KvRewind(BossKV[character]);
+				KvGetString(BossKV[character], "name", name2, 64);
+				if(!strcmp(name, name2))
 				{
-					Special[index]=j; 	
-					PrecacheCharacter(Special[index]);
+					Special[client]=character; 	
+					PrecacheCharacter(Special[client]);
 					return true;
 				}
 			}
 		}		
-		Special[index]=SpecialNum;
-		PrecacheCharacter(Special[index]);
+		Special[client]=characterIndex;
+		PrecacheCharacter(Special[client]);
 		return true;
 	}
-	PrecacheCharacter(Special[index]);
+	PrecacheCharacter(Special[client]);
 	return true;
 }
 
@@ -6842,28 +6848,36 @@ bool:GetClientClassinfoCookie(client)
 
 GetClientQueuePoints(client)
 {
-	if(!IsValidClient(client)) return 0;
+	if(!IsValidClient(client) || !AreClientCookiesCached(client))
+	{
+		return 0;
+	}
+
 	if(IsFakeClient(client))
+	{
 		return botqueuepoints;
-	if(!AreClientCookiesCached(client)) return 0;
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s,24);
-	ExplodeString(s, " ", ff2cookies_values,8,5);
-	return StringToInt(ff2cookies_values[0]);
+	}
+
+	decl String:cookies[24];
+	decl String:values[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, 24);
+	ExplodeString(cookies, " ", values, 8, 5);
+	return StringToInt(values[0]);
 }
 
 SetClientQueuePoints(client, points)
 {
-	if(!IsValidClient(client)) return;
-	if(IsFakeClient(client)) return;
-	if(!AreClientCookiesCached(client)) return;
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s,24);
-	ExplodeString(s, " ", ff2cookies_values,8,5);
-	Format(s,24,"%i %s %s %s %s %s %s",points,ff2cookies_values[1],ff2cookies_values[2],ff2cookies_values[3],ff2cookies_values[4],ff2cookies_values[5],ff2cookies_values[6],ff2cookies_values[7]);
-	SetClientCookie(client, FF2Cookies, s);
+	if(!IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client))
+	{
+		return;
+	}
+
+	decl String:cookies[24];
+	decl String:values[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, 24);
+	ExplodeString(cookies, " ", values, 8, 5);
+	Format(cookies, 24, "%i %s %s %s %s %s %s %s", points, values[1], values[2], values[3], values[4], values[5], values[6], values[7]);
+	SetClientCookie(client, FF2Cookies, cookies);
 }
 
 stock IsBoss(client)
