@@ -19,6 +19,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include <sdktools>
 #include <sdktools_gamerules>
 #include <sdkhooks>
+#include <smac>
 #include <tf2_stocks>
 #include <morecolors>
 #include <tf2items>
@@ -62,8 +63,6 @@ new bool:rtd=false;
 new bool:goomba=false;
 #endif
 
-new bool:smac=false;
-
 new bool:b_allowBossChgClass=false;
 new bool:b_BossChgClassDetected=false;
 new OtherTeam=2;
@@ -80,8 +79,6 @@ new Damage[MAXPLAYERS+1];
 new curHelp[MAXPLAYERS+1];	
 new uberTarget[MAXPLAYERS+1];
 new demoShield[MAXPLAYERS+1];
-
-new FF2flags[MAXPLAYERS+1];
 
 new Boss[MAXPLAYERS+1];
 new BossHealthMax[MAXPLAYERS+1];
@@ -885,11 +882,6 @@ public OnLibraryAdded(const String:name[])
 		Updater_AddPlugin(UPDATE_URL);
 	}
 	#endif
-
-	if(StrEqual(name, "smac"))
-	{
-		smac=true;
-	}
 }
 
 public OnLibraryRemoved(const String:name[])
@@ -918,11 +910,6 @@ public OnLibraryRemoved(const String:name[])
 	if(StrEqual(name, "updater"))
 	{
 		Updater_RemovePlugin();
-	}
-
-	if(StrEqual(name, "smac"))
-	{
-		smac=false;
 	}
 }
 
@@ -997,12 +984,6 @@ public OnMapEnd()
 			KillTimer(MusicTimer);
 			MusicTimer=INVALID_HANDLE;
 		}
-
-		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
-		{
-			ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
-			ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
-		}
 	}
 }
 
@@ -1047,12 +1028,6 @@ public EnableFF2()
 	MapHasMusic(true);
 	AddToDownload();
 	strcopy(FF2CharSetStr, 2, "");
-
-	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
-	{
-		ServerCommand("smac_removecvar sv_cheats");
-		ServerCommand("smac_removecvar host_timescale");
-	}
 
 	bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
 	FindHealthBar();
@@ -1111,12 +1086,6 @@ public DisableFF2()
 	{
 		KillTimer(MusicTimer);
 		MusicTimer=INVALID_HANDLE;
-	}
-
-	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
-	{
-		ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
-		ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
 	}
 
 	#if defined _steamtools_included
@@ -1542,6 +1511,19 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	}
 }
 
+public Action:SMAC_OnCheatDetected(client, const String:module[], DetectionType:type, Handle:info)
+{
+	if(type==Detection_CvarViolation)
+	{
+		decl String:cvar[PLATFORM_MAX_PATH];
+		KvGetString(info, "cvar", cvar, sizeof(cvar));
+		if((StrEqual(cvar, "sv_cheats") || StrEqual(cvar, "host_timescale")) && !(FF2flags[client] & FF2FLAG_CHANGECVAR))
+		{
+			return Plugin_Stop;
+		}
+	}
+	return Plugin_Continue;
+}
 
 public Action:Timer_Announce(Handle:hTimer)
 {
@@ -4393,7 +4375,7 @@ public Action:BossTimer(Handle:timer)
 		return Plugin_Stop;
 	}
 
-	new bool:bIsEveryponyDead=true;
+	new bool:validBoss=false;
 	for(new client=0; client<=MaxClients; client++)
 	{
 		if(!IsValidClient(Boss[client], false) || CheckRoundState()==2)
@@ -4405,7 +4387,7 @@ public Action:BossTimer(Handle:timer)
 			continue;
 		}
 
-		bIsEveryponyDead=false;
+		validBoss=true;
 		if(TF2_IsPlayerInCondition(Boss[client], TFCond_Jarated))
 		{
 			TF2_RemoveCondition(Boss[client], TFCond_Jarated);
@@ -4580,7 +4562,7 @@ public Action:BossTimer(Handle:timer)
 		}
 	}
 
-	if(bIsEveryponyDead)
+	if(!validBoss)
 	{
 		return Plugin_Stop;
 	}
