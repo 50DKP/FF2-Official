@@ -23,11 +23,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include <morecolors>
 #include <tf2items>
 #include <clientprefs>
-#tryinclude <smac>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
+#tryinclude <smac>
 #tryinclude <updater>
 #tryinclude <goomba>
 #tryinclude <rtd>

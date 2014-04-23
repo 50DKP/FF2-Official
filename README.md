@@ -3,55 +3,55 @@
 
 [![Build Status](http://198.27.69.149/jenkins/buildStatus/icon?job=FF2-Official)](http://198.27.69.149/jenkins/job/FF2-Official/)
 
-###Compiling FF2
+###Include File Changes
 ***
-This tutorial assumes you have TF2 installed.
+Some third-party include files were modified in order to make FF2 work properly with or without the plugin that the include file belonged to.
+It is highly recommended that you also make these changes when compiling FF2.
 
-####Setup Git
-1. Download and install Git [here](http://git-scm.com/download/).
-	* It is strongly recommended to allow Git to handle `.sh` extensions if installing on Windows.
-2. *Optional*: Download and install a Git GUI client, such as Github for Windows/Mac, SmartGitHg, TortoiseGit, etc.  A nice list is available [here](http://git-scm.com/downloads/guis).
+`smac.inc`:
+* Remove `MarkNativeAsOptional("SMAC_CheatDetected");`
 
-####Compile FF2
-1. Open up your command line.
-2. Navigate to your TF2 server's location, eg `C:\Servers\TF2\FF2-Official\tf` by executing `cd [folder location]`.  This location is hereby referred to as `ff2dev`.
-3. Execute `git clone https://github.com/50DKP/FF2-Official.git`.
-4. Right now, you should have a folder structure that looks like:
+`rtd.inc`:
+* Add ```#if defined REQUIRE_PLUGIN
+	required = 1
+	#else
+	required = 0
+	#endif``` inside `public SharedPlugin:__pl_rtd = `
 
+###Formatting
 ***
-	ff2dev
-	\-tf
-		\-addons
-			\-sourcemod
-				\-Misc. Sourcemod files (should have `scripting` and `plugins`)
-***
+If you wish to make a pull request, the following formatting rules should be adhered to:
 
-####Installing Sourcemod
-1. Download [Sourcemod](http://www.sourcemod.net/downloads.php).
-2. Extract it to `ff2dev` so that all the directories match up.
+* Braces on new line
+* No spaces between parentheses or most operators (=, ==, *, |, &, etc)
+	* **Exception**: One space between &&, ||, ;, and ,
+* Tabs, not spaces
+* No tabs on newline
+* Bracket all conditional statements, even if it is not required (one-line if statements, for example)
+* Variable names should be camel-cased (markdownIsStupid)
+* Method names should be capitalized normally (MarkNativeAsOptional)
 
-####Compile FF2
-1. Navigate to `tf/addons/sourcemod/scripting` in the command prompt.
-2. Execute `compile.sh freak_fortress_2.sp`.
-	* **NOTE**: This will only work on Windows if you allowed Git to make `.sh` bash files executable.
-3. The compiled file will be in `scripting/compiled`, which you can then move to `/plugins/`.
+Example:
 
-####Updating Your Repository
-In order to get the most up-to-date builds, you'll have to periodically update your local repository.
+```java
+if(markdownIsStupid)
+{
 
-1. Open up your command line.
-2. Navigate to `ff2dev` in the console.
-3. Make sure you have not made any changes to the local repository, or else there might be issues with Git.
-	* If you have, try reverting them to the status that they were when you last updated your repository.
-4. Execute `git pull master`.  This pulls all commits from the official repository that do not yet exist on your local repository and updates it.
+	if(ubuntuIsAmazing)
+	{
+		while(!someOtherBoolean)
+		{
+			for(new i=0; i<=someOtherNumber; i+=3)
+			{
+				if(i==someNumber && moreVariableNames!=42)
+				{
+					someOtherBoolean=true;
+				}
+			}
+		}
+	}
 
-###Label Information
-***
-* `bug-critical` denotes severe game-impeding bugs that generally do not have a workaround.
-	* *Examples*: Server crashes, unplayable bosses, etc.
-* `bug-major` denotes game-impeding bugs that generally have a workaround and/or can be easily avoided.
-	* *Examples*: Suicide/weapon-related bugs, etc.
-* `bug-minor` denotes bugs that are generally visual-only and/or do not seriously affect gameplay.  This may also include bugs that are not always reproducible.
-	* *Examples*: No HUD, missing text, etc.
-* `feedback-required` denotes issues that require feedback from others.
-	* *Examples*: Suggestions, etc.
+	someBitWiseThing[someNumber]=someBitWiseThing[someNumber]|coolBitWiseVariable;
+	return;
+}
+```
