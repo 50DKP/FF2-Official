@@ -36,7 +36,6 @@ Example:
 ```java
 if(markdownIsStupid)
 {
-
 	if(ubuntuIsAmazing)
 	{
 		while(!someOtherBoolean)
