@@ -19,11 +19,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include <sdktools>
 #include <sdktools_gamerules>
 #include <sdkhooks>
-#include <smac>
 #include <tf2_stocks>
 #include <morecolors>
 #include <tf2items>
 #include <clientprefs>
+#tryinclude <smac>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
@@ -33,7 +33,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 8"
+#define PLUGIN_VERSION "1.10.0 Beta 9"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -93,6 +93,7 @@ new KSpreeCount[MAXPLAYERS+1];
 new Float:GlowTimer[MAXPLAYERS+1];
 new TFClassType:LastClass[MAXPLAYERS+1];
 new shortname[MAXPLAYERS+1];
+new bool:emitRageSound[MAXPLAYERS+1];
 
 new timeleft;
 
@@ -176,8 +177,6 @@ new g_Monoculus=-1;
 static bool:executed=false;
 static bool:executed2=false;
 
-new bool:emitRageSound[MAXPLAYERS+1]=true;
-
 new changeGamemode=0;
 
 static const String:ff2versiontitles[][]=
@@ -217,6 +216,7 @@ static const String:ff2versiontitles[][]=
 	"1.9.2",
 	"1.9.2",
 	"1.9.3",
+	"1.10.0",
 	"1.10.0",
 	"1.10.0",
 	"1.10.0"
@@ -259,37 +259,42 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 22, 2014",	//1.10.0
-	"April 22, 2014",	//1.10.0
-	"April 22, 2014"	//1.10.0
+	"April 23, 2014",	//1.10.0
+	"April 23, 2014",	//1.10.0
+	"April 23, 2014",	//1.10.0
+	"April 23, 2014"	//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 37:  //1.10.0
+		case 38:  //1.10.0
 		{
 			DrawPanelText(panel, "1) Balanced Goomba Stomp and RTD (WildCard65)");
 			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
 			DrawPanelText(panel, "3) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
 			DrawPanelText(panel, "4) Fixed players with 0 damage rarely showing up as 3rd place on the leaderboard (Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
+		case 37:  //1.10.0
+		{
 			DrawPanelText(panel, "5) Fixed ability timers not resetting when the round was over (Wliu)");
+			DrawPanelText(panel, "6) Fixed bosses losing momentum when raging in the air (Wliu)");
+			DrawPanelText(panel, "7) Slightly tweaked default boss health formula to be more balanced (Eggman)");
+			DrawPanelText(panel, "8) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "6) Fixed bosses losing momentum when raging in the air (Wliu)");
-			DrawPanelText(panel, "7) Slightly tweaked default boss health formula to be more balanced (Eggman)");
-			DrawPanelText(panel, "8) [Server] Fixed the ff2_enable cvar (Wliu)");
 			DrawPanelText(panel, "9) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
 			DrawPanelText(panel, "10) [Server] Improved SMAC integration-SMAC now knows when a client cvar is changed by FF2 (Wliu/WildCard65)");
+			DrawPanelText(panel, "11) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "12) [Server] Moved ff2_oldjump to the main config file (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "11) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "12) [Server] Moved ff2_oldjump to the main config file (Wliu)");
 			DrawPanelText(panel, "13) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
 			DrawPanelText(panel, "14) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
 			DrawPanelText(panel, "15) [Dev] Added more natives and one additional forward (Eggman)");
@@ -907,10 +912,12 @@ public OnLibraryRemoved(const String:name[])
 	}
 	#endif
 
+	#if defined _updater_included
 	if(StrEqual(name, "updater"))
 	{
 		Updater_RemovePlugin();
 	}
+	#endif
 }
 
 public OnConfigsExecuted()
@@ -1511,19 +1518,25 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	}
 }
 
+#if defined _smac_included
 public Action:SMAC_OnCheatDetected(client, const String:module[], DetectionType:type, Handle:info)
 {
+	Debug("SMAC: Cheat detected!");
 	if(type==Detection_CvarViolation)
 	{
+		Debug("SMAC: Cheat was a cvar violation!");
 		decl String:cvar[PLATFORM_MAX_PATH];
 		KvGetString(info, "cvar", cvar, sizeof(cvar));
+		Debug("Cvar was %s", cvar);
 		if((StrEqual(cvar, "sv_cheats") || StrEqual(cvar, "host_timescale")) && !(FF2flags[Boss[client]] & FF2FLAG_CHANGECVAR))
 		{
+			Debug("SMAC: Ignoring violation");
 			return Plugin_Stop;
 		}
 	}
 	return Plugin_Continue;
 }
+#endif
 
 public Action:Timer_Announce(Handle:hTimer)
 {
@@ -1782,6 +1795,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	{
 		Damage[client]=0;
 		uberTarget[client]=-1;
+		emitRageSound[client]=true;
 		if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator)
 		{
 			playing++;
@@ -4725,7 +4739,7 @@ public Action:DoTaunt(client, const String:command[], argc)
 			}
 			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
 		}
-		emitRageSound[client]=true;
+		emitRageSound[boss]=true;
 	}
 	return Plugin_Continue;
 }
