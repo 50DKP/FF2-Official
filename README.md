@@ -27,6 +27,7 @@ If you wish to make a pull request, the following formatting rules should be adh
 	* **Exception**: One space between &&, ||, ;, and ,
 * Tabs, not spaces
 * No tabs on newline
+* No whitespace after a line
 * Bracket all conditional statements, even if it is not required (one-line if statements, for example)
 * Variable names should be camel-cased (markdownIsStupid)
 * Method names should be capitalized normally (MarkNativeAsOptional)
