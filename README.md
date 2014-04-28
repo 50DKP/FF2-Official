@@ -9,14 +9,21 @@ Some third-party include files were modified in order to make FF2 work properly 
 It is highly recommended that you also make these changes when compiling FF2.
 
 `smac.inc`:
-* Remove `MarkNativeAsOptional("SMAC_CheatDetected");`
+* Remove: 
+```sourcepawn
+MarkNativeAsOptional("SMAC_CheatDetected");
+```
 
 `rtd.inc`:
-* Add ```#if defined REQUIRE_PLUGIN
-	required = 1
-	#else
-	required = 0
-	#endif``` inside `public SharedPlugin:__pl_rtd = `
+* Add: 
+```sourcepawn
+#if defined REQUIRE_PLUGIN
+required = 1
+#else
+required = 0
+#endif
+```
+inside `public SharedPlugin:__pl_rtd = `
 
 ###Formatting
 ***
