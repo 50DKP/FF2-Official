@@ -1,7 +1,7 @@
 ##Welcome to the official FF2 repository!
-**LATEST VERSION**: [1.0.8](https://forums.alliedmods.net/showpost.php?p=2054933&postcount=1)
+**LATEST VERSION**: [1.9.0](https://forums.alliedmods.net/showpost.php?p=2054933&postcount=1)
 
-[![Build Status](http://198.27.69.149/jenkins/buildStatus/icon?job=FF2-Official)](http://198.27.69.149/jenkins/job/FF2-Official/)
+[![Build Status](http://198.27.69.149/jenkins/buildStatus/icon?job=FF2-Official)](http://198.27.69.149/jenkins/job/FF2-Official/) - Currently Disabled
 
 ###Include File Changes
 ***
@@ -32,6 +32,7 @@ If you wish to make a pull request, the following formatting rules should be adh
 * Braces on new line
 * No spaces between parentheses or most operators (=, ==, *, |, &, etc)
 	* **Exception**: One space between &&, ||, ;, and ,
+	* *Note*: & and | formatting rules are currently not enforced
 * Tabs, not spaces
 * No tabs on newline
 * No whitespace after a line
@@ -41,7 +42,7 @@ If you wish to make a pull request, the following formatting rules should be adh
 
 Example:
 
-```java
+```sourcepawn
 if(markdownIsStupid)
 {
 	if(ubuntuIsAmazing)

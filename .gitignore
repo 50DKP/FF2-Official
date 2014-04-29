@@ -1,8 +1,4 @@
 #This is so you can put this repo in your server directory without stuff blowing up :)
-cfg/
-sound/goomba/
-models/buildables/
-materials/models/buildables/
 addons/metamod/
 addons/sourcemod/bin/
 addons/sourcemod/configs/**
@@ -28,17 +24,25 @@ addons/sourcemod/scripting/**
 !addons/sourcemod/scripting/freaks/
 !addons/sourcemod/scripting/freaks/**
 !addons/sourcemod/scripting/freak_fortress_2.sp
-#!addons/sourcemod/scripting/rtd.sp
 addons/sourcemod/scripting/include/**
 !addons/sourcemod/scripting/include/freaks/
 !addons/sourcemod/scripting/include/freak_fortress_2*.inc
 !addons/sourcemod/scripting/include/freaks/**
-#!addons/sourcemod/scripting/include/rtd.inc
+bin/
+cfg/
+custom/
+download/
+downloadLists/
+maps/
+materials/models/player/items/templates/standard.vmt
+media/
+replay/
+resource/
+scripts/
 *.*~
 *.bak
 *.ztmp
 
-#ROOT
 /*.bat
 /*.cache
 /*.cfg
@@ -52,49 +56,9 @@ addons/sourcemod/scripting/include/**
 /item_whitelist_example.txt
 /LICENSE.txt
 /mapcycle.txt
+/motd.txt
 /stats.txt
 /umc_mapcycle.txt
 /*.vbsp
 /*.vdf
 /*.vpk
-
-#SOURCEMOD TRANSLATIONS
-/addons/sourcemod/translations/*/
-/addons/sourcemod/.hg_archival.txt
-/addons/sourcemod/translations/a*.txt
-/addons/sourcemod/translations/b*.txt
-/addons/sourcemod/translations/c*.txt
-/addons/sourcemod/translations/ff2_o*.txt
-/addons/sourcemod/translations/fun*.txt
-/addons/sourcemod/translations/m*.txt
-/addons/sourcemod/translations/n*.txt
-/addons/sourcemod/translations/p*.txt
-/addons/sourcemod/translations/r*.txt
-/addons/sourcemod/translations/s*.txt
-/addons/sourcemod/translations/u*.txt
-/addons/sourcemod/translations/w*.txt
-
-#RANDOM STUFF
-/bin/
-motd.txt
-update_tf2.txt
-
-#CONFIGS
-/cfg/
-
-#CUSTOM
-/custom/
-
-#DOWNLOAD STUFFS
-/download/
-/downloadlists/
-
-#MAPS
-/maps/
-
-#MOAR RANDOM STUFF
-/materials/models/player/items/templates/standard.vmt
-/media/
-/replay/
-/resource/
-/scripts/

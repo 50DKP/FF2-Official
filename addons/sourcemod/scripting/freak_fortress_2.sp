@@ -33,7 +33,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 9"
+#define PLUGIN_VERSION "1.10.0 Beta 10"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -259,10 +259,10 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 23, 2014",	//1.10.0
-	"April 23, 2014",	//1.10.0
-	"April 23, 2014",	//1.10.0
-	"April 23, 2014"	//1.10.0
+	"April 28, 2014",	//1.10.0
+	"April 28, 2014",	//1.10.0
+	"April 28, 2014",	//1.10.0
+	"April 28, 2014"	//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -1083,8 +1083,8 @@ public DisableFF2()
 		{
 			if(BossInfoTimer[client][1]!=INVALID_HANDLE)
 			{
-			KillTimer(BossInfoTimer[client][1]);
-			BossInfoTimer[client][1]=INVALID_HANDLE;
+				KillTimer(BossInfoTimer[client][1]);
+				BossInfoTimer[client][1]=INVALID_HANDLE;
 			}
 		}
 	}
@@ -1840,7 +1840,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		return Plugin_Continue;
 	}
 
-	for(new client=0; client<=MaxClients; client++)
+	for(new client=1; client<=MaxClients; client++)
 	{
 		if(!IsValidClient(client) || !IsPlayerAlive(client))
 		{
@@ -1858,6 +1858,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	CheckArena();
 
 	new bool:see[MAXPLAYERS+1];
+	Boss[0]=FindBosses(see);
 	for(new client=1; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client))
@@ -1882,7 +1883,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			TF2_RespawnPlayer(Boss[0]);
 		}
 
-		for(new client=1; client<=MaxClients; client++)
+		for(new client=0; client<=MaxClients; client++)
 		{
 			if(IsValidClient(client) && !IsBoss(client) && GetClientTeam(client)>_:TFTeam_Spectator)
 			{
@@ -1903,7 +1904,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		Boss[client]=0;
 	}
 
-	Boss[0]=FindBosses(see);
 	PickCharacter(0, 0);
 	see[Boss[0]]=true;
 	if((Special[0]<0) || !BossKV[Special[0]])
@@ -1921,27 +1921,27 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	if(playing>2)
 	{
-		decl String:companion[64];
+		decl String:companionName[64];
 		for(new client=1; client<=MaxClients; client++)
 		{		
 			KvRewind(BossKV[Special[client-1]]);
-			KvGetString(BossKV[Special[client-1]], "companion", companion, 64);
-			if(StrEqual(companion, ""))
+			KvGetString(BossKV[Special[client-1]], "companion", companionName, 64);
+			if(StrEqual(companionName, ""))
 			{
 				break;
 			}
 
-			new tempBoss=FindBosses(see);
-			if(!IsValidClient(tempBoss))
+			new companion=FindBosses(see);
+			if(!IsValidClient(companion))
 			{
 				break;
 			}
-			Boss[client]=tempBoss;
+			Boss[client]=companion;
 
 			if(PickCharacter(client, client-1))
 			{
 				KvRewind(BossKV[Special[client]]);
-				for(new pingas=0; Boss[client]==Boss[client-1] && pingas<100; pingas++)
+				for(new tries=0; Boss[client]==Boss[client-1] && tries<100; tries++)
 				{
 					Boss[client]=FindBosses(see);
 				}
@@ -2170,7 +2170,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	new bool:isBossAlive;
-	new temp;
+	new boss;
 	for(new client=0; client<=MaxClients; client++)
 	{
 		if(IsValidClient(Boss[client]))
@@ -2179,7 +2179,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			if(IsPlayerAlive(Boss[client]))
 			{
 				isBossAlive=true;
-				temp=client;
+				boss=client;
 			}
 
 			for(new slot=1; slot<8; slot++)
@@ -2193,12 +2193,12 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			demoShield[client]=0;
 		}
 
-		for(new boss=0; boss<=1; boss++)
+		for(new timer=0; timer<=1; timer++)
 		{
-			if(BossInfoTimer[client][boss]!=INVALID_HANDLE)
+			if(BossInfoTimer[client][timer]!=INVALID_HANDLE)
 			{
-				KillTimer(BossInfoTimer[client][boss]);
-				BossInfoTimer[client][boss]=INVALID_HANDLE;
+				KillTimer(BossInfoTimer[client][timer]);
+				BossInfoTimer[client][timer]=INVALID_HANDLE;
 			}
 		}
 	}
@@ -2223,7 +2223,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			Format(sound, 512, "%s\n%t", sound, "ff2_alive", bossName, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client], lives);
 		}
 
-		if(RandomSound("sound_fail", sound, PLATFORM_MAX_PATH, temp))
+		if(RandomSound("sound_fail", sound, PLATFORM_MAX_PATH, boss))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
@@ -2235,7 +2235,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	Damage[0]=0;
 	for(new client=0; client<=MaxClients; client++)
 	{
-		if(Damage[client]<=0)
+		if(Damage[client]<=0 || IsBoss(client))
 		{
 			continue;
 		}
@@ -2262,37 +2262,18 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		CreateTimer(1.0, Timer_NineThousand, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 
-	decl String:first[32];
-	if(IsValidClient(top[0]) && !IsBoss(top[0]))
+	decl String:leaders[32][3];
+	for(new i=0; i<=2; i++)
 	{
-		GetClientName(top[0], first, 32);
-	}
-	else
-	{
-		Format(first, 32, "---");
-		top[0]=0;
-	}
-
-	decl String:second[32];
-	if(IsValidClient(top[1]) && !IsBoss(top[1]))
-	{
-		GetClientName(top[1], second, 32);
-	}
-	else
-	{
-		Format(second, 32, "---");
-		top[1]=0;
-	}
-
-	decl String:third[32];
-	if(IsValidClient(top[2]) && !IsBoss(top[2]))
-	{
-		GetClientName(top[2], third, 32);
-	}
-	else
-	{
-		Format(third, 32, "---");
-		top[2]=0;
+		if(IsValidClient(top[i]))
+		{
+			GetClientName(top[i], leaders[i], 32);
+		}
+		else
+		{
+			Format(leaders[i], 32, "---");
+			top[i]=0;
+		}
 	}
 
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
@@ -2306,16 +2287,16 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			{
 				if(bossWin)
 				{
-					ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t", sound, "top_3", Damage[top[0]], first, Damage[top[1]], second, Damage[top[2]], third, "boss_win");
+					ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_win");
 				}
 				else
 				{
-					ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t", sound, "top_3", Damage[top[0]], first, Damage[top[1]], second, Damage[top[2]], third, "boss_lose");
+					ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_lose");
 				}
 			}
 			else
 			{
-				ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t\n%t", sound, "top_3", Damage[top[0]], first, Damage[top[1]], second, Damage[top[2]], third, "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
+				ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
 			}
 		}
 	}
@@ -2900,7 +2881,7 @@ public Action:MessageTimer(Handle:hTimer)
 }
 
 public Action:MakeModelTimer(Handle:hTimer, any:client)
-{		
+{
 	if(!Boss[client] || !IsValidEdict(Boss[client]) || !IsClientInGame(Boss[client]) || !IsPlayerAlive(Boss[client]) || CheckRoundState()==2)
 	{
 		return Plugin_Stop;
@@ -3345,7 +3326,7 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 	return hWeapon;
 }
 
-public Action:MakeNotBoss(Handle:hTimer, any:clientid)
+public Action:MakeNotBoss(Handle:timer, any:clientid)
 {
 	new client=GetClientOfUserId(clientid);
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client))
@@ -6152,14 +6133,14 @@ stock FindBosses(bool:array[])
 	{
 		if(SpecForceBoss)
 		{
-			if(IsValidEdict(client) && IsClientConnected(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !array[client])
+			if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !array[client])
 			{
 				boss=client;
 			}
 		}
 		else
 		{
-			if(IsValidEdict(client) && IsClientConnected(client) && GetClientTeam(client)>_:TFTeam_Spectator && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !array[client])
+			if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !array[client])
 			{
 				boss=client;
 			}
@@ -6875,21 +6856,21 @@ SetClientQueuePoints(client, points)
 	SetClientCookie(client, FF2Cookies, cookies);
 }
 
-stock IsBoss(client)
+stock bool:IsBoss(client)
 {
-	if(client<=0)
+	if(!IsValidClient(client))
 	{
-		return 0;
+		return false;
 	}
 
 	for(new boss=0; boss<=MaxClients; boss++)
 	{
 		if(Boss[boss]==client)
 		{
-			return 1;
+			return true;
 		}
 	}
-	return 0;
+	return false;
 }
 
 DoOverlay(client, const String:overlay[])
@@ -7290,7 +7271,7 @@ stock GetHealingTarget(client,bool:checkgun=false)
 	return -1;
 }
 
-stock IsValidClient(client, bool:replaycheck=true)
+stock bool:IsValidClient(client, bool:replaycheck=true)
 {
 	if(client<=0 || client>MaxClients)
 	{
