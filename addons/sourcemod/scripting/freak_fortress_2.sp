@@ -1857,25 +1857,32 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	EnableSubPlugins();
 	CheckArena();
 
-	new bool:see[MAXPLAYERS+1];
-	Boss[0]=FindBosses(see);
+	new bool:isBoss[MAXPLAYERS+1];
+	Boss[0]=FindBosses(isBoss);
+
+	new bool:teamHasPlayers[2];
 	for(new client=1; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client))
 		{
 			new TFTeam:team=TFTeam:GetClientTeam(client);
-			if(!see[0] && team==TFTeam_Blue)
+			if(!teamHasPlayers[0] && team==TFTeam_Blue)
 			{
-				see[0]=true;
+				teamHasPlayers[0]=true;
 			}
-			else if(!see[1] && team==TFTeam_Red)
+			else if(!teamHasPlayers[1] && team==TFTeam_Red)
 			{
-				see[1]=true;
+				teamHasPlayers[1]=true;
+			}
+
+			if(teamHasPlayers[0] && teamHasPlayers[1])
+			{
+				break;
 			}
 		}
 	}
 
-	if(!see[0] || !see[1])
+	if(!teamHasPlayers[0] || !teamHasPlayers[1])
 	{
 		if(IsValidClient(Boss[0]))
 		{
@@ -1896,8 +1903,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		}
 		return Plugin_Continue;
 	}
-	see[0]=false;
-	see[1]=false;
 
 	for(new client=0; client<=MaxClients; client++)
 	{
@@ -1905,12 +1910,13 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	}
 
 	PickCharacter(0, 0);
-	see[Boss[0]]=true;
+	isBoss[Boss[0]]=true;
 	if((Special[0]<0) || !BossKV[Special[0]])
 	{
 		LogError("[FF2] I just don't know what went wrong");
 		return Plugin_Continue;
 	}
+
 	KvRewind(BossKV[Special[0]]);
 	BossLivesMax[0]=KvGetNum(BossKV[Special[0]], "lives", 1);
 	SetEntProp(Boss[0], Prop_Data, "m_iMaxHealth", 1337);
@@ -1931,7 +1937,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				break;
 			}
 
-			new companion=FindBosses(see);
+			new companion=FindBosses(isBoss);
 			if(!IsValidClient(companion))
 			{
 				break;
@@ -1943,9 +1949,9 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				KvRewind(BossKV[Special[client]]);
 				for(new tries=0; Boss[client]==Boss[client-1] && tries<100; tries++)
 				{
-					Boss[client]=FindBosses(see);
+					Boss[client]=FindBosses(isBoss);
 				}
-				see[Boss[client]]=true;
+				isBoss[Boss[client]]=true;
 				BossLivesMax[client]=KvGetNum(BossKV[Special[client]], "lives", 1);
 				SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", 1337);
 				if(LastClass[Boss[client]]==TFClass_Unknown)
@@ -6126,22 +6132,24 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 	return Plugin_Continue;
 }*/
 
-stock FindBosses(bool:array[])
+stock FindBosses(bool:isBoss[])
 {
 	new boss; 	
 	for(new client=1; client<=MaxClients; client++)
 	{
 		if(SpecForceBoss)
 		{
-			if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !array[client])
+			if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
 			{
 				boss=client;
 			}
 		}
 		else
 		{
-			if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !array[client])
+			Debug("FindBosses: %N's array was %i", client, isBoss[client]);
+			if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
 			{
+				Debug("FindBosses: %N has %i queue points compared to %N's %i queue points (old boss)", client, GetClientQueuePoints(client), client, GetClientQueuePoints(boss));
 				boss=client;
 			}
 		}
@@ -6826,11 +6834,13 @@ GetClientQueuePoints(client)
 {
 	if(!IsValidClient(client) || !AreClientCookiesCached(client))
 	{
+		Debug("GetClientQueuePoints: Client was not valid or cookies weren't cached, returning 0");
 		return 0;
 	}
 
 	if(IsFakeClient(client))
 	{
+		Debug("GetClientQueuePoints: Client was a bot");
 		return botqueuepoints;
 	}
 
