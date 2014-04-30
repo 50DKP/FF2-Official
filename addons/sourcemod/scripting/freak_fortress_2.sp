@@ -261,10 +261,10 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 28, 2014",	//1.10.0
-	"April 28, 2014",	//1.10.0
-	"April 28, 2014",	//1.10.0
-	"April 28, 2014"	//1.10.0
+	"April 29, 2014",	//1.10.0
+	"April 29, 2014",	//1.10.0
+	"April 29, 2014",	//1.10.0
+	"April 29, 2014"	//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -283,24 +283,25 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "5) Fixed ability timers not resetting when the round was over (Wliu)");
 			DrawPanelText(panel, "6) Fixed bosses losing momentum when raging in the air (Wliu)");
-			DrawPanelText(panel, "7) Slightly tweaked default boss health formula to be more balanced (Eggman)");
-			DrawPanelText(panel, "8) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
-			DrawPanelText(panel, "See next page for more (press 1)");
+			DrawPanelText(panel, "7) Fixed bosses sometimes teleporting to each other if they had a companion (Wliu)");
+			DrawPanelText(panel, "8) Slightly tweaked default boss health formula to be more balanced (Eggman)");
+			DrawPanelText(panel, "See next page for server/dev changelog (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "9) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "10) [Server] Improved SMAC integration-SMAC now knows when a client cvar is changed by FF2 (Wliu/WildCard65)");
-			DrawPanelText(panel, "11) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "12) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "9) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "10) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "11) [Server] Improved SMAC integration-SMAC now knows when a client cvar is changed by FF2 (Wliu/WildCard65)");
+			DrawPanelText(panel, "12) [Server] Removed ff2_halloween (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "13) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
-			DrawPanelText(panel, "14) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
-			DrawPanelText(panel, "15) [Dev] Added more natives and one additional forward (Eggman)");
-			DrawPanelText(panel, "16) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "13) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "14) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "15) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "16) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "17) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
 		}
 		case 34:  //1.9.3
 		{
@@ -1859,8 +1860,14 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	EnableSubPlugins();
 	CheckArena();
 
+	for(new client=0; client<=MaxClients; client++)
+	{
+		Boss[client]=0;
+	}
+
 	new bool:isBoss[MAXPLAYERS+1];
 	Boss[0]=FindBosses(isBoss);
+	isBoss[Boss[0]]=true;
 
 	new bool:teamHasPlayers[2];
 	for(new client=1; client<=MaxClients; client++)
@@ -1886,8 +1893,10 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	if(!teamHasPlayers[0] || !teamHasPlayers[1])
 	{
+		Debug("RoundStart: No players on one of the teams!");
 		if(IsValidClient(Boss[0]))
 		{
+			Debug("RoundStart: Switching Boss[0] to the boss team");
 			ChangeClientTeam(Boss[0], BossTeam);
 			TF2_RespawnPlayer(Boss[0]);
 		}
@@ -1906,13 +1915,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		return Plugin_Continue;
 	}
 
-	for(new client=0; client<=MaxClients; client++)
-	{
-		Boss[client]=0;
-	}
-
 	PickCharacter(0, 0);
-	isBoss[Boss[0]]=true;
 	if((Special[0]<0) || !BossKV[Special[0]])
 	{
 		LogError("[FF2] I just don't know what went wrong");
