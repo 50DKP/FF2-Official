@@ -261,10 +261,10 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 29, 2014",	//1.10.0
-	"April 29, 2014",	//1.10.0
-	"April 29, 2014",	//1.10.0
-	"April 29, 2014"	//1.10.0
+	"April 30, 2014",	//1.10.0
+	"April 30, 2014",	//1.10.0
+	"April 30, 2014",	//1.10.0
+	"April 30, 2014"	//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -1877,15 +1877,18 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			new TFTeam:team=TFTeam:GetClientTeam(client);
 			if(!teamHasPlayers[0] && team==TFTeam_Blue)
 			{
+				Debug("RoundStart: Blue team has %N on their team", client);
 				teamHasPlayers[0]=true;
 			}
 			else if(!teamHasPlayers[1] && team==TFTeam_Red)
 			{
+				Debug("RoundStart: Red team has %N on their team", client);
 				teamHasPlayers[1]=true;
 			}
 
 			if(teamHasPlayers[0] && teamHasPlayers[1])
 			{
+				Debug("RoundStart: Both teams have players");
 				break;
 			}
 		}
@@ -1896,7 +1899,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		Debug("RoundStart: No players on one of the teams!");
 		if(IsValidClient(Boss[0]))
 		{
-			Debug("RoundStart: Switching Boss[0] to the boss team");
+			Debug("RoundStart: Switching %N to the boss team", Boss[0]);
 			ChangeClientTeam(Boss[0], BossTeam);
 			TF2_RespawnPlayer(Boss[0]);
 		}
@@ -1912,6 +1915,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
 			}
 		}
+		Debug("RoundStart: Continuing");
 		return Plugin_Continue;
 	}
 
@@ -6151,7 +6155,6 @@ stock FindBosses(bool:isBoss[])
 		}
 		else
 		{
-			Debug("FindBosses: %N's array was %i", client, isBoss[client]);
 			if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
 			{
 				Debug("FindBosses: %N has %i queue points compared to %N's %i queue points (old boss)", client, GetClientQueuePoints(client), client, GetClientQueuePoints(boss));
@@ -6839,13 +6842,11 @@ GetClientQueuePoints(client)
 {
 	if(!IsValidClient(client) || !AreClientCookiesCached(client))
 	{
-		Debug("GetClientQueuePoints: Client was not valid or cookies weren't cached, returning 0");
 		return 0;
 	}
 
 	if(IsFakeClient(client))
 	{
-		Debug("GetClientQueuePoints: Client was a bot");
 		return botqueuepoints;
 	}
 
