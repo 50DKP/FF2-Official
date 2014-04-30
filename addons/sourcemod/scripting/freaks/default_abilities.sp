@@ -148,7 +148,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 
 		for(new target=1; target<=MaxClients; target++)
 		{
-			if(IsValidEdict(target) && IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+			if(IsClientConnected(target) && IsPlayerAlive(target) && FF2_GetBossIndex(target)==-1)
 			{
 				otherTeamIsAlive=true;
 				break;
@@ -406,7 +406,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 			new bool:otherTeamIsAlive;
 			for(new target=1; target<=MaxClients; target++)
 			{
-				if(IsValidEdict(target) && IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+				if(IsClientConnected(target) && IsPlayerAlive(target) && FF2_GetBossIndex(target)==-1)
 				{
 					otherTeamIsAlive=true;
 					break;

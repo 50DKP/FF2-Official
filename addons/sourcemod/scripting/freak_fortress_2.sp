@@ -80,6 +80,8 @@ new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new demoShield[MAXPLAYERS+1];
 
+new FF2flags[MAXPLAYERS+1];
+
 new Boss[MAXPLAYERS+1];
 new BossHealthMax[MAXPLAYERS+1];
 new BossHealth[MAXPLAYERS+1];
@@ -2422,7 +2424,7 @@ public Action:StartResponseTimer(Handle:hTimer)
 
 public Action:StartBossTimer(Handle:hTimer)
 {
-	CreateTimer(0.1, GottamTimer);
+	CreateTimer(0.1, Timer_Move);
 	new bool:isBossAlive=false;
 	for(new client=0; client<=MaxClients; client++)
 	{
@@ -2458,7 +2460,7 @@ public Action:StartBossTimer(Handle:hTimer)
 		if(Boss[client] && IsValidEdict(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
 			BossHealthMax[client]=CalcBossHealthMax(client);
-			if(BossHealthMax[client]<5)
+			if(BossHealthMax[client]<5)  //Qfaud?
 			{
 				BossHealthMax[client]=1322;
 			}
@@ -2768,7 +2770,7 @@ SetClientSoundOptions(client, excepttype, bool:on)
 	SetClientCookie(client, FF2Cookies, s);
 }
 
-public Action:GottamTimer(Handle:hTimer)
+public Action:Timer_Move(Handle:hTimer)
 {
 	for(new client=1; client<=MaxClients; client++)
 	{
