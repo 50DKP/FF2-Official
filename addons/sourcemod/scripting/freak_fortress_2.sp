@@ -1843,8 +1843,9 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		return Plugin_Continue;
 	}
 
-	for(new client=1; client<=MaxClients; client++)
+	for(new client=0; client<=MaxClients; client++)
 	{
+		Boss[client]=0;
 		if(!IsValidClient(client) || !IsPlayerAlive(client))
 		{
 			continue;
@@ -1859,11 +1860,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	Enabled=true;
 	EnableSubPlugins();
 	CheckArena();
-
-	for(new client=0; client<=MaxClients; client++)
-	{
-		Boss[client]=0;
-	}
 
 	new bool:isBoss[MAXPLAYERS+1];
 	Boss[0]=FindBosses(isBoss);
@@ -2435,7 +2431,7 @@ public Action:StartBossTimer(Handle:hTimer)
 	new bool:isBossAlive=false;
 	for(new client=0; client<=MaxClients; client++)
 	{
-		if(Boss[client] && IsValidEdict(Boss[client]) && IsPlayerAlive(Boss[client]))
+		if(Boss[client] && IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
 			isBossAlive=true;
 			SetEntityMoveType(Boss[client], MOVETYPE_NONE);
@@ -6291,8 +6287,8 @@ stock CalcBossHealthMax(index)
 	decl health;
 	if(brackets)
 	{
-		LogError("[FF2] Wrong Boss' health formula! Using default!");
-		health=RoundFloat(Pow(((760.0+playing)*(playing-1)),1.04));
+		LogError("[FF2] Malformed boss health formula, using default!");
+		health=RoundFloat(Pow(((460+playing)*playing), 1.075));
 	}
 	else health=RoundFloat(summ[0]);
 	if(bMedieval) health=RoundFloat(health/3.6);
