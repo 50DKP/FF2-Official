@@ -261,10 +261,10 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 30, 2014",	//1.10.0
-	"April 30, 2014",	//1.10.0
-	"April 30, 2014",	//1.10.0
-	"April 30, 2014"	//1.10.0
+	"May 1, 2014",		//1.10.0
+	"May 1, 2014",		//1.10.0
+	"May 1, 2014",		//1.10.0
+	"May 1, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -2273,7 +2273,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		CreateTimer(1.0, Timer_NineThousand, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 
-	decl String:leaders[32][3];
+	decl String:leaders[3][32];
 	for(new i=0; i<=2; i++)
 	{
 		if(IsValidClient(top[i]))
@@ -6288,7 +6288,7 @@ stock CalcBossHealthMax(index)
 	if(brackets)
 	{
 		LogError("[FF2] Malformed boss health formula, using default!");
-		health=RoundFloat(Pow(((460+playing)*playing), 1.075));
+		health=RoundFloat(Pow(((460.0+playing)*playing), 1.075));
 	}
 	else health=RoundFloat(summ[0]);
 	if(bMedieval) health=RoundFloat(health/3.6);
