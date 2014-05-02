@@ -1123,7 +1123,9 @@ public AddToDownload()
 
 	if(!FileExists(config))
 	{
-		SetFailState("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
+		LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
+		Enabled2=false;
+		return;
 	}
 
 	new Handle:Kv=CreateKeyValues("");
@@ -1607,13 +1609,19 @@ stock bool:IsFF2Map(bool:forceRecalc=false)
 		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
 		if(!FileExists(config))
 		{
-			SetFailState("[FF2] Unable to find %s, disabling plugin.", config);
+			LogError("[FF2] Unable to find %s, disabling plugin.", config);
+			isFF2Map=false;
+			found=true;
+			return false;
 		}
 
 		new Handle:file=OpenFile(config, "r");
 		if(file==INVALID_HANDLE)
 		{
-			SetFailState("[FF2] Error reading maps from %s, disabling plugin.", config);
+			LogError("[FF2] Error reading maps from %s, disabling plugin.", config);
+			isFF2Map=false;
+			found=true;
+			return false;
 		}
 
 		new tries=0;
