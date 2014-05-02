@@ -33,7 +33,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 10"
+#define PLUGIN_VERSION "1.10.0 Beta 11"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -221,6 +221,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.0",
 	"1.10.0",
 	"1.10.0",
+	"1.10.0",
 	"1.10.0"
 };
 
@@ -264,6 +265,7 @@ static const String:ff2versiondates[][]=
 	"May 1, 2014",		//1.10.0
 	"May 1, 2014",		//1.10.0
 	"May 1, 2014",		//1.10.0
+	"May 1, 2014",		//1.10.0
 	"May 1, 2014"		//1.10.0
 };
 
@@ -271,37 +273,42 @@ stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 38:  //1.10.0
+		case 39:  //1.10.0
 		{
 			DrawPanelText(panel, "1) Balanced Goomba Stomp and RTD (WildCard65)");
 			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
-			DrawPanelText(panel, "3) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
-			DrawPanelText(panel, "4) Fixed players with 0 damage rarely showing up as 3rd place on the leaderboard (Wliu)");
+			DrawPanelText(panel, "3) Fixed Jarate, etc. not disappearing immediately on the boss (Wliu)");
+			DrawPanelText(panel, "4) Fixed ability timers not resetting when the round was over (Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
+		case 38:  //1.10.0
+		{
+			DrawPanelText(panel, "5) Fixed bosses losing momentum when raging in the air (Wliu)");
+			DrawPanelText(panel, "6) Fixed bosses losing health if ther companion left at round start (Wliu)");
+			DrawPanelText(panel, "7) Fixed bosses sometimes teleporting to each other if they had a companion (Wliu)");
+			DrawPanelText(panel, "8) Slightly tweaked default boss health formula to be more balanced (Eggman)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 37:  //1.10.0
 		{
-			DrawPanelText(panel, "5) Fixed ability timers not resetting when the round was over (Wliu)");
-			DrawPanelText(panel, "6) Fixed bosses losing momentum when raging in the air (Wliu)");
-			DrawPanelText(panel, "7) Fixed bosses sometimes teleporting to each other if they had a companion (Wliu)");
-			DrawPanelText(panel, "8) Slightly tweaked default boss health formula to be more balanced (Eggman)");
-			DrawPanelText(panel, "See next page for server/dev changelog (press 1)");
+			DrawPanelText(panel, "9) Fixed and optimized the leaderboard (Wliu)");
+			DrawPanelText(panel, "10) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "11) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "12) [Server] Improved SMAC integration-SMAC now knows when a client cvar is changed by FF2 (Wliu/WildCard65)");
+			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "9) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
-			DrawPanelText(panel, "10) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "11) [Server] Improved SMAC integration-SMAC now knows when a client cvar is changed by FF2 (Wliu/WildCard65)");
-			DrawPanelText(panel, "12) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "See next page for more (press 1)");
+			DrawPanelText(panel, "13) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "14) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "15) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "16) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "See next page for dev changelog (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "13) [Server] Moved ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "14) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
-			DrawPanelText(panel, "15) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
-			DrawPanelText(panel, "16) [Dev] Added more natives and one additional forward (Eggman)");
-			DrawPanelText(panel, "17) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "17) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "18) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
 		}
 		case 34:  //1.9.3
 		{
@@ -2802,7 +2809,8 @@ public Action:StartRound(Handle:hTimer)
 			CreateTimer(0.05, Timer_ReEquipBoss, client, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
-	CreateTimer(10.0, Timer_SkipFF2Panel);
+
+	CreateTimer(10.0, Timer_NextBossPanel);
 	UpdateHealthBar();
 	return Plugin_Handled;
 }
@@ -2815,14 +2823,13 @@ public Action:Timer_ReEquipBoss(Handle:timer, any:client)
 	}
 }
 
-public Action:Timer_SkipFF2Panel(Handle:hTimer)
+public Action:Timer_NextBossPanel(Handle:hTimer)
 {
-	new bool:added[MAXPLAYERS+1];
 	new i, j;
 	do
 	{
-		new client=FindBosses(added);
-		added[client]=true;
+		new bool:temp[MaxClients+1];
+		new client=FindBosses(temp);
 		if(client && !IsBoss(client))
 		{
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_near");
@@ -4381,33 +4388,19 @@ public Action:BossTimer(Handle:timer)
 		return Plugin_Stop;
 	}
 
+	if(CheckRoundState()==2)
+	{
+		return Plugin_Stop;
+	}
+
 	new bool:validBoss=false;
 	for(new client=0; client<=MaxClients; client++)
 	{
-		if(!IsValidClient(Boss[client], false) || CheckRoundState()==2)
-		{
-			break;
-		}
-		else if(!IsPlayerAlive(Boss[client]) || !(FF2flags[Boss[client]] & FF2FLAG_USEBOSSTIMER))
+		if(!IsValidClient(Boss[client]) || !IsPlayerAlive(Boss[client]) || !(FF2flags[Boss[client]] & FF2FLAG_USEBOSSTIMER))
 		{
 			continue;
 		}
-
 		validBoss=true;
-		if(TF2_IsPlayerInCondition(Boss[client], TFCond_Jarated))
-		{
-			TF2_RemoveCondition(Boss[client], TFCond_Jarated);
-		}
-
-		if(TF2_IsPlayerInCondition(Boss[client], TFCond_MarkedForDeath))
-		{
-			TF2_RemoveCondition(Boss[client], TFCond_MarkedForDeath);
-		}
-
-		if(TF2_IsPlayerInCondition(Boss[client], TFCond:42) && TF2_IsPlayerInCondition(Boss[client], TFCond_Dazed))
-		{
-			TF2_RemoveCondition(Boss[client], TFCond_Dazed);
-		}
 
 		SetEntPropFloat(Boss[client], Prop_Data, "m_flMaxspeed", BossSpeed[Special[client]]+0.7*(100-BossHealth[client]*100/BossLivesMax[client]/BossHealthMax[client]));
 
@@ -5007,6 +5000,19 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 		}
 	}
 	return Plugin_Continue;
+}
+
+public TF2_OnConditionAdded(client, TFCond:condition)
+{
+	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
+	{
+		TF2_RemoveCondition(Boss[client], condition);
+	}
+	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(Boss[client], TFCond:42))
+	{
+		TF2_RemoveCondition(Boss[client], condition);
+	}
+	return;
 }
 
 public Action:CheckAlivePlayers(Handle:hTimer)
@@ -5657,10 +5663,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					case 656:  //Holiday Punch
 					{
 						CreateTimer(0.1, Timer_StopTickle, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-						if(TF2_IsPlayerInCondition(attacker, TFCond_Dazed))
-						{
-							TF2_RemoveCondition(attacker, TFCond_Dazed);
-						}
 					}
 				}
 
@@ -6139,7 +6141,7 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 
 stock FindBosses(bool:isBoss[])
 {
-	new boss; 	
+	new boss;
 	for(new client=1; client<=MaxClients; client++)
 	{
 		if(SpecForceBoss)
@@ -8018,17 +8020,10 @@ public OnTakeDamagePost(client, attacker, inflictor, Float:damage, damagetype)
 {
 	if(IsBoss(client) && Enabled)
 	{
-		new boss=GetBossIndex(client);
-		if(boss==-1)
+		if(GetBossIndex(client)!=-1)
 		{
-			return;
+			UpdateHealthBar();
 		}
-
-		if(TF2_IsPlayerInCondition(Boss[boss], TFCond_MarkedForDeath))
-		{
-			TF2_RemoveCondition(Boss[boss], TFCond_MarkedForDeath);
-		}
-		UpdateHealthBar();
 	}
 }
 
