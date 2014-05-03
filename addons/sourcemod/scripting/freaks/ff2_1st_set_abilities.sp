@@ -11,7 +11,7 @@
 
 #define CBS_MAX_ARROWS 9
 
-#define PLUGIN_VERSION "1.9.3"
+#define PLUGIN_VERSION "1.10.0"
 
 public Plugin:myinfo=
 {
@@ -576,6 +576,7 @@ public Action:Timer_Rage_Explosive_Dance(Handle:timer, any:client)
 
 Rage_Slowmo(client, const String:ability_name[])
 {
+	FF2_SetFF2flags(client, FF2_GetFF2flags(client)|FF2FLAG_CHANGECVAR);
 	SetConVarFloat(cvarTimeScale, FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 2, 0.1));
 	new Float:duration=FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 1, 1.0)+1.0;
 	SloMoTimer=CreateTimer(duration, Timer_StopSlomo, client);
@@ -584,7 +585,14 @@ Rage_Slowmo(client, const String:ability_name[])
 	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
 	if(boss>0)
 	{
-		CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(boss, "scout_dodge_blue", 75.0)));
+		if(BossTeam==_:TFTeam_Blue)
+		{
+			CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(boss, "scout_dodge_blue", 75.0)));
+		}
+		else
+		{
+			CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(boss, "scout_dodge_red", 75.0)));
+		}
 	}
 	EmitSoundToAll("replay\\enterperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);
 	EmitSoundToAll("replay\\enterperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);
@@ -598,6 +606,7 @@ public Action:Timer_StopSlomo(Handle:timer, any:client)
 	UpdateClientCheatValue(0);
 	if(client!=-1)
 	{
+		FF2_SetFF2flags(client, FF2_GetFF2flags(client)&~FF2FLAG_CHANGECVAR);
 		FF2Flags[client]&=~FLAG_ONSLOMO;
 	}
 	EmitSoundToAll("replay\\exitperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);

@@ -148,7 +148,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 
 		for(new target=1; target<=MaxClients; target++)
 		{
-			if(IsValidEdict(target) && IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+			if(IsClientConnected(target) && IsPlayerAlive(target) && FF2_GetBossIndex(target)==-1)
 			{
 				otherTeamIsAlive=true;
 				break;
@@ -213,9 +213,6 @@ public Action:Timer_StopTaunt(Handle:timer, any:client)
 	if(!GetEntProp(boss, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(boss, Prop_Send, "m_hHighFivePartner")))
 	{
 		TF2_RemoveCondition(boss, TFCond_Taunting);
-		/*new Float:up[3];
-		up[2]=220.0;
-		TeleportEntity(boss, NULL_VECTOR, NULL_VECTOR, up);*/
 	}
 	return Plugin_Continue;
 }
@@ -409,7 +406,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 			new bool:otherTeamIsAlive;
 			for(new target=1; target<=MaxClients; target++)
 			{
-				if(IsValidEdict(target) && IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+				if(IsClientConnected(target) && IsPlayerAlive(target) && FF2_GetBossIndex(target)==-1)
 				{
 					otherTeamIsAlive=true;
 					break;
