@@ -1963,14 +1963,16 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				break;
 			}
 			Boss[client]=companion;
+			Debug("RoundStart: Boss[client] for the companion is %i", Boss[client]);
 
-			if(PickCharacter(client, client-1))
+			if(PickCharacter(client, client-1))  //Seriously, this code...
 			{
 				KvRewind(BossKV[Special[client]]);
 				for(new tries=0; Boss[client]==Boss[client-1] && tries<100; tries++)
 				{
 					Boss[client]=FindBosses(isBoss);
 				}
+				Debug("RoundStart: Boss[client] for the companion is now %i", Boss[client]);
 				isBoss[Boss[client]]=true;
 				BossLivesMax[client]=KvGetNum(BossKV[Special[client]], "lives", 1);
 				SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", 1337);
