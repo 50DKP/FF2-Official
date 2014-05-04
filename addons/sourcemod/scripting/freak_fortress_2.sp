@@ -5015,6 +5015,11 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 
 public TF2_OnConditionAdded(client, TFCond:condition)
 {
+	if(!Boss[client] || !Enabled)
+	{
+		return;
+	}
+
 	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
 	{
 		TF2_RemoveCondition(Boss[client], condition);
