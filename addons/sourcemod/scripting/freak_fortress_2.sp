@@ -262,11 +262,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 1, 2014",		//1.10.0
-	"May 1, 2014",		//1.10.0
-	"May 1, 2014",		//1.10.0
-	"May 1, 2014",		//1.10.0
-	"May 1, 2014"		//1.10.0
+	"May 4, 2014",		//1.10.0
+	"May 4, 2014",		//1.10.0
+	"May 4, 2014",		//1.10.0
+	"May 4, 2014",		//1.10.0
+	"May 4, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -292,23 +292,24 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 37:  //1.10.0
 		{
 			DrawPanelText(panel, "9) Fixed and optimized the leaderboard (Wliu)");
-			DrawPanelText(panel, "10) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
-			DrawPanelText(panel, "11) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "12) [Server] Improved SMAC integration-SMAC now knows when a client cvar is changed by FF2 (Wliu/WildCard65)");
+			DrawPanelText(panel, "10) Fixed medic minions receiving the medigun (Wliu)");
+			DrawPanelText(panel, "11) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "12) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "13) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "14) [Server] Moved ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "15) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
-			DrawPanelText(panel, "16) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
-			DrawPanelText(panel, "See next page for dev changelog (press 1)");
+			DrawPanelText(panel, "13) [Server] Improved SMAC integration-SMAC now knows when a client cvar is changed by FF2 (Wliu/WildCard65)");
+			DrawPanelText(panel, "14) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "15) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "16) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "17) [Dev] Added more natives and one additional forward (Eggman)");
-			DrawPanelText(panel, "18) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "17) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "18) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "19) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
 		}
 		case 34:  //1.9.3
 		{
@@ -3533,7 +3534,7 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 		weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
 	}
 
-	if(TF2_GetPlayerClass(client)==TFClass_Medic)
+	if(TF2_GetPlayerClass(client)==TFClass_Medic && !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 		new mediquality=(weapon>MaxClients && IsValidEdict(weapon) ? GetEntProp(weapon, Prop_Send, "m_iEntityQuality") : -1);
