@@ -262,11 +262,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 4, 2014",		//1.10.0
-	"May 4, 2014",		//1.10.0
-	"May 4, 2014",		//1.10.0
-	"May 4, 2014",		//1.10.0
-	"May 4, 2014"		//1.10.0
+	"May 5, 2014",		//1.10.0
+	"May 5, 2014",		//1.10.0
+	"May 5, 2014",		//1.10.0
+	"May 5, 2014",		//1.10.0
+	"May 5, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -1889,18 +1889,15 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			new TFTeam:team=TFTeam:GetClientTeam(client);
 			if(!teamHasPlayers[0] && team==TFTeam_Blue)
 			{
-				Debug("RoundStart: Blue team has %N on their team", client);
 				teamHasPlayers[0]=true;
 			}
 			else if(!teamHasPlayers[1] && team==TFTeam_Red)
 			{
-				Debug("RoundStart: Red team has %N on their team", client);
 				teamHasPlayers[1]=true;
 			}
 
 			if(teamHasPlayers[0] && teamHasPlayers[1])
 			{
-				Debug("RoundStart: Both teams have players");
 				break;
 			}
 		}
@@ -1908,10 +1905,8 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	if(!teamHasPlayers[0] || !teamHasPlayers[1])
 	{
-		Debug("RoundStart: No players on one of the teams!");
 		if(IsValidClient(Boss[0]))
 		{
-			Debug("RoundStart: Switching %N to the boss team", Boss[0]);
 			ChangeClientTeam(Boss[0], BossTeam);
 			TF2_RespawnPlayer(Boss[0]);
 		}
@@ -1927,7 +1922,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
 			}
 		}
-		Debug("RoundStart: Continuing");
 		return Plugin_Continue;
 	}
 
@@ -3358,7 +3352,7 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 public Action:MakeNotBoss(Handle:timer, any:clientid)
 {
 	new client=GetClientOfUserId(clientid);
-	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client))
+	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || GetClientTeam(client)==BossTeam)
 	{
 		return Plugin_Continue;
 	}
@@ -3393,7 +3387,7 @@ public Action:MakeNotBoss(Handle:timer, any:clientid)
 
 public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 {
-	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client))
+	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || GetClientTeam(client)==BossTeam)
 	{
 		return Plugin_Continue;
 	}
@@ -3534,7 +3528,7 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 		weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
 	}
 
-	if(TF2_GetPlayerClass(client)==TFClass_Medic && !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+	if(TF2_GetPlayerClass(client)==TFClass_Medic)
 	{
 		weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 		new mediquality=(weapon>MaxClients && IsValidEdict(weapon) ? GetEntProp(weapon, Prop_Send, "m_iEntityQuality") : -1);
@@ -3551,7 +3545,7 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 		}
 	}
 	
-	if(civilianCheck[client]==3 && !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
 		CPrintToChat(client, "{olive}[FF2]{default} Respawning you because you have no weapons!");
@@ -4095,22 +4089,25 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 		TF2_RemoveAllWeapons2(client);
 	}
 
-	if((CheckRoundState()!=1 || !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM)))
+	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
-		if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
+		if(CheckRoundState()!=1)
 		{
-			FF2flags[client]|=FF2FLAG_HASONGIVED;
-			RemovePlayerBack(client, {57, 133, 231, 405, 444, 608, 642}, 7);
-			RemovePlayerTarge(client);
-			TF2_RemoveAllWeapons2(client);
-			TF2_RegeneratePlayer(client);
-			CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
+			{
+				FF2flags[client]|=FF2FLAG_HASONGIVED;
+				RemovePlayerBack(client, {57, 133, 231, 405, 444, 608, 642}, 7);
+				RemovePlayerTarge(client);
+				TF2_RemoveAllWeapons2(client);
+				TF2_RegeneratePlayer(client);
+				CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			}
+			CreateTimer(0.2, MakeNotBoss, GetClientUserId(client));
 		}
-		CreateTimer(0.2, MakeNotBoss, GetClientUserId(client));
-	}
-	else
-	{
-		CreateTimer(0.1, checkItems, client);
+		else
+		{
+			CreateTimer(0.1, checkItems, client);
+		}
 	}
 
 	if(CheckRoundState()==1)
