@@ -262,11 +262,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 5, 2014",		//1.10.0
-	"May 5, 2014",		//1.10.0
-	"May 5, 2014",		//1.10.0
-	"May 5, 2014",		//1.10.0
-	"May 5, 2014"		//1.10.0
+	"May 6, 2014",		//1.10.0
+	"May 6, 2014",		//1.10.0
+	"May 6, 2014",		//1.10.0
+	"May 6, 2014",		//1.10.0
+	"May 6, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -1958,7 +1958,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				break;
 			}
 			Boss[client]=companion;
-			Debug("RoundStart: Boss[client] for the companion is %i", Boss[client]);
 
 			if(PickCharacter(client, client-1))  //Seriously, this code...
 			{
@@ -1967,7 +1966,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				{
 					Boss[client]=FindBosses(isBoss);
 				}
-				Debug("RoundStart: Boss[client] for the companion is now %i", Boss[client]);
 				isBoss[Boss[client]]=true;
 				BossLivesMax[client]=KvGetNum(BossKV[Special[client]], "lives", 1);
 				SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", 1337);
@@ -3349,10 +3347,10 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 	return hWeapon;
 }
 
-public Action:MakeNotBoss(Handle:timer, any:clientid)
+public Action:MakeNotBoss(Handle:timer, any:userid)
 {
-	new client=GetClientOfUserId(clientid);
-	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || GetClientTeam(client)==BossTeam)
+	new client=GetClientOfUserId(userid);
+	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		return Plugin_Continue;
 	}
@@ -3360,7 +3358,7 @@ public Action:MakeNotBoss(Handle:timer, any:clientid)
 	if(LastClass[client]!=TFClass_Unknown)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
-		TF2_SetPlayerClass(client,LastClass[client]);
+		TF2_SetPlayerClass(client, LastClass[client]);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
 		LastClass[client]=TFClass_Unknown;
 		TF2_RespawnPlayer(client);
@@ -6168,7 +6166,6 @@ stock FindBosses(bool:isBoss[])
 		{
 			if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
 			{
-				Debug("FindBosses: %N has %i queue points compared to %N's %i queue points (old boss)", client, GetClientQueuePoints(client), client, GetClientQueuePoints(boss));
 				boss=client;
 			}
 		}
