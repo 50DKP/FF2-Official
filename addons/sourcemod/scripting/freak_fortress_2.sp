@@ -27,7 +27,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
-#tryinclude <smac>
+//#tryinclude <smac>
 #tryinclude <updater>
 #tryinclude <goomba>
 #tryinclude <rtd>
@@ -62,6 +62,8 @@ new bool:rtd=false;
 #if defined _goomba_included
 new bool:goomba=false;
 #endif
+
+new bool:smac=false;
 
 new bool:b_allowBossChgClass=false;
 new bool:b_BossChgClassDetected=false;
@@ -262,11 +264,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 6, 2014",		//1.10.0
-	"May 6, 2014",		//1.10.0
-	"May 6, 2014",		//1.10.0
-	"May 6, 2014",		//1.10.0
-	"May 6, 2014"		//1.10.0
+	"May 7, 2014",		//1.10.0
+	"May 7, 2014",		//1.10.0
+	"May 7, 2014",		//1.10.0
+	"May 7, 2014",		//1.10.0
+	"May 7, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -299,17 +301,16 @@ stock FindVersionData(Handle:panel, versionIndex)
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "13) [Server] Improved SMAC integration-SMAC now knows when a client cvar is changed by FF2 (Wliu/WildCard65)");
-			DrawPanelText(panel, "14) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "15) [Server] Moved ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "16) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "13) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "14) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "15) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "16) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "17) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
-			DrawPanelText(panel, "18) [Dev] Added more natives and one additional forward (Eggman)");
-			DrawPanelText(panel, "19) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "17) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "18) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
 		}
 		case 34:  //1.9.3
 		{
@@ -892,6 +893,11 @@ public OnLibraryAdded(const String:name[])
 	}
 	#endif
 
+	if(strcmp(name, "smac", false)==0)
+	{
+		smac=true;
+	}
+
 	#if defined _updater_included && !defined DEV_VERSION
 	if(StrEqual(name, "updater") && GetConVarBool(cvarUpdater))
 	{
@@ -922,6 +928,11 @@ public OnLibraryRemoved(const String:name[])
 		goomba=false;
 	}
 	#endif
+
+	if(strcmp(name, "smac", false)==0)
+	{
+		smac=false;
+	}
 
 	#if defined _updater_included
 	if(StrEqual(name, "updater"))
@@ -1002,6 +1013,12 @@ public OnMapEnd()
 			KillTimer(MusicTimer);
 			MusicTimer=INVALID_HANDLE;
 		}
+
+		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+		{
+			ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
+			ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
+		}
 	}
 }
 
@@ -1046,6 +1063,12 @@ public EnableFF2()
 	MapHasMusic(true);
 	AddToDownload();
 	strcopy(FF2CharSetStr, 2, "");
+
+	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+	{
+		ServerCommand("smac_removecvar sv_cheats");
+		ServerCommand("smac_removecvar host_timescale");
+	}
 
 	bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
 	FindHealthBar();
@@ -1104,6 +1127,12 @@ public DisableFF2()
 	{
 		KillTimer(MusicTimer);
 		MusicTimer=INVALID_HANDLE;
+	}
+
+	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
+	{
+		ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
+		ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
 	}
 
 	#if defined _steamtools_included
@@ -1530,7 +1559,7 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 		}
 	}
 }
-
+/* TODO: Re-enable in 2.0.0
 #if defined _smac_included
 public Action:SMAC_OnCheatDetected(client, const String:module[], DetectionType:type, Handle:info)
 {
@@ -1550,7 +1579,7 @@ public Action:SMAC_OnCheatDetected(client, const String:module[], DetectionType:
 	return Plugin_Continue;
 }
 #endif
-
+*/
 public Action:Timer_Announce(Handle:hTimer)
 {
 	static announcecount=-1;
