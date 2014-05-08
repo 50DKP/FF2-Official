@@ -4157,7 +4157,7 @@ public Action:ClientTimer(Handle:timer)
 		return Plugin_Stop;
 	}
 
-	decl String:wepclassname[32];
+	decl String:classname[32];
 	decl TFCond:cond;
 	for(new client=1; client<=MaxClients; client++)
 	{
@@ -4184,11 +4184,11 @@ public Action:ClientTimer(Handle:timer)
 
 			new TFClassType:class=TF2_GetPlayerClass(client);
 			new weapon=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-			if(weapon<=MaxClients || !IsValidEntity(weapon) || !GetEdictClassname(weapon, wepclassname, sizeof(wepclassname)))
+			if(weapon<=MaxClients || !IsValidEntity(weapon) || !GetEdictClassname(weapon, classname, sizeof(classname)))
 			{
-				strcopy(wepclassname, sizeof(wepclassname), "");
+				strcopy(classname, sizeof(classname), "");
 			}
-			new bool:validwep=(strncmp(wepclassname, "tf_wea", 6, false)==0);
+			new bool:validwep=(strncmp(classname, "tf_wea", 6, false)==0);
 
 			if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 			{
@@ -4241,7 +4241,7 @@ public Action:ClientTimer(Handle:timer)
 			if(RedAlivePlayers==1 && !TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 			{
 				TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.3);
-				if(class==TFClass_Engineer && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && StrEqual(wepclassname, "tf_weapon_sentry_revenge", false))
+				if(class==TFClass_Engineer && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && StrEqual(classname, "tf_weapon_sentry_revenge", false))
 				{
 					SetEntProp(client, Prop_Send, "m_iRevengeCrits", 3);
 				}
@@ -4283,7 +4283,7 @@ public Action:ClientTimer(Handle:timer)
 			new bool:addthecrit=false;
 			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee))
 			{
-				if(strcmp(wepclassname, "tf_weapon_knife", false)!=0)
+				if(strcmp(classname, "tf_weapon_knife", false)!=0)
 				{
 					addthecrit=true;
 				}
@@ -4362,7 +4362,7 @@ public Action:ClientTimer(Handle:timer)
 				}
 				case TFClass_Engineer:
 				{
-					if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && StrEqual(wepclassname, "tf_weapon_sentry_revenge", false))
+					if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && StrEqual(classname, "tf_weapon_sentry_revenge", false))
 					{
 						new sentry=FindSentry(client);
 						if(IsValidEntity(sentry) && IsBoss(GetEntPropEnt(sentry, Prop_Send, "m_hEnemy")))
@@ -5373,21 +5373,28 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damagetype, &weapon, Float:damageForce[3], Float:damagePosition[3], damagecustom)
 {
 	if(!Enabled || !IsValidEdict(attacker))
+	{
 		return Plugin_Continue;
-		
+	}
+	
 	static bool:foundDmgCustom=false;
 	static bool:dmgCustomInOTD=false;
-	
 	if(!foundDmgCustom)
 	{
 		dmgCustomInOTD=(GetFeatureStatus(FeatureType_Capability, "SDKHook_DmgCustomInOTD")==FeatureStatus_Available);
 		foundDmgCustom=true;
 	}
-	
+
 	if((attacker<=0 || client==attacker) && IsBoss(client))
+	{
 		return Plugin_Handled;
+	}
+
 	if(TF2_IsPlayerInCondition(client, TFCond_Ubercharged))
+	{
 		return Plugin_Continue;
+	}
+
 	if(CheckRoundState()==0 && IsBoss(client))
 	{
 		damage*=0.0;
@@ -5432,37 +5439,52 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				{
 					if(GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 					{
-						if(damagetype & DMG_CRIT) damagetype&=~DMG_CRIT;
+						if(damagetype & DMG_CRIT)
+						{
+							damagetype&=~DMG_CRIT;
+						}
 						damage=620.0;
 						return Plugin_Changed;
 					}
+
 					if(TF2_IsPlayerInCondition(client, TFCond_Cloaked) && TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 					{
-						if(damagetype & DMG_CRIT) damagetype&=~DMG_CRIT;
+						if(damagetype & DMG_CRIT)
+						{
+							damagetype&=~DMG_CRIT;
+						}
 						damage=850.0;
 						return Plugin_Changed;
 					}
+
 					if(GetEntProp(client, Prop_Send, "m_bFeignDeathReady") || TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 					{
-						if(damagetype & DMG_CRIT) damagetype&=~DMG_CRIT;
+						if(damagetype & DMG_CRIT)
+						{
+							damagetype&=~DMG_CRIT;
+						}
 						damage=620.0;
 						return Plugin_Changed;
 					}
 				}
 				case TFClass_Soldier:
 				{
-					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, 1))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client]&FF2FLAG_ISBUFFED))
+					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, 1))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))
 					{
-						SetEntPropFloat(client, Prop_Send, "m_flRageMeter",100.0);
+						SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 						FF2flags[client]|=FF2FLAG_ISBUFFED;
 					}
 				}
 			}
+
 			new buffweapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 			new buffindex=(IsValidEntity(buffweapon) && buffweapon>MaxClients ? GetEntProp(buffweapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
-			if(buffindex==226)
+			if(buffindex==226)  //Battalion's Backup
+			{
 				CreateTimer(0.25, Timer_CheckBuffRage, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			if(damage<=160.0)
+			}
+
+			if(damage<=160.0)  //TODO:  Wat
 			{
 				damage*=3;
 				return Plugin_Changed;
@@ -5492,8 +5514,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 				else if(weapon!=4095 && IsValidEdict(weapon) && weapon==GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee) && damage>1000.0)
 				{
-					decl String:wepclassname[32];
-					if(GetEdictClassname(weapon, wepclassname, sizeof(wepclassname)) && strcmp(wepclassname, "tf_weapon_knife", false)==0)
+					decl String:classname[32];
+					if(GetEdictClassname(weapon, classname, sizeof(classname)) && strcmp(classname, "tf_weapon_knife", false)==0)
 					{
 						bIsBackstab=true;
 					}
@@ -5996,19 +6018,19 @@ stock GetClientCloakIndex(client)
 		return -1;
 	}
 
-	new wep=GetPlayerWeaponSlot(client, 4);
-	if(!IsValidEntity(wep))
+	new weapon=GetPlayerWeaponSlot(client, 4);
+	if(!IsValidEntity(weapon))
 	{
 		return -1;
 	}
 
 	new String:classname[64];
-	GetEntityClassname(wep, classname, sizeof(classname));
+	GetEntityClassname(weapon, classname, sizeof(classname));
 	if(strncmp(classname, "tf_wea", 6, false)!=0)
 	{
 		return -1;
 	}
-	return GetEntProp(wep, Prop_Send, "m_iItemDefinitionIndex");
+	return GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 }
 stock SpawnSmallHealthPackAt(client, ownerteam=0)
 {
