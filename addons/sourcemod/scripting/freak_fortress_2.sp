@@ -5785,7 +5785,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					SetEventBool(stabevent, "allseecrit", true);
 					SetEventInt(stabevent, "weaponid", TF_WEAPON_KNIFE);
 					FireEvent(stabevent);
-					if(weapon==225 || index==574)  //Your Eternal Reward, Wanga Prick
+					if(index==225 || index==574)  //Your Eternal Reward, Wanga Prick
 					{
 						CreateTimer(0.3, Timer_DisguiseBackstab, GetClientUserId(attacker));
 					}
