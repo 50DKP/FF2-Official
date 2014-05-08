@@ -5534,10 +5534,10 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					return Plugin_Changed;
 				}
 
-				new wepindex=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
-				switch(wepindex)
+				new index=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+				switch(index)
 				{
-					case 593:	//Third Degree
+					case 593:  //Third Degree
 					{
 						new healers[MAXPLAYERS];
 						new healerCount=0;
@@ -5578,11 +5578,11 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 						}
 					}
-					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966:
+					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Sydney Sleeper, Bazaar Bargain, Machina, Festive Sniper Rifle, Hitman's Heatmaker, Botkiller Sniper Rifles
 					{
-						switch(wepindex)
+						switch(index)
 						{
-							case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966:
+							case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Festive Sniper Rifle, Botkiller Sniper Rifles
 							{
 								if(CheckRoundState()!=2)
 								{
@@ -5598,7 +5598,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 						}
 
-						if(wepindex==752 && CheckRoundState()!=2)  //Hitman's Heatmaker
+						if(index==752 && CheckRoundState()!=2)  //Hitman's Heatmaker
 						{
 							new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 							new Float:add=10+(chargelevel/10);
@@ -5618,7 +5618,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 							else
 							{
-								if(wepindex!=230 || BossCharge[boss][0]>90)  //Sydney Sleeper
+								if(index!=230 || BossCharge[boss][0]>90)  //Sydney Sleeper
 								{
 									damage*=2.9;
 								}
@@ -5706,6 +5706,10 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					case 656:  //Holiday Punch
 					{
 						CreateTimer(0.1, Timer_StopTickle, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+						if(TF2_IsPlayerInCondition(attacker, TFCond_Dazed))
+						{
+							TF2_RemoveCondition(attacker, TFCond_Dazed);
+						}
 					}
 				}
 
@@ -5781,11 +5785,11 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					SetEventBool(stabevent, "allseecrit", true);
 					SetEventInt(stabevent, "weaponid", TF_WEAPON_KNIFE);
 					FireEvent(stabevent);
-					if(wepindex==225 || wepindex==574)  //Your Eternal Reward, Wanga Prick
+					if(weapon==225 || index==574)  //Your Eternal Reward, Wanga Prick
 					{
 						CreateTimer(0.3, Timer_DisguiseBackstab, GetClientUserId(attacker));
 					}
-					else if(wepindex==356)  //Conniver's Kunai
+					else if(index==356)  //Conniver's Kunai
 					{
 						new health=GetClientHealth(attacker)+200;
 						if(health>500)
