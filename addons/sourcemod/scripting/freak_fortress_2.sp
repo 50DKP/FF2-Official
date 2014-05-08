@@ -5376,7 +5376,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 	{
 		return Plugin_Continue;
 	}
-	
+
 	static bool:foundDmgCustom=false;
 	static bool:dmgCustomInOTD=false;
 	if(!foundDmgCustom)
@@ -5500,7 +5500,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			{
 				new bool:bIsTelefrag=false;
 				new bool:bIsBackstab=false;
-				
+
 				if(dmgCustomInOTD)
 				{
 					if(damagecustom==TF_CUSTOM_BACKSTAB)
@@ -6032,6 +6032,7 @@ stock GetClientCloakIndex(client)
 	}
 	return GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 }
+
 stock SpawnSmallHealthPackAt(client, ownerteam=0)
 {
 	if(!IsValidClient(client, false) || !IsPlayerAlive(client))
@@ -7046,10 +7047,15 @@ public NewPanelH(Handle:menu, MenuAction:action, param1, param2)
 
 public Action:NewPanelCmd(client, args)
 {
-	if(!IsValidClient(client)) return Plugin_Continue;
+	if(!IsValidClient(client))
+	{
+		return Plugin_Continue;
+	}
+
 	NewPanel(client, maxVersion);
 	return Plugin_Handled;
 }
+
 public Action:NewPanel(client, versionIndex)
 {
 	if(!Enabled2)
