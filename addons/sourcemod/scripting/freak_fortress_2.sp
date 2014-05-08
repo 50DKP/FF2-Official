@@ -5469,7 +5469,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 				case TFClass_Soldier:
 				{
-					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, 1))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))
+					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, 1))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
 					{
 						SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 						FF2flags[client]|=FF2FLAG_ISBUFFED;
@@ -5484,7 +5484,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				CreateTimer(0.25, Timer_CheckBuffRage, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
 
-			if(damage<=160.0)  //TODO:  Wat
+			if(damage<=160.0)  //TODO: Wat
 			{
 				damage*=3;
 				return Plugin_Changed;
