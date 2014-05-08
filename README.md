@@ -1,5 +1,5 @@
 ##Welcome to the official FF2 repository!
-**LATEST VERSION**: [1.9.0](https://forums.alliedmods.net/showpost.php?p=2054933&postcount=1)
+**LATEST VERSION**: [1.9.3](https://forums.alliedmods.net/showpost.php?p=2054933&postcount=1)
 
 [![Build Status](http://198.27.69.149/jenkins/buildStatus/icon?job=FF2-Official)](http://198.27.69.149/jenkins/job/FF2-Official/) - Currently Disabled
 

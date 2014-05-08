@@ -260,6 +260,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.0",
 	"1.10.0",
 	"1.10.0",
+	"1.10.0",
 	"1.10.0"
 };
 
@@ -300,47 +301,53 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"April 30, 2014",	//1.10.0
-	"April 30, 2014",	//1.10.0
-	"April 30, 2014",	//1.10.0
-	"April 30, 2014"	//1.10.0
+	"May 7, 2014",		//1.10.0
+	"May 7, 2014",		//1.10.0
+	"May 7, 2014",		//1.10.0
+	"May 7, 2014",		//1.10.0
+	"May 7, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 38:  //1.10.0
+		case 39:  //1.10.0
 		{
 			DrawPanelText(panel, "1) Balanced Goomba Stomp and RTD (WildCard65)");
 			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
-			DrawPanelText(panel, "3) Fixed players not being displayed on the leaderboard if they were respawned as a clone (Wliu)");
-			DrawPanelText(panel, "4) Fixed players with 0 damage rarely showing up as 3rd place on the leaderboard (Wliu)");
+			DrawPanelText(panel, "3) Fixed Jarate, etc. not disappearing immediately on the boss (Wliu)");
+			DrawPanelText(panel, "4) Fixed ability timers not resetting when the round was over (Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
+		case 38:  //1.10.0
+		{
+			DrawPanelText(panel, "5) Fixed bosses losing momentum when raging in the air (Wliu)");
+			DrawPanelText(panel, "6) Fixed bosses losing health if ther companion left at round start (Wliu)");
+			DrawPanelText(panel, "7) Fixed bosses sometimes teleporting to each other if they had a companion (Wliu)");
+			DrawPanelText(panel, "8) Slightly tweaked default boss health formula to be more balanced (Eggman)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 37:  //1.10.0
 		{
-			DrawPanelText(panel, "5) Fixed ability timers not resetting when the round was over (Wliu)");
-			DrawPanelText(panel, "6) Fixed bosses losing momentum when raging in the air (Wliu)");
-			DrawPanelText(panel, "7) Fixed bosses sometimes teleporting to each other if they had a companion (Wliu)");
-			DrawPanelText(panel, "8) Slightly tweaked default boss health formula to be more balanced (Eggman)");
-			DrawPanelText(panel, "See next page for server/dev changelog (press 1)");
+			DrawPanelText(panel, "9) Fixed and optimized the leaderboard (Wliu)");
+			DrawPanelText(panel, "10) Fixed medic minions receiving the medigun (Wliu)");
+			DrawPanelText(panel, "11) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "12) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "9) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
-			DrawPanelText(panel, "10) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "11) [Server] Improved SMAC integration-SMAC now knows when a client cvar is changed by FF2 (Wliu/WildCard65)");
-			DrawPanelText(panel, "12) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "13) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "14) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "15) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "16) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "13) [Server] Moved ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "14) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
-			DrawPanelText(panel, "15) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
-			DrawPanelText(panel, "16) [Dev] Added more natives and one additional forward (Eggman)");
-			DrawPanelText(panel, "17) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "17) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "18) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
 		}
 		case 34:  //1.9.3
 		{
@@ -1169,7 +1176,9 @@ public AddToDownload()
 
 	if(!FileExists(config))
 	{
-		SetFailState("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
+		LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
+		Enabled2=false;
+		return;
 	}
 
 	new Handle:Kv=CreateKeyValues("");
@@ -1653,13 +1662,19 @@ stock bool:IsFF2Map(bool:forceRecalc=false)
 		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
 		if(!FileExists(config))
 		{
-			SetFailState("[FF2] Unable to find %s, disabling plugin.", config);
+			LogError("[FF2] Unable to find %s, disabling plugin.", config);
+			isFF2Map=false;
+			found=true;
+			return false;
 		}
 
 		new Handle:file=OpenFile(config, "r");
 		if(file==INVALID_HANDLE)
 		{
-			SetFailState("[FF2] Error reading maps from %s, disabling plugin.", config);
+			LogError("[FF2] Error reading maps from %s, disabling plugin.", config);
+			isFF2Map=false;
+			found=true;
+			return false;
 		}
 
 		new tries=0;
@@ -1926,18 +1941,15 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			new TFTeam:team=TFTeam:GetClientTeam(client);
 			if(!teamHasPlayers[0] && team==TFTeam_Blue)
 			{
-				Debug("RoundStart: Blue team has %N on their team", client);
 				teamHasPlayers[0]=true;
 			}
 			else if(!teamHasPlayers[1] && team==TFTeam_Red)
 			{
-				Debug("RoundStart: Red team has %N on their team", client);
 				teamHasPlayers[1]=true;
 			}
 
 			if(teamHasPlayers[0] && teamHasPlayers[1])
 			{
-				Debug("RoundStart: Both teams have players");
 				break;
 			}
 		}
@@ -1945,10 +1957,8 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	if(!teamHasPlayers[0] || !teamHasPlayers[1])
 	{
-		Debug("RoundStart: No players on one of the teams!");
 		if(IsValidClient(Boss[0]))
 		{
-			Debug("RoundStart: Switching %N to the boss team", Boss[0]);
 			ChangeClientTeam(Boss[0], BossTeam);
 			TF2_RespawnPlayer(Boss[0]);
 		}
@@ -1964,7 +1974,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
 			}
 		}
-		Debug("RoundStart: Continuing");
 		return Plugin_Continue;
 	}
 
@@ -2002,7 +2011,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			}
 			Boss[client]=companion;
 
-			if(PickCharacter(client, client-1))
+			if(PickCharacter(client, client-1))  //Seriously, this code...
 			{
 				KvRewind(BossKV[Special[client]]);
 				for(new tries=0; Boss[client]==Boss[client-1] && tries<100; tries++)
@@ -2326,7 +2335,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		CreateTimer(1.0, Timer_NineThousand, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 
-	decl String:leaders[32][3];
+	decl String:leaders[3][32];
 	for(new i=0; i<=2; i++)
 	{
 		if(IsValidClient(top[i]))
@@ -2855,7 +2864,8 @@ public Action:StartRound(Handle:hTimer)
 			CreateTimer(0.05, Timer_ReEquipBoss, client, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
-	CreateTimer(10.0, Timer_SkipFF2Panel);
+
+	CreateTimer(10.0, Timer_NextBossPanel);
 	UpdateHealthBar();
 	return Plugin_Handled;
 }
@@ -2868,14 +2878,13 @@ public Action:Timer_ReEquipBoss(Handle:timer, any:client)
 	}
 }
 
-public Action:Timer_SkipFF2Panel(Handle:hTimer)
+public Action:Timer_NextBossPanel(Handle:hTimer)
 {
-	new bool:added[MAXPLAYERS+1];
 	new i, j;
 	do
 	{
-		new client=FindBosses(added);
-		added[client]=true;
+		new bool:temp[MaxClients+1];
+		new client=FindBosses(temp);
 		if(client && !IsBoss(client))
 		{
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_near");
@@ -3176,7 +3185,7 @@ CreateWeaponModsKeyValues()
 
 public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefinitionIndex, &Handle:item)
 {
-	if(!Enabled)
+	if(!Enabled /*|| item!=INVALID_HANDLE*/)
 	{
 		return Plugin_Continue;
 	}
@@ -3423,15 +3432,15 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-//		case 132, 266, 482:
-//		{
-//			new Handle:itemOverride=PrepareItemHandle(item, _, _, "202 ; 0.5 ; 125 ; -15", true);
-//			if(itemOverride!=INVALID_HANDLE)
-//			{
-//				item=itemOverride;
-//				return Plugin_Changed;
-//			}
-//		}
+/*		case 132, 266, 482:
+		{
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "202 ; 0.5 ; 125 ; -15", true);
+			if(itemOverride!=INVALID_HANDLE)
+			{
+				item=itemOverride;
+				return Plugin_Changed;
+			}
+		}*/
 		case 220:  //Shortstop
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "328 ; 1.0", true);
@@ -3528,15 +3537,15 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 	if(hWeapon==INVALID_HANDLE) hWeapon=TF2Items_CreateItem(flags);
 	else TF2Items_SetFlags(hWeapon, flags);
 //	new Handle:hWeapon=TF2Items_CreateItem(flags);	//INVALID_HANDLE;
-	if(hItem!=INVALID_HANDLE)
+	if(item!=INVALID_HANDLE)
 	{
-		addattribs=TF2Items_GetNumAttributes(hItem);
+		addattribs=TF2Items_GetNumAttributes(item);
 		if(addattribs>0)
 		{
 			for(new i=0; i<2*addattribs; i+=2)
 			{
 				new bool:dontAdd=false;
-				new attribIndex=TF2Items_GetAttributeId(hItem, i);
+				new attribIndex=TF2Items_GetAttributeId(item, i);
 				for(new z=0; z<attribCount+i; z+=2)
 				{
 					if(StringToInt(weaponAttribsArray[z])==attribIndex)
@@ -3548,12 +3557,12 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 				if(!dontAdd)
 				{
 					IntToString(attribIndex, weaponAttribsArray[i+attribCount], 32);
-					FloatToString(TF2Items_GetAttributeValue(hItem, i), weaponAttribsArray[i+1+attribCount], 32);
+					FloatToString(TF2Items_GetAttributeValue(item, i), weaponAttribsArray[i+1+attribCount], 32);
 				}
 			}
 			attribCount+=2*addattribs;
 		}
-		CloseHandle(hItem);	//probably returns false but whatever
+		CloseHandle(item);	//probably returns false but whatever
 	}
 
 	if(name[0]!='\0')
@@ -3592,10 +3601,10 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 	return hWeapon;
 }
 
-public Action:MakeNotBoss(Handle:timer, any:clientid)
+public Action:MakeNotBoss(Handle:timer, any:userid)
 {
-	new client=GetClientOfUserId(clientid);
-	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client))
+	new client=GetClientOfUserId(userid);
+	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		return Plugin_Continue;
 	}
@@ -3603,7 +3612,7 @@ public Action:MakeNotBoss(Handle:timer, any:clientid)
 	if(LastClass[client]!=TFClass_Unknown)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
-		TF2_SetPlayerClass(client,LastClass[client]);
+		TF2_SetPlayerClass(client, LastClass[client]);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
 		LastClass[client]=TFClass_Unknown;
 		TF2_RespawnPlayer(client);
@@ -3630,7 +3639,7 @@ public Action:MakeNotBoss(Handle:timer, any:clientid)
 
 public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 {
-	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client))
+	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || GetClientTeam(client)==BossTeam)
 	{
 		return Plugin_Continue;
 	}
@@ -3788,7 +3797,7 @@ public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
 		}
 	}
 	
-	if(civilianCheck[client]==3 && !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
 		CPrintToChat(client, "{olive}[FF2]{default} Respawning you because you have no weapons!");
@@ -4104,12 +4113,6 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 
 public Action:Command_SetNextBoss(client, args)
 {
-	if(!IsValidClient(client))
-	{
-		CReplyToCommand(client, "{olive}[FF2]{default} This command must be used in-game and without RCON.");
-		return Plugin_Handled;
-	}
-
 	decl String:name[32];
 	decl String:boss[64];
 
@@ -4338,22 +4341,25 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 		TF2_RemoveAllWeapons2(client);
 	}
 
-	if((CheckRoundState()!=1 || !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM)))
+	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
-		if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
+		if(CheckRoundState()!=1)
 		{
-			FF2flags[client]|=FF2FLAG_HASONGIVED;
-			RemovePlayerBack(client, {57, 133, 231, 405, 444, 608, 642}, 7);
-			RemovePlayerTarge(client);
-			TF2_RemoveAllWeapons2(client);
-			TF2_RegeneratePlayer(client);
-			CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
+			{
+				FF2flags[client]|=FF2FLAG_HASONGIVED;
+				RemovePlayerBack(client, {57, 133, 231, 405, 444, 608, 642}, 7);
+				RemovePlayerTarge(client);
+				TF2_RemoveAllWeapons2(client);
+				TF2_RegeneratePlayer(client);
+				CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			}
+			CreateTimer(0.2, MakeNotBoss, GetClientUserId(client));
 		}
-		CreateTimer(0.2, MakeNotBoss, GetClientUserId(client));
-	}
-	else
-	{
-		CreateTimer(0.1, checkItems, client);
+		else
+		{
+			CreateTimer(0.1, checkItems, client);
+		}
 	}
 
 	if(CheckRoundState()==1)
@@ -4642,33 +4648,19 @@ public Action:BossTimer(Handle:timer)
 		return Plugin_Stop;
 	}
 
+	if(CheckRoundState()==2)
+	{
+		return Plugin_Stop;
+	}
+
 	new bool:validBoss=false;
 	for(new client=0; client<=MaxClients; client++)
 	{
-		if(!IsValidClient(Boss[client], false) || CheckRoundState()==2)
-		{
-			break;
-		}
-		else if(!IsPlayerAlive(Boss[client]) || !(FF2flags[Boss[client]] & FF2FLAG_USEBOSSTIMER))
+		if(!IsValidClient(Boss[client]) || !IsPlayerAlive(Boss[client]) || !(FF2flags[Boss[client]] & FF2FLAG_USEBOSSTIMER))
 		{
 			continue;
 		}
-
 		validBoss=true;
-		if(TF2_IsPlayerInCondition(Boss[client], TFCond_Jarated))
-		{
-			TF2_RemoveCondition(Boss[client], TFCond_Jarated);
-		}
-
-		if(TF2_IsPlayerInCondition(Boss[client], TFCond_MarkedForDeath))
-		{
-			TF2_RemoveCondition(Boss[client], TFCond_MarkedForDeath);
-		}
-
-		if(TF2_IsPlayerInCondition(Boss[client], TFCond:42) && TF2_IsPlayerInCondition(Boss[client], TFCond_Dazed))
-		{
-			TF2_RemoveCondition(Boss[client], TFCond_Dazed);
-		}
 
 		SetEntPropFloat(Boss[client], Prop_Data, "m_flMaxspeed", BossSpeed[Special[client]]+0.7*(100-BossHealth[client]*100/BossLivesMax[client]/BossHealthMax[client]));
 
@@ -5268,6 +5260,24 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 		}
 	}
 	return Plugin_Continue;
+}
+
+public TF2_OnConditionAdded(client, TFCond:condition)
+{
+	if(!Boss[client] || !Enabled)
+	{
+		return;
+	}
+
+	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
+	{
+		TF2_RemoveCondition(Boss[client], condition);
+	}
+	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(Boss[client], TFCond:42))
+	{
+		TF2_RemoveCondition(Boss[client], condition);
+	}
+	return;
 }
 
 public Action:CheckAlivePlayers(Handle:hTimer)
@@ -6159,8 +6169,8 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 
 	if(IsBoss(attacker))
 	{
-		decl Float:Pos[3];
-		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", Pos);
+		decl Float:position[3];
+		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
 		damageMultiplier=900.0;
 		JumpPower=0.0;
 		PrintCenterText(victim, "Ouch!  Watch your head!");
@@ -6424,7 +6434,7 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 
 stock FindBosses(bool:isBoss[])
 {
-	new boss; 	
+	new boss;
 	for(new client=1; client<=MaxClients; client++)
 	{
 		if(SpecForceBoss)
@@ -6438,7 +6448,6 @@ stock FindBosses(bool:isBoss[])
 		{
 			if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
 			{
-				Debug("FindBosses: %N has %i queue points compared to %N's %i queue points (old boss)", client, GetClientQueuePoints(client), client, GetClientQueuePoints(boss));
 				boss=client;
 			}
 		}
@@ -6573,7 +6582,7 @@ stock CalcBossHealthMax(index)
 	if(brackets)
 	{
 		LogError("[FF2] Malformed boss health formula, using default!");
-		health=RoundFloat(Pow(((460+playing)*playing), 1.075));
+		health=RoundFloat(Pow(((460.0+playing)*playing), 1.075));
 	}
 	else health=RoundFloat(summ[0]);
 	if(bMedieval) health=RoundFloat(health/3.6);
@@ -8308,17 +8317,10 @@ public OnTakeDamagePost(client, attacker, inflictor, Float:damage, damagetype)
 {
 	if(IsBoss(client) && Enabled)
 	{
-		new boss=GetBossIndex(client);
-		if(boss==-1)
+		if(GetBossIndex(client)!=-1)
 		{
-			return;
+			UpdateHealthBar();
 		}
-
-		if(TF2_IsPlayerInCondition(Boss[boss], TFCond_MarkedForDeath))
-		{
-			TF2_RemoveCondition(Boss[boss], TFCond_MarkedForDeath);
-		}
-		UpdateHealthBar();
 	}
 }
 
