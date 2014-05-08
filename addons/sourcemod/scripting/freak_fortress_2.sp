@@ -3519,7 +3519,26 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	return Plugin_Continue;
 }
 
-stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const String:att[]="", bool:dontpreserve=false)
+public Action:Timer_NoHonorBound(Handle:timer, any:userid)
+{
+	new client=GetClientOfUserId(userid);
+	if(IsValidClient(client) && IsPlayerAlive(client))
+	{
+		new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
+		new index=((IsValidEntity(weapon) && weapon>MaxClients) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+		new active=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+		new String:classname[64];
+		if(IsValidEdict(active)) GetEdictClassname(active, classname, sizeof(classname));
+		if(index==357 && active==weapon && strcmp(classname, "tf_weapon_katana", false)==0)
+		{
+			SetEntProp(weapon, Prop_Send, "m_bIsBloody", 1);
+			if(GetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy")<1)
+				SetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy", 1);
+		}
+	}
+}
+
+stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const String:att[]="", bool:dontpreserve=false)
 {
 	static Handle:hWeapon;
 	new addattribs=0;
@@ -5779,8 +5798,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					return Plugin_Changed;
 				}
 
-				new wepindex=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
-				switch(wepindex)
+				new index=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+				switch(index)
 				{
 					case 593:  //Third Degree
 					{
@@ -5825,7 +5844,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Sydney Sleeper, Bazaar Bargain, Machina, Festive Sniper Rifle, Hitman's Heatmaker, Botkiller Sniper Rifles
 					{
-						switch(wepindex)
+						switch(index)
 						{
 							case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Festive Sniper Rifle, Botkiller Sniper Rifles
 							{
@@ -5843,7 +5862,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 						}
 
-						if(wepindex==752 && CheckRoundState()!=2)  //Hitman's Heatmaker
+						if(index==752 && CheckRoundState()!=2)  //Hitman's Heatmaker
 						{
 							new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 							new Float:add=10+(chargelevel/10);
@@ -5863,7 +5882,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 							else
 							{
-								if(wepindex!=230 || BossCharge[boss][0]>90)  //Sydney Sleeper
+								if(index!=230 || BossCharge[boss][0]>90)  //Sydney Sleeper
 								{
 									damage*=2.9;
 								}
@@ -6030,11 +6049,11 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					SetEventBool(stabevent, "allseecrit", true);
 					SetEventInt(stabevent, "weaponid", TF_WEAPON_KNIFE);
 					FireEvent(stabevent);
-					if(wepindex==225 || wepindex==574)  //Your Eternal Reward, Wanga Prick
+					if(index==225 || index==574)  //Your Eternal Reward, Wanga Prick
 					{
 						CreateTimer(0.3, Timer_DisguiseBackstab, GetClientUserId(attacker));
 					}
-					else if(wepindex==356)  //Conniver's Kunai
+					else if(index==356)  //Conniver's Kunai
 					{
 						new health=GetClientHealth(attacker)+200;
 						if(health>500)
