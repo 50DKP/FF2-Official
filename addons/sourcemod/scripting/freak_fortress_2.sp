@@ -3137,118 +3137,121 @@ public Action:MakeBoss(Handle:hTimer, any:client)
 	return Plugin_Continue;
 }
 
-public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefinitionIndex, &Handle:hItem)
+public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefinitionIndex, &Handle:item)
 {
-	if(!Enabled) return Plugin_Continue;
-	//if(hItem!=INVALID_HANDLE) return Plugin_Continue;
+	if(!Enabled /*|| item!=INVALID_HANDLE*/)
+	{
+		return Plugin_Continue;
+	}
+
 	switch(iItemDefinitionIndex)
 	{
 		case 38, 457:  //Axtinguisher, Postal Pummeler
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "", true);
-			if(hItemOverride!=INVALID_HANDLE)
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "", true);
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
 		case 39, 351, 1081:  //Flaregun, Detonator, Festive Flaregun
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "25 ; 0.5 ; 207 ; 1.33 ; 144 ; 1.0 ; 58 ; 3.2", true);
-			if(hItemOverride!=INVALID_HANDLE)
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "25 ; 0.5 ; 207 ; 1.33 ; 144 ; 1.0 ; 58 ; 3.2", true);
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
 		case 40:  //Backburner
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "165 ; 1.0");
-			if(hItemOverride!=INVALID_HANDLE)
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "165 ; 1.0");
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
 		case 43, 239, 1084:  //KGB, GRU, Festive GRU
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, 239, "107 ; 1.5 ; 1 ; 0.5 ; 128 ; 1 ; 191 ; -7", true);
-			if(hItemOverride!=INVALID_HANDLE)
+			new Handle:itemOverride=PrepareItemHandle(item, _, 239, "107 ; 1.5 ; 1 ; 0.5 ; 128 ; 1 ; 191 ; -7", true);
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
 		case 56, 1005, 1092:  //Huntsman, Festive Huntsman, Fortified Compound
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "2 ; 1.5");
-			if(hItemOverride!=INVALID_HANDLE)
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.5");
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
 /*		case 132, 266, 482:
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "202 ; 0.5 ; 125 ; -15", true);
-			if(hItemOverride!=INVALID_HANDLE)
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "202 ; 0.5 ; 125 ; -15", true);
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}*/
 		case 220:  //Shortstop
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "328 ; 1.0", true);
-			if(hItemOverride!=INVALID_HANDLE)
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "328 ; 1.0", true);
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
 		case 226:  //Battalion's Backup
 		{
-//			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "116 ; 4.0", true);
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "140 ; 10.0");
-			if(hItemOverride!=INVALID_HANDLE)
+//			new Handle:itemOverride=PrepareItemHandle(item, _, _, "116 ; 4.0", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "140 ; 10.0");
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
 		case 305, 1079:  //Crusader's Crossbow, Festive Crusader's Crossbow
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "17 ; 0.1 ; 2 ; 1.2"); //; 266 ; 1.0");
-			if(hItemOverride!=INVALID_HANDLE)
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.1 ; 2 ; 1.2"); //; 266 ; 1.0");
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
 		case 415:  //Reserve Shooter
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "265 ; 99999.0 ; 178 ; 0.6 ; 2 ; 1.1 ; 3 ; 0.5", true);
-			if(hItemOverride!=INVALID_HANDLE)
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "265 ; 99999.0 ; 178 ; 0.6 ; 2 ; 1.1 ; 3 ; 0.5", true);
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
 		case 444:  //Mantreads
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "58 ; 1.5");
-			if(hItemOverride!=INVALID_HANDLE)
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "58 ; 1.5");
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
 		case 648:  //Wrap Assassin
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "279 ; 2.0");
-			if(hItemOverride!=INVALID_HANDLE)
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "279 ; 2.0");
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
@@ -3256,19 +3259,19 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 
 	if(TF2_GetPlayerClass(client)==TFClass_Soldier && (strncmp(classname, "tf_weapon_rocketlauncher", 24, false)==0 || strncmp(classname, "tf_weapon_shotgun", 17, false)==0))
 	{
-		new Handle:hItemOverride;
+		new Handle:itemOverride;
 		if(iItemDefinitionIndex==127)  //Direct Hit
 		{
-			hItemOverride=PrepareItemHandle(hItem, _, _, "265 ; 99999.0 ; 179 ; 1.0");
+			itemOverride=PrepareItemHandle(item, _, _, "265 ; 99999.0 ; 179 ; 1.0");
 		}
 		else
 		{
-			hItemOverride=PrepareItemHandle(hItem, _, _, "265 ; 99999.0");
+			itemOverride=PrepareItemHandle(item, _, _, "265 ; 99999.0");
 		}
 
-		if(hItemOverride!=INVALID_HANDLE)
+		if(itemOverride!=INVALID_HANDLE)
 		{
-			hItem=hItemOverride;
+			item=itemOverride;
 			return Plugin_Changed;
 		}
 	}
@@ -3294,7 +3297,7 @@ public Action:Timer_NoHonorBound(Handle:timer, any:userid)
 	}
 }
 
-stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const String:att[]="", bool:dontpreserve=false)
+stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const String:att[]="", bool:dontpreserve=false)
 {
 	static Handle:hWeapon;
 	new addattribs=0;
@@ -3312,15 +3315,15 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 	if(hWeapon==INVALID_HANDLE) hWeapon=TF2Items_CreateItem(flags);
 	else TF2Items_SetFlags(hWeapon, flags);
 //	new Handle:hWeapon=TF2Items_CreateItem(flags);	//INVALID_HANDLE;
-	if(hItem!=INVALID_HANDLE)
+	if(item!=INVALID_HANDLE)
 	{
-		addattribs=TF2Items_GetNumAttributes(hItem);
+		addattribs=TF2Items_GetNumAttributes(item);
 		if(addattribs>0)
 		{
 			for(new i=0; i<2*addattribs; i+=2)
 			{
 				new bool:dontAdd=false;
-				new attribIndex=TF2Items_GetAttributeId(hItem, i);
+				new attribIndex=TF2Items_GetAttributeId(item, i);
 				for(new z=0; z<attribCount+i; z+=2)
 				{
 					if(StringToInt(weaponAttribsArray[z])==attribIndex)
@@ -3332,12 +3335,12 @@ stock Handle:PrepareItemHandle(Handle:hItem, String:name[]="", index=-1, const S
 				if(!dontAdd)
 				{
 					IntToString(attribIndex, weaponAttribsArray[i+attribCount], 32);
-					FloatToString(TF2Items_GetAttributeValue(hItem, i), weaponAttribsArray[i+1+attribCount], 32);
+					FloatToString(TF2Items_GetAttributeValue(item, i), weaponAttribsArray[i+1+attribCount], 32);
 				}
 			}
 			attribCount+=2*addattribs;
 		}
-		CloseHandle(hItem);	//probably returns false but whatever
+		CloseHandle(item);	//probably returns false but whatever
 	}
 
 	if(name[0]!='\0')
