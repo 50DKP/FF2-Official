@@ -4662,6 +4662,27 @@ stock GetIndexOfWeaponSlot(client, slot)
 	return (weapon>MaxClients && IsValidEntity(weapon) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 }
 
+public TF2_OnConditionAdded(client, TFCond:condition)
+{
+	if(!IsValidClient(Boss[client]) || !Enabled)
+	{
+		Debug("Boss[%i] is %i", client, Boss[client]);
+		return;
+	}
+
+	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
+	{
+		Debug("Jarate or MFD");
+		TF2_RemoveCondition(Boss[client], condition);
+	}
+	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(Boss[client], TFCond:42))
+	{
+		Debug("Dazed");
+		TF2_RemoveCondition(Boss[client], condition);
+	}
+	return;
+}
+
 public TF2_OnConditionRemoved(client, TFCond:condition)
 {
 	if(TF2_GetPlayerClass(client)==TFClass_Scout && condition==TFCond_CritHype)
@@ -5039,24 +5060,6 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 		}
 	}
 	return Plugin_Continue;
-}
-
-public TF2_OnConditionAdded(client, TFCond:condition)
-{
-	if(!Boss[client] || !Enabled)
-	{
-		return;
-	}
-
-	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
-	{
-		TF2_RemoveCondition(Boss[client], condition);
-	}
-	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(Boss[client], TFCond:42))
-	{
-		TF2_RemoveCondition(Boss[client], condition);
-	}
-	return;
 }
 
 public Action:CheckAlivePlayers(Handle:hTimer)

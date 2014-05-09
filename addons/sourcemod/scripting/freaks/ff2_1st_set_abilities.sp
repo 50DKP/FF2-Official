@@ -665,8 +665,9 @@ public Action:Timer_Rage_Slomo_Attack(Handle:timer, Handle:data)
 		if(GetVectorDistance(clientPosition, targetPosition)<=1500 && target!=oldTarget)
 		{
 			SetEntProp(client, Prop_Send, "m_bDucked", 1);
+			SetEntityFlags(FF2_GetBossIndex(client), GetEntityFlags(FF2_GetBossIndex(client))|FL_DUCKING);
 			SDKHooks_TakeDamage(target, client, client, 900.0);
-			TeleportEntity(client, clientPosition, NULL_VECTOR, NULL_VECTOR);
+			TeleportEntity(client, targetPosition, NULL_VECTOR, NULL_VECTOR);
 			oldTarget=target;
 		}
 	}
