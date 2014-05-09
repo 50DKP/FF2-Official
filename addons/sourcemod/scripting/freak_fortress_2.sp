@@ -264,11 +264,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 8, 2014",		//1.10.0
-	"May 8, 2014",		//1.10.0
-	"May 8, 2014",		//1.10.0
-	"May 8, 2014",		//1.10.0
-	"May 8, 2014"		//1.10.0
+	"May 9, 2014",		//1.10.0
+	"May 9, 2014",		//1.10.0
+	"May 9, 2014",		//1.10.0
+	"May 9, 2014",		//1.10.0
+	"May 9, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -1908,7 +1908,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	CheckArena();
 
 	new bool:isBoss[MAXPLAYERS+1];
-	Boss[0]=FindBosses(isBoss);
+	Boss[0]=FindBosses();
 	isBoss[Boss[0]]=true;
 
 	new bool:teamHasPlayers[2];
@@ -2624,16 +2624,7 @@ public Action:Timer_MusicTheme(Handle:timer, any:userid)
 		KvRewind(BossKV[Special[0]]);
 		if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 		{
-			new client;
-			if(!userid)
-			{
-				client=0;
-			}
-			else
-			{
-				client=GetClientOfUserId(userid);
-			}
-
+			new client=GetClientOfUserId(userid);
 			decl String:music[PLATFORM_MAX_PATH];
 			MusicIndex=0;
 			do
@@ -2861,8 +2852,7 @@ public Action:Timer_NextBossPanel(Handle:hTimer)
 	new i, j;
 	do
 	{
-		new bool:temp[MaxClients+1];
-		new client=FindBosses(temp);
+		new client=FindBosses();
 		if(client && !IsBoss(client))
 		{
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_near");
@@ -4664,7 +4654,7 @@ stock GetIndexOfWeaponSlot(client, slot)
 
 public TF2_OnConditionAdded(client, TFCond:condition)
 {
-	if(!IsValidClient(Boss[client]) || !Enabled)
+	if((!IsValidClient(Boss[client]) && !IsValidClient(Boss[0])) || !Enabled)
 	{
 		Debug("Boss[%i] is %i", client, Boss[client]);
 		return;
@@ -6213,7 +6203,7 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 	return Plugin_Continue;
 }*/
 
-stock FindBosses(bool:isBoss[])
+stock FindBosses(bool:isBoss[]=false)
 {
 	new boss;
 	for(new client=1; client<=MaxClients; client++)
