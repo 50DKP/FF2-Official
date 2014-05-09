@@ -33,7 +33,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 11"
+#define PLUGIN_VERSION "1.10.0"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -264,11 +264,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 7, 2014",		//1.10.0
-	"May 7, 2014",		//1.10.0
-	"May 7, 2014",		//1.10.0
-	"May 7, 2014",		//1.10.0
-	"May 7, 2014"		//1.10.0
+	"May 8, 2014",		//1.10.0
+	"May 8, 2014",		//1.10.0
+	"May 8, 2014",		//1.10.0
+	"May 8, 2014",		//1.10.0
+	"May 8, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -311,6 +311,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "17) [Dev] Added more natives and one additional forward (Eggman)");
 			DrawPanelText(panel, "18) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "Big thanks to GIANT_CRAB for finding a bunch of these bugs!");
 		}
 		case 34:  //1.9.3
 		{
