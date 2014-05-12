@@ -31,7 +31,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
-#tryinclude <smac>
+//#tryinclude <smac>
 #tryinclude <updater>
 #tryinclude <goomba>
 #tryinclude <rtd>
@@ -73,6 +73,8 @@ new bool:rtd=false;
 #if defined _goomba_included
 new bool:goomba=false;
 #endif
+
+new bool:smac=false;
 
 new bool:b_allowBossChgClass=false;
 new bool:b_BossChgClassDetected=false;
@@ -301,11 +303,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 7, 2014",		//1.10.0
-	"May 7, 2014",		//1.10.0
-	"May 7, 2014",		//1.10.0
-	"May 7, 2014",		//1.10.0
-	"May 7, 2014"		//1.10.0
+	"May 11, 2014",		//1.10.0
+	"May 11, 2014",		//1.10.0
+	"May 11, 2014",		//1.10.0
+	"May 11, 2014",		//1.10.0
+	"May 11, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -332,22 +334,25 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "9) Fixed and optimized the leaderboard (Wliu)");
 			DrawPanelText(panel, "10) Fixed medic minions receiving the medigun (Wliu)");
-			DrawPanelText(panel, "11) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
-			DrawPanelText(panel, "12) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "11) Fixed Ninja Spy slow-mo bugs (Wliu/Powerlord)");
+			DrawPanelText(panel, "12) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "13) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "14) [Server] Moved ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "15) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
-			DrawPanelText(panel, "16) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "13) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "14) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "15) [Server] Moved ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "16) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "17) [Dev] Added more natives and one additional forward (Eggman)");
-			DrawPanelText(panel, "18) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "17) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "18) [Server] Fixed some cvars not executing (Wliu)");
+			DrawPanelText(panel, "19) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "20) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "Big thanks to GIANT_CRAB for finding a bunch of these bugs!");
 		}
 		case 34:  //1.9.3
 		{
@@ -977,7 +982,7 @@ public OnConfigsExecuted()
 	mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
 	tf_scout_hype_pep_max=GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
 
-	if(IsFF2Map(true) && GetConVarBool(cvarEnabled))
+	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
 		EnableFF2();
 	}
@@ -1081,6 +1086,9 @@ public EnableFF2()
 	BossCrits=GetConVarBool(cvarCrits);
 	circuitStun=GetConVarFloat(cvarCircuitStun);
 	countdownHealth=GetConVarInt(cvarCountdownHealth);
+	countdownPlayers=GetConVarInt(cvarCountdownPlayers);
+	countdownTime=GetConVarInt(cvarCountdownTime);
+	lastPlayerGlow=GetConVarBool(cvarLastPlayerGlow);
 
 	SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
 	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
@@ -1637,72 +1645,53 @@ public Action:Timer_Announce(Handle:hTimer)
 	return Plugin_Continue;
 }
 
-stock bool:IsFF2Map(bool:forceRecalc=false)
+stock bool:IsFF2Map()
 {
-	static bool:found=false;
-	static bool:isFF2Map=false;
-
-	if(forceRecalc)
+	decl String:config[PLATFORM_MAX_PATH];
+	GetCurrentMap(currentmap, sizeof(currentmap));
+	if(FileExists("bNextMapToFF2"))
 	{
-		isFF2Map=false;
-		found=false;
+		return true;
 	}
 
-	if(!found)
+	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
+	if(!FileExists(config))
 	{
-		decl String:config[PLATFORM_MAX_PATH];
-		GetCurrentMap(currentmap, sizeof(currentmap));
-		if(FileExists("bNextMapToFF2"))
+		LogError("[FF2] Unable to find %s, disabling plugin.", config);
+		return false;
+	}
+
+	new Handle:file=OpenFile(config, "r");
+	if(file==INVALID_HANDLE)
+	{
+		LogError("[FF2] Error reading maps from %s, disabling plugin.", config);
+		return false;
+	}
+
+	new tries=0;
+	while(ReadFileLine(file, config, sizeof(config)) && tries<100)
+	{
+		tries++;
+		if(tries==100)
 		{
-			isFF2Map=true;
-			found=true;
+			LogError("[FF2] Breaking infinite loop when trying to check the map.");
+			return false;
+		}
+
+		Format(config, strlen(config)-1, config);
+		if(strncmp(config, "//", 2, false)==0)
+		{
+			continue;
+		}
+
+		if((StrContains(currentmap, config, false)==0) || (StrContains(config, "all", false)==0))
+		{
+			CloseHandle(file);
 			return true;
 		}
-
-		BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
-		if(!FileExists(config))
-		{
-			LogError("[FF2] Unable to find %s, disabling plugin.", config);
-			isFF2Map=false;
-			found=true;
-			return false;
-		}
-
-		new Handle:file=OpenFile(config, "r");
-		if(file==INVALID_HANDLE)
-		{
-			LogError("[FF2] Error reading maps from %s, disabling plugin.", config);
-			isFF2Map=false;
-			found=true;
-			return false;
-		}
-
-		new tries=0;
-		while(ReadFileLine(file, config, sizeof(config)) && tries<100)
-		{
-			tries++;
-			if(tries==100)
-			{
-				LogError("[FF2] Breaking infinite loop when trying to check the map.");
-			}
-
-			Format(config, strlen(config)-1, config);
-			if(strncmp(config, "//", 2, false)==0)
-			{
-				continue;
-			}
-
-			if((StrContains(currentmap, config, false)==0) || (StrContains(config, "all", false)==0))
-			{
-				CloseHandle(file);
-				isFF2Map=true;
-				found=true;
-				return true;
-			}
-		}
-		CloseHandle(file);
 	}
-	return isFF2Map;
+	CloseHandle(file);
+	return false;
 }
 
 stock bool:MapHasMusic(bool:forceRecalc=false)	//SAAAAAARGE
@@ -2646,16 +2635,7 @@ public Action:Timer_MusicTheme(Handle:timer, any:userid)
 		KvRewind(BossKV[Special[0]]);
 		if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 		{
-			new client;
-			if(!userid)
-			{
-				client=0;
-			}
-			else
-			{
-				client=GetClientOfUserId(userid);
-			}
-
+			new client=GetClientOfUserId(userid);
 			decl String:music[PLATFORM_MAX_PATH];
 			MusicIndex=0;
 			do
@@ -3656,9 +3636,9 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	return Plugin_Continue;
 }
 
-public Action:checkItems(Handle:hTimer, any:client)  //Weapon balance 2
+public Action:checkItems(Handle:timer, any:client)  //Weapon balance 2
 {
-	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || GetClientTeam(client)==BossTeam)
+	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		return Plugin_Continue;
 	}
@@ -4902,6 +4882,25 @@ stock GetIndexOfWeaponSlot(client, slot)
 	return (weapon>MaxClients && IsValidEntity(weapon) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 }
 
+public TF2_OnConditionAdded(client, TFCond:condition)
+{
+	if((!IsBoss(client)) || !Enabled)
+	{
+		return;
+	}
+
+	new boss=GetBossIndex(client);
+	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
+	{
+		TF2_RemoveCondition(boss, condition);
+	}
+	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(boss, TFCond:42))
+	{
+		TF2_RemoveCondition(boss, condition);
+	}
+	return;
+}
+
 public TF2_OnConditionRemoved(client, TFCond:condition)
 {
 	if(TF2_GetPlayerClass(client)==TFClass_Scout && condition==TFCond_CritHype)
@@ -5279,24 +5278,6 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 		}
 	}
 	return Plugin_Continue;
-}
-
-public TF2_OnConditionAdded(client, TFCond:condition)
-{
-	if(!Boss[client] || !Enabled)
-	{
-		return;
-	}
-
-	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
-	{
-		TF2_RemoveCondition(Boss[client], condition);
-	}
-	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(Boss[client], TFCond:42))
-	{
-		TF2_RemoveCondition(Boss[client], condition);
-	}
-	return;
 }
 
 public Action:CheckAlivePlayers(Handle:hTimer)
@@ -6198,7 +6179,7 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 	else if(IsBoss(victim))
 	{
 		damageMultiplier=GoombaDamage;
-		JumpPower=5000.0;
+		JumpPower=50.0;
 		PrintCenterText(victim, "You were just goomba stomped!");
 		PrintCenterText(attacker, "You just goomba stomped the boss!");
 		UpdateHealthBar();
