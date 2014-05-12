@@ -1,15 +1,12 @@
 #Contributing
-***
 First of all, thanks for considering to create an issue!  If you could just please follow these rules, that would be great :smile:
 
 ##General Guidelines
-***
 * Make sure your issue hasn't already been reported before opening one
 * Do not open an issue on a topic unrelated to FF2
 * Do not report issues on outdated versions of FF2
 
 ##Issues
-***
 * Bug reports should contain the version of FF2 that you experienced the bug on
 	* Error logs should also be included if possible (encase the log using `s (tildes))
 	* Pictures would also be helpful if the bug is graphical
@@ -18,7 +15,6 @@ First of all, thanks for considering to create an issue!  If you could just plea
 	* If possible, prove that others want this new feature as well
 
 ##Pull Requests
-***
 * Open your PR on the right branch
 	* Bug fixes should go to stable, improvements to development, and breaking changes to experimental
 * Squash your commits
