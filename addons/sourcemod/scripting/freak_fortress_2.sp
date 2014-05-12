@@ -31,7 +31,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
-//#tryinclude <smac>
+#tryinclude <smac>
 #tryinclude <updater>
 #tryinclude <goomba>
 #tryinclude <rtd>
@@ -303,11 +303,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 11, 2014",		//1.10.0
-	"May 11, 2014",		//1.10.0
-	"May 11, 2014",		//1.10.0
-	"May 11, 2014",		//1.10.0
-	"May 11, 2014"		//1.10.0
+	"May 12, 2014",		//1.10.0
+	"May 12, 2014",		//1.10.0
+	"May 12, 2014",		//1.10.0
+	"May 12, 2014",		//1.10.0
+	"May 12, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
