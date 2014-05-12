@@ -264,11 +264,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 11, 2014",		//1.10.0
-	"May 11, 2014",		//1.10.0
-	"May 11, 2014",		//1.10.0
-	"May 11, 2014",		//1.10.0
-	"May 11, 2014"		//1.10.0
+	"May 12, 2014",		//1.10.0
+	"May 12, 2014",		//1.10.0
+	"May 12, 2014",		//1.10.0
+	"May 12, 2014",		//1.10.0
+	"May 12, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -2838,7 +2838,7 @@ public Action:Timer_NextBossPanel(Handle:hTimer)
 	new i, j;
 	do
 	{
-		new bool:temp[MAXPLAYERS+1];
+		new bool:temp[MaxClients+1];
 		new client=FindBosses(temp);
 		if(client && !IsBoss(client))
 		{
