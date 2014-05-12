@@ -74,8 +74,6 @@ new bool:rtd=false;
 new bool:goomba=false;
 #endif
 
-new bool:smac=false;
-
 new bool:b_allowBossChgClass=false;
 new bool:b_BossChgClassDetected=false;
 new OtherTeam=2;
@@ -871,7 +869,7 @@ public OnPluginStart()
 	GetConVarString(cvarVersion, oldversion, sizeof(oldversion));
 	if(strcmp(oldversion, PLUGIN_VERSION, false)!=0)
 	{
-		LogError("[FF2] Warning: Your config may be outdated. Back up tf/cfg/sourcemod/FreakFortress2.cfg and delete it, and this plugin will generate a new one that you can then modify to your original values.");
+		LogError("[FF2 Configs] Warning: Your config may be outdated. Back up tf/cfg/sourcemod/FreakFortress2.cfg and delete it, and this plugin will generate a new one that you can then modify to your original values.");
 	}
 
 	LoadTranslations("freak_fortress_2.phrases");
@@ -1069,7 +1067,10 @@ public EnableFF2()
 
 	if(!FileToKeyValues(kvWeaponMods, config))
 	{
-		SetFailState("[FF2] Failed to load weapon configuration file!");
+		LogError("[FF2 Configs] Failed to load weapon configuration file!");
+		Enabled=false;
+		Enabled2=false;
+		return;
 	}
 
 	SetConVarString(FindConVar("ff2_version"), PLUGIN_VERSION);
@@ -1184,7 +1185,7 @@ public AddToDownload()
 
 	if(!FileExists(config))
 	{
-		LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
+		LogError("[FF2 Configs] Freak Fortress 2 disabled-can not find characters.cfg!");
 		Enabled2=false;
 		return;
 	}
@@ -1322,6 +1323,11 @@ DisableSubPlugins(bool:force=false)
 	areSubPluginsEnabled=false;
 }
 
+/*public ParseChangelog() //Ideally, this should only be called once, and then precached into something like String:changelog[256][256]
+{
+	//TODO
+}*/
+
 public LoadCharacter(const String:character[])
 {			
 	new String:extensions[][]={".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd"};
@@ -1329,7 +1335,7 @@ public LoadCharacter(const String:character[])
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/%s.cfg", character);
 	if(!FileExists(config))
 	{
-		LogError("[FF2] Character %s does not exist!", character);
+		LogError("[FF2 Bosses] Character %s does not exist!", character);
 		return;
 	}
 	BossKV[Specials]=CreateKeyValues("character");
@@ -1338,7 +1344,7 @@ public LoadCharacter(const String:character[])
 	new version=KvGetNum(BossKV[Specials], "version", 1);
 	if(version!=1)
 	{
-		LogError("[FF2] Character %s is only compatible with FF2 v%i!", character, version);
+		LogError("[FF2 Bosses] Character %s is only compatible with FF2 v%i!", character, version);
 		return;
 	}
 
@@ -1352,7 +1358,7 @@ public LoadCharacter(const String:character[])
 			BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "plugins/freaks/%s.ff2", plugin_name);
 			if(!FileExists(config))
 			{
-				LogError("[FF2] Character %s needs plugin %s!", character, plugin_name);
+				LogError("[FF2 Bosses] Character %s needs plugin %s!", character, plugin_name);
 				return;
 			}
 		}
@@ -1657,14 +1663,14 @@ stock bool:IsFF2Map()
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
 	if(!FileExists(config))
 	{
-		LogError("[FF2] Unable to find %s, disabling plugin.", config);
+		LogError("[FF2 Configs] Unable to find %s, disabling plugin.", config);
 		return false;
 	}
 
 	new Handle:file=OpenFile(config, "r");
 	if(file==INVALID_HANDLE)
 	{
-		LogError("[FF2] Error reading maps from %s, disabling plugin.", config);
+		LogError("[FF2 Configs] Error reading maps from %s, disabling plugin.", config);
 		return false;
 	}
 
@@ -1674,7 +1680,7 @@ stock bool:IsFF2Map()
 		tries++;
 		if(tries==100)
 		{
-			LogError("[FF2] Breaking infinite loop when trying to check the map.");
+			LogError("[FF2 Configs] Breaking infinite loop when trying to check the map.");
 			return false;
 		}
 
@@ -1969,7 +1975,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	PickCharacter(0, 0);
 	if((Special[0]<0) || !BossKV[Special[0]])
 	{
-		LogError("[FF2] I just don't know what went wrong");
+		LogError("[FF2 Bosses] I just don't know what went wrong");
 		return Plugin_Continue;
 	}
 
@@ -3244,14 +3250,14 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				Debug("Keyvalues classname: Entered removeattribs");
 				if(KvGotoFirstSubKey(kvWeaponMods, false))
 				{
-					Debug("Keyvalues classname>addattribs: Entered first subkey");
+					Debug("Keyvalues classname>removeattribs: Entered first subkey");
 					decl attributes[64];
 					new attribCount=1;
 
 					attributes[0]=KvGetNum(kvWeaponMods, "1");
 					Debug("Keyvalues classname>removeattribs: First attrib was %i", attributes[0]);
 
-					for(new key=2; KvGotoNextKey(kvWeaponMods, false); key++)  //TODO: Make this more user-friendly and check until the end of removeattribs
+					for(new key=2; KvGotoNextKey(kvWeaponMods, false); key++)
 					{
 						decl String:temp[4];
 						IntToString(key, temp, sizeof(temp));
@@ -3266,9 +3272,9 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 						new i=0;
 						for(new attribute=0; attribute<attribCount && i<16; attribute++)
 						{
-							if(attributes[attribute]==0)
+							if(!attributes[attribute])
 							{
-								LogError("[FF2 Weapons] Bad weapon attribute passed: %i", attributes[attribute]);
+								LogError("[FF2 Weapons] Bad weapon attribute passed for weapon %s", classname);
 								CloseHandle(weapon);
 								return Plugin_Stop;
 							}
@@ -3325,7 +3331,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 							new attrib=StringToInt(attributes[attribute]);
 							if(attrib==0)
 							{
-								LogError("[FF2 Weapons] Bad weapon attribute passed: %s ; %s", attributes[attribute], attributes[attribute+1]);
+								LogError("[FF2 Weapons] Bad weapon attribute passed for weapon %s: %s ; %s", classname, attributes[attribute], attributes[attribute+1]);
 								CloseHandle(weapon);
 								return Plugin_Stop;
 							}
@@ -3344,16 +3350,6 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 					LogError("[FF2 Weapons] There was nothing under \"Addattribs\" for classname %s!", classname);
 				}
 				KvGoBack(kvWeaponMods);
-			}
-
-			if(KvJumpToKey(kvWeaponMods, "onhit"))
-			{
-				/*TODO*/
-			}
-
-			if(KvJumpToKey(kvWeaponMods, "ontakedamage"))
-			{
-				/*TODO*/
 			}
 		}
 
@@ -3583,7 +3579,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 			new attrib=StringToInt(weaponAttribsArray[i]);
 			if(attrib==0)
 			{
-				LogError("Bad weapon attribute passed: %s ; %s", weaponAttribsArray[i], weaponAttribsArray[i+1]);
+				LogError("[FF2 Weapons] Bad weapon attribute passed: %s ; %s", weaponAttribsArray[i], weaponAttribsArray[i+1]);
 				CloseHandle(hWeapon);
 				return INVALID_HANDLE;
 			}
@@ -5779,6 +5775,16 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 
 				new index=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+				/*if(KvJumpToKey(kvWeaponMods, "onhit"))
+				{
+					//TODO
+				}
+
+				if(KvJumpToKey(kvWeaponMods, "ontakedamage"))
+				{
+					//TODO
+				}*/
+
 				switch(index)
 				{
 					case 593:  //Third Degree
@@ -6580,7 +6586,7 @@ stock CalcBossHealthMax(index)
 	decl health;
 	if(brackets)
 	{
-		LogError("[FF2] Malformed boss health formula, using default!");
+		LogError("[FF2 Bosses] Malformed boss health formula, using default!");
 		health=RoundFloat(Pow(((460.0+playing)*playing), 1.075));
 	}
 	else health=RoundFloat(summ[0]);
@@ -6597,7 +6603,7 @@ stock bool:HasAbility(index,const String:plugin_name[],const String:ability_name
 	KvRewind(BossKV[Special[index]]);
 	if(!BossKV[Special[index]])
 	{
-		LogError("failed KV: %i %i",index,Special[index]);
+		LogError("[FF2 Configs] Failed keyvalues lookup: %i %i", index, Special[index]);
 		return false;
 	}
 	decl String:s[12];
@@ -6942,7 +6948,7 @@ stock SpawnWeapon(client, String:name[], index, level, qual, String:att[])
 			new attrib=StringToInt(atts[i]);
 			if(attrib==0)
 			{
-				LogError("Bad weapon attribute passed: %s ; %s", atts[i], atts[i+1]);
+				LogError("[FF2 Weapons] Bad weapon attribute passed: %s ; %s", atts[i], atts[i+1]);
 				CloseHandle(hWeapon);
 				return -1;
 			}
@@ -7290,9 +7296,11 @@ public Action:NewPanel(client, versionIndex)
 	decl String:whatsNew[90];
 
 	SetGlobalTransTarget(client);
-	Format(whatsNew, 90, "=%t:=", "whatsnew", ff2versiontitles[versionIndex], ff2versiondates[versionIndex]);
+	Format(whatsNew, 90, "=%t:=", "whatsnew", ff2versiontitles[versionIndex], ff2versiondates[versionIndex]);  //Get rid of this
 	SetPanelTitle(panel, whatsNew);
-	FindVersionData(panel, versionIndex);
+	FindVersionData(panel, versionIndex);  //Get rid of this
+	//ParseChangelog();
+
 	if(versionIndex>0)
 	{
 		Format(whatsNew, 90, "%t", "older");
