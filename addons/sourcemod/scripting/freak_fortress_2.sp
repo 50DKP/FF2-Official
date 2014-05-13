@@ -264,11 +264,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 12, 2014",		//1.10.0
-	"May 12, 2014",		//1.10.0
-	"May 12, 2014",		//1.10.0
-	"May 12, 2014",		//1.10.0
-	"May 12, 2014"		//1.10.0
+	"May 13, 2014",		//1.10.0
+	"May 13, 2014",		//1.10.0
+	"May 13, 2014",		//1.10.0
+	"May 13, 2014",		//1.10.0
+	"May 13, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -4646,14 +4646,13 @@ public TF2_OnConditionAdded(client, TFCond:condition)
 		return;
 	}
 
-	new boss=GetBossIndex(client);
 	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
 	{
-		TF2_RemoveCondition(boss, condition);
+		TF2_RemoveCondition(client, condition);
 	}
-	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(boss, TFCond:42))
+	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42))
 	{
-		TF2_RemoveCondition(boss, condition);
+		TF2_RemoveCondition(client, condition);
 	}
 	return;
 }
@@ -4860,7 +4859,7 @@ OnPlayerDeath(client, attacker, bool:fake=false)
 
 		CreateTimer(1.0, Timer_Damage, GetClientUserId(client));
 		if(IsBoss(attacker))
-		{	
+		{
 			new boss=GetBossIndex(attacker);
 			if(RandomSound("sound_hit", sound, PLATFORM_MAX_PATH, boss))
 			{
