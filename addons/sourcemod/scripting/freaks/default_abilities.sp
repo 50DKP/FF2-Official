@@ -148,7 +148,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 
 		for(new target=1; target<=MaxClients; target++)
 		{
-			if(IsClientConnected(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+			if(IsClientConnected(target) && IsPlayerAlive(target) && target!=boss && !(FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 			{
 				otherTeamIsAlive=true;
 				break;
@@ -170,7 +170,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 				return Plugin_Continue;
 			}
 		}
-		while(!IsValidEdict(target) || GetClientTeam(target)==BossTeam || !IsPlayerAlive(target));
+		while(!IsValidEdict(target) || target==boss || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target));
 
 		GetEntPropVector(target, Prop_Data, "m_vecOrigin", position);
 		TeleportEntity(boss, position, NULL_VECTOR, NULL_VECTOR);
@@ -406,7 +406,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 			new bool:otherTeamIsAlive;
 			for(new target=1; target<=MaxClients; target++)
 			{
-				if(IsClientConnected(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+				if(IsClientConnected(target) && IsPlayerAlive(target) && target!=boss && !(FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 				{
 					otherTeamIsAlive=true;
 					break;
@@ -423,7 +423,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 					return;
 				}
 			}
-			while(otherTeamIsAlive && (!IsValidEdict(target) || GetClientTeam(target)==BossTeam || !IsPlayerAlive(target)));
+			while(otherTeamIsAlive && (!IsValidEdict(target) || target==boss || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target)));
 
 			decl String:particle[PLATFORM_MAX_PATH];
 			FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 4, particle, 128);
