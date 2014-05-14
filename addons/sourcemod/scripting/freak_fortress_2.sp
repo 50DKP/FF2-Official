@@ -264,11 +264,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 13, 2014",		//1.10.0
-	"May 13, 2014",		//1.10.0
-	"May 13, 2014",		//1.10.0
-	"May 13, 2014",		//1.10.0
-	"May 13, 2014"		//1.10.0
+	"May 14, 2014",		//1.10.0
+	"May 14, 2014",		//1.10.0
+	"May 14, 2014",		//1.10.0
+	"May 14, 2014",		//1.10.0
+	"May 14, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -721,10 +721,9 @@ public OnPluginStart()
 
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
-	HookEvent("player_changeclass", OnChangeClass);
 	HookEvent("teamplay_round_start", event_round_start);
 	HookEvent("teamplay_round_win", event_round_end);
-	HookEvent("player_changeclass", event_change_class);
+	HookEvent("player_changeclass", OnChangeClass);
 	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
 	HookEvent("player_death", event_player_death, EventHookMode_Pre);
 	HookEvent("player_chargedeployed", event_uber_deployed);
@@ -2975,18 +2974,6 @@ EquipBoss(client)
 	}
 }
 
-public OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client);
-	if(team==BossTeam && !b_allowBossChgClass && IsPlayerAlive(client) && GetBossIndex(client)!=-1)
-	{
-		CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a HALE!");
-		b_BossChgClassDetected=true;
-		TF2_SetPlayerClass(client, oldclass);
-		CreateTimer(0.2, MakeModelTimer, client);
-	}
-}
-
 public Action:MakeBoss(Handle:hTimer, any:client)
 {
 	if(!Boss[client] || !IsValidEdict(Boss[client]) || !IsClientInGame(Boss[client]))
@@ -3669,29 +3656,15 @@ public Action:event_destroy(Handle:event, const String:name[], bool:dontBroadcas
 	return Plugin_Continue;
 }
 
-public Action:event_change_class(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(Enabled)
+	new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client);
+	if(Enabled && team==BossTeam && !b_allowBossChgClass && IsPlayerAlive(client) && GetBossIndex(client)!=-1)
 	{
-		CreateTimer(0.1, Timer_Change_Class, GetEventInt(event, "userid"));
-	}
-	return Plugin_Continue;
-}
-
-public Action:Timer_Change_Class(Handle:hTimer, any:userid)
-{
-	new client=GetClientOfUserId(userid);
-	new boss=GetBossIndex(client);
-	if(boss==-1 || Special[boss]==-1 || !BossKV[Special[boss]])
-	{
-		return Plugin_Continue;
-	}
-
-	KvRewind(BossKV[Special[boss]]);
-	new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[boss]], "class", 0);
-	if(TF2_GetPlayerClass(client)!=class)
-	{
-		TF2_SetPlayerClass(client, class);
+		CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a BOSS!");
+		b_BossChgClassDetected=true;
+		TF2_SetPlayerClass(client, oldclass);
+		CreateTimer(0.2, MakeModelTimer, client);
 	}
 	return Plugin_Continue;
 }
@@ -4039,15 +4012,6 @@ public OnClientPutInServer(client)
 	LastClass[client]=TFClass_Unknown;
 }
 
-public Action:Timer_RegenPlayer(Handle:timer, any:userid)
-{
-	new client=GetClientOfUserId(userid);
-	if(IsValidClient(client) && IsPlayerAlive(client))
-	{
-		TF2_RegeneratePlayer(client);
-	}
-}
-
 public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled)
@@ -4104,6 +4068,15 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED);
 	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
+}
+
+public Action:Timer_RegenPlayer(Handle:timer, any:userid)
+{
+	new client=GetClientOfUserId(userid);
+	if(IsValidClient(client) && IsPlayerAlive(client))
+	{
+		TF2_RegeneratePlayer(client);
+	}
 }
 
 public Action:ClientTimer(Handle:timer)
