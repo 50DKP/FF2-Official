@@ -2940,39 +2940,17 @@ EquipBoss(client)
 			KvGetString(BossKV[Special[client]], "attributes", attributes, 128);
 			if(attributes[0]!='\0')
 			{
-				if(BossCrits)
-				{
-					Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; 259 ; 1.0 ; %s", attributes);
-						//68: +2 cap rate
-						//2: x3 damage
-						//259: Mantreads effect (broken)
-				}
-				else
-				{
-					Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3 ; 259 ; 1.0 ; 15 ; 1 ; %s", attributes);
-						//68: +2 cap rate
-						//2: x3 damage
-						//259: Mantreads effect (broken)
-						//15: No crits
-				}
+				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; 259 ; 1.0 ; %s", attributes);
+					//68: +2 cap rate
+					//2: x3 damage
+					//259: Mantreads effect (broken)
 			}
 			else
 			{
-				if(BossCrits)
-				{
-					attributes="68 ; 2.0 ; 2 ; 3 ; 259 ; 1.0";
-						//68: +2 cap rate
-						//2: x3 damage
-						//259: Mantreads effect (broken)
-				}
-				else
-				{
-					attributes="68 ; 2.0 ; 2 ; 3 ; 259 ; 1.0 ; 15 ; 1";
-						//68: +2 cap rate
-						//2: x3 damage
-						//259: Mantreads effect (broken)
-						//15: No crits
-				}
+				attributes="68 ; 2.0 ; 2 ; 3 ; 259 ; 1.0";
+					//68: +2 cap rate
+					//2: x3 damage
+					//259: Mantreads effect (broken)
 			}
 
 			new BossWeapon=SpawnWeapon(Boss[client], weapon, KvGetNum(BossKV[Special[client]], "index"), 101, 5, attributes);
@@ -6159,33 +6137,15 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 	}
 }
 
-/*public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
+public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
-	if(!Enabled || !IsValidClient(client, false))
+	if(Enabled && IsBoss(client) && CheckRoundState()==1 && !TF2_IsPlayerCritBuffed(client) && BossCrits)
 	{
-		return Plugin_Continue;
-	}
-
-	if(IsBoss(client))
-	{
-		if(CheckRoundState()!=-1)
-		{
-			return Plugin_Continue;
-		}
-
-		if(TF2_IsPlayerCritBuffed(client))
-		{
-			return Plugin_Continue;
-		}
-
-		if(!BossCrits)
-		{
-			result=false;
-			return Plugin_Changed;
-		}
+		result=false;
+		return Plugin_Changed;
 	}
 	return Plugin_Continue;
-}*/
+}
 
 stock FindBosses(bool:isBoss[])
 {
