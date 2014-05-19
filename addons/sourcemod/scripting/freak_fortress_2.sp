@@ -224,6 +224,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.0",
 	"1.10.0",
 	"1.10.0",
+	"1.10.0",
 	"1.10.0"
 };
 
@@ -268,6 +269,7 @@ static const String:ff2versiondates[][]=
 	"May 19, 2014",		//1.10.0
 	"May 19, 2014",		//1.10.0
 	"May 19, 2014",		//1.10.0
+	"May 19, 2014",		//1.10.0
 	"May 19, 2014"		//1.10.0
 };
 
@@ -275,7 +277,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 39:  //1.10.0
+		case 40:  //1.10.0
 		{
 			DrawPanelText(panel, "1) Balanced Goomba Stomp and RTD (WildCard65)");
 			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
@@ -283,7 +285,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "4) Fixed ability timers not resetting when the round was over (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 38:  //1.10.0
+		case 39:  //1.10.0
 		{
 			DrawPanelText(panel, "5) Fixed bosses losing momentum when raging in the air (Wliu)");
 			DrawPanelText(panel, "6) Fixed bosses losing health if ther companion left at round start (Wliu)");
@@ -291,28 +293,35 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "8) Slightly tweaked default boss health formula to be more balanced (Eggman)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 37:  //1.10.0
+		case 38:  //1.10.0
 		{
 			DrawPanelText(panel, "9) Fixed and optimized the leaderboard (Wliu)");
 			DrawPanelText(panel, "10) Fixed medic minions receiving the medigun (Wliu)");
 			DrawPanelText(panel, "11) Fixed Ninja Spy slow-mo bugs (Wliu/Powerlord)");
-			DrawPanelText(panel, "12) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "12) Prevented players from changing to the incorrect team (Powerlord/Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
+		case 37:  //1.10.0
+		{
+			DrawPanelText(panel, "13) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "14) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "15) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "16) [Server] Moved ff2_oldjump to the main config file (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "13) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "14) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "15) [Server] Moved ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "16) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "17) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "18) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "19) [Server] Fixed some cvars not executing (Wliu)");
+			DrawPanelText(panel, "20) [Server] Changed how BossCrits works...again (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "17) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
-			DrawPanelText(panel, "18) [Server] Fixed some cvars not executing (Wliu)");
-			DrawPanelText(panel, "19) [Dev] Added more natives and one additional forward (Eggman)");
-			DrawPanelText(panel, "20) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "21) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "22) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "23) [Dev] Added a new flag, FF2FLAG_ALLOWRESPAWN, to allow players to respawn mid-round (Wliu)");
 			DrawPanelText(panel, "Big thanks to GIANT_CRAB for finding a bunch of these bugs!");
 		}
 		case 34:  //1.9.3
@@ -4056,7 +4065,11 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 		}
 		else
 		{
-			CreateTimer(0.1, checkItems, client);
+			if((FF2flags[client] & FF2FLAG_ALLOWRESPAWN))
+			{
+				FF2flags[client]|=~FF2FLAG_ALLOWRESPAWN;
+				CreateTimer(0.1, checkItems, client);
+			}
 		}
 	}
 
@@ -4065,7 +4078,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 		CreateTimer(0.1, CheckAlivePlayers);
 	}
 
-	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED);
+	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOWRESPAWN);
 	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
 }
