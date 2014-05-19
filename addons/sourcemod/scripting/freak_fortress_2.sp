@@ -790,14 +790,14 @@ public OnPluginStart()
 	RegConsoleCmd("say", SayCmd);
 	RegConsoleCmd("say_team", SayCmd);
 
-	AddCommandListener(DoTaunt, "taunt"); 
-	AddCommandListener(DoTaunt, "+taunt");
-	AddCommandListener(DoTaunt, "+use_action_slot_item_server");
-	AddCommandListener(DoTaunt, "use_action_slot_item_server");
-	AddCommandListener(DoSuicide, "explode");  
-	AddCommandListener(DoSuicide, "kill");  
-	AddCommandListener(Destroy, "destroy");
-	//AddCommandListener(DoJoinTeam, "jointeam");  //TODO
+	AddCommandListener(OnTaunt, "taunt"); 
+	AddCommandListener(OnTaunt, "+taunt");
+	AddCommandListener(OnTaunt, "+use_action_slot_item_server");
+	AddCommandListener(OnTaunt, "use_action_slot_item_server");
+	AddCommandListener(OnSuicide, "explode");  
+	AddCommandListener(OnSuicide, "kill");  
+	AddCommandListener(OnDestroy, "destroy");
+	AddCommandListener(OnJoinTeam, "jointeam");
 
 	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable CP. Only with ff2_point_type=0");
 	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable CP. Only with ff2_point_type=0");
@@ -4570,7 +4570,7 @@ stock OnlyScoutsLeft()
 	return scouts;
 }
 
-public Action:Destroy(client, const String:command[], argc)
+public Action:OnDestroy(client, const String:command[], argc)
 {
 	if(!Enabled || IsBoss(client))
 	{
@@ -4616,7 +4616,7 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 	}
 }
 
-public Action:DoTaunt(client, const String:command[], argc)
+public Action:OnTaunt(client, const String:command[], argc)
 {
 	if(!Enabled)
 	{
@@ -4714,7 +4714,7 @@ public Action:DoTaunt(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
-public Action:DoSuicide(client, const String:command[], argc)
+public Action:OnSuicide(client, const String:command[], argc)
 {
 	if(Enabled && IsBoss(client) && CheckRoundState()<=0)
 	{
@@ -4723,22 +4723,18 @@ public Action:DoSuicide(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
-public Action:DoJoinTeam(client, const String:command[], argc)
+public Action:OnJoinTeam(client, const String:command[], args)
 {
-	if(!Enabled)
+	if(!Enabled || !args || (!RoundCount && GetConVarBool(cvarFirstRound)))
+	{
 		return Plugin_Continue;
-	
-	if(RoundCount==0 && GetConVarBool(cvarFirstRound))
-		return Plugin_Continue;
-	
-	if(argc==0)
-		return Plugin_Continue;
-	
+	}
+
 	decl String:teamString[10];
 	GetCmdArg(1, teamString, sizeof(teamString));
-	
+
 	new team=_:TFTeam_Unassigned;
-	
+
 	if(StrEqual(teamString, "red", false))
 	{
 		team=_:TFTeam_Red;
@@ -4754,16 +4750,28 @@ public Action:DoJoinTeam(client, const String:command[], argc)
 	else if(StrEqual(teamString, "spectator", false))
 	{
 		if(GetConVarBool(cvarAllowSpectators))
+		{
 			team=_:TFTeam_Spectator;
+		}
 		else
+		{
 			team=OtherTeam;
+		}
 	}
 	
-	if(team==BossTeam)
+	if(team==BossTeam && !IsBoss(client))
+	{
 		team=OtherTeam;
-	
+	}
+	else if(team==OtherTeam && IsBoss(client))
+	{
+		team=BossTeam;
+	}
+
 	if(team>_:TFTeam_Unassigned)
+	{
 		ChangeClientTeam(client, team);
+	}
 
 	switch(team)
 	{
@@ -4771,13 +4779,11 @@ public Action:DoJoinTeam(client, const String:command[], argc)
 		{
 			ShowVGUIPanel(client, "class_red");
 		}
-		
 		case TFTeam_Blue:
 		{
 			ShowVGUIPanel(client, "class_blue");
 		}
 	}
-	
 	return Plugin_Handled;
 }
 
