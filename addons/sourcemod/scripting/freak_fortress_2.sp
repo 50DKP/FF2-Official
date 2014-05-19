@@ -264,11 +264,11 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 14, 2014",		//1.10.0
-	"May 14, 2014",		//1.10.0
-	"May 14, 2014",		//1.10.0
-	"May 14, 2014",		//1.10.0
-	"May 14, 2014"		//1.10.0
+	"May 19, 2014",		//1.10.0
+	"May 19, 2014",		//1.10.0
+	"May 19, 2014",		//1.10.0
+	"May 19, 2014",		//1.10.0
+	"May 19, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -6112,7 +6112,7 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
-	if(Enabled && IsBoss(client) && CheckRoundState()==1 && !TF2_IsPlayerCritBuffed(client) && BossCrits)
+	if(Enabled && IsBoss(client) && CheckRoundState()==1 && !TF2_IsPlayerCritBuffed(client) && !BossCrits)
 	{
 		result=false;
 		return Plugin_Changed;
