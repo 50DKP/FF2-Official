@@ -65,8 +65,8 @@ new bool:goomba=false;
 
 new bool:smac=false;
 
-new bool:b_allowBossChgClass=false;
-new bool:b_BossChgClassDetected=false;
+/*new bool:b_allowBossChgClass=false;
+new bool:b_BossChgClassDetected=false;*/
 new OtherTeam=2;
 new BossTeam=3;
 new playing;
@@ -298,7 +298,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "9) Fixed and optimized the leaderboard (Wliu)");
 			DrawPanelText(panel, "10) Fixed medic minions receiving the medigun (Wliu)");
 			DrawPanelText(panel, "11) Fixed Ninja Spy slow-mo bugs (Wliu/Powerlord)");
-			DrawPanelText(panel, "12) Prevented players from changing to the incorrect team (Powerlord/Wliu)");
+			DrawPanelText(panel, "12) Prevented players from changing to the incorrect team or class (Powerlord/Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 37:  //1.10.0
@@ -731,7 +731,7 @@ public OnPluginStart()
 
 	HookEvent("teamplay_round_start", event_round_start);
 	HookEvent("teamplay_round_win", event_round_end);
-	HookEvent("player_changeclass", OnChangeClass);
+	//HookEvent("player_changeclass", OnChangeClass);
 	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
 	HookEvent("player_death", event_player_death, EventHookMode_Pre);
 	HookEvent("player_chargedeployed", event_uber_deployed);
@@ -739,6 +739,16 @@ public OnPluginStart()
 	HookEvent("object_destroyed", event_destroy, EventHookMode_Pre);
 	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
 	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
+
+	AddCommandListener(OnTaunt, "taunt"); 
+	AddCommandListener(OnTaunt, "+taunt");
+	AddCommandListener(OnTaunt, "+use_action_slot_item_server");
+	AddCommandListener(OnTaunt, "use_action_slot_item_server");
+	AddCommandListener(OnSuicide, "explode");  
+	AddCommandListener(OnSuicide, "kill");  
+	AddCommandListener(OnDestroy, "destroy");
+	AddCommandListener(OnJoinTeam, "jointeam");
+	AddCommandListener(OnChangeClass, "changeclass");
 
 	HookConVarChange(cvarEnabled, CvarChange);
 	HookConVarChange(cvarPointDelay, CvarChange);
@@ -797,15 +807,6 @@ public OnPluginStart()
 	RegConsoleCmd("nextmap", NextMapCmd);
 	RegConsoleCmd("say", SayCmd);
 	RegConsoleCmd("say_team", SayCmd);
-
-	AddCommandListener(OnTaunt, "taunt"); 
-	AddCommandListener(OnTaunt, "+taunt");
-	AddCommandListener(OnTaunt, "+use_action_slot_item_server");
-	AddCommandListener(OnTaunt, "use_action_slot_item_server");
-	AddCommandListener(OnSuicide, "explode");  
-	AddCommandListener(OnSuicide, "kill");  
-	AddCommandListener(OnDestroy, "destroy");
-	AddCommandListener(OnJoinTeam, "jointeam");
 
 	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable CP. Only with ff2_point_type=0");
 	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable CP. Only with ff2_point_type=0");
@@ -2995,12 +2996,12 @@ public Action:MakeBoss(Handle:hTimer, any:client)
 
 	if(GetClientTeam(Boss[client])!=BossTeam)
 	{
-		b_allowBossChgClass=true;
+		//b_allowBossChgClass=true;
 		SetEntProp(Boss[client], Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(Boss[client], BossTeam);
 		SetEntProp(Boss[client], Prop_Send, "m_lifeState", 0);
 		TF2_RespawnPlayer(Boss[client]);
-		b_allowBossChgClass=false;
+		//b_allowBossChgClass=false;
 	}
 
 	if(!IsPlayerAlive(Boss[client]))
@@ -3651,41 +3652,23 @@ public Action:event_destroy(Handle:event, const String:name[], bool:dontBroadcas
 	if(Enabled)
 	{
 		new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
-		if(!GetRandomInt(0,2) && IsBoss(attacker))
+		if(!GetRandomInt(0, 2) && IsBoss(attacker))
 		{
-			decl String:s[PLATFORM_MAX_PATH];
-			if(RandomSound("sound_kill_buildable",s,PLATFORM_MAX_PATH))
+			decl String:sound[PLATFORM_MAX_PATH];
+			if(RandomSound("sound_kill_buildable",sound, PLATFORM_MAX_PATH))
 			{
-				EmitSoundToAll(s);
-				EmitSoundToAll(s);
+				EmitSoundToAll(sound);
+				EmitSoundToAll(sound);
 			}
 		}
 	}
 	return Plugin_Continue;
 }
 
-public Action:OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client);
-	if(Enabled && team==BossTeam && !b_allowBossChgClass && IsPlayerAlive(client) && GetBossIndex(client)!=-1)
-	{
-		CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a BOSS!");
-		b_BossChgClassDetected=true;
-		TF2_SetPlayerClass(client, oldclass);
-		CreateTimer(0.2, MakeModelTimer, client);
-	}
-	return Plugin_Continue;
-}
-
 public Action:event_uber_deployed(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(!Enabled)
-	{
-		return Plugin_Continue;
-	}
-
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
-	if(IsValidClient(client) && IsPlayerAlive(client))
+	if(Enabled && IsValidClient(client) && IsPlayerAlive(client))
 	{
 		new medigun=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 		if(IsValidEntity(medigun))
@@ -4036,11 +4019,11 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
 
-	if(b_BossChgClassDetected)
+	/*if(b_BossChgClassDetected)
 	{
 		TF2_RemoveAllWeapons2(client);
 		b_BossChgClassDetected=false;
-	}
+	}*/
 
 	if(GetBossIndex(client)>=0 && CheckRoundState()==0)
 	{
@@ -4722,11 +4705,25 @@ public Action:OnTaunt(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
-public Action:OnSuicide(client, const String:command[], argc)
+public Action:OnSuicide(client, const String:command[], args)
 {
 	if(Enabled && IsBoss(client) && CheckRoundState()<=0)
 	{
 		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
+
+public Action:OnChangeClass(/*Handle:event, const String:name[], bool:dontBroadcast*/client, const String:command[], args)
+{
+	/*new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client);*/
+	if(Enabled && IsBoss(client) && IsPlayerAlive(client) && args/* && team==BossTeam && !b_allowBossChgClass && GetBossIndex(client)!=-1*/)
+	{
+		/*CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a BOSS!");
+		b_BossChgClassDetected=true;
+		TF2_SetPlayerClass(client, oldclass);
+		CreateTimer(0.2, MakeModelTimer, client);*/
+		return Plugin_Stop;
 	}
 	return Plugin_Continue;
 }
@@ -4738,12 +4735,9 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		return Plugin_Continue;
 	}
 
-	new oldTeam;
-	decl String:teamString[10];
+	new oldTeam=_:TFTeam_Unassigned, team=_:TFTeam_Unassigned, String:teamString[10];
 	GetCmdArg(1, teamString, sizeof(teamString));
 	oldTeam=GetClientTeam(client);
-
-	new team=_:TFTeam_Unassigned;
 
 	if(StrEqual(teamString, "red", false))
 	{
