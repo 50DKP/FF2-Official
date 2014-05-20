@@ -265,12 +265,12 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 19, 2014",		//1.10.0
-	"May 19, 2014",		//1.10.0
-	"May 19, 2014",		//1.10.0
-	"May 19, 2014",		//1.10.0
-	"May 19, 2014",		//1.10.0
-	"May 19, 2014"		//1.10.0
+	"May 20, 2014",		//1.10.0
+	"May 20, 2014",		//1.10.0
+	"May 20, 2014",		//1.10.0
+	"May 20, 2014",		//1.10.0
+	"May 20, 2014",		//1.10.0
+	"May 20, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -321,7 +321,6 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "21) [Dev] Added more natives and one additional forward (Eggman)");
 			DrawPanelText(panel, "22) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
-			DrawPanelText(panel, "23) [Dev] Added a new flag, FF2FLAG_ALLOWRESPAWN, to allow players to respawn mid-round (Wliu)");
 			DrawPanelText(panel, "Big thanks to GIANT_CRAB for finding a bunch of these bugs!");
 		}
 		case 34:  //1.9.3
@@ -2332,16 +2331,16 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			{
 				if(bossWin)
 				{
-					ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_win");
+					ShowHudText(client, -1, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_win");
 				}
 				else
 				{
-					ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_lose");
+					ShowHudText(client, -1, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_lose");
 				}
 			}
 			else
 			{
-				ShowHudText(client, -1, "%s\n%t:\n1)%i-%s\n2)%i-%s\n3)%i-%s\n\n%t\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
+				ShowHudText(client, -1, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
 			}
 		}
 	}
@@ -4065,11 +4064,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 		}
 		else
 		{
-			if((FF2flags[client] & FF2FLAG_ALLOWRESPAWN))
-			{
-				FF2flags[client]|=~FF2FLAG_ALLOWRESPAWN;
-				CreateTimer(0.1, checkItems, client);
-			}
+			CreateTimer(0.1, checkItems, client);
 		}
 	}
 
@@ -4078,7 +4073,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 		CreateTimer(0.1, CheckAlivePlayers);
 	}
 
-	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOWRESPAWN);
+	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR);
 	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
 }
@@ -4743,8 +4738,10 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		return Plugin_Continue;
 	}
 
+	new oldTeam;
 	decl String:teamString[10];
 	GetCmdArg(1, teamString, sizeof(teamString));
+	oldTeam=GetClientTeam(client);
 
 	new team=_:TFTeam_Unassigned;
 
@@ -4781,20 +4778,23 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		team=BossTeam;
 	}
 
-	if(team>_:TFTeam_Unassigned)
+	if(team>_:TFTeam_Unassigned && oldTeam!=team)
 	{
 		ChangeClientTeam(client, team);
 	}
 
-	switch(team)
+	if(CheckRoundState()!=1 && !IsBoss(client))
 	{
-		case TFTeam_Red:
+		switch(team)
 		{
-			ShowVGUIPanel(client, "class_red");
-		}
-		case TFTeam_Blue:
-		{
-			ShowVGUIPanel(client, "class_blue");
+			case TFTeam_Red:
+			{
+				ShowVGUIPanel(client, "class_red");
+			}
+			case TFTeam_Blue:
+			{
+				ShowVGUIPanel(client, "class_blue");
+			}
 		}
 	}
 	return Plugin_Handled;
