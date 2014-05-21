@@ -4723,7 +4723,7 @@ public Action:OnChangeClass(/*Handle:event, const String:name[], bool:dontBroadc
 		b_BossChgClassDetected=true;
 		TF2_SetPlayerClass(client, oldclass);
 		CreateTimer(0.2, MakeModelTimer, client);*/
-		return Plugin_Stop;
+		return Plugin_Handled;
 	}
 	return Plugin_Continue;
 }
