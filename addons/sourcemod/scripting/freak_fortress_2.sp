@@ -33,7 +33,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 12"
+#define PLUGIN_VERSION "1.10.0 Beta 13"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -265,12 +265,12 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 20, 2014",		//1.10.0
-	"May 20, 2014",		//1.10.0
-	"May 20, 2014",		//1.10.0
-	"May 20, 2014",		//1.10.0
-	"May 20, 2014",		//1.10.0
-	"May 20, 2014"		//1.10.0
+	"May 21, 2014",		//1.10.0
+	"May 21, 2014",		//1.10.0
+	"May 21, 2014",		//1.10.0
+	"May 21, 2014",		//1.10.0
+	"May 21, 2014",		//1.10.0
+	"May 21, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -3375,6 +3375,7 @@ public Action:checkItems(Handle:timer, any:client)  //Weapon balance 2
 	}
 
 	SetEntityRenderColor(client, 255, 255, 255, 255);
+	demoShield[client]=0;
 	new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	new index=-1;
 	new civilianCheck[MAXPLAYERS+1];
@@ -4593,7 +4594,7 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 	}
 }
 
-public Action:OnTaunt(client, const String:command[], argc)
+public Action:OnTaunt(client, const String:command[], args)
 {
 	if(!Enabled)
 	{
@@ -4601,7 +4602,7 @@ public Action:OnTaunt(client, const String:command[], argc)
 	}
 	else
 	{
-		if(CheckRoundState()==0)
+		if(CheckRoundState()==0 || CheckRoundState()==2)
 		{
 			return Plugin_Handled;
 		}
@@ -4648,7 +4649,7 @@ public Action:OnTaunt(client, const String:command[], argc)
 					KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
 					UseAbility(abilityName, pluginName, boss, 0);
 				}
-				else	
+				else
 				{
 					new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
 					for(new j=0; j<count; j++)
@@ -4711,15 +4712,18 @@ public Action:OnDestroy(client, const String:command[], argc)
 
 public Action:OnChangeClass(/*Handle:event, const String:name[], bool:dontBroadcast*/client, const String:command[], args)
 {
+	Debug("Entered OnChangeClass");
 	/*new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client);*/
-	if(Enabled && IsBoss(client) && IsPlayerAlive(client) && args/* && team==BossTeam && !b_allowBossChgClass && GetBossIndex(client)!=-1*/)
+	if(Enabled && IsBoss(client) && IsPlayerAlive(client) && CheckRoundState()<=0/* && team==BossTeam && !b_allowBossChgClass && GetBossIndex(client)!=-1*/)
 	{
 		/*CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a BOSS!");
 		b_BossChgClassDetected=true;
 		TF2_SetPlayerClass(client, oldclass);
 		CreateTimer(0.2, MakeModelTimer, client);*/
+		Debug("OnChangeClass: Client was a boss");
 		return Plugin_Handled;
 	}
+	Debug("OnChangeClass: Client was not a boss");
 	return Plugin_Continue;
 }
 
