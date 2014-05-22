@@ -740,15 +740,15 @@ public OnPluginStart()
 	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
 	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
 
-	AddCommandListener(OnTaunt, "taunt"); 
-	AddCommandListener(OnTaunt, "+taunt");
-	AddCommandListener(OnTaunt, "+use_action_slot_item_server");
-	AddCommandListener(OnTaunt, "use_action_slot_item_server");
-	AddCommandListener(OnSuicide, "explode");  
-	AddCommandListener(OnSuicide, "kill");  
-	AddCommandListener(OnDestroy, "destroy");
-	AddCommandListener(OnJoinTeam, "jointeam");
-	AddCommandListener(OnChangeClass, "changeclass");
+	AddCommandListener(OnTaunt, "taunt");  //Used to activate rages
+	AddCommandListener(OnTaunt, "+taunt");  //Used to activate rages
+	AddCommandListener(OnTaunt, "+use_action_slot_item_server");  //Used to activate rages
+	AddCommandListener(OnTaunt, "use_action_slot_item_server");  //Used to activate rages
+	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding before round start
+	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding before round start
+	AddCommandListener(OnDestroy, "destroy");  //Used to stop Eureka Effect from destroying buildings on teleport
+	AddCommandListener(OnJoinTeam, "jointeam");  //Used to make sure players join the right team
+	AddCommandListener(OnChangeClass, "changeclass");  //Used to make sure players don't change class-not working
 
 	HookConVarChange(cvarEnabled, CvarChange);
 	HookConVarChange(cvarPointDelay, CvarChange);
@@ -4701,7 +4701,7 @@ public Action:OnSuicide(client, const String:command[], args)
 	return Plugin_Continue;
 }
 
-public Action:OnDestroy(client, const String:command[], argc)
+public Action:OnDestroy(client, const String:command[], args)
 {
 	if(Enabled && IsValidClient(client) && !IsBoss(client) && TF2_IsPlayerInCondition(client, TFCond_Taunting) && GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==589)  //Eureka Effect
 	{
@@ -4710,16 +4710,24 @@ public Action:OnDestroy(client, const String:command[], argc)
 	return Plugin_Continue;
 }
 
-public Action:OnChangeClass(/*Handle:event, const String:name[], bool:dontBroadcast*/client, const String:command[], args)
+/*public Action:OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	Debug("Entered OnChangeClass");
-	/*new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client);*/
-	if(Enabled && IsBoss(client) && IsPlayerAlive(client) && CheckRoundState()<=0/* && team==BossTeam && !b_allowBossChgClass && GetBossIndex(client)!=-1*/)
+	new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client);
+	if(Enabled && team==BossTeam && !b_allowBossChgClass && IsPlayerAlive(client) && GetBossIndex(client)!=-1)
 	{
-		/*CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a BOSS!");
+		CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a BOSS!");
 		b_BossChgClassDetected=true;
 		TF2_SetPlayerClass(client, oldclass);
-		CreateTimer(0.2, MakeModelTimer, client);*/
+		CreateTimer(0.2, MakeModelTimer, client);
+	}
+	return Plugin_Continue;
+}*/
+
+public Action:OnChangeClass(client, const String:command[], args)
+{
+	Debug("Entered OnChangeClass");
+	if(Enabled && IsBoss(client) && IsPlayerAlive(client))
+	{
 		Debug("OnChangeClass: Client was a boss");
 		return Plugin_Handled;
 	}
@@ -4805,23 +4813,17 @@ public Action:OnJoinTeam(client, const String:command[], args)
 //OnPlayerDeath(client, attacker, bool:fake=false)
 public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBroadcast)
 {
-	if(CheckRoundState()!=1 || !Enabled)
+	if(CheckRoundState()!=1 || !Enabled || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)!=0)
 	{
 		return;
 	}
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid")), attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
-	new bool:fake=(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)!=0;
 	decl String:sound[PLATFORM_MAX_PATH];
 	CreateTimer(0.1, CheckAlivePlayers);
 	DoOverlay(client, "");
 	if(!IsBoss(client))
 	{
-		if(fake)
-		{
-			return;
-		}
-
 		CreateTimer(1.0, Timer_Damage, GetClientUserId(client));
 		if(IsBoss(attacker))
 		{
@@ -4890,7 +4892,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		return;
 	}
 
-	if(TF2_GetPlayerClass(client)==TFClass_Engineer && !fake)
+	if(TF2_GetPlayerClass(client)==TFClass_Engineer)
 	{
 		decl String:name[PLATFORM_MAX_PATH];
 		FakeClientCommand(client, "destroy 2");
