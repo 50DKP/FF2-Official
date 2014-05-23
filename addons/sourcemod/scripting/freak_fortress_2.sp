@@ -265,12 +265,12 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 21, 2014",		//1.10.0
-	"May 21, 2014",		//1.10.0
-	"May 21, 2014",		//1.10.0
-	"May 21, 2014",		//1.10.0
-	"May 21, 2014",		//1.10.0
-	"May 21, 2014"		//1.10.0
+	"May 22, 2014",		//1.10.0
+	"May 22, 2014",		//1.10.0
+	"May 22, 2014",		//1.10.0
+	"May 22, 2014",		//1.10.0
+	"May 22, 2014",		//1.10.0
+	"May 22, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -303,22 +303,24 @@ stock FindVersionData(Handle:panel, versionIndex)
 		}
 		case 37:  //1.10.0
 		{
+			DrawPanelText(panel, "13) Fixed bosses immediately dying after using the dead ringer (Wliu)");
 			DrawPanelText(panel, "13) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
 			DrawPanelText(panel, "14) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
 			DrawPanelText(panel, "15) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "16) [Server] Moved ff2_oldjump to the main config file (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
+			DrawPanelText(panel, "16) [Server] Moved ff2_oldjump to the main config file (Wliu)");
 			DrawPanelText(panel, "17) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
 			DrawPanelText(panel, "18) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
 			DrawPanelText(panel, "19) [Server] Fixed some cvars not executing (Wliu)");
-			DrawPanelText(panel, "20) [Server] Changed how BossCrits works...again (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
+			DrawPanelText(panel, "20) [Server] Changed how BossCrits works...again (Wliu)");
+			DrawPanelText(panel, "21) [Server] Fixed hale_point_enable/disable being registered twice (Wliu)");
 			DrawPanelText(panel, "21) [Dev] Added more natives and one additional forward (Eggman)");
 			DrawPanelText(panel, "22) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
 			DrawPanelText(panel, "Big thanks to GIANT_CRAB for finding a bunch of these bugs!");
@@ -785,8 +787,7 @@ public OnPluginStart()
 	RegConsoleCmd("ff2_voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("ff2_resetpoints", ResetQueuePointsCmd);
 	RegConsoleCmd("ff2resetpoints", ResetQueuePointsCmd);
-	RegAdminCmd("ff2_resetqueuepoints", ResetQueuePointsCmd, 0);
-	RegAdminCmd("ff2_resetq", ResetQueuePointsCmd, 0);
+
 	RegConsoleCmd("hale", FF2Panel);
 	RegConsoleCmd("hale_hp", Command_GetHPCmd);
 	RegConsoleCmd("halehp", Command_GetHPCmd);
@@ -802,20 +803,18 @@ public OnPluginStart()
 	RegConsoleCmd("hale_voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("hale_resetpoints", ResetQueuePointsCmd);
 	RegConsoleCmd("haleresetpoints", ResetQueuePointsCmd);
-	RegAdminCmd("hale_resetqueuepoints", ResetQueuePointsCmd, 0);
-	RegAdminCmd("hale_resetq", ResetQueuePointsCmd, 0);
+
 	RegConsoleCmd("nextmap", NextMapCmd);
 	RegConsoleCmd("say", SayCmd);
 	RegConsoleCmd("say_team", SayCmd);
-
-	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable CP. Only with ff2_point_type=0");
-	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable CP. Only with ff2_point_type=0");
 
 	RegAdminCmd("ff2_special", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  ff2_special <boss>.  Forces next round to use that boss");
 	RegAdminCmd("ff2_addpoints", Command_Points, ADMFLAG_CHEATS, "Usage:  ff2_addpoints <target> <points>.  Adds queue points to any player");
 	RegAdminCmd("ff2_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable the control point if ff2_point_type is 0");
 	RegAdminCmd("ff2_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable the control point if ff2_point_type is 0");
 	RegAdminCmd("ff2_stop_music", Command_StopMusic, ADMFLAG_CHEATS, "Stop any currently playing Boss music");
+	RegAdminCmd("ff2_resetqueuepoints", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
+	RegAdminCmd("ff2_resetq", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 	RegAdminCmd("ff2_charset", Command_CharSet, ADMFLAG_CHEATS, "Usage:  ff2_charset <charset>.  Forces FF2 to use a given character set");
 	RegAdminCmd("ff2_reload_subplugins", Command_ReloadSubPlugins, ADMFLAG_RCON, "Reload FF2's subplugins.");
 
@@ -825,6 +824,8 @@ public OnPluginStart()
 	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable the control point if ff2_point_type is 0");
 	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable the control point if ff2_point_type is 0");
 	RegAdminCmd("hale_stop_music", Command_StopMusic, ADMFLAG_CHEATS, "Stop any currently playing Boss music");
+	RegAdminCmd("hale_resetqueuepoints", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
+	RegAdminCmd("hale_resetq", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 
 	AutoExecConfig(true, "FreakFortress2");
 
@@ -840,7 +841,7 @@ public OnPluginStart()
 	GetConVarString(cvarVersion, oldversion, sizeof(oldversion));
 	if(strcmp(oldversion, PLUGIN_VERSION, false)!=0)
 	{
-		LogError("[FF2] Warning: Your config may be outdated. Back up tf/cfg/sourcemod/FreakFortress2.cfg and delete it, and this plugin will generate a new one that you can then modify to your original values.");
+		PrintToServer("[FF2] Warning: Your config may be outdated. Back up tf/cfg/sourcemod/FreakFortress2.cfg and delete it, and this plugin will generate a new one that you can then modify to your original values.");
 	}
 
 	LoadTranslations("freak_fortress_2.phrases");
@@ -3656,7 +3657,7 @@ public Action:event_destroy(Handle:event, const String:name[], bool:dontBroadcas
 		if(!GetRandomInt(0, 2) && IsBoss(attacker))
 		{
 			decl String:sound[PLATFORM_MAX_PATH];
-			if(RandomSound("sound_kill_buildable",sound, PLATFORM_MAX_PATH))
+			if(RandomSound("sound_kill_buildable", sound, PLATFORM_MAX_PATH))
 			{
 				EmitSoundToAll(sound);
 				EmitSoundToAll(sound);
@@ -6735,25 +6736,30 @@ public Action:QueuePanelCmd(client, Args)
 public Action:ResetQueuePointsCmd(client, args)
 {
 	if(!Enabled2)
-		return Plugin_Continue;
-	if(client && !args)			//default players
 	{
-		TurnToZeroPanel(client,client);
+		return Plugin_Continue;
+	}
+
+	if(client && !args)  //Normal players
+	{
+		TurnToZeroPanel(client, client);
 		return Plugin_Handled;
 	}
-	if(!client)		//No confirmation for console
+
+	if(!client)  //No confirmation for console
 	{
 		TurnToZeroPanelH(INVALID_HANDLE, MenuAction_Select, client, 1);
 		return Plugin_Handled;
 	}
-	new AdminId:admin=GetUserAdmin(client);	//default players again
+
+	new AdminId:admin=GetUserAdmin(client);	 //Normal players
 	if((admin==INVALID_ADMIN_ID) || !GetAdminFlag(admin, Admin_Cheats))
 	{
-		TurnToZeroPanel(client,client);
+		TurnToZeroPanel(client, client);
 		return Plugin_Handled;
-	}	
-	//admins
-	if(args!=1)
+	}
+
+	if(args!=1)  //Admins
 	{
 		CReplyToCommand(client, "{olive}[FF2]{default} Usage: ff2_resetqueuepoints <target>");
 		return Plugin_Handled;
@@ -6765,57 +6771,59 @@ public Action:ResetQueuePointsCmd(client, args)
 	new target_list[1], target_count;
 	new bool:tn_is_ml;
 
-	if((target_count=ProcessTargetString(
-			targetname,
-			client,
-			target_list,
-			1,
-			0,
-			target_name,
-			MAX_TARGET_LENGTH,
-			tn_is_ml))<=0)
+	if((target_count=ProcessTargetString(targetname, client, target_list, 1, 0, target_name, MAX_TARGET_LENGTH, tn_is_ml))<=0)
 	{
 		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
 	}
-	TurnToZeroPanel(client,target_list[0]);
+	TurnToZeroPanel(client, target_list[0]);
 	return Plugin_Handled;
 }
 
-public TurnToZeroPanelH(Handle:menu, MenuAction:action, param1, param2)
+public TurnToZeroPanelH(Handle:menu, MenuAction:action, client, position)
 {
-	if(action==MenuAction_Select && param2==1)
+	if(action==MenuAction_Select && position==1)
 	{
-		if(shortname[param1]==param1)
-			CPrintToChat(param1,"{olive}[FF2]{default} %t","to0_done");
+		if(shortname[client]==client)
+		{
+			CPrintToChat(client,"{olive}[FF2]{default} %t", "to0_done");
+		}
 		else
 		{
-			CPrintToChat(param1,"{olive}[FF2]{default} %t","to0_done_admin",shortname[param1]);
-			CPrintToChat(shortname[param1],"{olive}[FF2]{default} %t","to0_done_by_admin",param1);
+			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_done_admin", shortname[client]);
+			CPrintToChat(shortname[client], "{olive}[FF2]{default} %t", "to0_done_by_admin", client);
 		}
-		SetClientQueuePoints(shortname[param1],0);
+		SetClientQueuePoints(shortname[client], 0);
 	}
 }
 
-public Action:TurnToZeroPanel(caller,client)
+public Action:TurnToZeroPanel(caller, client)
 {
 	if(!Enabled2)
+	{
 		return Plugin_Continue;
+	}
+
 	new Handle:panel=CreatePanel();
-	decl String:s[512];
+	decl String:text[512];
 	SetGlobalTransTarget(caller);
 	if(caller==client)
-		Format(s,512,"%t","to0_title");
+	{
+		Format(text, 512, "%t", "to0_title");
+	}
 	else
-		Format(s,512,"%t","to0_title_admin",client);
-	PrintToChat(caller,s);
-	SetPanelTitle(panel,s);
-	Format(s,512,"%t","Yes");
-	DrawPanelItem(panel,s);
-	Format(s,512,"%t","No");
-	DrawPanelItem(panel,s);
+	{
+		Format(text, 512, "%t", "to0_title_admin", client);
+	}
+
+	PrintToChat(caller, text);
+	SetPanelTitle(panel, text);
+	Format(text, 512, "%t", "Yes");
+	DrawPanelItem(panel, text);
+	Format(text, 512, "%t", "No");
+	DrawPanelItem(panel, text);
 	shortname[caller]=client;
-	SendPanelToClient(panel, caller, TurnToZeroPanelH, 9001);
+	SendPanelToClient(panel, caller, TurnToZeroPanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Handled;
 }
