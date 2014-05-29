@@ -265,12 +265,12 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 22, 2014",		//1.10.0
-	"May 22, 2014",		//1.10.0
-	"May 22, 2014",		//1.10.0
-	"May 22, 2014",		//1.10.0
-	"May 22, 2014",		//1.10.0
-	"May 22, 2014"		//1.10.0
+	"May 29, 2014",		//1.10.0
+	"May 29, 2014",		//1.10.0
+	"May 29, 2014",		//1.10.0
+	"May 29, 2014",		//1.10.0
+	"May 29, 2014",		//1.10.0
+	"May 29, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -735,7 +735,7 @@ public OnPluginStart()
 	HookEvent("teamplay_round_win", event_round_end);
 	//HookEvent("player_changeclass", OnChangeClass);
 	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
-	HookEvent("player_death", /*event_player_death*/OnPlayerDeath, EventHookMode_Pre);
+	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	HookEvent("player_chargedeployed", event_uber_deployed);
 	HookEvent("player_hurt", event_hurt, EventHookMode_Pre);
 	HookEvent("object_destroyed", event_destroy, EventHookMode_Pre);
@@ -4738,12 +4738,15 @@ public Action:OnChangeClass(client, const String:command[], args)
 
 public Action:OnJoinTeam(client, const String:command[], args)
 {
+	Debug("Entered OnJoinTeam");
 	if(!Enabled || !args || (!RoundCount && GetConVarBool(cvarFirstRound)))
 	{
+		Debug("OnJoinTeam: No args");
 		return Plugin_Continue;
 	}
 
-	new oldTeam=GetClientTeam(client), team=_:TFTeam_Unassigned, String:teamString[10];
+	Debug("OnJoinTeam: Old team was %i", GetClientTeam(client));
+	new team=_:TFTeam_Unassigned, String:teamString[10];
 	GetCmdArg(1, teamString, sizeof(teamString));
 
 	if(StrEqual(teamString, "red", false))
@@ -4760,16 +4763,19 @@ public Action:OnJoinTeam(client, const String:command[], args)
 	}
 	else if(StrEqual(teamString, "spectator", false))
 	{
+		Debug("OnJoinTeam: Selected team was spectator");
 		if(GetConVarBool(cvarAllowSpectators))
 		{
+			Debug("OnJoinTeam: Allowing switch to spectator");
 			team=_:TFTeam_Spectator;
 		}
 		else
 		{
+			Debug("OnJoinTeam: Not allowing switch to spectator");
 			team=OtherTeam;
 		}
 	}
-	
+
 	if(team==BossTeam && !IsBoss(client))
 	{
 		team=OtherTeam;
@@ -4779,12 +4785,12 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		team=BossTeam;
 	}
 
-	if(team>_:TFTeam_Unassigned && oldTeam!=team)
+	if(team>_:TFTeam_Unassigned)
 	{
 		ChangeClientTeam(client, team);
 	}
 
-	if(CheckRoundState()!=1 && !IsBoss(client))
+	if(CheckRoundState()!=1 && !IsBoss(client))  //No point in showing the VGUI if they can't change teams
 	{
 		switch(team)
 		{
@@ -4801,17 +4807,6 @@ public Action:OnJoinTeam(client, const String:command[], args)
 	return Plugin_Handled;
 }
 
-/*public Action:event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	new client=GetClientOfUserId(GetEventInt(event, "userid"));
-	if(Enabled && client && GetClientHealth(client)<=0 && CheckRoundState()==1)
-	{
-		OnPlayerDeath(client, GetClientOfUserId(GetEventInt(event, "attacker")), (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)!=0);
-	}
-	return Plugin_Continue;
-}*/
-
-//OnPlayerDeath(client, attacker, bool:fake=false)
 public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBroadcast)
 {
 	if(CheckRoundState()!=1 || !Enabled || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)!=0)
