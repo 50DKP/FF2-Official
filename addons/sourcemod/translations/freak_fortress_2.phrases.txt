@@ -84,7 +84,7 @@
 	}
 	"help_pyro"
 	{
-		"en"	"Postal Pummeler and skins uses stats of Fire Axe.\nThe Flare Gun is replaced by the Mega Detonator.\nAirblasting the boss builds rage and lengthens the Vagineer's uber."
+		"en"	"Postal Pummeler and skins uses stats of Fire Axe.\nThe Flare Gun is replaced by the Mega Detonator.\nAirblasting the boss builds rage and lengthens the Vagineer's uber.\nYou gain minicrits while in radius of an amplifier."
 	}
 	"help_demo"
 	{
@@ -96,7 +96,7 @@
 	}
 	"help_eggineer"
 	{
-		"en"	"All maps have only small ammo packs.\nThe Frontier Justice gains crits only while your sentry is targetting Boss."
+		"en"	"All maps have only small ammo packs.\nThe Frontier Justice gains crits only while your sentry is targetting Boss.\nAmplfiers gives you minicrits and gives Pyros minicrits, it also undisguises Spies.\nAlso, depending on what server owner chose, the Boss can use your teleporters no matter what class(if owner has ff2_boss_teleport set to 1)."
 	}
 	"help_medic"
 	{
