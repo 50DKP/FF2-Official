@@ -117,7 +117,6 @@ new Handle:cvarCountdownHealth;
 new Handle:cvarEnableEurekaEffect;
 new Handle:cvarForceBossTeam;
 new Handle:cvarHealthBar;
-new Handle:cvarAllowSpectators;
 new Handle:cvarLastPlayerGlow;
 new Handle:cvarGoombaDamage;
 new Handle:cvarGoombaRebound;
@@ -270,13 +269,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"May 29, 2014",		//1.10.0
-	"May 29, 2014",		//1.10.0
-	"May 29, 2014",		//1.10.0
-	"May 29, 2014",		//1.10.0
-	"May 29, 2014",		//1.10.0
-	"May 29, 2014",		//1.10.0
-	"May 29, 2014"		//1.10.0
+	"June 1, 2014",		//1.10.0
+	"June 1, 2014",		//1.10.0
+	"June 1, 2014",		//1.10.0
+	"June 1, 2014",		//1.10.0
+	"June 1, 2014",		//1.10.0
+	"June 1, 2014",		//1.10.0
+	"June 1, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -285,54 +284,54 @@ stock FindVersionData(Handle:panel, versionIndex)
 	{
 		case 41:
 		{
-			DrawPanelText(panel, "1) Also made it possible for any boss to use enemy teleporters. (WildCard65)");
-			DrawPanelText(panel, "2) Balanced Goomba Stomp and RTD (WildCard65)");
-			DrawPanelText(panel, "3) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
+			DrawPanelText(panel, "1) Balanced Goomba Stomp and RTD (WildCard65)");
+			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
+			DrawPanelText(panel, "3) Fixed Jarate, etc. not disappearing immediately on the boss (Wliu)");
+			DrawPanelText(panel, "4) Fixed ability timers not resetting when the round was over (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 40:  //1.10.0
 		{
-			DrawPanelText(panel, "4) Fixed Jarate, etc. not disappearing immediately on the boss (Wliu)");
-			DrawPanelText(panel, "5) Fixed ability timers not resetting when the round was over (Wliu)");
-			DrawPanelText(panel, "6) Fixed bosses losing momentum when raging in the air (Wliu)");
-			DrawPanelText(panel, "7) Fixed bosses losing health if ther companion left at round start (Wliu)");
+			DrawPanelText(panel, "5) Fixed bosses losing momentum when raging in the air (Wliu)");
+			DrawPanelText(panel, "6) Fixed bosses losing health if ther companion left at round start (Wliu)");
+			DrawPanelText(panel, "7) Fixed bosses sometimes teleporting to each other if they had a companion (Wliu)");
+			DrawPanelText(panel, "8) Slightly tweaked default boss health formula to be more balanced (Eggman)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 39:  //1.10.0
 		{
-			DrawPanelText(panel, "8) Fixed bosses sometimes teleporting to each other if they had a companion (Wliu)");
-			DrawPanelText(panel, "9) Slightly tweaked default boss health formula to be more balanced (Eggman)");
-			DrawPanelText(panel, "10) Fixed and optimized the leaderboard (Wliu)");
-			DrawPanelText(panel, "11) Fixed medic minions receiving the medigun (Wliu)");
+			DrawPanelText(panel, "9) Fixed and optimized the leaderboard (Wliu)");
+			DrawPanelText(panel, "10) Fixed medic minions receiving the medigun (Wliu)");
+			DrawPanelText(panel, "11) Fixed Ninja Spy slow-mo bugs (Wliu/Powerlord)");
+			DrawPanelText(panel, "12) Prevented players from changing to the incorrect team or class (Powerlord/Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 38:  //1.10.0
 		{
-			DrawPanelText(panel, "12) Fixed Ninja Spy slow-mo bugs (Wliu/Powerlord)");
-			DrawPanelText(panel, "13) Prevented players from changing to the incorrect team or class (Powerlord/Wliu)");
-			DrawPanelText(panel, "14) Fixed bosses immediately dying after using the dead ringer (Wliu)");
-			DrawPanelText(panel, "15) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "13) Fixed bosses immediately dying after using the dead ringer (Wliu)");
+			DrawPanelText(panel, "14) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "15) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "16) [Server] Removed ff2_halloween (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 37:  //1.10.0
 		{
-			DrawPanelText(panel, "16) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "17) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "18) [Server] Moved ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "19) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "17) [Server] Moved convar ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "18) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "19) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "20) [Server] Added convar ff2_goomba_jump to control how high players should rebound after goomba stomping the boss (WildCard65)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "20) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
-			DrawPanelText(panel, "21) [Server] Fixed some cvars not executing (Wliu)");
+			DrawPanelText(panel, "21) [Server] Fixed some convars not executing (Wliu)");
 			DrawPanelText(panel, "22) [Server] Changed how BossCrits works...again (Wliu)");
 			DrawPanelText(panel, "23) [Server] Fixed hale_point_enable/disable being registered twice (Wliu)");
+			DrawPanelText(panel, "24) [Dev] Added more natives and one additional forward (Eggman)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "24) [Dev] Added more natives and one additional forward (Eggman)");
 			DrawPanelText(panel, "25) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
 			DrawPanelText(panel, "Big thanks to GIANT_CRAB for finding a bunch of these bugs!");
 		}
@@ -733,10 +732,9 @@ public OnPluginStart()
 	cvarEnableEurekaEffect=CreateConVar("ff2_enable_eureka", "0", "0-Disable the Eureka Effect, 1-Enable the Eureka Effect", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarAllowSpectators=FindConVar("mp_allowspectators");
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
-	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How much Goomba rebound force is applied after stomping boss(requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, false);
+	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
+	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How high players should rebound after goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "1", "Can the boss use enemy teleporters?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -4785,7 +4783,7 @@ public Action:OnJoinTeam(client, const String:command[], args)
 	else if(StrEqual(teamString, "spectator", false))
 	{
 		Debug("OnJoinTeam: Selected team was spectator");
-		if(GetConVarBool(cvarAllowSpectators))
+		if(GetConVarBool(FindConVar("mp_allowspectators")))
 		{
 			Debug("OnJoinTeam: Allowing switch to spectator");
 			team=_:TFTeam_Spectator;
@@ -5901,7 +5899,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 public Action:TF2_OnPlayerTeleport(client, teleporter, &bool:result)
 {
-	if(Enabled && Enabled2 && IsBoss(client) && bossTeleportation)
+	if(Enabled && IsBoss(client) && bossTeleportation)
 	{
 		result=true;
 		return Plugin_Changed;
@@ -5964,12 +5962,9 @@ SetupRTD()
 
 public Action:RTD_CanRollDice(client)
 {
-	if(IsBoss(client) && Enabled)
+	if(Enabled && IsBoss(client) && !canBossRTD)
 	{
-		if(!canBossRTD)
-		{
-			return Plugin_Handled;
-		}
+		return Plugin_Handled;
 	}
 	return Plugin_Continue;
 }
