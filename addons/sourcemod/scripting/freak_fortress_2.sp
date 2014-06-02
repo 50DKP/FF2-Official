@@ -1550,6 +1550,10 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		SetConVarInt(cvarRTDMode, 0);
 	}
+	else if(convar==cvarBossTeleporter)
+	{
+		bossTeleportation=bool:StringToInt(newValue);
+	}
 	else if(convar==cvarSpecForceBoss)
 	{
 		SpecForceBoss=bool:StringToInt(newValue);
