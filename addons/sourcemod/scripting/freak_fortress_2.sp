@@ -269,13 +269,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 1, 2014",		//1.10.0
-	"June 1, 2014",		//1.10.0
-	"June 1, 2014",		//1.10.0
-	"June 1, 2014",		//1.10.0
-	"June 1, 2014",		//1.10.0
-	"June 1, 2014",		//1.10.0
-	"June 1, 2014"		//1.10.0
+	"June 2, 2014",		//1.10.0
+	"June 2, 2014",		//1.10.0
+	"June 2, 2014",		//1.10.0
+	"June 2, 2014",		//1.10.0
+	"June 2, 2014",		//1.10.0
+	"June 2, 2014",		//1.10.0
+	"June 2, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -1362,8 +1362,9 @@ public LoadCharacter(const String:character[])
 	}
 	KvRewind(BossKV[Specials]);
 
-	decl String:file[PLATFORM_MAX_PATH];
+	decl String:key[PLATFORM_MAX_PATH];
 	decl String:section[64];
+
 	KvSetString(BossKV[Specials], "filename", character);
 	KvGetString(BossKV[Specials], "name", config, PLATFORM_MAX_PATH);
 	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "sound_block_vo", 0);
@@ -1373,13 +1374,13 @@ public LoadCharacter(const String:character[])
 
 	while(KvGotoNextKey(BossKV[Specials]))
 	{	
-		KvGetSectionName(BossKV[Specials], section, 64);
+		KvGetSectionName(BossKV[Specials], section, sizeof(section));
 		if(!strcmp(section, "download"))
 		{
 			for(new i=1; ; i++)
 			{
-				IntToString(i, file, 4);
-				KvGetString(BossKV[Specials], file, config, PLATFORM_MAX_PATH);
+				IntToString(i, key, sizeof(key));
+				KvGetString(BossKV[Specials], key, config, PLATFORM_MAX_PATH);
 				if(!config[0])
 				{
 					break;
@@ -1391,8 +1392,8 @@ public LoadCharacter(const String:character[])
 		{	
 			for(new i=1; ; i++)
 			{
-				IntToString(i, file, 4);
-				KvGetString(BossKV[Specials], file, config, PLATFORM_MAX_PATH);
+				IntToString(i, key, sizeof(key));
+				KvGetString(BossKV[Specials], key, config, PLATFORM_MAX_PATH);
 				if(!config[0])
 				{
 					break;
@@ -1400,8 +1401,8 @@ public LoadCharacter(const String:character[])
 
 				for(new extension=0; extension<sizeof(extensions); extension++)
 				{
-					Format(file, PLATFORM_MAX_PATH, "%s%s", config, extensions[extension]);
-					AddFileToDownloadsTable(file);
+					Format(key, PLATFORM_MAX_PATH, "%s%s", config, extensions[extension]);
+					AddFileToDownloadsTable(key);
 				}
 			}
 		}
@@ -1409,16 +1410,16 @@ public LoadCharacter(const String:character[])
 		{	
 			for(new i=1; ; i++)
 			{
-				IntToString(i, file, 4);
-				KvGetString(BossKV[Specials], file, config, PLATFORM_MAX_PATH);
+				IntToString(i, key, sizeof(key));
+				KvGetString(BossKV[Specials], key, config, PLATFORM_MAX_PATH);
 				if(!config[0])
 				{
 					break;
 				}
-				Format(file, PLATFORM_MAX_PATH, "%s.vtf", config);
-				AddFileToDownloadsTable(file);
-				Format(file, PLATFORM_MAX_PATH, "%s.vmt", config);
-				AddFileToDownloadsTable(file);
+				Format(key, PLATFORM_MAX_PATH, "%s.vtf", config);
+				AddFileToDownloadsTable(key);
+				Format(key, PLATFORM_MAX_PATH, "%s.vmt", config);
+				AddFileToDownloadsTable(key);
 			}
 		}
 	}
@@ -1427,50 +1428,49 @@ public LoadCharacter(const String:character[])
 
 public PrecacheCharacter(characterIndex)
 {
-	decl String:s[PLATFORM_MAX_PATH];
-	decl String:s2[PLATFORM_MAX_PATH];
-	decl String:s3[64];
-	//BuildPath(Path_SM,s,PLATFORM_MAX_PATH,"configs/freak_fortress_2/characters.cfg");
+	decl String:file[PLATFORM_MAX_PATH];
+	decl String:key[PLATFORM_MAX_PATH];
+	decl String:section[64];
 
 	KvRewind(BossKV[characterIndex]);
 	KvGotoFirstSubKey(BossKV[characterIndex]);
 	
 	while(KvGotoNextKey(BossKV[characterIndex]))
 	{	
-		KvGetSectionName(BossKV[characterIndex], s3, 64);
-
-		if(!strcmp(s3,"mod_precache"))
+		KvGetSectionName(BossKV[characterIndex], section, sizeof(section));
+		if(!strcmp(section, "mod_precache") || !StrContains(section, "sound_") || !strcmp(section, "catch_phrase"))
 		{	
 			for(new i=1; ; i++)
 			{
-				IntToString(i,s2,4);
-				KvGetString(BossKV[characterIndex], s2, s, PLATFORM_MAX_PATH);
-				if(!s[0])
+				IntToString(i, key, sizeof(key));
+				KvGetString(BossKV[characterIndex], key, file, PLATFORM_MAX_PATH);
+				if(!file[0])
+				{
 					break;
-				PrecacheModel(s);
+				}
+
+				if(!strcmp(section, "mod_precache"))
+				{
+					PrecacheModel(file);
+				}
+				else
+				{
+					PrecacheSound(file);
+				}
 			}
 		}
-		else if(!strcmp(s3, "sound_bgm"))
+		else if(!strcmp(section, "sound_bgm"))
 		{
 			for(new i=1; ; i++)
 			{
-				Format(s2, sizeof(s2), "%s%d", "path", i);
+				Format(key, sizeof(key), "%s%d", "path", i);
 				
-				KvGetString(BossKV[characterIndex], s2, s, PLATFORM_MAX_PATH);
-				if(!s[0])
+				KvGetString(BossKV[characterIndex], key, file, PLATFORM_MAX_PATH);
+				if(!file[0])
+				{
 					break;
-				PrecacheSound(s);
-			}
-		}
-		else if(!StrContains(s3,"sound_") || !strcmp(s3,"catch_phrase"))
-		{	
-			for(new i=1; ; i++)
-			{
-				IntToString(i,s2,4);
-				KvGetString(BossKV[characterIndex], s2, s, PLATFORM_MAX_PATH);
-				if(!s[0])
-					break;
-				PrecacheSound(s);
+				}
+				PrecacheSound(file);
 			}
 		}
 	}
@@ -1553,6 +1553,10 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarSpecForceBoss)
 	{
 		SpecForceBoss=bool:StringToInt(newValue);
+	}
+	else if(convar==cvarBossTeleporter)
+	{
+		bossTeleportation=bool:StringToInt(newValue);
 	}
 	else if(convar==cvarUpdater)
 	{
