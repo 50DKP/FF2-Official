@@ -151,6 +151,10 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 	{
 		Rage_Bow(client);
 	}
+	else if(!strcmp(ability_name, "rage_cbs_jarate"))
+	{
+		Rage_Jarate(ability_name, client);
+	}
 	else if(!strcmp(ability_name, "rage_explosive_dance"))
 	{
 		SetEntityMoveType(GetClientOfUserId(FF2_GetBossUserId(client)), MOVETYPE_NONE);
@@ -476,6 +480,28 @@ Rage_Bow(client)
 	}
 
 	SetAmmo(boss, weapon, ((otherTeamAlivePlayers>=CBS_MAX_ARROWS) ? CBS_MAX_ARROWS:otherTeamAlivePlayers));
+}
+
+Rage_Jarate(const String:ability_name[], client)
+{
+	decl Float:bossPosition[3];
+	decl Float:clientPosition[3];
+	new Float:duration=FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 1, 5.0);
+	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
+	new Float:distance=FF2_GetRageDist(client, this_plugin_name, ability_name);
+	new Float:duration=FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 1, 5.0);
+	GetEntPropVector(boss, Prop_Send, "m_vecOrigin", bossPosition);
+	for(new target=1; target<=MaxClients; target++)
+	{
+		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+		{
+			GetEntPropVector(target, Prop_Send, "m_vecOrigin", clientPosition);
+			if(!TF2_IsPlayerInCondition(target, TFCond_Ubercharged) && (GetVectorDistance(bossPosition, clientPosition)<=distance))
+			{
+				TF2_AddCondition(client, TFCond_Jarated, duration);	
+			}
+		}
+	}
 }
 
 public Action:Timer_Prepare_Explosion_Rage(Handle:timer, Handle:data)
