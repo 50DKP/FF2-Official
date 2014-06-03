@@ -33,7 +33,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 13"
+#define PLUGIN_VERSION "1.10.0 Beta 14"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -703,7 +703,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	OnSpecialSelected=CreateGlobalForward("FF2_OnSpecialSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String);
 	OnAddQueuePoints=CreateGlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
 	OnLoadCharacterSet=CreateGlobalForward("FF2_OnLoadCharacterSet", ET_Hook, Param_CellByRef, Param_String);
-	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell);
+	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_Cell);
 
 	RegPluginLibrary("freak_fortress_2");
 
@@ -855,9 +855,9 @@ public OnPluginStart()
 	abilitiesHUD=CreateHudSynchronizer();
 	timeleftHUD=CreateHudSynchronizer(); 	
 
-	decl String:oldversion[64];
-	GetConVarString(cvarVersion, oldversion, sizeof(oldversion));
-	if(strcmp(oldversion, PLUGIN_VERSION, false)!=0)
+	decl String:oldVersion[64];
+	GetConVarString(cvarVersion, oldVersion, sizeof(oldVersion));
+	if(strcmp(oldVersion, PLUGIN_VERSION, false)!=0)
 	{
 		PrintToServer("[FF2] Warning: Your config may be outdated. Back up tf/cfg/sourcemod/FreakFortress2.cfg and delete it, and this plugin will generate a new one that you can then modify to your original values.");
 	}
@@ -3393,11 +3393,11 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		TF2_RespawnPlayer(client);
 	}
 
-	CreateTimer(0.1, checkItems, client);
+	CreateTimer(0.1, CheckItems, client);
 	return Plugin_Continue;
 }
 
-public Action:checkItems(Handle:timer, any:client)  //Weapon balance 2
+public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 {
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
@@ -4078,7 +4078,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 		}
 		else
 		{
-			CreateTimer(0.1, checkItems, client);
+			CreateTimer(0.1, CheckItems, client);
 		}
 	}
 
@@ -5269,25 +5269,24 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 				}
 			}
 
-			new Action:action=Plugin_Continue;
+			new Action:action=Plugin_Continue, lives=BossLives[boss];
 			Call_StartForward(OnLoseLife);
 			Call_PushCell(boss);
+			Call_PushCell(lives);
 			Call_Finish(action);
 			if(action!=Plugin_Stop && action!=Plugin_Handled)
 			{
+				if(action==Plugin_Changed)
+				{
+					BossLives[boss]=lives;
+				}
 				BossLives[boss]--;
+
 				decl String:bossName[64];
 				KvRewind(BossKV[Special[boss]]);
 				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
-				if(BossLives[boss]==1)
-				{
-					strcopy(ability, 256, "ff2_life_left");
-				}
-				else
-				{
-					strcopy(ability, 256, "ff2_lives_left");
-				}
 
+				strcopy(ability, sizeof(ability), BossLives[boss]==1 ? "ff2_life_left" : "ff2_lives_left");
 				for(new target=1; target<=MaxClients; target++)
 				{
 					if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
