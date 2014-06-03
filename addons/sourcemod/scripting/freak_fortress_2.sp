@@ -269,13 +269,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 2, 2014",		//1.10.0
-	"June 2, 2014",		//1.10.0
-	"June 2, 2014",		//1.10.0
-	"June 2, 2014",		//1.10.0
-	"June 2, 2014",		//1.10.0
-	"June 2, 2014",		//1.10.0
-	"June 2, 2014"		//1.10.0
+	"June 3, 2014",		//1.10.0
+	"June 3, 2014",		//1.10.0
+	"June 3, 2014",		//1.10.0
+	"June 3, 2014",		//1.10.0
+	"June 3, 2014",		//1.10.0
+	"June 3, 2014",		//1.10.0
+	"June 3, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -309,30 +309,32 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 38:  //1.10.0
 		{
 			DrawPanelText(panel, "13) Fixed bosses immediately dying after using the dead ringer (Wliu)");
-			DrawPanelText(panel, "14) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
-			DrawPanelText(panel, "15) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "16) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "14) Fixed a rare bug where you could get notified about being the next boss multiple times (Wliu)");
+			DrawPanelText(panel, "15) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "16) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 37:  //1.10.0
 		{
-			DrawPanelText(panel, "17) [Server] Moved convar ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "18) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
-			DrawPanelText(panel, "19) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
-			DrawPanelText(panel, "20) [Server] Added convar ff2_goomba_jump to control how high players should rebound after goomba stomping the boss (WildCard65)");
+			DrawPanelText(panel, "17) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "18) [Server] Moved convar ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "19) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "20) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "21) [Server] Fixed some convars not executing (Wliu)");
-			DrawPanelText(panel, "22) [Server] Changed how BossCrits works...again (Wliu)");
-			DrawPanelText(panel, "23) [Server] Fixed hale_point_enable/disable being registered twice (Wliu)");
-			DrawPanelText(panel, "24) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "21) [Server] Added convar ff2_goomba_jump to control how high players should rebound after goomba stomping the boss (WildCard65)");
+			DrawPanelText(panel, "22) [Server] Fixed some convars not executing (Wliu)");
+			DrawPanelText(panel, "23) [Server] Changed how BossCrits works...again (Wliu)");
+			DrawPanelText(panel, "24) [Server] Fixed hale_point_enable/disable being registered twice (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "25) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "26) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "27) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "28) [Dev] Fixed FF2FLAG_ISBUFFED (Wliu)");
 			DrawPanelText(panel, "Big thanks to GIANT_CRAB for finding a bunch of these bugs!");
 		}
 		case 34:  //1.9.3
@@ -761,7 +763,10 @@ public OnPluginStart()
 	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnDestroy, "destroy");  //Used to stop Eureka Effect from destroying buildings on teleport
 	AddCommandListener(OnJoinTeam, "jointeam");  //Used to make sure players join the right team
-	AddCommandListener(OnChangeClass, "changeclass");  //Used to make sure players don't change class-not working
+	AddCommandListener(OnChangeClass, "join_class");  //Used to make sure players don't change class-not working
+	AddCommandListener(OnChangeClass, "joinclass");
+	AddCommandListener(OnChangeClass, "change_class");
+	AddCommandListener(OnChangeClass, "changeclass");
 
 	HookConVarChange(cvarEnabled, CvarChange);
 	HookConVarChange(cvarPointDelay, CvarChange);
@@ -2867,19 +2872,20 @@ public Action:Timer_ReEquipBoss(Handle:timer, any:client)
 
 public Action:Timer_NextBossPanel(Handle:timer)
 {
-	new i, j;
+	new i, clients, oldClient[3];
 	do
 	{
 		new bool:temp[MaxClients+1];
 		new client=FindBosses(temp);
-		if(client && !IsBoss(client))
+		if(client && oldClient[i]!=client && !IsBoss(client))
 		{
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_near");
 			i++;
+			oldClient[i]=client;
 		}
-		j++;
+		clients++;
 	}
-	while(i<3 && j<=MaxClients);
+	while(i<3 && clients<=MaxClients);
 }
 
 public Action:MessageTimer(Handle:timer)
@@ -4343,13 +4349,13 @@ public Action:ClientTimer(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:BackUpBuffTimer(Handle:timer, any:clientid)
+/*public Action:BackUpBuffTimer(Handle:timer, any:clientid)
 {
 	new client=GetClientOfUserId(clientid);
 	TF2_RemoveCondition(client, TFCond_Buffed);
 	FF2flags[client]&=~FF2FLAG_ISBUFFED;
 	return Plugin_Continue;
-}
+}*/
 
 stock FindSentry(client)
 {
@@ -4616,6 +4622,14 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 	{
 		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
 	}
+	else if(TF2_GetPlayerClass(client)==TFClass_Soldier && condition==TFCond_Buffed)
+	{
+		new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+		if(IsValidEdict(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226)
+		{
+			FF2flags[client]&=~FF2FLAG_ISBUFFED;
+		}
+	}
 }
 
 public Action:OnTaunt(client, const String:command[], args)
@@ -4749,7 +4763,7 @@ public Action:OnDestroy(client, const String:command[], args)
 
 public Action:OnChangeClass(client, const String:command[], args)
 {
-	Debug("Entered OnChangeClass");
+	Debug("Entered OnChangeClass, command was %s", command);
 	if(Enabled && IsBoss(client) && IsPlayerAlive(client))
 	{
 		Debug("OnChangeClass: Client was a boss");
@@ -4762,14 +4776,12 @@ public Action:OnChangeClass(client, const String:command[], args)
 public Action:OnJoinTeam(client, const String:command[], args)
 {
 	Debug("Entered OnJoinTeam");
-	if(!Enabled || !args || (!RoundCount && GetConVarBool(cvarFirstRound)))
+	if(!Enabled || !args || (!RoundCount && !GetConVarBool(cvarFirstRound)))
 	{
-		Debug("OnJoinTeam: No args");
 		return Plugin_Continue;
 	}
 
-	Debug("OnJoinTeam: Old team was %i", GetClientTeam(client));
-	new team=_:TFTeam_Unassigned, String:teamString[10];
+	new team=_:TFTeam_Unassigned, oldTeam=_:TFTeam_Unassigned, String:teamString[10];
 	GetCmdArg(1, teamString, sizeof(teamString));
 
 	if(StrEqual(teamString, "red", false))
@@ -4784,17 +4796,14 @@ public Action:OnJoinTeam(client, const String:command[], args)
 	{
 		team=OtherTeam;
 	}
-	else if(StrEqual(teamString, "spectator", false))
+	else if(StrEqual(teamString, "spectate", false))
 	{
-		Debug("OnJoinTeam: Selected team was spectator");
 		if(GetConVarBool(FindConVar("mp_allowspectators")))
 		{
-			Debug("OnJoinTeam: Allowing switch to spectator");
 			team=_:TFTeam_Spectator;
 		}
 		else
 		{
-			Debug("OnJoinTeam: Not allowing switch to spectator");
 			team=OtherTeam;
 		}
 	}
@@ -4808,12 +4817,12 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		team=BossTeam;
 	}
 
-	if(team>_:TFTeam_Unassigned)
+	if(team>_:TFTeam_Unassigned && team!=oldTeam)
 	{
 		ChangeClientTeam(client, team);
 	}
 
-	if(CheckRoundState()!=1 && !IsBoss(client))  //No point in showing the VGUI if they can't change teams
+	if(CheckRoundState()!=1 && !IsBoss(client) || !IsPlayerAlive(client))  //No point in showing the VGUI if they can't change teams
 	{
 		switch(team)
 		{
@@ -5433,7 +5442,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 				case TFClass_Soldier:
 				{
-					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, 1))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
+					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
 					{
 						SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 						FF2flags[client]|=FF2FLAG_ISBUFFED;
@@ -5441,12 +5450,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 			}
 
-			new buffweapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+			/*new buffweapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 			new buffindex=(IsValidEntity(buffweapon) && buffweapon>MaxClients ? GetEntProp(buffweapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 			if(buffindex==226)  //Battalion's Backup
 			{
 				CreateTimer(0.25, Timer_CheckBuffRage, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			}
+			}*/
 
 			if(damage<=160.0)  //TODO: Wat
 			{
