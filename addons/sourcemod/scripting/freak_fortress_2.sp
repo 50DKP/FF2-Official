@@ -738,7 +738,7 @@ public OnPluginStart()
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How high players should rebound after goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "1", "Can the boss use enemy teleporters?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "1", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
@@ -5912,9 +5912,19 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 public Action:TF2_OnPlayerTeleport(client, teleporter, &bool:result)
 {
-	if(Enabled && IsBoss(client) && bossTeleportation)
+	if(Enabled && IsBoss(client))
 	{
-		result=true;
+		switch(bossTeleportation)
+		{
+			case -1:  //No bosses are allowed to use teleporters
+			{
+				result=false;
+			}
+			case 1:  //All bosses are allowed to use teleporters
+			{
+				result=true;
+			}
+		}
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
