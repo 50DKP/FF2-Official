@@ -1,6 +1,7 @@
 language: c
 
 env:
+    - SMVERSION=1.5
     - SMVERSION=1.6
 before_install:
     - sudo apt-get update
@@ -22,6 +23,7 @@ before_script:
     - wget "https://www.doctormckay.com/download/scripting/include/morecolors.inc"
     - mv morecolors.inc include/morecolors.inc
     - chmod +x spcomp
+    - mkdir compiled
     - mkdir compiled/freaks
 script:
     - ./compile.sh freak_fortress_2.sp freaks/*.sp
