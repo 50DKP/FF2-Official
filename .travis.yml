@@ -1,16 +1,35 @@
+language: c
+
+env:
+    - SMVERSION=1.5
+    - SMVERSION=1.6
+before_install:
+    - sudo apt-get update
+    - sudo apt-get install gcc-multilib
+    - sudo apt-get install lynx
 install:
-    - wget http://www.gsptalk.com/mirror/sourcemod/sourcemod-1.5.3-linux.tar.gz
-    - tar -zxvf sourcemod-1.5.3-linux.tar.gz
+    - SMPATTERN="http:.*sourcemod-.*-git.*-linux.*"
+    - SMURL="http://www.sourcemod.net/smdrop/$SMVERSION/"
+    - SMPACKAGE=`lynx -dump "$SMURL" | egrep -o "$SMPATTERN" | tail -1`
+    - wget $SMPACKAGE
+    - tar -xzf $(basename "$SMPACKAGE")
+    - TF2ITEMSURL="http://builds.limetech.org/files/"
+    - TF2ITEMSPATTERN="http:.*tf2items-.*-.*-linux.zip"
+    - TF2ITEMSPACKAGE=`lynx -dump "$TF2ITEMSURL" | egrep -o "$TF2ITEMSPATTERN" | tail -1`
+    - wget $TF2ITEMSPACKAGE
+    - echo `dir "addons/sourcemod/"`
+    - unzip -ou $(basename "$TF2ITEMSPACKAGE")
+    - echo `dir "addons/sourcemod/"`
 before_script:
-    - cd addons/sourcemod/scripting
-    - mkdir ../test
-    - mv spcomp ../test/spcomp
-    - mv compile.sh ../test/compile.sh
-    - mv freak_fortress_2.sp ../test/freak_fortress_2.sp
-script:
-    - ../test/compile.sh freak_fortress_2.sp
-#    - ./compile.sh freaks/default_abilities.sp
-#    - ./compile.sh freaks/easter_abilities.sp
-#    - ./compile.sh freaks/ff2_1st_set_abilities.sp
-#    - ./compile.sh freaks/rage_overlay.sp
-#    - ./compile.sh freaks/special_noanims.sp
+    - cd addons/sourcemod/scripting/
+    - cd ./include
+    - wget "https://www.doctormckay.com/download/scripting/include/morecolors.inc"
+    - cd ../
+    - chmod +x spcomp
+    - chmod +x compile.sh
+    - mkdir compiled
+    - cd ./compiled
+    - mkdir freaks
+    - cd ../
+script: 
+    - ./compile.sh freak_fortress_2.sp freaks/*.sp
