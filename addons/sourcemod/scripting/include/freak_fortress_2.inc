@@ -411,9 +411,10 @@ forward Action:FF2_OnLoadCharacterSet(charSetNum, String:charSetName[]);
  * Begins when a Boss loses a life
  *
  * @param client	Boss's index
- * @return			Plugin_Stop or Plugin_Handled to prevent this
+ * @param lives		Number of lives left
+ * @return			Plugin_Stop or Plugin_Handled to prevent this, Plugin_Changed if you want to change the number of lives.
 */
-forward Action:FF2_OnLoseLife(client);
+forward Action:FF2_OnLoseLife(client, lives);
 
 /**
  * Used to consolidate debug messages
@@ -558,23 +559,30 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetBossIndex");
 	MarkNativeAsOptional("FF2_GetBossTeam");
 	MarkNativeAsOptional("FF2_GetBossSpecial");
+	MarkNativeAsOptional("FF2_GetBossHealth");
+	MarkNativeAsOptional("FF2_SetBossHealth");
 	MarkNativeAsOptional("FF2_GetBossMaxHealth");
+	MarkNativeAsOptional("FF2_SetBossMaxHealth");
+	MarkNativeAsOptional("FF2_GetBossLives");
+	MarkNativeAsOptional("FF2_SetBossLives");
+	MarkNativeAsOptional("FF2_GetBossMaxLives");
+	MarkNativeAsOptional("FF2_SetBossMaxLives");
 	MarkNativeAsOptional("FF2_GetBossCharge");
 	MarkNativeAsOptional("FF2_SetBossCharge");
 	MarkNativeAsOptional("FF2_GetClientDamage");
-	MarkNativeAsOptional("FF2_GetRoundState");	
+	MarkNativeAsOptional("FF2_GetRoundState");
 	MarkNativeAsOptional("FF2_GetRageDist");
-	MarkNativeAsOptional("FF2_HasAbility");	
-	MarkNativeAsOptional("FF2_GetAbilityArgument");		
-	MarkNativeAsOptional("FF2_GetAbilityArgumentFloat");		
-	MarkNativeAsOptional("FF2_GetAbilityArgumentString");		
-	MarkNativeAsOptional("FF2_RandomSound");	
-	MarkNativeAsOptional("FF2_StopMusic");	
-	MarkNativeAsOptional("FF2_GetSpecialKV");		
-	MarkNativeAsOptional("FF2_GetQueuePoints");		
-	MarkNativeAsOptional("FF2_SetQueuePoints");		
-	MarkNativeAsOptional("FF2_GetFF2flags");		
-	MarkNativeAsOptional("FF2_SetFF2flags");		
+	MarkNativeAsOptional("FF2_HasAbility");
+	MarkNativeAsOptional("FF2_GetAbilityArgument");
+	MarkNativeAsOptional("FF2_GetAbilityArgumentFloat");
+	MarkNativeAsOptional("FF2_GetAbilityArgumentString");
+	MarkNativeAsOptional("FF2_RandomSound");
+	MarkNativeAsOptional("FF2_StopMusic");
+	MarkNativeAsOptional("FF2_GetSpecialKV");
+	MarkNativeAsOptional("FF2_GetQueuePoints");
+	MarkNativeAsOptional("FF2_SetQueuePoints");
+	MarkNativeAsOptional("FF2_GetFF2flags");
+	MarkNativeAsOptional("FF2_SetFF2flags");
 	MarkNativeAsOptional("FF2_DoAbility");
 }
 #endif
