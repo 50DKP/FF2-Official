@@ -1,3 +1,4 @@
+language: c
 env:
     - SMVERSION=1.6
 before_install:
