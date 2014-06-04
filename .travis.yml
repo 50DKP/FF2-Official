@@ -1,7 +1,6 @@
 language: c
 
 env:
-    - SMVERSION=1.5
     - SMVERSION=1.6
 before_install:
     - sudo apt-get update
@@ -17,19 +16,12 @@ install:
     - TF2ITEMSPATTERN="http:.*tf2items-.*-.*-linux.zip"
     - TF2ITEMSPACKAGE=`lynx -dump "$TF2ITEMSURL" | egrep -o "$TF2ITEMSPATTERN" | tail -1`
     - wget $TF2ITEMSPACKAGE
-    - echo `dir "addons/sourcemod/"`
     - unzip -ou $(basename "$TF2ITEMSPACKAGE")
-    - echo `dir "addons/sourcemod/"`
 before_script:
     - cd addons/sourcemod/scripting/
-    - cd ./include
     - wget "https://www.doctormckay.com/download/scripting/include/morecolors.inc"
-    - cd ../
+    - mv morecolors.inc include/morecolors.inc
     - chmod +x spcomp
-    - chmod +x compile.sh
-    - mkdir compiled
-    - cd ./compiled
-    - mkdir freaks
-    - cd ../
-script: 
+    - mkdir compiled/freaks
+script:
     - ./compile.sh freak_fortress_2.sp freaks/*.sp
