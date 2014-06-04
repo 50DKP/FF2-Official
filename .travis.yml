@@ -1,0 +1,13 @@
+install:
+    - wget http://www.gsptalk.com/mirror/sourcemod/sourcemod-1.5.3-linux.tar.gz
+    - tar -zxvf sourcemod-1.5.3-linux.tar.gz
+before_script:
+    - cd addons/sourcemod/scripting
+    - ll
+script:
+    - ./compile.sh freak_fortress_2.sp
+    - ./compile.sh freaks/default_abilities.sp
+    - ./compile.sh freaks/easter_abilities.sp
+    - ./compile.sh freaks/ff2_1st_set_abilities.sp
+    - ./compile.sh freaks/rage_overlay.sp
+    - ./compile.sh freaks/special_noanims.sp
