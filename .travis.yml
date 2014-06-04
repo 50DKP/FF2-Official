@@ -3,7 +3,7 @@ install:
     - tar -zxvf sourcemod-1.5.3-linux.tar.gz
 before_script:
     - cd addons/sourcemod/scripting
-    - ll
+    - ls -l
 script:
     - ./compile.sh freak_fortress_2.sp
     - ./compile.sh freaks/default_abilities.sp
