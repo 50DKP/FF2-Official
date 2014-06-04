@@ -3,9 +3,8 @@ language: c
 env:
     - SMVERSION=1.6
 before_install:
-    - sudo apt-get update
-    - sudo apt-get install gcc-multilib
-    - sudo apt-get install lynx
+    - sudo apt-get -qq update && sudo apt-get -qq upgrade
+    - sudo apt-get install gcc-multilib && sudo apt-get install lynx
 install:
     - SMPATTERN="http:.*sourcemod-.*-git.*-linux.*"
     - SMURL="http://www.sourcemod.net/smdrop/$SMVERSION/"
@@ -22,6 +21,7 @@ before_script:
     - wget "https://www.doctormckay.com/download/scripting/include/morecolors.inc"
     - mv morecolors.inc include/morecolors.inc
     - chmod +x spcomp
+    - mkdir compiled
     - mkdir compiled/freaks
 script:
     - ./compile.sh freak_fortress_2.sp freaks/*.sp
