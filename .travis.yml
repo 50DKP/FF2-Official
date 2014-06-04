@@ -3,12 +3,14 @@ install:
     - tar -zxvf sourcemod-1.5.3-linux.tar.gz
 before_script:
     - cd addons/sourcemod/scripting
-    - [ ! -f ./spcomp ] && echo "File not found! (1)"
-    - [ ! -f spcomp ] && echo "File not found!" (2)"
+    - mkdir ../test
+    - mv spcomp ../test/spcomp
+    - mv compile.sh ../test/compile.sh
+    - mv freak_fortress_2.sp ../test/freak_fortress_2.sp
 script:
-    - ./compile.sh freak_fortress_2.sp
-    - ./compile.sh freaks/default_abilities.sp
-    - ./compile.sh freaks/easter_abilities.sp
-    - ./compile.sh freaks/ff2_1st_set_abilities.sp
-    - ./compile.sh freaks/rage_overlay.sp
-    - ./compile.sh freaks/special_noanims.sp
+    - ../test/compile.sh freak_fortress_2.sp
+#    - ./compile.sh freaks/default_abilities.sp
+#    - ./compile.sh freaks/easter_abilities.sp
+#    - ./compile.sh freaks/ff2_1st_set_abilities.sp
+#    - ./compile.sh freaks/rage_overlay.sp
+#    - ./compile.sh freaks/special_noanims.sp
