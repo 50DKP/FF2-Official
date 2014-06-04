@@ -31,7 +31,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
-//#tryinclude <smac>
+#tryinclude <smac>
 #tryinclude <updater>
 #tryinclude <goomba>
 #tryinclude <rtd>
@@ -73,8 +73,6 @@ new bool:rtd=false;
 #if defined _goomba_included
 new bool:goomba=false;
 #endif
-
-new bool:smac=false;
 
 /*new bool:b_allowBossChgClass=false;
 new bool:b_BossChgClassDetected=false;*/
