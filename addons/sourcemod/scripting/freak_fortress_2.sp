@@ -55,18 +55,12 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 new bool:steamtools=false;
 #endif
 
-#if defined _rtd_included
-new bool:rtd=false;
-#endif
-
 #if defined _goomba_included
 new bool:goomba=false;
 #endif
 
 new bool:smac=false;
 
-/*new bool:b_allowBossChgClass=false;
-new bool:b_BossChgClassDetected=false;*/
 new OtherTeam=2;
 new BossTeam=3;
 new playing;
@@ -121,9 +115,6 @@ new Handle:cvarLastPlayerGlow;
 new Handle:cvarGoombaDamage;
 new Handle:cvarGoombaRebound;
 new Handle:cvarBossRTD;
-new Handle:cvarRTDMode;
-new Handle:cvarRTDTimeLimit;
-new Handle:cvarDisabledRTDPerks;
 new Handle:cvarBossTeleporter;
 new Handle:cvarUpdater;
 new Handle:cvarDebug;
@@ -269,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 3, 2014",		//1.10.0
-	"June 3, 2014",		//1.10.0
-	"June 3, 2014",		//1.10.0
-	"June 3, 2014",		//1.10.0
-	"June 3, 2014",		//1.10.0
-	"June 3, 2014",		//1.10.0
-	"June 3, 2014"		//1.10.0
+	"June 4, 2014",		//1.10.0
+	"June 4, 2014",		//1.10.0
+	"June 4, 2014",		//1.10.0
+	"June 4, 2014",		//1.10.0
+	"June 4, 2014",		//1.10.0
+	"June 4, 2014",		//1.10.0
+	"June 4, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -746,13 +737,14 @@ public OnPluginStart()
 
 	HookEvent("teamplay_round_start", event_round_start);
 	HookEvent("teamplay_round_win", event_round_end);
-	//HookEvent("player_changeclass", OnChangeClass);
 	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	HookEvent("player_chargedeployed", event_uber_deployed);
 	HookEvent("player_hurt", event_hurt, EventHookMode_Pre);
 	HookEvent("object_destroyed", event_destroy, EventHookMode_Pre);
 	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
+	HookEvent("deploy_buff_banner", OnDeployBackup);
+
 	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
 
 	AddCommandListener(OnTaunt, "taunt");  //Used to activate rages
@@ -763,10 +755,7 @@ public OnPluginStart()
 	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnDestroy, "destroy");  //Used to stop Eureka Effect from destroying buildings on teleport
 	AddCommandListener(OnJoinTeam, "jointeam");  //Used to make sure players join the right team
-	AddCommandListener(OnChangeClass, "join_class");  //Used to make sure players don't change class-not working
-	AddCommandListener(OnChangeClass, "joinclass");
-	AddCommandListener(OnChangeClass, "change_class");
-	AddCommandListener(OnChangeClass, "changeclass");
+	AddCommandListener(OnChangeClass, "joinclass");  //Used to make sure bosses don't change class
 
 	HookConVarChange(cvarEnabled, CvarChange);
 	HookConVarChange(cvarPointDelay, CvarChange);
@@ -909,13 +898,6 @@ public OnLibraryAdded(const String:name[])
 	}
 	#endif
 
-	#if defined _rtd_included
-	if(strcmp(name, "TF2: Roll the Dice", false)==0)
-	{
-		rtd=true;
-	}
-	#endif
-
 	#if defined _goomba_included
 	if(strcmp(name, "goomba", false)==0)
 	{
@@ -942,13 +924,6 @@ public OnLibraryRemoved(const String:name[])
 	if(strcmp(name, "SteamTools", false)==0)
 	{
 		steamtools=false;
-	}
-	#endif
-
-	#if defined _rtd_included
-	if(strcmp(name, "TF2: Roll the Dice", false)==0)
-	{
-		rtd=false;
 	}
 	#endif
 
@@ -1107,13 +1082,6 @@ public EnableFF2()
 
 	bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || bool:GetConVarInt(FindConVar("tf_medieval"));
 	FindHealthBar();
-
-	#if defined _rtd_included
-	if(rtd)
-	{
-		SetupRTD();
-	}
-	#endif
 
 	#if defined _steamtools_included
 	if(steamtools)
@@ -1542,18 +1510,6 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarBossRTD)
 	{
 		canBossRTD=bool:StringToInt(newValue);
-	}
-	else if(convar==cvarDisabledRTDPerks && !StrEqual(newValue, DISABLED_PERKS) && Enabled)
-	{
-		SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
-	}
-	else if(convar==cvarRTDTimeLimit && StringToInt(newValue)!=30 && Enabled)
-	{
-		SetConVarInt(cvarRTDTimeLimit, 30);
-	}
-	else if(convar==cvarRTDMode && StringToInt(newValue)!=0 && Enabled)
-	{
-		SetConVarInt(cvarRTDMode, 0);
 	}
 	else if(convar==cvarSpecForceBoss)
 	{
@@ -2840,7 +2796,7 @@ public Action:Timer_Move(Handle:timer)
 
 public Action:StartRound(Handle:timer)
 {
-	for(new client=0; client<=MaxClients; client++)
+	for(new client=0; client<=MaxClients; client++)  //TODO: It should now be possible to get rid of this
 	{
 		if(!IsValidClient(Boss[client]))
 		{
@@ -4050,12 +4006,6 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
 
-	/*if(b_BossChgClassDetected)
-	{
-		TF2_RemoveAllWeapons2(client);
-		b_BossChgClassDetected=false;
-	}*/
-
 	if(GetBossIndex(client)>=0 && CheckRoundState()==0)
 	{
 		TF2_RemoveAllWeapons2(client);
@@ -4622,14 +4572,6 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 	{
 		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
 	}
-	else if(TF2_GetPlayerClass(client)==TFClass_Soldier && condition==TFCond_Buffed)
-	{
-		new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-		if(IsValidEdict(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226)
-		{
-			FF2flags[client]&=~FF2FLAG_ISBUFFED;
-		}
-	}
 }
 
 public Action:OnTaunt(client, const String:command[], args)
@@ -4748,34 +4690,17 @@ public Action:OnDestroy(client, const String:command[], args)
 	return Plugin_Continue;
 }
 
-/*public Action:OnChangeClass(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	new client=GetClientOfUserId(GetEventInt(event, "userid")), TFClassType:oldclass=TF2_GetPlayerClass(client), team=GetClientTeam(client);
-	if(Enabled && team==BossTeam && !b_allowBossChgClass && IsPlayerAlive(client) && GetBossIndex(client)!=-1)
-	{
-		CPrintToChat(client, "{olive}[FF2]{default} Do NOT change class when you're a BOSS!");
-		b_BossChgClassDetected=true;
-		TF2_SetPlayerClass(client, oldclass);
-		CreateTimer(0.2, MakeModelTimer, client);
-	}
-	return Plugin_Continue;
-}*/
-
 public Action:OnChangeClass(client, const String:command[], args)
 {
-	Debug("Entered OnChangeClass, command was %s", command);
 	if(Enabled && IsBoss(client) && IsPlayerAlive(client))
 	{
-		Debug("OnChangeClass: Client was a boss");
 		return Plugin_Handled;
 	}
-	Debug("OnChangeClass: Client was not a boss");
 	return Plugin_Continue;
 }
 
 public Action:OnJoinTeam(client, const String:command[], args)
 {
-	Debug("Entered OnJoinTeam");
 	if(!Enabled || !args || (!RoundCount && !GetConVarBool(cvarFirstRound)))
 	{
 		return Plugin_Continue;
@@ -5032,6 +4957,17 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 	return Plugin_Continue;
 }
 
+public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(Enabled)
+	{
+		new client=GetEventInt(event, "buff_owner");
+		Debug("OnDeployBackup: Buff type was %i", GetEventInt(event, "buff_type"));
+		Debug("OnDeployBackup: Buff time remaining is %f", GetEntProp(client, Prop_Send, "m_flRageTime"));
+	}
+	return Plugin_Continue;
+}
+
 public Action:CheckAlivePlayers(Handle:timer)
 {
 	if(CheckRoundState()==2)
@@ -5269,16 +5205,16 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 				}
 			}
 
-			new Action:action=Plugin_Continue, lives=BossLives[boss];
+			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
 			Call_StartForward(OnLoseLife);
 			Call_PushCell(boss);
-			Call_PushCell(lives);
+			Call_PushCell(bossLives);
 			Call_Finish(action);
 			if(action!=Plugin_Stop && action!=Plugin_Handled)
 			{
 				if(action==Plugin_Changed)
 				{
-					BossLives[boss]=lives;
+					BossLives[boss]=bossLives;
 				}
 				BossLives[boss]--;
 
@@ -5958,30 +5894,6 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 	return Plugin_Continue;
 }
 
-SetupRTD()
-{
-	cvarDisabledRTDPerks=FindConVar("sm_rtd_disabled");
-	cvarRTDMode=FindConVar("sm_rtd_mode");
-	cvarRTDTimeLimit=FindConVar("sm_rtd_timelimit");
-	if(cvarDisabledRTDPerks!=INVALID_HANDLE)
-	{
-		SetConVarString(cvarDisabledRTDPerks, DISABLED_PERKS);
-		HookConVarChange(cvarDisabledRTDPerks, CvarChange);
-	}
-
-	if(cvarRTDMode!=INVALID_HANDLE)
-	{
-		SetConVarInt(cvarRTDMode, 0);
-		HookConVarChange(cvarRTDMode, CvarChange);
-	}
-
-	if(cvarRTDTimeLimit!=INVALID_HANDLE)
-	{
-		SetConVarInt(cvarRTDTimeLimit, 30);
-		HookConVarChange(cvarRTDTimeLimit, CvarChange);
-	}
-}
-
 public Action:RTD_CanRollDice(client)
 {
 	if(Enabled && IsBoss(client) && !canBossRTD)
@@ -5991,14 +5903,14 @@ public Action:RTD_CanRollDice(client)
 	return Plugin_Continue;
 }
 
-public Action:Timer_CheckBuffRage(Handle:timer, any:userid)
+/*public Action:Timer_CheckBuffRage(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
 	if(IsValidClient(client) && IsPlayerAlive(client))
 	{
 		SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 	}
-}
+}*/
 
 stock GetClientCloakIndex(client)
 {
