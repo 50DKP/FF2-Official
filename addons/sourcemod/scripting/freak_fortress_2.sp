@@ -282,7 +282,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 41:
+		case 41:  //1.10.0
 		{
 			DrawPanelText(panel, "1) Balanced Goomba Stomp and RTD (WildCard65)");
 			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
