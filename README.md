@@ -1,8 +1,7 @@
 ##Welcome to the official FF2 repository!
 **LATEST VERSION**: [1.10.0](https://forums.alliedmods.net/showpost.php?p=2054933&postcount=1)
 
-[![Build Status](http://198.27.69.149/jenkins/buildStatus/icon?job=FF2-Official)](http://198.27.69.149/jenkins/job/FF2-Official/) - Currently Disabled
-
+![Travis Status](https://travis-ci.org/50DKP/FF2-Official.svg?branch=development)
 ###Include File Changes
 ***
 Some third-party include files were modified in order to make FF2 work properly with or without the plugin that the include file belonged to.
