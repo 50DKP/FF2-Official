@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 4, 2014",		//1.10.0
-	"June 4, 2014",		//1.10.0
-	"June 4, 2014",		//1.10.0
-	"June 4, 2014",		//1.10.0
-	"June 4, 2014",		//1.10.0
-	"June 4, 2014",		//1.10.0
-	"June 4, 2014"		//1.10.0
+	"June 5, 2014",		//1.10.0
+	"June 5, 2014",		//1.10.0
+	"June 5, 2014",		//1.10.0
+	"June 5, 2014",		//1.10.0
+	"June 5, 2014",		//1.10.0
+	"June 5, 2014",		//1.10.0
+	"June 5, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -1411,8 +1411,22 @@ public PrecacheCharacter(characterIndex)
 	while(KvGotoNextKey(BossKV[characterIndex]))
 	{	
 		KvGetSectionName(BossKV[characterIndex], section, sizeof(section));
-		if(!strcmp(section, "mod_precache") || !StrContains(section, "sound_") || !strcmp(section, "catch_phrase"))
-		{	
+		if(!strcmp(section, "sound_bgm"))
+		{
+			for(new i=1; ; i++)
+			{
+				Format(key, sizeof(key), "%s%d", "path", i);
+				
+				KvGetString(BossKV[characterIndex], key, file, PLATFORM_MAX_PATH);
+				if(!file[0])
+				{
+					break;
+				}
+				PrecacheSound(file);
+			}
+		}
+		else if(!strcmp(section, "mod_precache") || !StrContains(section, "sound_") || !strcmp(section, "catch_phrase"))
+		{
 			for(new i=1; ; i++)
 			{
 				IntToString(i, key, sizeof(key));
@@ -1430,20 +1444,6 @@ public PrecacheCharacter(characterIndex)
 				{
 					PrecacheSound(file);
 				}
-			}
-		}
-		else if(!strcmp(section, "sound_bgm"))
-		{
-			for(new i=1; ; i++)
-			{
-				Format(key, sizeof(key), "%s%d", "path", i);
-				
-				KvGetString(BossKV[characterIndex], key, file, PLATFORM_MAX_PATH);
-				if(!file[0])
-				{
-					break;
-				}
-				PrecacheSound(file);
 			}
 		}
 	}
@@ -4299,13 +4299,15 @@ public Action:ClientTimer(Handle:timer)
 	return Plugin_Continue;
 }
 
-/*public Action:BackUpBuffTimer(Handle:timer, any:clientid)
+public Action:Timer_EndBackupBuff(Handle:timer, any:userid)
 {
-	new client=GetClientOfUserId(clientid);
-	TF2_RemoveCondition(client, TFCond_Buffed);
-	FF2flags[client]&=~FF2FLAG_ISBUFFED;
+	new client=GetClientOfUserId(userid);
+	if(IsValidClient(client))
+	{
+		FF2flags[client]&=~FF2FLAG_ISBUFFED;
+	}
 	return Plugin_Continue;
-}*/
+}
 
 stock FindSentry(client)
 {
@@ -4959,11 +4961,12 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 
 public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(Enabled)
+	Debug("Entered OnDeployBackup");
+	if(Enabled && GetEventInt(event, "buff_type")==2)
 	{
-		new client=GetEventInt(event, "buff_owner");
-		Debug("OnDeployBackup: Buff type was %i", GetEventInt(event, "buff_type"));
-		Debug("OnDeployBackup: Buff time remaining is %f or %f", GetEntPropFloat(client, Prop_Send, "m_flRageTime"), GetEntPropFloat(client, Prop_Send, "m_flGetRageTime"));
+		//new client=GetEventInt(event, "buff_owner");
+		//Debug("OnDeployBackup: Buff time remaining is %f", GetEntPropFloat(client, Prop_Send, "m_flRageTime"));
+		//CreateTimer(todo, Timer_EndBackupBuff, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 	return Plugin_Continue;
 }
