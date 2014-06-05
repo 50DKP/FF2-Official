@@ -4964,8 +4964,8 @@ public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadca
 	Debug("Entered OnDeployBackup");
 	if(Enabled && GetEventInt(event, "buff_type")==2)
 	{
-		//new client=GetEventInt(event, "buff_owner");
-		//Debug("OnDeployBackup: Buff time remaining is %f", GetEntPropFloat(client, Prop_Send, "m_flRageTime"));
+		new client=GetEventInt(event, "buff_owner");
+		Debug("OnDeployBackup: Buff time remaining is %f", GetEntPropFloat(client, Prop_Send, "m_flRageMeter"));
 		//CreateTimer(todo, Timer_EndBackupBuff, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 	return Plugin_Continue;
