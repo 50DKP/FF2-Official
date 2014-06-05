@@ -4963,7 +4963,7 @@ public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadca
 	{
 		new client=GetEventInt(event, "buff_owner");
 		Debug("OnDeployBackup: Buff type was %i", GetEventInt(event, "buff_type"));
-		Debug("OnDeployBackup: Buff time remaining is %f", GetEntProp(client, Prop_Send, "m_flRageTime"));
+		Debug("OnDeployBackup: Buff time remaining is %f or %f", GetEntPropFloat(client, Prop_Send, "m_flRageTime"), GetEntPropFloat(client, Prop_Send, "m_flGetRageTime"));
 	}
 	return Plugin_Continue;
 }
