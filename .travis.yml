@@ -18,21 +18,13 @@ before_script:
     - wget "https://www.doctormckay.com/download/scripting/include/morecolors.inc"
     - mv morecolors.inc include/
     - chmod +x spcomp
-    - mkdir compiled
-    - mkdir compiled/freaks
+    - mkdir compiled compiled/freaks
 script: ./compile.sh freak_fortress_2.sp freaks/*.sp
 after_script:
     - cd compiled/freaks
     - rename 's/.smx/.ff2/' *.smx
     - cd ../../../
-    - mkdir freak_fortress_2
-    - mkdir freak_fortress_2/addons
-    - mkdir freak_fortress_2/addons/sourcemod
-    - mkdir freak_fortress_2/addons/sourcemod/configs
-    - mkdir freak_fortress_2/addons/sourcemod/gamedata
-    - mkdir freak_fortress_2/addons/sourcemod/scripting
-    - mkdir freak_fortress_2/addons/sourcemod/scripting/include
-    - mkdir freak_fortress_2/addons/sourcemod/translations
+    - mkdir freak_fortress_2 freak_fortress_2/addons freak_fortress_2/addons/sourcemod freak_fortress_2/addons/sourcemod/configs freak_fortress_2/addons/sourcemod/gamedata freak_fortress_2/addons/sourcemod/scripting freak_fortress_2/addons/sourcemod/scripting/freaks freak_fortress_2/addons/sourcemod/scripting/include freak_fortress_2/addons/sourcemod/translations
     - mv configs/freak_fortress_2 freak_fortress_2/addons/sourcemod/configs/freak_fortress_2
     - mv gamedata/saxtonhale.txt freak_fortress_2/addons/sourcemod/gamedata/
     - mv scripting/freak_fortress_2.sp freak_fortress_2/addons/sourcemod/scripting/
