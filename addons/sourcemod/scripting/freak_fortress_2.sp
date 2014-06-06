@@ -2178,10 +2178,10 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		return Plugin_Continue;
 	}
 
-	decl String:sound[512];
+	decl String:sound[PLATFORM_MAX_PATH];
+	new bool:bossWin=false;
 	executed=false;
 	executed2=false;
-	new bool:bossWin=false;
 	if((GetEventInt(event, "team")==BossTeam))
 	{
 		if(RandomSound("sound_win", sound, PLATFORM_MAX_PATH))
@@ -2199,8 +2199,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		MusicTimer=INVALID_HANDLE;
 	}
 
-	new bool:isBossAlive;
-	new boss;
+	new bool:isBossAlive, boss;
 	for(new client=0; client<=MaxClients; client++)
 	{
 		if(IsValidClient(Boss[client]))
@@ -2236,8 +2235,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	strcopy(sound, 2, "");
 	if(isBossAlive)
 	{
-		decl String:bossName[64];
-		decl String:lives[4];
+		decl String:bossName[64], String:lives[4];
 		for(new client=0; Boss[client]; client++)
 		{
 			KvRewind(BossKV[Special[client]]);
@@ -2250,7 +2248,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			{
 				strcopy(lives, 2, "");
 			}
-			Format(sound, 512, "%s\n%t", sound, "ff2_alive", bossName, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client], lives);
+			Format(sound, PLATFORM_MAX_PATH, "%s\n%t", sound, "ff2_alive", bossName, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client], lives);
 		}
 
 		if(RandomSound("sound_fail", sound, PLATFORM_MAX_PATH, boss))
