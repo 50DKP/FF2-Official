@@ -29,13 +29,13 @@ after_script:
     - mkdir freak_fortress_2/addons
     - mkdir freak_fortress_2/addons/sourcemod
     - mv scripting/freak_fortress_2.sp freak_fortress_2/addons/sourcemod/scripting/
-    - mv scripting/freaks/*.sp freak_fortress_2/addons/sourcemod/
-    - mv scripting/include/freak_fortress_2* freak_fortress_2/addons/sourcemod/
+    - mv scripting/freaks/*.sp freak_fortress_2/addons/sourcemod/scripting/freaks/
+    - mv scripting/include/freak_fortress_2* freak_fortress_2/addons/sourcemod/include/
     - mv scripting/compiled freak_fortress_2/addons/sourcemod/plugins
     - mv translations/ff2_* freak_fortress_2/addons/sourcemod/translations/
     - mv translations/freak_fortress_2.phrases.txt freak_fortress_2/addons/sourcemod/translations/
     - mv gamedata/saxtonhale.txt freak_fortress_2/addons/sourcemod/gamedata/
-    - mv configs/freak_fortress_2 freak_fortress_2/addons/sourcemod/configs/
+    - mv configs/freak_fortress_2 freak_fortress_2/addons/sourcemod/configs/freak_fortress_2
     - mv ../../materials freak_fortress_2/
     - mv ../../models freak_fortress_2/
     - mv ../../sound freak_fortress_2/
