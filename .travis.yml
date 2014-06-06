@@ -38,7 +38,7 @@ after_script:
     - mv configs/freak_fortress_2 freak_fortress_2/addons/sourcemod/
     - mv ../../materials freak_fortress_2/
     - mv ../../models freak_fortress_2/
-    - mv ../../sounds freak_fortress_2/
+    - mv ../../sound freak_fortress_2/
     - zip -r freak_fortress_2 freak_fortress_2
     - tar -cf freak_fortress_2.tar freak_fortress_2
     - gzip freak_fortress_2.tar
