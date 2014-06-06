@@ -2826,20 +2826,20 @@ public Action:Timer_ReEquipBoss(Handle:timer, any:client)
 
 public Action:Timer_NextBossPanel(Handle:timer)
 {
-	new i, clients, oldClient[3];
+	new i, clients, chosen[MaxClients+1];
 	do
 	{
 		new bool:temp[MaxClients+1];
 		new client=FindBosses(temp);
-		if(client && oldClient[i]!=client && !IsBoss(client))
+		if(IsValidClient(client) && chosen[client]!=client && !IsBoss(client))
 		{
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_near");
+			chosen[client]=client;
 			i++;
-			oldClient[i]=client;
 		}
 		clients++;
 	}
-	while(i<3 && clients<=MaxClients);
+	while(i<3 && clients<=MaxClients);  //TODO: Make this configurable?
 }
 
 public Action:MessageTimer(Handle:timer)
