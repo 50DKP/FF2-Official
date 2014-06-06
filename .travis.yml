@@ -1,5 +1,4 @@
-env:
-    - SMVERSION=1.6
+env: SMVERSION=1.6
 before_install:
     - sudo apt-get -qq update
     - sudo apt-get install gcc-multilib lynx > /dev/null
@@ -13,13 +12,46 @@ install:
     - TF2ITEMSPATTERN="http:.*tf2items-.*-.*-linux.zip"
     - TF2ITEMSPACKAGE=`lynx -dump "$TF2ITEMSURL" | egrep -o "$TF2ITEMSPATTERN" | tail -1`
     - wget $TF2ITEMSPACKAGE
-    - unzip -ou $(basename "$TF2ITEMSPACKAGE")
+    - unzip $(basename "$TF2ITEMSPACKAGE")
 before_script:
     - cd addons/sourcemod/scripting/
     - wget "https://www.doctormckay.com/download/scripting/include/morecolors.inc"
-    - mv morecolors.inc include/morecolors.inc
+    - mv morecolors.inc include/
     - chmod +x spcomp
     - mkdir compiled
     - mkdir compiled/freaks
-script:
-    - ./compile.sh freak_fortress_2.sp freaks/*.sp
+script: ./compile.sh freak_fortress_2.sp freaks/*.sp
+
+#Releases
+before_deploy:
+    - cd scripting/compiled/freaks
+    - rename 's/.smx/.ff2/' *.smx
+    - cd ../../../
+    - mkdir freak_fortress_2
+    - mkdir freak_fortress_2/addons
+    - mkdir freak_fortress_2/addons/sourcemod
+    - mv scripting/freak_fortress_2.sp freak_fortress_2/addons/sourcemod/
+    - mv scripting/freaks/*.sp freak_fortress_2/addons/sourcemod/
+    - mv scripting/include/freak_fortress_2* freak_fortress_2/addons/sourcemod/
+    - mv scripting/compiled freak_fortress_2/addons/sourcemod/plugins
+    - mv translations/ff2_* freak_fortress_2/addons/sourcemod/
+    - mv translations/freak_fortress_2.phrases.txt freak_fortress_2/addons/sourcemod/
+    - mv gamedata/saxtonhale.txt freak_fortress_2/addons/sourcemod/
+    - mv configs/freak_fortress_2 freak_fortress_2/addons/sourcemod/
+    - mv ../../materials freak_fortress_2/
+    - mv ../../models freak_fortress_2/
+    - mv ../../sounds freak_fortress_2/
+    - zip -r freak_fortress_2 freak_fortress_2
+    - tar -cf freak_fortress_2.tar freak_fortress_2
+    - gzip freak_fortress_2.tar
+deploy:
+    provider: releases
+    api_key:
+        secure: WH0qyFNS6i3CwA2yS0VMTbdD+TOvJb1B5Y/3kIEHAS9O4bLyJ4y26AjMlXx6koXF4dDrgebht2JL1Fz2kFbrmdDh3p6sd+nbj9a0k85uqNC/V3ISJDlzzDxf8mpZ1o6bVJm35QNDDq0kebC7k7zX5d14o6BD9vTOWIMdpL0OR+g=
+    file:
+        - freak_fortress_2.zip
+        - freak_fotress_2.tar.gz
+    on:
+        repo: 50DKP/FF2-Official
+        branch: master
+        tags: true
