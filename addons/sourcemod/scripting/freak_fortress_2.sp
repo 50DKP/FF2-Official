@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 5, 2014",		//1.10.0
-	"June 5, 2014",		//1.10.0
-	"June 5, 2014",		//1.10.0
-	"June 5, 2014",		//1.10.0
-	"June 5, 2014",		//1.10.0
-	"June 5, 2014",		//1.10.0
-	"June 5, 2014"		//1.10.0
+	"June 6, 2014",		//1.10.0
+	"June 6, 2014",		//1.10.0
+	"June 6, 2014",		//1.10.0
+	"June 6, 2014",		//1.10.0
+	"June 6, 2014",		//1.10.0
+	"June 6, 2014",		//1.10.0
+	"June 6, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -4138,6 +4138,13 @@ public Action:ClientTimer(Handle:timer)
 					}
 				}
 			}
+			else if(class==TFClass_Soldier)
+			{
+				if((FF2flags[client] & FF2FLAG_ISBUFFED) && !(GetEntProp(client, Prop_Send, "m_bRageDraining")))
+				{
+					FF2flags[client]&=~FF2FLAG_ISBUFFED;
+				}
+			}
 
 			if(RedAlivePlayers==1 && !TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 			{
@@ -4295,16 +4302,6 @@ public Action:ClientTimer(Handle:timer)
 				}
 			}
 		}
-	}
-	return Plugin_Continue;
-}
-
-public Action:Timer_EndBackupBuff(Handle:timer, any:userid)
-{
-	new client=GetClientOfUserId(userid);
-	if(IsValidClient(client))
-	{
-		FF2flags[client]&=~FF2FLAG_ISBUFFED;
 	}
 	return Plugin_Continue;
 }
@@ -4586,7 +4583,7 @@ public Action:OnTaunt(client, const String:command[], args)
 	{
 		if(CheckRoundState()==0 || CheckRoundState()==2)
 		{
-			return Plugin_Handled;
+			return Plugin_Continue;
 		}
 		else
 		{
@@ -4961,12 +4958,9 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 
 public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	Debug("Entered OnDeployBackup");
 	if(Enabled && GetEventInt(event, "buff_type")==2)
 	{
-		new client=GetEventInt(event, "buff_owner");
-		Debug("OnDeployBackup: Buff time remaining is %f", GetEntPropFloat(client, Prop_Send, "m_flRageMeter"));
-		//CreateTimer(todo, Timer_EndBackupBuff, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		FF2flags[GetClientOfUserId(GetEventInt(event, "buff_owner"))]|=FF2FLAG_ISBUFFED;
 	}
 	return Plugin_Continue;
 }
@@ -5383,7 +5377,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
 					{
 						SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
-						FF2flags[client]|=FF2FLAG_ISBUFFED;
 					}
 				}
 			}
