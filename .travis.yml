@@ -28,14 +28,19 @@ after_script:
     - mkdir freak_fortress_2
     - mkdir freak_fortress_2/addons
     - mkdir freak_fortress_2/addons/sourcemod
+    - mkdir freak_fortress_2/addons/sourcemod/configs
+    - mkdir freak_fortress_2/addons/sourcemod/gamedata
+    - mkdir freak_fortress_2/addons/sourcemod/scripting
+    - mkdir freak_fortress_2/addons/sourcemod/scripting/include
+    - mkdir freak_fortress_2/addons/sourcemod/translations
+    - mv configs/freak_fortress_2 freak_fortress_2/addons/sourcemod/configs/freak_fortress_2
+    - mv gamedata/saxtonhale.txt freak_fortress_2/addons/sourcemod/gamedata/
     - mv scripting/freak_fortress_2.sp freak_fortress_2/addons/sourcemod/scripting/
-    - mv scripting/freaks/*.sp freak_fortress_2/addons/sourcemod/scripting/freaks/
-    - mv scripting/include/freak_fortress_2* freak_fortress_2/addons/sourcemod/include/
     - mv scripting/compiled freak_fortress_2/addons/sourcemod/plugins
+    - mv scripting/freaks/*.sp freak_fortress_2/addons/sourcemod/scripting/freaks/
+    - mv scripting/include/freak_fortress_2* freak_fortress_2/addons/sourcemod/scripting/include/
     - mv translations/ff2_* freak_fortress_2/addons/sourcemod/translations/
     - mv translations/freak_fortress_2.phrases.txt freak_fortress_2/addons/sourcemod/translations/
-    - mv gamedata/saxtonhale.txt freak_fortress_2/addons/sourcemod/gamedata/
-    - mv configs/freak_fortress_2 freak_fortress_2/addons/sourcemod/configs/freak_fortress_2
     - mv ../../materials freak_fortress_2/
     - mv ../../models freak_fortress_2/
     - mv ../../sound freak_fortress_2/
