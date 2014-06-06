@@ -22,10 +22,9 @@ before_script:
     - mkdir compiled/freaks
 script: ./compile.sh freak_fortress_2.sp freaks/*.sp
 after_script:
-    - ls
-    - cd scripting/compiled/freaks
+    - cd compiled/freaks
     - rename 's/.smx/.ff2/' *.smx
-    - cd ../../../
+    - cd ../../
     - mkdir freak_fortress_2
     - mkdir freak_fortress_2/addons
     - mkdir freak_fortress_2/addons/sourcemod
