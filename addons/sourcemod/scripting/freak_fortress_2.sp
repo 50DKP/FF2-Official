@@ -33,7 +33,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 Beta 14"
+#define PLUGIN_VERSION "1.10.0 RC 1"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 6, 2014",		//1.10.0
-	"June 6, 2014",		//1.10.0
-	"June 6, 2014",		//1.10.0
-	"June 6, 2014",		//1.10.0
-	"June 6, 2014",		//1.10.0
-	"June 6, 2014",		//1.10.0
-	"June 6, 2014"		//1.10.0
+	"June 7, 2014",		//1.10.0
+	"June 7, 2014",		//1.10.0
+	"June 7, 2014",		//1.10.0
+	"June 7, 2014",		//1.10.0
+	"June 7, 2014",		//1.10.0
+	"June 7, 2014",		//1.10.0
+	"June 7, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -301,28 +301,29 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "13) Fixed bosses immediately dying after using the dead ringer (Wliu)");
 			DrawPanelText(panel, "14) Fixed a rare bug where you could get notified about being the next boss multiple times (Wliu)");
-			DrawPanelText(panel, "15) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
-			DrawPanelText(panel, "16) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "15) Fixed a rare bug where the leaderboard would display the wrong information (Wliu)");
+			DrawPanelText(panel, "16) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 37:  //1.10.0
 		{
-			DrawPanelText(panel, "17) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "18) [Server] Moved convar ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "19) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
-			DrawPanelText(panel, "20) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "17) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "18) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "19) [Server] Moved convar ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "20) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "21) [Server] Added convar ff2_goomba_jump to control how high players should rebound after goomba stomping the boss (WildCard65)");
-			DrawPanelText(panel, "22) [Server] Fixed some convars not executing (Wliu)");
-			DrawPanelText(panel, "23) [Server] Changed how BossCrits works...again (Wliu)");
-			DrawPanelText(panel, "24) [Server] Fixed hale_point_enable/disable being registered twice (Wliu)");
+			DrawPanelText(panel, "21) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "22) [Server] Added convar ff2_goomba_jump to control how high players should rebound after goomba stomping the boss (WildCard65)");
+			DrawPanelText(panel, "23) [Server] Fixed some convars not executing (Wliu)");
+			DrawPanelText(panel, "24) [Server] Changed how BossCrits works...again (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
+			DrawPanelText(panel, "25) [Server] Fixed hale_point_enable/disable being registered twice (Wliu)");
 			DrawPanelText(panel, "26) [Dev] Added more natives and one additional forward (Eggman)");
 			DrawPanelText(panel, "27) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
 			DrawPanelText(panel, "28) [Dev] Fixed FF2FLAG_ISBUFFED (Wliu)");
@@ -2260,6 +2261,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	new top[3];
+	strcopy(sound, 2, "");
 	Damage[0]=0;
 	for(new client=0; client<=MaxClients; client++)
 	{
@@ -2794,7 +2796,7 @@ public Action:Timer_Move(Handle:timer)
 
 public Action:StartRound(Handle:timer)
 {
-	for(new client=0; client<=MaxClients; client++)  //TODO: It should now be possible to get rid of this
+	/*for(new client=0; client<=MaxClients; client++)
 	{
 		if(!IsValidClient(Boss[client]))
 		{
@@ -2809,20 +2811,20 @@ public Action:StartRound(Handle:timer)
 		{
 			CreateTimer(0.05, Timer_ReEquipBoss, client, TIMER_FLAG_NO_MAPCHANGE);
 		}
-	}
+	}*/
 
 	CreateTimer(10.0, Timer_NextBossPanel);
 	UpdateHealthBar();
 	return Plugin_Handled;
 }
 
-public Action:Timer_ReEquipBoss(Handle:timer, any:client)
+/*public Action:Timer_ReEquipBoss(Handle:timer, any:client)
 {
 	if(IsValidClient(Boss[client]))
 	{
 		EquipBoss(client);
 	}
-}
+}*/
 
 public Action:Timer_NextBossPanel(Handle:timer)
 {
