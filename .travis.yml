@@ -15,9 +15,12 @@ install:
     - unzip $(basename "$TF2ITEMSPACKAGE")
 before_script:
     - cd addons/sourcemod/scripting/
+    - rm -fv ./compile.sh
+    - wget https://raw.githubusercontent.com/WildCard65/sourcemod/master/plugins/compile.sh -O compile.sh
     - wget "https://www.doctormckay.com/download/scripting/include/morecolors.inc"
     - mv morecolors.inc include/
     - chmod +x spcomp
+    - chmod +x ./compile.sh
     - mkdir compiled compiled/freaks
 script: echo -ne '\n' | ./compile.sh freak_fortress_2.sp freaks/*.sp
 
