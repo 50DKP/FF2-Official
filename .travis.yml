@@ -19,7 +19,7 @@ before_script:
     - mv morecolors.inc include/
     - chmod +x spcomp
     - mkdir compiled compiled/freaks
-script: ./compile.sh freak_fortress_2.sp freaks/*.sp
+script: echo -ne '\n' | ./compile.sh freak_fortress_2.sp freaks/*.sp
 
 #Releases
 before_deploy:
