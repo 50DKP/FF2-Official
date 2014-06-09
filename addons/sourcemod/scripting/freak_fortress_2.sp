@@ -2796,35 +2796,10 @@ public Action:Timer_Move(Handle:timer)
 
 public Action:StartRound(Handle:timer)
 {
-	/*for(new client=0; client<=MaxClients; client++)
-	{
-		if(!IsValidClient(Boss[client]))
-		{
-			continue;
-		}
-
-		TF2_RemovePlayerDisguise(Boss[client]);
-		new bool:primary=IsValidEntity(GetPlayerWeaponSlot(Boss[client], TFWeaponSlot_Primary));
-		new bool:secondary=IsValidEntity(GetPlayerWeaponSlot(Boss[client], TFWeaponSlot_Secondary));
-		new bool:melee=IsValidEntity(GetPlayerWeaponSlot(Boss[client], TFWeaponSlot_Melee));
-		if((!primary && !secondary && !melee) || (primary || secondary || melee))
-		{
-			CreateTimer(0.05, Timer_ReEquipBoss, client, TIMER_FLAG_NO_MAPCHANGE);
-		}
-	}*/
-
 	CreateTimer(10.0, Timer_NextBossPanel);
 	UpdateHealthBar();
 	return Plugin_Handled;
 }
-
-/*public Action:Timer_ReEquipBoss(Handle:timer, any:client)
-{
-	if(IsValidClient(Boss[client]))
-	{
-		EquipBoss(client);
-	}
-}*/
 
 public Action:Timer_NextBossPanel(Handle:timer)
 {
@@ -5380,13 +5355,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 				}
 			}
-
-			/*new buffweapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-			new buffindex=(IsValidEntity(buffweapon) && buffweapon>MaxClients ? GetEntProp(buffweapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
-			if(buffindex==226)  //Battalion's Backup
-			{
-				CreateTimer(0.25, Timer_CheckBuffRage, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			}*/
 
 			if(damage<=160.0)  //TODO: Wat
 			{
@@ -8069,14 +8037,12 @@ public HealthbarEnableChanged(Handle:convar, const String:oldValue[], const Stri
 
 UpdateHealthBar()
 {
-	if(!GetConVarBool(cvarHealthBar) || g_Monoculus!=-1 || CheckRoundState()==-1 || !Enabled)
+	if(!Enabled || !GetConVarBool(cvarHealthBar) || g_Monoculus!=-1 || CheckRoundState()==-1)
 	{
 		return;
 	}
 
-	new healthAmount=0;
-	new maxHealthAmount=0;
-	new count=0;
+	new healthAmount, maxHealthAmount, count, healthPercent;
 	for(new client=0; client<=MaxClients; client++)
 	{
 		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
@@ -8087,7 +8053,6 @@ UpdateHealthBar()
 		}
 	}
 
-	new healthPercent=0;
 	if(count>0)
 	{
 		healthPercent=RoundToCeil(float(healthAmount)/float(maxHealthAmount)*float(HEALTHBAR_MAX));
