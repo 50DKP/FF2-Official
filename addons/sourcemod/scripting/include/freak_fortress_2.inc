@@ -1,4 +1,5 @@
 //Freak Fortress 2 include file.
+#include <morecolors>
 #include <sdktools>
 
 #define FF2FLAG_UBERREADY				(1<<1)		//Used when medic says "I'm charged!"
