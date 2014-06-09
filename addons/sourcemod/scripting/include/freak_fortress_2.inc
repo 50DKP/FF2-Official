@@ -356,8 +356,8 @@ native Bool:FF2_Debug();
  *							3 - In use
  * @return				Plugin_Stop can not prevent the ability. Use FF2_PreAbility with enabled=false
  */
-forward FF2_PreAbility(client, const String:pluginName[], const String:abilityName[], status, &enabled=true);
-forward Action:FF2_OnAbility(client, const String:pluginName[], const String:abilityName[], status);
+forward FF2_PreAbility(client, const String:pluginName[], const String:abilityName[], slot, status, &enabled=true);
+forward Action:FF2_OnAbility(client, const String:pluginName[], const String:abilityName[], slot, status);
 
 /**
  * Begins when Boss gets hurt by environmental damage

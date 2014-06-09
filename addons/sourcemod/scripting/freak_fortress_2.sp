@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 7, 2014",		//1.10.0
-	"June 7, 2014",		//1.10.0
-	"June 7, 2014",		//1.10.0
-	"June 7, 2014",		//1.10.0
-	"June 7, 2014",		//1.10.0
-	"June 7, 2014",		//1.10.0
-	"June 7, 2014"		//1.10.0
+	"June 9, 2014",		//1.10.0
+	"June 9, 2014",		//1.10.0
+	"June 9, 2014",		//1.10.0
+	"June 9, 2014",		//1.10.0
+	"June 9, 2014",		//1.10.0
+	"June 9, 2014",		//1.10.0
+	"June 9, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -6373,33 +6373,45 @@ stock bool:RandomSound(const String: keyvalue[], String: str[],length,index=0)
 	return true;
 }
 
-stock bool:RandomSoundAbility(const String: keyvalue[], String: str[],length,index=0,slot=0)
+stock bool:RandomSoundAbility(const String:keyvalue[], String:buffer[], length, client=0, slot=0)
 {
-	if(index==-1 || Special[index]==-1 || !BossKV[Special[index]])
+	if(client==-1 || Special[client]==-1 || !BossKV[Special[client]])
+	{
 		return false;
-	KvRewind(BossKV[Special[index]]);
-	if(!KvJumpToKey(BossKV[Special[index]],keyvalue))
+	}
+
+	KvRewind(BossKV[Special[client]]);
+	if(!KvJumpToKey(BossKV[Special[client]], keyvalue))
+	{
 		return false;
-	decl String:s[10];
-	new i=1,j=1,see[MAXRANDOMS];
+	}
+
+	decl String:sound[10];
+	new i=1, matches=0, match[MAXRANDOMS];
 	for(;;)
 	{
-		IntToString(i,s,4);
-		KvGetString(BossKV[Special[index]], s, str, length);
-		if(!str[0])
-			break;
-		Format(s,10,"slot%i",i);
-		if(KvGetNum(BossKV[Special[index]],s,0)==slot)
+		IntToString(i, sound, 4);
+		KvGetString(BossKV[Special[client]], sound, buffer, length);
+		if(!buffer[0])
 		{
-			see[j]=i;
-			j++;
+			break;
+		}
+
+		Format(sound, 10, "slot%i", i);
+		if(KvGetNum(BossKV[Special[client]], sound, 0)==slot)
+		{
+			match[matches]=i;
+			matches++;
 		}
 		i++;
 	}
-	if(j==1)
+
+	if(!matches)
+	{
 		return false;
-	IntToString(see[GetRandomInt(1,j-1)],s,4);
-	KvGetString(BossKV[Special[index]], s, str, length);
+	}
+	IntToString(match[GetRandomInt(0, matches-1)], sound, 4);
+	KvGetString(BossKV[Special[client]], sound, buffer, length);
 	return true;
 }
 
@@ -7397,13 +7409,13 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 	Call_PushString(ability_name);
 	if(slot==-1)
 	{
-		Call_PushCell(0);
+		Call_PushCell(0);  //Slot
 		Call_Finish(action);
 	}
 	else if(!slot)
 	{
-		FF2flags[Boss[client]]&=~FF2FLAG_BOTRAGE; 	
-		Call_PushCell(0);
+		FF2flags[Boss[client]]&=~FF2FLAG_BOTRAGE;
+		Call_PushCell(0);  //Slot
 		Call_Finish(action);
 		BossCharge[client][slot]=0.0;
 	}
@@ -7443,7 +7455,7 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 
 			if(BossCharge[client][slot]>=0)
 			{
-				Call_PushCell(2);
+				Call_PushCell(2);  //Status
 				Call_Finish(action);
 				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(client, plugin_name, ability_name, 1, 1.5);
 				if(BossCharge[client][slot]+charge<100)
@@ -7457,7 +7469,7 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 			}
 			else
 			{
-				Call_PushCell(1);
+				Call_PushCell(1);  //Status
 				Call_Finish(action);
 				BossCharge[client][slot]+=0.2;
 			}
@@ -7479,20 +7491,20 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 			}
 			else
 			{
-				Call_PushCell(0);
+				Call_PushCell(0);  //Status
 				Call_Finish(action);
 				BossCharge[client][slot]=0.0;
 			}
 		}
 		else if(BossCharge[client][slot]<0)
 		{
-			Call_PushCell(1);
+			Call_PushCell(1);  //Status
 			Call_Finish(action);
 			BossCharge[client][slot]+=0.2;
 		}
 		else
 		{
-			Call_PushCell(0);
+			Call_PushCell(0);  //Status
 			Call_Finish(action);
 		}
 	}
@@ -7813,27 +7825,28 @@ public Native_StopMusic(Handle:plugin, numParams)
 public Native_RandomSound(Handle:plugin, numParams)
 {
 	new length=GetNativeCell(3)+1;
-	new index=GetNativeCell(4);
+	new client=GetNativeCell(4);
 	new slot=GetNativeCell(5);
-	new String:str[length];
-	decl alength;
+	new String:sound[length];
+	new kvLength;
 
-	GetNativeStringLength(1, alength);
-	alength++;
+	GetNativeStringLength(1, kvLength);
+	kvLength++;
 
-	decl String:keyvalue[alength];
-	GetNativeString(1, keyvalue, alength);
-	decl bool:see;
+	decl String:keyvalue[kvLength];
+	GetNativeString(1, keyvalue, kvLength);
+
+	new bool:soundExists;
 	if(!strcmp(keyvalue, "sound_ability"))
 	{
-		see=RandomSoundAbility(keyvalue, str, length, index, slot);
+		soundExists=RandomSoundAbility(keyvalue, sound, length, client, slot);
 	}
 	else
 	{
-		see=RandomSound(keyvalue, str,length,index);
+		soundExists=RandomSound(keyvalue, sound, length, client);
 	}
-	SetNativeString(2, str, length);
-	return see;
+	SetNativeString(2, sound, length);
+	return soundExists;
 }
 
 public Native_GetClientGlow(Handle:plugin, numParams)
