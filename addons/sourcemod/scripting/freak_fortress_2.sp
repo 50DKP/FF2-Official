@@ -72,7 +72,7 @@ new Incoming[MAXPLAYERS+1];
 new MusicIndex;
 
 new Damage[MAXPLAYERS+1];
-new curHelp[MAXPLAYERS+1];	
+new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new demoShield[MAXPLAYERS+1];
 
@@ -499,7 +499,6 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "4) [Players] Scaled sniper rifle glow time a bit better");
 			DrawPanelText(panel, "5) [Players] Fixed Dead Ringer spy death icon");
 			DrawPanelText(panel, "Continued on next page");
-			
 		}
 		case 14:  //1.06h
 		{
@@ -508,7 +507,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 13:  //1.06g
 		{
 		    DrawPanelText(panel, "1) [Players] Fixed vote for charset. (RavensBro)");
-		}		
+		}
 		case 12:  //1.06f
 		{
 			DrawPanelText(panel, "1) [Players] Changelog now divided into [Players] and [Dev] sections. (Otokiru)");
@@ -611,7 +610,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "1) Boss' health devided by 3,6 in medieval mode");
 			DrawPanelText(panel, "2) Restoring player's default class, after his round as Boss");
-			DrawPanelText(panel, "===UPDATES OF VS SAXTON HALE MODE===");			
+			DrawPanelText(panel, "===UPDATES OF VS SAXTON HALE MODE===");
 			DrawPanelText(panel, "1) Added !ff2_resetqueuepoints command (also there is admin version)");
 			DrawPanelText(panel, "2) Medic is credited 100% of damage done during ubercharge");
 			DrawPanelText(panel, "3) If map changes mid-round, queue points not lost");
@@ -1347,7 +1346,7 @@ public LoadCharacter(const String:character[])
 	KvGotoFirstSubKey(BossKV[Specials]);
 
 	while(KvGotoNextKey(BossKV[Specials]))
-	{	
+	{
 		KvGetSectionName(BossKV[Specials], section, sizeof(section));
 		if(!strcmp(section, "download"))
 		{
@@ -1363,7 +1362,7 @@ public LoadCharacter(const String:character[])
 			}
 		}
 		else if(!strcmp(section, "mod_download"))
-		{	
+		{
 			for(new i=1; ; i++)
 			{
 				IntToString(i, key, sizeof(key));
@@ -1381,7 +1380,7 @@ public LoadCharacter(const String:character[])
 			}
 		}
 		else if(!strcmp(section, "mat_download"))
-		{	
+		{
 			for(new i=1; ; i++)
 			{
 				IntToString(i, key, sizeof(key));
@@ -1602,7 +1601,7 @@ public Action:Timer_Announce(Handle:timer)
 				announcecount=0;
 				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxVersion]);
 			}
-			default: 
+			default:
 			{
 				CPrintToChatAll("{olive}[FF2]{default} %t", "type_ff2_to_open_menu");
 			}
@@ -1847,7 +1846,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		new team;
 		for(new client=1; client<=MaxClients; client++)
 		{
-			if(IsValidClient(client) && (team=GetClientTeam(client))>1) 
+			if(IsValidClient(client) && (team=GetClientTeam(client))>1)
 			{
 				SetEntProp(client, Prop_Send, "m_lifeState", 2);
 				if(toRed && team!=_:TFTeam_Red)
@@ -2013,7 +2012,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		{
 			decl Float:position[3];
 			new pack;
-			GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position);  
+			GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position);
 			AcceptEntityInput(entity, "Kill");
 			pack=CreateEntityByName("item_ammopack_small");
 			TeleportEntity(pack, position, NULL_VECTOR, NULL_VECTOR);
@@ -2463,7 +2462,7 @@ public Action:StartBossTimer(Handle:timer)
 	playing=0;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && !IsBoss(client) && IsPlayerAlive(client)) 
+		if(IsValidClient(client) && !IsBoss(client) && IsPlayerAlive(client))
 		{
 			playing++;
 			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client));
@@ -2997,7 +2996,7 @@ public Action:MakeBoss(Handle:timer, any:client)
 			TF2_RemoveWearable(Boss[client], entity);
 		}
 	}
-   
+
 	entity=-1;
 	while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
 	{
@@ -3205,7 +3204,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 
 	new String:weaponAttribsArray[32][32];
 	new attribCount=ExplodeString(att, ";", weaponAttribsArray, 32, 32);
-	
+
 	if(attribCount%2!=0)
 	{
 		--attribCount;
@@ -3269,7 +3268,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 				CloseHandle(hWeapon);
 				return INVALID_HANDLE;
 			}
-			
+
 			TF2Items_SetAttribute(hWeapon, i2, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
 			i2++;
 		}
@@ -3305,7 +3304,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
-	
+
 	if(GetClientTeam(client)!=OtherTeam)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
@@ -3478,7 +3477,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
 		}
 	}
-	
+
 	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
@@ -3736,7 +3735,7 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 			if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
 			{
 				SetGlobalTransTarget(target);
-				PrintCenterText(target, health); 	
+				PrintCenterText(target, health);
 			}
 		}
 		CPrintToChatAll("{olive}[FF2]{default} %s", health);
@@ -4774,7 +4773,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				KSpreeCount[boss]=1;
 			}
 
-			if(KSpreeCount[boss]==3) 
+			if(KSpreeCount[boss]==3)
 			{
 				if(RandomSound("sound_kspree", sound, PLATFORM_MAX_PATH, boss))
 				{
@@ -5131,7 +5130,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	for(new i=1; i<BossLives[boss]; i++)
 	{
 		if(BossHealth[boss]-damage<BossHealthMax[boss]*i)
-		{	
+		{
 			decl String:ability[PLATFORM_MAX_PATH];
 			decl String:lives[MAXRANDOMS][3];
 			new count;
@@ -5199,7 +5198,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 				}
 
 				if(RandomSound("sound_nextlife", ability, PLATFORM_MAX_PATH))
-				{		
+				{
 					EmitSoundToAll(ability);
 					EmitSoundToAll(ability);
 				}
@@ -6127,7 +6126,7 @@ stock CalcBossHealthMax(index)
 			summ[brackets]=0.0;
 			_operator[brackets]=0;
 		}
-		else 
+		else
 		{
 			if(s[0]!=0)
 			{
@@ -6195,7 +6194,7 @@ stock CalcBossHealthMax(index)
 						summ[brackets]+=playing;
 					case 2:
 						summ[brackets]-=playing;
-					case 4:					
+					case 4:
 						summ[brackets]/= playing;
 					case 5:
 						summ[brackets]=Pow(summ[brackets],Float:playing);
@@ -6594,7 +6593,7 @@ stock SpawnWeapon(client, String:name[], index, level, qual, String:att[])
 				CloseHandle(hWeapon);
 				return -1;
 			}
-			
+
 			TF2Items_SetAttribute(hWeapon, i2, attrib, StringToFloat(atts[i+1]));
 			i2++;
 		}
@@ -6625,7 +6624,7 @@ public QueuePanelH(Handle:menu, MenuAction:action, client, selection)
 	{
 		TurnToZeroPanel(client, client);
 	}
-	return false;  
+	return false;
 }
 
 
@@ -6883,10 +6882,10 @@ public FF2PanelH(Handle:menu, MenuAction:action, client, selection)
 			{
 				return;
 			}
-		} 
+		}
 	}
 }
-  
+
 public Action:FF2Panel(client, args)
 {
 	if(!Enabled2 || !IsValidClient(client, false))
@@ -6978,7 +6977,7 @@ public Action:NewPanel(client, versionIndex)
 		Format(whatsNew, 90, "%t", "noolder");
 	}
 
-	DrawPanelItem(panel, whatsNew);  
+	DrawPanelItem(panel, whatsNew);
 	if(versionIndex<maxVersion)
 	{
 		Format(whatsNew, 90, "%t", "newer");
@@ -6988,9 +6987,9 @@ public Action:NewPanel(client, versionIndex)
 		Format(whatsNew, 90, "%t", "nonewer");
 	}
 
-	DrawPanelItem(panel, whatsNew);  
+	DrawPanelItem(panel, whatsNew);
 	Format(whatsNew, 512, "%t", "menu_6");
-	DrawPanelItem(panel, whatsNew);    
+	DrawPanelItem(panel, whatsNew);
 	SendPanelToClient(panel, client, NewPanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Continue;
@@ -7105,7 +7104,7 @@ public Action:HelpPanelBoss(index)
 {
 	decl String:s[512], String:lang[20];
 	GetLanguageInfo(GetClientLanguage(Boss[index]),lang,8,s,8);
-	Format(lang,20,"description_%s",lang);	
+	Format(lang,20,"description_%s",lang);
 	KvRewind(BossKV[Special[index]]);
 	KvGetString(BossKV[Special[index]], lang, s, 512);
 	if(!s[0])
@@ -7157,7 +7156,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, param1, param2)
 				SetClientSoundOptions(param1, SOUNDEXCEPT_MUSIC, false);
 				KvRewind(BossKV[Special[0]]);
 				if(KvJumpToKey(BossKV[Special[0]],"sound_bgm"))
-				{	
+				{
 					decl String:s[PLATFORM_MAX_PATH];
 					Format(s,10,"path%i",MusicIndex);
 					KvGetString(BossKV[Special[0]], s,s, PLATFORM_MAX_PATH);
@@ -7192,8 +7191,8 @@ public Action:VoiceTogglePanel(client)
 
 	new Handle:panel=CreatePanel();
 	SetPanelTitle(panel, "Turn the Freak Fortress 2 voices...");
-	DrawPanelItem(panel, "On");   
-	DrawPanelItem(panel, "Off");   
+	DrawPanelItem(panel, "On");
+	DrawPanelItem(panel, "Off");
 	SendPanelToClient(panel, client, VoiceTogglePanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Continue;
@@ -7261,7 +7260,7 @@ stock GetAmmo(client, slot)
 	{
 		new weapon=GetPlayerWeaponSlot(client, slot);
 		if(IsValidEntity(weapon))
-		{   
+		{
 			new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
 			new ammoTable=FindSendPropInfo("CTFPlayer", "m_iAmmo");
 			return GetEntData(client, ammoTable+offset);
@@ -7333,7 +7332,7 @@ public NextmapPanelH(Handle:menu, MenuAction:action, client, selection)
 	{
 		CloseHandle(menu);
 	}
-	
+
 	return;
 }
 
@@ -7405,7 +7404,7 @@ public Action:Timer_CvarChangeNextmap(Handle:timer)
 		}
 		else
 		{
-			VoteMenuToAll(dVoteMenu, 20); 
+			VoteMenuToAll(dVoteMenu, 20);
 		}
 	}
 	return Plugin_Continue;
@@ -7753,7 +7752,7 @@ public Native_DoAbility(Handle:plugin, numParams)
 }
 
 public Native_GetAbilityArgument(Handle:plugin, numParams)
-{ 
+{
 	decl String:plugin_name[64];
 	decl String:ability_name[64];
 	GetNativeString(2,plugin_name,64);
@@ -7762,7 +7761,7 @@ public Native_GetAbilityArgument(Handle:plugin, numParams)
 }
 
 public Native_GetAbilityArgumentFloat(Handle:plugin, numParams)
-{ 
+{
 	decl String:plugin_name[64];
 	decl String:ability_name[64];
 	GetNativeString(2,plugin_name,64);
@@ -7771,7 +7770,7 @@ public Native_GetAbilityArgumentFloat(Handle:plugin, numParams)
 }
 
 public Native_GetAbilityArgumentString(Handle:plugin, numParams)
-{ 
+{
 	decl String:plugin_name[64];
 	GetNativeString(2,plugin_name,64);
 	decl String:ability_name[64];
@@ -8067,7 +8066,7 @@ public OnEntityDestroyed(entity)
 		{
 			g_Monoculus=FindEntityByClassname(entity, MONOCULUS);
 		}
-	}	
+	}
 }
 
 public CheckRoundState()
