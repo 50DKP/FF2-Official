@@ -202,7 +202,7 @@ native bool:FF2_HasAbility(client, const String:pluginName[], const String:abili
  * @param slot			Slot of charge meter
  *							0 - rage
  *							1 - as usual, used for brave jump or teleport
- *							2 - other charged abilities 
+ *							2 - other charged abilities
  * @param buttonMode	How to activate the ability
  *							0 - by taunt
  *							1 - by right mouse button or duck
@@ -217,7 +217,7 @@ native FF2_DoAbility(client, const String:pluginName[], const String:abilityName
  * @param client		Boss's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
- * @param argument 		Number of argument 
+ * @param argument 		Number of argument
  * @param defValue 		Returns if argument is not defined
  * @return				Value of argument
  */
@@ -229,7 +229,7 @@ native FF2_GetAbilityArgument(client, const String:pluginName[], const String:ab
  * @param client		Boss's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
- * @param argument 		Number of argument 
+ * @param argument 		Number of argument
  * @param defValue 		Returns if argument is not defined
  * @return				Value of argument
  */
@@ -241,7 +241,7 @@ native Float:FF2_GetAbilityArgumentFloat(client, const String:plugin_name[], con
  * @param client 		Boss's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
- * @param argument 		Number of argument 
+ * @param argument 		Number of argument
  * @param buffer 		Buffer for value of argument
  * @param bufferLength	Length of buffer string
  * @noreturn
@@ -279,7 +279,7 @@ native FF2_StopMusic(client=0);
 native Handle:FF2_GetSpecialKV(client, specialIndex=0);
 
 /**
- * Gets client's flags for FF2 
+ * Gets client's flags for FF2
  *
  * @param client	Client's index
  * @return			Client's FF2 flags
@@ -287,7 +287,7 @@ native Handle:FF2_GetSpecialKV(client, specialIndex=0);
 native FF2_GetFF2flags(client);
 
 /**
- * Sets client's flags for FF2 
+ * Sets client's flags for FF2
  *
  * @param client	Client's index
  * @param flags		New flag values
@@ -393,7 +393,7 @@ forward Action:FF2_OnSpecialSelected(index, &specialNum, String:specialName[]);
 /**
  * Begins when FF2 adds queue points
  *
- * @param	add_points[MAXPLAYERS+1]	
+ * @param	add_points[MAXPLAYERS+1]
  *				Use array to get and/or change additional points.
  * @return	Plugin_Stop will prevent this, Plugin_Changed will change it.
  */
@@ -436,13 +436,13 @@ stock Debug(String:buffer[], any:...)
 
 /* TEMPORARY STUFF FOR TF2 WEARABLES; TO BE REMOVED AS SOON AS SOURCEMOD ADDS WEARABLE SUPPORT */
 //Created by friagram
-new Handle:removeWearable=INVALID_HANDLE; 
-new Handle:equipWearable=INVALID_HANDLE; 
+new Handle:removeWearable=INVALID_HANDLE;
+new Handle:equipWearable=INVALID_HANDLE;
 new Handle:isWearable=INVALID_HANDLE;
 
-stock TF2_RemoveWearable(client, wearable) 
+stock TF2_RemoveWearable(client, wearable)
 {
-	if(removeWearable==INVALID_HANDLE)	
+	if(removeWearable==INVALID_HANDLE)
 	{
 		new Handle:config=LoadGameConfigFile("equipwearable");
 		if(config==INVALID_HANDLE)
@@ -490,11 +490,11 @@ stock TF2_EquipWearable(client, wearable)
 		}
 	}
 	SDKCall(equipWearable, client, wearable);
-} 
+}
 
 stock TF2_IsWearable(wearable)
 {
-	if(isWearable==INVALID_HANDLE)	
+	if(isWearable==INVALID_HANDLE)
 	{
 		new Handle:config=LoadGameConfigFile("equipwearable");
 		if(config==INVALID_HANDLE)

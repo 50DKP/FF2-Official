@@ -195,7 +195,7 @@ Rage_Stun(const String:ability_name[], client)
 			if(!TF2_IsPlayerInCondition(target, TFCond_Ubercharged) && (GetVectorDistance(bossPosition, clientPosition)<=distance))
 			{
 				TF2_StunPlayer(target, duration, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, boss);
-				CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(target, "yikes_fx", 75.0)));	
+				CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(target, "yikes_fx", 75.0)));
 			}
 		}
 	}
@@ -272,7 +272,7 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 				{
 					SetHudTextParams(-1.0, 0.88, 0.15, 255, 64, 64, 255);
 					ShowSyncHudText(boss, jumpHUD, "%t", "super_duper_jump");
-				}	
+				}
 				else
 				{
 					ShowSyncHudText(boss, jumpHUD, "%t", "jump_status", RoundFloat(charge));
@@ -367,7 +367,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 				SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 				ShowSyncHudText(boss, jumpHUD, "%t", "teleport_status_2", -RoundFloat(charge));
 			}
-		}	
+		}
 		case 2:
 		{
 			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED))
@@ -429,8 +429,8 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 			FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 4, particle, 128);
 			if(strlen(particle)>0)
 			{
-				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(boss, particle)));		
-				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(boss, particle, _, false)));		
+				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(boss, particle)));
+				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(boss, particle, _, false)));
 			}
 
 			decl Float:position[3];
@@ -465,7 +465,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 			{
 				EmitSoundToAll(sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 				EmitSoundToAll(sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-			
+
 				for(new enemy=1; enemy<=MaxClients; enemy++)
 				{
 					if(IsClientInGame(enemy) && enemy!=boss)
@@ -520,7 +520,7 @@ Charge_WeighDown(client, slot)
 				{
 					return;
 				}
-	
+
 				new Float:velocity[3];
 				GetEntPropVector(boss, Prop_Data, "m_vecVelocity", velocity);
 				velocity[2]=-1000.0;
