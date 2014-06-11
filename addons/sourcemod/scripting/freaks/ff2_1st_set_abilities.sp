@@ -120,7 +120,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 			}
 			else if(action==Plugin_Changed)
 			{
-				distance=newDistance;	
+				distance=newDistance;
 			}
 		}
 	}
@@ -131,8 +131,8 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 		{
 			new boss=GetClientOfUserId(FF2_GetBossUserId(client));
 			new Float:charge=FF2_GetBossCharge(client, 0);
-			SetEntPropFloat(boss, Prop_Send, "m_flChargeMeter", 100.0);		
-			TF2_AddCondition(boss, TFCond_Charging, 0.25);	
+			SetEntPropFloat(boss, Prop_Send, "m_flChargeMeter", 100.0);
+			TF2_AddCondition(boss, TFCond_Charging, 0.25);
 			if(charge>10.0 && charge<90.0)
 			{
 				FF2_SetBossCharge(client, 0, charge-0.4);
@@ -165,7 +165,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 		Rage_Slowmo(client, ability_name);
 	}
 	return Plugin_Continue;
-}		
+}
 
 Rage_Clone(const String:ability_name[], client)
 {
@@ -402,7 +402,7 @@ public Action:SaveMinion(client, &attacker, &inflictor, &Float:damage, &damagety
 				}
 			}
 			while(otherTeamIsAlive && (!IsValidEdict(target) || (GetClientTeam(target)==BossTeam) || !IsPlayerAlive(target)));
-			
+
 			GetEntPropVector(target, Prop_Data, "m_vecOrigin", position);
 			TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
 			TF2_StunPlayer(client, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, client);
@@ -429,7 +429,7 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)
 			}
 		}
 		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
-		return Plugin_Stop;			
+		return Plugin_Stop;
 	}
 	else
 	{
@@ -523,7 +523,7 @@ public Action:Timer_Rage_Explosive_Dance(Handle:timer, any:client)
 		explosionPosition[2]=bossPosition[2];
 		for(new i=0;i<5;i++)
 		{
-			explosion=CreateEntityByName("env_explosion");   
+			explosion=CreateEntityByName("env_explosion");
 			DispatchKeyValueFloat(explosion, "DamageForce", 180.0);
 
 			SetEntProp(explosion, Prop_Data, "m_iMagnitude", 280, 4);
@@ -545,12 +545,12 @@ public Action:Timer_Rage_Explosive_Dance(Handle:timer, any:client)
 			TeleportEntity(explosion, explosionPosition, NULL_VECTOR, NULL_VECTOR);
 			AcceptEntityInput(explosion, "Explode");
 			AcceptEntityInput(explosion, "kill");
-		
+
 			/*proj=CreateEntityByName("tf_projectile_rocket");
 			SetVariantInt(BossTeam);
 			AcceptEntityInput(proj, "TeamNum", -1, -1, 0);
 			SetVariantInt(BossTeam);
-			AcceptEntityInput(proj, "SetTeam", -1, -1, 0); 
+			AcceptEntityInput(proj, "SetTeam", -1, -1, 0);
 			SetEntPropEnt(proj, Prop_Send, "m_hOwnerEntity",boss);
 			decl Float:position[3];
 			new Float:rot[3]={0.0,90.0,0.0};
@@ -567,7 +567,7 @@ public Action:Timer_Rage_Explosive_Dance(Handle:timer, any:client)
 	}
 	else
 	{
-		SetEntityMoveType(boss, MOVETYPE_WALK);		
+		SetEntityMoveType(boss, MOVETYPE_WALK);
 		count=0;
 		return Plugin_Stop;
 	}
@@ -615,7 +615,7 @@ public Action:Timer_StopSlomo(Handle:timer, any:client)
 }
 
 public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Float:angles[3], &weapon)
-{	
+{
 	new boss=FF2_GetBossIndex(client);
 	if(boss==-1 || !(FF2Flags[boss] & FLAG_ONSLOMO))
 	{
@@ -628,7 +628,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Floa
 		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "rage_matrix_attack", 3, 0.2), Timer_SlomoChange, boss);
 
 		new Float:bossPosition[3], Float:endPosition[3], Float:eyeAngles[3];
-		GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition); 
+		GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition);
 		bossPosition[2]+=65;
 		GetClientEyeAngles(client, eyeAngles);
 
@@ -660,8 +660,8 @@ public Action:Timer_Rage_Slomo_Attack(Handle:timer, Handle:data)
 	if(target>0)
 	{
 		new Float:clientPosition[3], Float:targetPosition[3];
-		GetEntPropVector(client, Prop_Send, "m_vecOrigin", clientPosition); 
-		GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPosition); 
+		GetEntPropVector(client, Prop_Send, "m_vecOrigin", clientPosition);
+		GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPosition);
 		if(GetVectorDistance(clientPosition, targetPosition)<=1500 && target!=oldTarget)
 		{
 			SetEntProp(client, Prop_Send, "m_bDucked", 1);
@@ -684,7 +684,7 @@ public bool:TraceRayDontHitSelf(entity, mask)
 	{
 		return true;
 	}
-	return false; 
+	return false;
 }
 
 
@@ -715,7 +715,7 @@ public Action:Timer_SlomoChange(Handle:timer, any:client)
 			ShowSyncHudText(boss, chargeHUD, "%t","charge_status",RoundFloat(charge*100/see));
 		}
 		case 3:
-		{				
+		{
 			FF2_SetBossCharge(index,0,charge-10);
 			decl Float:position[3];
 			decl Float:rot[3];
@@ -723,13 +723,13 @@ public Action:Timer_SlomoChange(Handle:timer, any:client)
 			GetEntPropVector(boss, Prop_Send, "m_vecOrigin", position);
 			GetClientEyeAngles(boss,rot);
 			position[2]+=63;
-				
+
 			new proj=CreateEntityByName("tf_projectile_rocket");
 			SetVariantInt(BossTeam);
 			AcceptEntityInput(proj, "TeamNum", -1, -1, 0);
 			SetVariantInt(BossTeam);
-			AcceptEntityInput(proj, "SetTeam", -1, -1, 0); 
-			SetEntPropEnt(proj, Prop_Send, "m_hOwnerEntity",boss);		
+			AcceptEntityInput(proj, "SetTeam", -1, -1, 0);
+			SetEntPropEnt(proj, Prop_Send, "m_hOwnerEntity",boss);
 			new Float:speed=FF2_GetAbilityArgumentFloat(index,this_plugin_name,ability_name,3,1000.0);
 			velocity[0]=Cosine(DegToRad(rot[0]))*Cosine(DegToRad(rot[1]))*speed;
 			velocity[1]=Cosine(DegToRad(rot[0]))*Sine(DegToRad(rot[1]))*speed;
@@ -747,7 +747,7 @@ public Action:Timer_SlomoChange(Handle:timer, any:client)
 			{
 				EmitSoundToAll(s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 				EmitSoundToAll(s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-			
+
 				for(new i=1; i<=MaxClients; i++)
 					if(IsClientInGame(i) && i!=boss)
 					{
@@ -793,7 +793,7 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 				DispatchSpawn(prop);
 				new Float:position[3];
 				GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
-				position[2]+=20;				
+				position[2]+=20;
 				TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
 				new Float:duration=FF2_GetAbilityArgumentFloat(bossAttacker, this_plugin_name, "special_dropprop", 2, 0.0);
 				if(duration>0.5)
