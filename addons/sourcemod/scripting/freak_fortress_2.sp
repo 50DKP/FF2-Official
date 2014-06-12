@@ -5131,8 +5131,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		if(BossHealth[boss]-damage<BossHealthMax[boss]*i)
 		{
-			decl String:ability[PLATFORM_MAX_PATH];
-			decl String:lives[MAXRANDOMS][3];
+			decl String:ability[PLATFORM_MAX_PATH], String:lives[MAXRANDOMS][3];
 			new count;
 			for(new n=1; n<MAXRANDOMS; n++)
 			{
@@ -5173,15 +5172,22 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 
 			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
 			Call_StartForward(OnLoseLife);
+			Debug("event_hurt: Starting forward");
 			Call_PushCell(boss);
 			Call_PushCell(bossLives);
 			Call_Finish(action);
-			if(action!=Plugin_Stop && action!=Plugin_Handled)
+			if(action==Plugin_Stop || action==Plugin_Handled)
+			{
+				return;
+			}
+			else
 			{
 				if(action==Plugin_Changed)
 				{
+					Debug("event_hurt: bossLives was %i", bossLives);
 					BossLives[boss]=bossLives;
 				}
+				Debug("event_hurt: BossLives[boss] was %i", BossLives[boss])
 				BossLives[boss]--;
 
 				decl String:bossName[64];
