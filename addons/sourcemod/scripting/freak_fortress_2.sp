@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 9, 2014",		//1.10.0
-	"June 9, 2014",		//1.10.0
-	"June 9, 2014",		//1.10.0
-	"June 9, 2014",		//1.10.0
-	"June 9, 2014",		//1.10.0
-	"June 9, 2014",		//1.10.0
-	"June 9, 2014"		//1.10.0
+	"June 12, 2014",		//1.10.0
+	"June 12, 2014",		//1.10.0
+	"June 12, 2014",		//1.10.0
+	"June 12, 2014",		//1.10.0
+	"June 12, 2014",		//1.10.0
+	"June 12, 2014",		//1.10.0
+	"June 12, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -694,7 +694,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	OnSpecialSelected=CreateGlobalForward("FF2_OnSpecialSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String);
 	OnAddQueuePoints=CreateGlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
 	OnLoadCharacterSet=CreateGlobalForward("FF2_OnLoadCharacterSet", ET_Hook, Param_CellByRef, Param_String);
-	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_Cell);
+	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell);  //Client, lives left, max lives
 
 	RegPluginLibrary("freak_fortress_2");
 
@@ -5186,7 +5186,8 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 			Call_StartForward(OnLoseLife);
 			Debug("event_hurt: Starting forward");
 			Call_PushCell(boss);
-			Call_PushCell(bossLives);
+			Call_PushCellRef(bossLives);
+			Call_PushCell(BossLivesMax[boss]);
 			Call_Finish(action);
 			if(action==Plugin_Stop || action==Plugin_Handled)
 			{

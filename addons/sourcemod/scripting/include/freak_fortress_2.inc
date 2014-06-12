@@ -413,9 +413,10 @@ forward Action:FF2_OnLoadCharacterSet(charSetNum, String:charSetName[]);
  *
  * @param client	Boss's index
  * @param lives		Number of lives left
- * @return			Plugin_Stop or Plugin_Handled to prevent this, Plugin_Changed if you want to change the number of lives.
+ * @param maxLives	Max number of lives
+ * @return			Plugin_Stop or Plugin_Handled to prevent damage that would remove a life, Plugin_Changed if you want to change the number of lives left.
 */
-forward Action:FF2_OnLoseLife(client, lives);
+forward Action:FF2_OnLoseLife(client, &lives, maxLives);
 
 /**
  * Used to consolidate debug messages
