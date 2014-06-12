@@ -5187,7 +5187,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 					Debug("event_hurt: bossLives was %i", bossLives);
 					BossLives[boss]=bossLives;
 				}
-				Debug("event_hurt: BossLives[boss] was %i", BossLives[boss])
+				Debug("event_hurt: BossLives[boss] was %i", BossLives[boss]);
 				BossLives[boss]--;
 
 				decl String:bossName[64];
