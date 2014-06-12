@@ -1940,6 +1940,12 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	KvRewind(BossKV[Special[0]]);
 	BossLivesMax[0]=KvGetNum(BossKV[Special[0]], "lives", 1);
+	if(BossLivesMax[0]<=0)
+	{
+		PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", Special[0]);
+		BossLivesMax[0]=1;
+	}
+
 	SetEntProp(Boss[0], Prop_Data, "m_iMaxHealth", 1337);
 	if(LastClass[Boss[0]]==TFClass_Unknown)
 	{
@@ -1974,6 +1980,12 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				}
 				isBoss[Boss[client]]=true;
 				BossLivesMax[client]=KvGetNum(BossKV[Special[client]], "lives", 1);
+				if(BossLivesMax[client]<=0)
+				{
+					PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", Special[client]);
+					BossLivesMax[client]=1;
+				}
+
 				SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", 1337);
 				if(LastClass[Boss[client]]==TFClass_Unknown)
 				{
