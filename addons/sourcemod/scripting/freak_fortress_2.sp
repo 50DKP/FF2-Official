@@ -5178,7 +5178,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 			Call_Finish(action);
 			if(action==Plugin_Stop || action==Plugin_Handled)
 			{
-				return;
+				return Plugin_Stop;
 			}
 			else
 			{
