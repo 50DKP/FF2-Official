@@ -6117,128 +6117,168 @@ stock GetBossIndex(client)
 	return -1;
 }
 
-stock CalcBossHealthMax(index)
+stock CalcBossHealthMax(client)
 {
 	decl String:formula[128];
-	new String:s[128];
-	new String:s2[2];
+	new String:value[128];
+	new String:buffer[2];
 
-	new brackets;
-	new Float:summ[32];
-	new _operator[32];
+	new parentheses;
+	new Float:sum[32];
+	new _operator[32];  //Prevents compiler conflict
 
-	KvRewind(BossKV[Special[index]]);
-	KvGetString(BossKV[Special[index]], "health_formula", formula, sizeof(formula), "((460+n)*n)^1.075");
+	KvRewind(BossKV[Special[client]]);
+	KvGetString(BossKV[Special[client]], "health_formula", formula, sizeof(formula), "((460+n)*n)^1.075");
 	ReplaceString(formula, sizeof(formula), " ", "");
 	new length=strlen(formula);
 	for(new i=0; i<=length; i++)
 	{
-		strcopy(s2,2,formula[i]);
-		if((s2[0]>='0' && s2[0]<='9') || s2[0]=='.')
+		strcopy(buffer, sizeof(buffer), formula[i]);
+		if((buffer[0]>='0' && buffer[0]<='9') || buffer[0]=='.')
 		{
-			StrCat(s,128,s2);
+			StrCat(value, sizeof(value), buffer);
 			continue;
 		}
-		if(s2[0]=='(')
+
+		if(buffer[0]=='(')
 		{
-			brackets++;
-			summ[brackets]=0.0;
-			_operator[brackets]=0;
+			parentheses++;
+			sum[parentheses]=0.0;
+			_operator[parentheses]=0;
 		}
 		else
 		{
-			if(s[0]!=0)
+			if(value[0]!=0)
 			{
-				switch(_operator[brackets])
+				switch(_operator[parentheses])
 				{
-					case 0,1:
-						summ[brackets]+=StringToFloat(s);
-					case 2:
-						summ[brackets]-=StringToFloat(s);
-					case 3:
-						summ[brackets]*=StringToFloat(s);
-					case 4:
+					case 0, 1:
 					{
-						new Float:see=StringToFloat(s);
-						if(FloatAbs(see-0.0)<0.01) {brackets=1; break; }
-						summ[brackets]/= see;
+						sum[parentheses]+=StringToFloat(value);
 					}
-					case 5:
-						summ[brackets]=Pow(summ[brackets],StringToFloat(s));
-				}
-				_operator[brackets]=0;
-			}
-			if(s2[0]==')')
-			{
-				brackets--;
-				switch(_operator[brackets])
-				{
 					case 2:
 					{
-						summ[brackets]-=summ[brackets+1];
+						sum[parentheses]-=StringToFloat(value);
 					}
 					case 3:
-						summ[brackets]*=summ[brackets+1];
+					{
+						sum[parentheses]*=StringToFloat(value);
+					}
 					case 4:
 					{
-						if(FloatAbs(summ[brackets+1]-0.0)<0.01) {brackets=1; break; }
-						summ[brackets]/= summ[brackets+1];
+						new Float:temp=StringToFloat(value);
+						if(FloatAbs(temp)<0.01)
+						{
+							parentheses=1;
+							break;
+						}
+						sum[parentheses]/=temp;
 					}
 					case 5:
-						summ[brackets]=Pow(summ[brackets],summ[brackets+1]);
-					default:
-						summ[brackets]+=summ[brackets+1];
+					{
+						sum[parentheses]=Pow(sum[parentheses], StringToFloat(value));
+					}
 				}
-				_operator[brackets]=0;
+				_operator[parentheses]=0;
 			}
-		}
-		strcopy(s,128,"");
-		switch(s2[0])
-		{
-			case '+':
-				_operator[brackets]=1;
-			case '-':
-				_operator[brackets]=2;
-			case '*':
-				_operator[brackets]=3;
-			case '/','\\':
-				_operator[brackets]=4;
-			case '^':
-				_operator[brackets]=5;
-			case 'n','x':
+			if(buffer[0]==')')
 			{
-				switch(_operator[brackets])
+				parentheses--;
+				switch(_operator[parentheses])
 				{
 					case 1:
-						summ[brackets]+=playing;
+					{
+						sum[parentheses]+=sum[parentheses+1];
+					}
 					case 2:
-						summ[brackets]-=playing;
+					{
+						sum[parentheses]-=sum[parentheses+1];
+					}
+					case 3:
+					{
+						sum[parentheses]*=sum[parentheses+1];
+					}
 					case 4:
-						summ[brackets]/= playing;
+					{
+						if(FloatAbs(sum[parentheses+1])<0.01)
+						{
+							parentheses=1;
+							break;
+						}
+						sum[parentheses]/=sum[parentheses+1];
+					}
 					case 5:
-						summ[brackets]=Pow(summ[brackets],Float:playing);
-					default:
-						summ[brackets]*=playing;
+					{
+						sum[parentheses]=Pow(sum[parentheses], sum[parentheses+1]);
+					}
 				}
-				_operator[brackets]=0;
+				_operator[parentheses]=0;
+			}
+		}
+
+		strcopy(value, 128, "");
+		switch(buffer[0])
+		{
+			case '+':
+			{
+				_operator[parentheses]=1;
+			}
+			case '-':
+			{
+				_operator[parentheses]=2;
+			}
+			case '*':
+			{
+				_operator[parentheses]=3;
+			}
+			case '/', '\\':
+			{
+				_operator[parentheses]=4;
+			}
+			case '^':
+			{
+				_operator[parentheses]=5;
+			}
+			case 'n', 'x':
+			{
+				switch(_operator[parentheses])
+				{
+					case 1:
+					{
+						sum[parentheses]+=playing;
+					}
+					case 2:
+					{
+						sum[parentheses]-=playing;
+					}
+					case 3:
+					{
+						sum[parentheses]*=playing;
+					}
+					case 4:
+					{
+						sum[parentheses]/=playing;
+					}
+					case 5:
+					{
+						sum[parentheses]=Pow(sum[parentheses], Float:playing);
+					}
+				}
+				_operator[parentheses]=0;
 			}
 		}
 	}
 
 	new health;
-	if(brackets)
+	if(parentheses || (health=RoundFloat(sum[0])<=0))
 	{
 		LogError("[FF2] Malformed boss health formula, using default!");
 		health=RoundFloat(Pow(((460.0+playing)*playing), 1.075));
 	}
-	else
-	{
-		health=RoundFloat(summ[0]);
-	}
 
 	if(bMedieval)
 	{
-		health=RoundFloat(health/3.6);
+		health=RoundFloat(health/3.6);  //TODO: Make this configurable
 	}
 	return health;
 }
