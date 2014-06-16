@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 12, 2014",		//1.10.0
-	"June 12, 2014",		//1.10.0
-	"June 12, 2014",		//1.10.0
-	"June 12, 2014",		//1.10.0
-	"June 12, 2014",		//1.10.0
-	"June 12, 2014",		//1.10.0
-	"June 12, 2014"		//1.10.0
+	"June 16, 2014",	//1.10.0
+	"June 16, 2014",	//1.10.0
+	"June 16, 2014",	//1.10.0
+	"June 16, 2014",	//1.10.0
+	"June 16, 2014",	//1.10.0
+	"June 16, 2014",	//1.10.0
+	"June 16, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -5197,10 +5197,13 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 			{
 				if(action==Plugin_Changed)
 				{
-					Debug("event_hurt: bossLives was %i", bossLives);
+					if(bossLives>BossLivesMax[boss])
+					{
+						BossLivesMax[boss]=bossLives;
+					}
 					BossLives[boss]=bossLives;
 				}
-				Debug("event_hurt: BossLives[boss] was %i", BossLives[boss]);
+				Debug("event_hurt: BossLives[boss] was %i, BossLivesMax[boss] was %i", BossLives[boss], BossLivesMax[boss]);
 				BossLives[boss]--;
 
 				decl String:bossName[64];
@@ -6181,6 +6184,7 @@ stock CalcBossHealthMax(client)
 				}
 				_operator[parentheses]=0;
 			}
+
 			if(buffer[0]==')')
 			{
 				parentheses--;
