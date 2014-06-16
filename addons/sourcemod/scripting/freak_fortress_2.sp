@@ -5143,6 +5143,27 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		if(BossHealth[boss]-damage<BossHealthMax[boss]*i)
 		{
+			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
+			Call_StartForward(OnLoseLife);
+			Debug("event_hurt: Starting forward");
+			Call_PushCell(boss);
+			Call_PushCellRef(bossLives);
+			Call_PushCell(BossLivesMax[boss]);
+			Call_Finish(action);
+			if(action==Plugin_Stop || action==Plugin_Handled)
+			{
+				return action;
+			}
+			else if(action==Plugin_Changed)
+			{
+				if(bossLives>BossLivesMax[boss])
+				{
+					BossLivesMax[boss]=bossLives;
+				}
+				BossLives[boss]=bossLives;
+				Debug("event_hurt: BossLives[boss] was %i, BossLivesMax[boss] was %i", BossLives[boss], BossLivesMax[boss]);
+			}
+
 			decl String:ability[PLATFORM_MAX_PATH], String:lives[MAXRANDOMS][3];
 			new count;
 			for(new n=1; n<MAXRANDOMS; n++)
@@ -5181,51 +5202,27 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 					}
 				}
 			}
+			BossLives[boss]--;
 
-			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
-			Call_StartForward(OnLoseLife);
-			Debug("event_hurt: Starting forward");
-			Call_PushCell(boss);
-			Call_PushCellRef(bossLives);
-			Call_PushCell(BossLivesMax[boss]);
-			Call_Finish(action);
-			if(action==Plugin_Stop || action==Plugin_Handled)
+			decl String:bossName[64];
+			KvRewind(BossKV[Special[boss]]);
+			KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
+
+			strcopy(ability, sizeof(ability), BossLives[boss]==1 ? "ff2_life_left" : "ff2_lives_left");
+			for(new target=1; target<=MaxClients; target++)
 			{
-				return action;
+				if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
+				{
+					PrintCenterText(target, "%t", ability, bossName, BossLives[boss]);
+				}
 			}
-			else
+
+			if(RandomSound("sound_nextlife", ability, PLATFORM_MAX_PATH))
 			{
-				if(action==Plugin_Changed)
-				{
-					if(bossLives>BossLivesMax[boss])
-					{
-						BossLivesMax[boss]=bossLives;
-					}
-					BossLives[boss]=bossLives;
-				}
-				Debug("event_hurt: BossLives[boss] was %i, BossLivesMax[boss] was %i", BossLives[boss], BossLivesMax[boss]);
-				BossLives[boss]--;
-
-				decl String:bossName[64];
-				KvRewind(BossKV[Special[boss]]);
-				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
-
-				strcopy(ability, sizeof(ability), BossLives[boss]==1 ? "ff2_life_left" : "ff2_lives_left");
-				for(new target=1; target<=MaxClients; target++)
-				{
-					if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
-					{
-						PrintCenterText(target, "%t", ability, bossName, BossLives[boss]);
-					}
-				}
-
-				if(RandomSound("sound_nextlife", ability, PLATFORM_MAX_PATH))
-				{
-					EmitSoundToAll(ability);
-					EmitSoundToAll(ability);
-				}
-				UpdateHealthBar();
+				EmitSoundToAll(ability);
+				EmitSoundToAll(ability);
 			}
+			UpdateHealthBar();
 		}
 	}
 
