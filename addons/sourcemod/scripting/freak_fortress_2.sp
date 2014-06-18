@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 16, 2014",	//1.10.0
-	"June 16, 2014",	//1.10.0
-	"June 16, 2014",	//1.10.0
-	"June 16, 2014",	//1.10.0
-	"June 16, 2014",	//1.10.0
-	"June 16, 2014",	//1.10.0
-	"June 16, 2014"		//1.10.0
+	"June 17, 2014",	//1.10.0
+	"June 17, 2014",	//1.10.0
+	"June 17, 2014",	//1.10.0
+	"June 17, 2014",	//1.10.0
+	"June 17, 2014",	//1.10.0
+	"June 17, 2014",	//1.10.0
+	"June 17, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -5777,7 +5777,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						}
 						BossHealth[boss]-=RoundFloat(damage);
 						BossCharge[boss][0]+=damage*100/BossRageDamage[Special[boss]];
-						if(BossHealth[boss]<=0)
+						if(BossHealth[boss]<=0)  //Wat
 						{
 							damage*=5;
 						}
@@ -6167,7 +6167,7 @@ stock CalcBossHealthMax(client)
 					case 4:
 					{
 						new Float:temp=StringToFloat(value);
-						if(FloatAbs(temp)<0.01)
+						if(!temp)
 						{
 							parentheses=1;
 							break;
@@ -6201,7 +6201,7 @@ stock CalcBossHealthMax(client)
 					}
 					case 4:
 					{
-						if(FloatAbs(sum[parentheses+1])<0.01)
+						if(!sum[parentheses+1])
 						{
 							parentheses=1;
 							break;
@@ -6217,7 +6217,6 @@ stock CalcBossHealthMax(client)
 			}
 		}
 
-		strcopy(value, 128, "");
 		switch(buffer[0])
 		{
 			case '+':
@@ -6270,8 +6269,8 @@ stock CalcBossHealthMax(client)
 		}
 	}
 
-	new health;
-	if(parentheses || (health=RoundFloat(sum[0])<=0))
+	new health=RoundFloat(sum[0]);
+	if(parentheses || health<=0)
 	{
 		LogError("[FF2] Malformed boss health formula, using default!");
 		health=RoundFloat(Pow(((460.0+playing)*playing), 1.075));

@@ -2,7 +2,6 @@
 addons/metamod/
 addons/sourcemod/bin/
 addons/sourcemod/configs/**
-!addons/sourcemod/configs/freak_fortress_2/
 !addons/sourcemod/configs/freak_fortress_2/**
 addons/sourcemod/translations/**
 !addons/sourcemod/translations/ru/
@@ -21,11 +20,11 @@ addons/sourcemod/GPLv2.txt
 addons/sourcemod/GPLv3.txt
 addons/sourcemod/LICENSE.txt
 addons/sourcemod/scripting/**
+addons/sourcemod/scripting/include/**
 !addons/sourcemod/scripting/include/
 !addons/sourcemod/scripting/freaks/
 !addons/sourcemod/scripting/freaks/**
 !addons/sourcemod/scripting/freak_fortress_2.sp
-addons/sourcemod/scripting/include/**
 !addons/sourcemod/scripting/include/freaks/
 !addons/sourcemod/scripting/include/freak_fortress_2*.inc
 !addons/sourcemod/scripting/include/freaks/**
