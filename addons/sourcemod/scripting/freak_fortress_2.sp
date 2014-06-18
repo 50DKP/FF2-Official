@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 17, 2014",	//1.10.0
-	"June 17, 2014",	//1.10.0
-	"June 17, 2014",	//1.10.0
-	"June 17, 2014",	//1.10.0
-	"June 17, 2014",	//1.10.0
-	"June 17, 2014",	//1.10.0
-	"June 17, 2014"		//1.10.0
+	"June 18, 2014",	//1.10.0
+	"June 18, 2014",	//1.10.0
+	"June 18, 2014",	//1.10.0
+	"June 18, 2014",	//1.10.0
+	"June 18, 2014",	//1.10.0
+	"June 18, 2014",	//1.10.0
+	"June 18, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -1223,7 +1223,7 @@ public AddToDownload()
 		}
 		LoadCharacter(config);
 	}
-	KvGetString(Kv, "chances", ChancesString, 64);
+	KvGetString(Kv, "chances", ChancesString, sizeof(ChancesString));
 	CloseHandle(Kv);
 	AddFileToDownloadsTable("sound/saxton_hale/9000.wav");
 	PrecacheSound("saxton_hale/9000.wav", true);
@@ -6498,80 +6498,81 @@ ForceTeamWin(team)
 	AcceptEntityInput(entity, "SetWinner");
 }
 
-public bool:PickCharacter(client, client2)  //TODO: Clean this up ._.
+public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 {
-	if(client==client2)
+	if(client==companion)
 	{
 		Special[client]=Incoming[client];
 		Incoming[client]=-1;
-		if(Special[client]!=-1)
+		if(Special[client]!=-1)  //We've already picked a boss
 		{
 			PrecacheCharacter(Special[client]);
 			return true;
 		}
 
-		new chances[MAXSPECIALS];
-		new chancesIndex;
-		new String:s_chances[MAXSPECIALS*2][8];
+		new chances[MAXSPECIALS], chancesIndex;
+		decl String:stringChances[MAXSPECIALS*2][8];
 		if(ChancesString[0])
 		{
-			ExplodeString(ChancesString, ";", s_chances, MAXSPECIALS*2, 8);
-			chances[0]=StringToInt(s_chances[1]);
-			for(chancesIndex=3; s_chances[chancesIndex][0]; chancesIndex+=2)
+			new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
+			/*chances[0]=StringToInt(stringChances[1]);
+			for(chancesIndex=3; stringChances[chancesIndex][0]; chancesIndex+=2)  //TODO: This seems like an infinite loop
 			{
-				chances[chancesIndex/2]=StringToInt(s_chances[chancesIndex])+chances[chancesIndex/2-1];
+				chances[chancesIndex/2]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex/2-1];  //chances[1.5].  Qfaud?
 			}
-			chancesIndex-=2;
+			chancesIndex-=2;*/
+			for(chancesIndex=0; chancesIndex<amount; chancesIndex++)
+			{
+				chances[chancesIndex]=(chancesIndex % 2 ? StringToInt(stringChances[chancesIndex]) : (StringToInt(stringChances[chancesIndex])+chances[chancesIndex-1]));
+			}
 		}
 
-		new tries;
-		do
+		for(new tries; tries<100; tries++)
 		{
+			Special[client]=0;
+			if(KvGetNum(BossKV[Special[client]], "blocked"))
+			{
+				continue;
+			}
+
 			if(ChancesString[0])
 			{
-				new see;
-				new i=GetRandomInt(0, chances[chancesIndex/2]);
-				for(see=0; i>chances[see]; see++)
+				new character;
+				//new i=GetRandomInt(0, chances[chancesIndex/2]);
+				new i=GetRandomInt(0, chances[chancesIndex]);
+				for(character=0; i>chances[character]; character++)
 				{
+					Special[client]=character;
 				}
 
-				decl String:name[64];
-				Special[client]=StringToInt(s_chances[see*2])-1;
+				//Special[client]=StringToInt(stringChances[character*2])-1;
 				KvRewind(BossKV[Special[client]]);
-				KvGetString(BossKV[Special[client]], "name", name, 64, "=Failed name=");
 			}
 			else
 			{
 				Special[client]=GetRandomInt(0, Specials-1);
 				KvRewind(BossKV[Special[client]]);
 			}
-			tries++;
-		}
-		while(tries<100 && KvGetNum(BossKV[Special[client]], "blocked", 0));
-
-		if(tries==100)
-		{
-			Special[client]=0;
 		}
 	}
 	else
 	{
-		decl String:name[64], String:companion[64];
+		decl String:bossName[64], String:companionName[64];
 		new character;
-		KvRewind(BossKV[Special[client2]]);
-		KvGetString(BossKV[Special[client2]], "companion", companion, 64, "=Failed companion name=");
+		KvRewind(BossKV[Special[companion]]);
+		KvGetString(BossKV[Special[companion]], "companion", companionName, sizeof(companionName), "=Failed companion name=");
 		for(character=0; character<Specials; character++)
 		{
 			KvRewind(BossKV[character]);
-			KvGetString(BossKV[character], "name", name, 64, "=Failed name=");
-			if(!strcmp(name, companion, false))
+			KvGetString(BossKV[character], "name", bossName, sizeof(bossName), "=Failed name=");
+			if(!strcmp(bossName, companionName, false))
 			{
 				Special[client]=character;
 				break;
 			}
 
-			KvGetString(BossKV[character], "filename", name, 64, "=Failed name=");
-			if(!strcmp(name, companion, false))
+			KvGetString(BossKV[character], "filename", bossName, sizeof(bossName), "=Failed name=");
+			if(!strcmp(bossName, companionName, false))
 			{
 				Special[client]=character;
 				break;
@@ -6584,26 +6585,26 @@ public bool:PickCharacter(client, client2)  //TODO: Clean this up ._.
 		}
 	}
 
-	new Action:action=Plugin_Continue;
+	new Action:action;
 	Call_StartForward(OnSpecialSelected);
 	Call_PushCell(client);
 	new characterIndex=Special[client];
 	Call_PushCellRef(characterIndex);
-	decl String:name[64];
+	decl String:newName[64];
 	KvRewind(BossKV[Special[client]]);
-	KvGetString(BossKV[Special[client]], "name", name, 64);
-	Call_PushStringEx(name, 64, 0, SM_PARAM_COPYBACK);
+	KvGetString(BossKV[Special[client]], "name", newName, sizeof(newName));
+	Call_PushStringEx(newName, sizeof(newName), 0, SM_PARAM_COPYBACK);
 	Call_Finish(action);
 	if(action==Plugin_Changed)
 	{
-		if(name[0])  //Wat
+		if(newName[0])
 		{
-			decl String:name2[64];
+			decl String:characterName[64];
 			for(new character=0; BossKV[character] && character<MAXSPECIALS; character++)
 			{
 				KvRewind(BossKV[character]);
-				KvGetString(BossKV[character], "name", name2, 64);
-				if(!strcmp(name, name2))
+				KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
+				if(!strcmp(newName, characterName))
 				{
 					Special[client]=character;
 					PrecacheCharacter(Special[client]);
