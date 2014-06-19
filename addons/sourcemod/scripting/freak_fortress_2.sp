@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 18, 2014",	//1.10.0
-	"June 18, 2014",	//1.10.0
-	"June 18, 2014",	//1.10.0
-	"June 18, 2014",	//1.10.0
-	"June 18, 2014",	//1.10.0
-	"June 18, 2014",	//1.10.0
-	"June 18, 2014"		//1.10.0
+	"June 19, 2014",	//1.10.0
+	"June 19, 2014",	//1.10.0
+	"June 19, 2014",	//1.10.0
+	"June 19, 2014",	//1.10.0
+	"June 19, 2014",	//1.10.0
+	"June 19, 2014",	//1.10.0
+	"June 19, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -641,7 +641,7 @@ new Handle:OnLoseLife;
 new bool:bBlockVoice[MAXSPECIALS];
 new Float:BossSpeed[MAXSPECIALS];
 new Float:BossRageDamage[MAXSPECIALS];
-new String:ChancesString[64];
+new String:ChancesString[512];
 
 public Plugin:myinfo=
 {
@@ -6514,17 +6514,22 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 		decl String:stringChances[MAXSPECIALS*2][8];
 		if(ChancesString[0])
 		{
+			Debug("PickCharacter: ChancesString was %s", ChancesString);
 			new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
+			chances[0]=StringToInt(stringChances[0]);
+			chances[1]=StringToInt(stringChances[1]);
 			/*chances[0]=StringToInt(stringChances[1]);
-			for(chancesIndex=3; stringChances[chancesIndex][0]; chancesIndex+=2)  //TODO: This seems like an infinite loop
+			for(chancesIndex=3; stringChances[chancesIndex][0]; chancesIndex+=2)
 			{
-				chances[chancesIndex/2]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex/2-1];  //chances[1.5].  Qfaud?
+				chances[chancesIndex/2]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex/2-1];
 			}
 			chancesIndex-=2;*/
-			for(chancesIndex=0; chancesIndex<amount; chancesIndex++)
+			for(chancesIndex=2; chancesIndex<amount; chancesIndex++)
 			{
-				chances[chancesIndex]=(chancesIndex % 2 ? StringToInt(stringChances[chancesIndex]) : (StringToInt(stringChances[chancesIndex])+chances[chancesIndex-1]));
+				chances[chancesIndex]=(chancesIndex % 2 ? (StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2]) : StringToInt(stringChances[chancesIndex]));
+				Debug("PickCharacter: chances[%i] was %i", chancesIndex, chances[chancesIndex]);
 			}
+			Debug("PickCharacter: chancesIndex is %i, chances[chancesIndex] is %i", chancesIndex, chances[chancesIndex]);
 		}
 
 		for(new tries; tries<100; tries++)
@@ -6537,14 +6542,15 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 
 			if(ChancesString[0])
 			{
-				new character;
-				//new i=GetRandomInt(0, chances[chancesIndex/2]);
+				/*new character;
+				new i=GetRandomInt(0, chances[chancesIndex/2]);*/
 				new i=GetRandomInt(0, chances[chancesIndex]);
-				for(character=0; i>chances[character]; character++)
+				Debug("PickCharacter: Random number was %i", i);
+				for(new character=1; i>chances[character]; character+=2)
 				{
-					Special[client]=character;
+					Special[client]=chances[character-1];
+					Debug("PickCharacter: Character was %i", Special[client]);
 				}
-
 				//Special[client]=StringToInt(stringChances[character*2])-1;
 				KvRewind(BossKV[Special[client]]);
 			}

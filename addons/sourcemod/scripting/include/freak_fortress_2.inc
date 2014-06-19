@@ -432,6 +432,7 @@ stock Debug(String:buffer[], any:...)
 		decl String:message[192];
 		VFormat(message, sizeof(message), buffer, 2);
 		CPrintToChatAll("{olive}[FF2 {darkorange}DEBUG{olive}]{default} %s", message);
+		PrintToServer("[FF2 DEBUG] %s", message);
 	}
 }
 
