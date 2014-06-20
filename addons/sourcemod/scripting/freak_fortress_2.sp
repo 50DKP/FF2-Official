@@ -6516,6 +6516,12 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 		{
 			Debug("PickCharacter: ChancesString was %s", ChancesString);
 			new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
+			if(amount%2)
+			{
+				LogError("[FF2 Bosses] Invalid chances string, disregarding chances");
+				strcopy(ChancesString, sizeof(ChancesString), "");
+			}
+
 			chances[0]=StringToInt(stringChances[0]);
 			chances[1]=StringToInt(stringChances[1]);
 			/*chances[0]=StringToInt(stringChances[1]);
@@ -6527,26 +6533,18 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 			for(chancesIndex=2; chancesIndex<amount; chancesIndex++)
 			{
 				chances[chancesIndex]=(chancesIndex % 2 ? (StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2]) : StringToInt(stringChances[chancesIndex]));
-				Debug("PickCharacter: chances[%i] was %i", chancesIndex, chances[chancesIndex]);
 			}
-			Debug("PickCharacter: chancesIndex is %i, chances[chancesIndex] is %i", chancesIndex, chances[chancesIndex]);
 		}
 
 		for(new tries; tries<100; tries++)
 		{
-			Special[client]=0;
-			if(KvGetNum(BossKV[Special[client]], "blocked"))
-			{
-				continue;
-			}
-
 			if(ChancesString[0])
 			{
 				/*new character;
 				new i=GetRandomInt(0, chances[chancesIndex/2]);*/
-				new i=GetRandomInt(0, chances[chancesIndex]);
+				new i=GetRandomInt(0, chances[chancesIndex-1]);
 				Debug("PickCharacter: Random number was %i", i);
-				for(new character=1; i>chances[character]; character+=2)
+				for(new character=chances[0]; i>chances[character+1]; character+=2)/*for(new character=chances[chancesIndex-2]; i<chances[character+1]; character-=2)*/
 				{
 					Special[client]=chances[character-1];
 					Debug("PickCharacter: Character was %i", Special[client]);
@@ -6559,6 +6557,13 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 				Special[client]=GetRandomInt(0, Specials-1);
 				KvRewind(BossKV[Special[client]]);
 			}
+
+			if(KvGetNum(BossKV[Special[client]], "blocked"))
+			{
+				Special[client]=0;
+				continue;
+			}
+			break;
 		}
 	}
 	else
