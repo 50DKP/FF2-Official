@@ -6546,7 +6546,7 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 				Debug("PickCharacter: Random number was %i", i);
 				for(new character=chances[0]; i>chances[character+1]; character+=2)/*for(new character=chances[chancesIndex-2]; i<chances[character+1]; character-=2)*/
 				{
-					Special[client]=chances[character-1];
+					Special[client]=chances[character];  //character-1
 					Debug("PickCharacter: Character was %i", Special[client]);
 				}
 				//Special[client]=StringToInt(stringChances[character*2])-1;
