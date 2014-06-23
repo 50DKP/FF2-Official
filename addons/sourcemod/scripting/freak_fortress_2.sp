@@ -6148,6 +6148,56 @@ stock CalcBossHealthMax(client)
 		}
 		else
 		{
+			switch(buffer[0])
+			{
+				case '+':
+				{
+					_operator[parentheses]=1;
+				}
+				case '-':
+				{
+					_operator[parentheses]=2;
+				}
+				case '*':
+				{
+					_operator[parentheses]=3;
+				}
+				case '/', '\\':
+				{
+					_operator[parentheses]=4;
+				}
+				case '^':
+				{
+					_operator[parentheses]=5;
+				}
+				case 'n', 'x':
+				{
+					switch(_operator[parentheses])
+					{
+						case 1:
+						{
+							sum[parentheses]+=playing;
+						}
+						case 2:
+						{
+							sum[parentheses]-=playing;
+						}
+						case 3:
+						{
+							sum[parentheses]*=playing;
+						}
+						case 4:
+						{
+							sum[parentheses]/=playing;
+						}
+						case 5:
+						{
+							sum[parentheses]=Pow(sum[parentheses], Float:playing);
+						}
+					}
+					_operator[parentheses]=0;
+				}
+			}
 			if(value[0]!=0)
 			{
 				switch(_operator[parentheses])
@@ -6211,57 +6261,6 @@ stock CalcBossHealthMax(client)
 					case 5:
 					{
 						sum[parentheses]=Pow(sum[parentheses], sum[parentheses+1]);
-					}
-				}
-				_operator[parentheses]=0;
-			}
-		}
-
-		switch(buffer[0])
-		{
-			case '+':
-			{
-				_operator[parentheses]=1;
-			}
-			case '-':
-			{
-				_operator[parentheses]=2;
-			}
-			case '*':
-			{
-				_operator[parentheses]=3;
-			}
-			case '/', '\\':
-			{
-				_operator[parentheses]=4;
-			}
-			case '^':
-			{
-				_operator[parentheses]=5;
-			}
-			case 'n', 'x':
-			{
-				switch(_operator[parentheses])
-				{
-					case 1:
-					{
-						sum[parentheses]+=playing;
-					}
-					case 2:
-					{
-						sum[parentheses]-=playing;
-					}
-					case 3:
-					{
-						sum[parentheses]*=playing;
-					}
-					case 4:
-					{
-						sum[parentheses]/=playing;
-					}
-					case 5:
-					{
-						sum[parentheses]=Pow(sum[parentheses], Float:playing);
 					}
 				}
 				_operator[parentheses]=0;
