@@ -2491,10 +2491,6 @@ public Action:StartBossTimer(Handle:timer)
 		if(Boss[client] && IsValidEdict(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
 			BossHealthMax[client]=CalcBossHealthMax(client);
-			if(BossHealthMax[client]<5)  //Qfaud?
-			{
-				BossHealthMax[client]=1322;
-			}
 			SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
 			SetBossHealthFix(Boss[client], BossHealthMax[client]);
 			BossLives[client]=BossLivesMax[client];
@@ -5618,6 +5614,21 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							TF2_RemoveCondition(attacker, TFCond_Dazed);
 						}
 					}
+					case 1099:  //Tide Turner
+					{
+						SetEntProp(attacker, Prop_Send, "m_flChargeMeter", 100.0);
+					}
+					case 1104:  //Air Strike
+					{
+						static airStrikeDamage;
+						airStrikeDamage+=damage;
+						if(airStrikeDamage>=200)
+						{
+							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
+							SetEntProp(weapon, Prop_Send, "m_iClip1", GetEntProp(weapon, Prop_Send, "m_iClip1")+1);
+							airStrikeDamage-=200;
+						}
+					}
 				}
 
 				if(bIsBackstab)
@@ -5795,7 +5806,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 			}
 		}
-		else  //Wat.  TODO:  LOOK AT THIS
+		else  //TODO: LOOK AT THIS
 		{
 			if(IsValidClient(client, false) && TF2_GetPlayerClass(client)==TFClass_Soldier)
 			{
@@ -5807,15 +5818,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						damage/=10.0;
 						return Plugin_Changed;
 					}
-				}/*
-				else if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226)
-				{
-					new Float:charge=GetEntPropFloat(client, Prop_Send, "m_flRageMeter");
-					if(charge>20)
-						SetEntPropFloat(client, Prop_Send, "m_flRageMeter",charge-20.0);
-					else
-						SetEntPropFloat(client, Prop_Send, "m_flRageMeter",0.0);
-				}*/
+				}
 			}
 		}
 	}
@@ -6119,13 +6122,12 @@ stock GetBossIndex(client)
 
 stock CalcBossHealthMax(client)
 {
-	decl String:formula[128];
-	new String:value[128];
-	new String:buffer[2];
-
+	decl String:formula[1024], String:buffer[2];
+	new String:value[1024];
+	new bool:mustClose, bool:usePlayers, bool:canAdd, bool:valueReady;
 	new parentheses;
-	new Float:sum[32];
-	new _operator[32];  //Prevents compiler conflict
+	new Float:sum[128];
+	new _operator[128];
 
 	KvRewind(BossKV[Special[client]]);
 	KvGetString(BossKV[Special[client]], "health_formula", formula, sizeof(formula), "((460+n)*n)^1.075");
@@ -6134,113 +6136,64 @@ stock CalcBossHealthMax(client)
 	for(new i=0; i<=length; i++)
 	{
 		strcopy(buffer, sizeof(buffer), formula[i]);
-		if((buffer[0]>='0' && buffer[0]<='9') || buffer[0]=='.')
-		{
-			StrCat(value, sizeof(value), buffer);
-			continue;
-		}
-
-		if(buffer[0]=='(')
-		{
-			parentheses++;
-			sum[parentheses]=0.0;
-			_operator[parentheses]=0;
-		}
-		else
-		{
-			if(value[0]!=0)
-			{
-				switch(_operator[parentheses])
-				{
-					case 0, 1:
-					{
-						sum[parentheses]+=StringToFloat(value);
-					}
-					case 2:
-					{
-						sum[parentheses]-=StringToFloat(value);
-					}
-					case 3:
-					{
-						sum[parentheses]*=StringToFloat(value);
-					}
-					case 4:
-					{
-						new Float:temp=StringToFloat(value);
-						if(!temp)
-						{
-							parentheses=1;
-							break;
-						}
-						sum[parentheses]/=temp;
-					}
-					case 5:
-					{
-						sum[parentheses]=Pow(sum[parentheses], StringToFloat(value));
-					}
-				}
-				_operator[parentheses]=0;
-			}
-
-			if(buffer[0]==')')
-			{
-				parentheses--;
-				switch(_operator[parentheses])
-				{
-					case 1:
-					{
-						sum[parentheses]+=sum[parentheses+1];
-					}
-					case 2:
-					{
-						sum[parentheses]-=sum[parentheses+1];
-					}
-					case 3:
-					{
-						sum[parentheses]*=sum[parentheses+1];
-					}
-					case 4:
-					{
-						if(!sum[parentheses+1])
-						{
-							parentheses=1;
-							break;
-						}
-						sum[parentheses]/=sum[parentheses+1];
-					}
-					case 5:
-					{
-						sum[parentheses]=Pow(sum[parentheses], sum[parentheses+1]);
-					}
-				}
-				_operator[parentheses]=0;
-			}
-		}
-
 		switch(buffer[0])
 		{
+			case '(':
+			{
+				parentheses++;
+				sum[parentheses]=0.0;
+				_operator[parentheses]=0;
+			}
+			case ')':
+			{
+				valueReady=true;
+				mustClose=true;
+			}
+			case '\0':
+			{
+				valueReady=true;
+			}
+			case 'n', 'x':
+			{
+				usePlayers=true;
+			}
 			case '+':
 			{
 				_operator[parentheses]=1;
+				canAdd=true;
 			}
 			case '-':
 			{
 				_operator[parentheses]=2;
+				canAdd=true;
 			}
 			case '*':
 			{
 				_operator[parentheses]=3;
+				canAdd=true;
 			}
-			case '/', '\\':
+			case '/':
 			{
 				_operator[parentheses]=4;
+				canAdd=true;
 			}
 			case '^':
 			{
 				_operator[parentheses]=5;
+				canAdd=true;
 			}
-			case 'n', 'x':
+			default:
 			{
+				StrCat(value, sizeof(value), buffer);
+			}
+		}
+
+		if(valueReady)
+		{
+			valueReady=false;
+			if(usePlayers)
+			{
+				usePlayers=false;
 				switch(_operator[parentheses])
 				{
 					case 1:
@@ -6263,9 +6216,63 @@ stock CalcBossHealthMax(client)
 					{
 						sum[parentheses]=Pow(sum[parentheses], Float:playing);
 					}
+					default:
+					{
+						parentheses=1;
+						break;
+					}
 				}
-				_operator[parentheses]=0;
 			}
+
+			if(value[0]!='\0' && canAdd)
+			{
+				canAdd=false;
+				switch(_operator[parentheses])
+				{
+					case 1:
+					{
+						sum[parentheses]+=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 2:
+					{
+						sum[parentheses]-=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 3:
+					{
+						sum[parentheses]*=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 4:
+					{
+						if(StringToFloat(value)==0)
+						{
+							parentheses=1;
+							break;
+						}
+						sum[parentheses]/=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 5:
+					{
+						sum[parentheses]=Pow(sum[parentheses], StringToFloat(value));
+						strcopy(value, sizeof(value), "");
+					}
+					default:
+					{
+						parentheses=1;
+						break;
+					}
+				}
+			}
+		}
+
+		if(mustClose)
+		{
+			mustClose=false;
+			parentheses--;
+			sum[parentheses]=sum[parentheses+1];
 		}
 	}
 
@@ -6524,12 +6531,6 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 
 			chances[0]=StringToInt(stringChances[0]);
 			chances[1]=StringToInt(stringChances[1]);
-			/*chances[0]=StringToInt(stringChances[1]);
-			for(chancesIndex=3; stringChances[chancesIndex][0]; chancesIndex+=2)
-			{
-				chances[chancesIndex/2]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex/2-1];
-			}
-			chancesIndex-=2;*/
 			for(chancesIndex=2; chancesIndex<amount; chancesIndex++)
 			{
 				chances[chancesIndex]=(chancesIndex % 2 ? (StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2]) : StringToInt(stringChances[chancesIndex]));
@@ -6540,16 +6541,13 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 		{
 			if(ChancesString[0])
 			{
-				/*new character;
-				new i=GetRandomInt(0, chances[chancesIndex/2]);*/
 				new i=GetRandomInt(0, chances[chancesIndex-1]);
 				Debug("PickCharacter: Random number was %i", i);
-				for(new character=chances[0]; i>chances[character+1]; character+=2)/*for(new character=chances[chancesIndex-2]; i<chances[character+1]; character-=2)*/
+				for(new character=chances[chancesIndex-2]; i<chances[character+1]; character-=2)
 				{
-					Special[client]=chances[character];  //character-1
+					Special[client]=chances[character];
 					Debug("PickCharacter: Character was %i", Special[client]);
 				}
-				//Special[client]=StringToInt(stringChances[character*2])-1;
 				KvRewind(BossKV[Special[client]]);
 			}
 			else

@@ -260,7 +260,7 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED))
 			{
 				SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-				ShowSyncHudText(boss, jumpHUD, "%t", "jump_status_2", -RoundFloat(charge));
+				ShowSyncHudText(boss, jumpHUD, "%t", "jump_status_2", "Super Jump", -RoundFloat(charge));
 			}
 		}
 		case 2:
@@ -275,7 +275,7 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 				}
 				else
 				{
-					ShowSyncHudText(boss, jumpHUD, "%t", "jump_status", RoundFloat(charge));
+					ShowSyncHudText(boss, jumpHUD, "%t", "jump_status", "Super Jump", RoundFloat(charge));
 				}
 			}
 		}
