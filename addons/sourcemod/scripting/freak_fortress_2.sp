@@ -747,10 +747,6 @@ public OnPluginStart()
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
 
-	AddCommandListener(OnTaunt, "taunt");  //Used to activate rages
-	AddCommandListener(OnTaunt, "+taunt");  //Used to activate rages
-	AddCommandListener(OnTaunt, "+use_action_slot_item_server");  //Used to activate rages
-	AddCommandListener(OnTaunt, "use_action_slot_item_server");  //Used to activate rages
 	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnDestroy, "destroy");  //Used to stop Eureka Effect from destroying buildings on teleport
@@ -4335,37 +4331,29 @@ public Action:BossTimer(Handle:timer)
 			ShowSyncHudText(Boss[client], healthHUD, "%t", "health", BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client]);
 			if(RoundFloat(BossCharge[client][0])==100)
 			{
-				if(IsFakeClient(Boss[client]) && !(FF2flags[Boss[client]] & FF2FLAG_BOTRAGE))
-				{
-					CreateTimer(1.0, Timer_BotRage, client, TIMER_FLAG_NO_MAPCHANGE);
-					FF2flags[Boss[client]]|=FF2FLAG_BOTRAGE;
-				}
-				else
-				{
-					SetHudTextParams(-1.0, 0.83, 0.15, 255, 64, 64, 255);
-					ShowSyncHudText(Boss[client], rageHUD, "%t", "do_rage");
+				SetHudTextParams(-1.0, 0.83, 0.15, 255, 64, 64, 255);
+				ShowSyncHudText(Boss[client], rageHUD, "%t", "do_rage");
 
-					decl String:sound[PLATFORM_MAX_PATH];
-					if(RandomSound("sound_full_rage", sound, PLATFORM_MAX_PATH, client) && emitRageSound[client])
+				decl String:sound[PLATFORM_MAX_PATH];
+				if(RandomSound("sound_full_rage", sound, PLATFORM_MAX_PATH, client) && emitRageSound[client])
+				{
+					new Float:position[3];
+					GetEntPropVector(Boss[client], Prop_Send, "m_vecOrigin", position);
+
+					FF2flags[Boss[client]]|=FF2FLAG_TALKING;
+					EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
+					EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
+
+					for(new target=1; target<=MaxClients; target++)
 					{
-						new Float:position[3];
-						GetEntPropVector(Boss[client], Prop_Send, "m_vecOrigin", position);
-
-						FF2flags[Boss[client]]|=FF2FLAG_TALKING;
-						EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
-						EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
-
-						for(new target=1; target<=MaxClients; target++)
+						if(IsClientInGame(target) && target!=Boss[client])
 						{
-							if(IsClientInGame(target) && target!=Boss[client])
-							{
-								EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
-								EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
-							}
+							EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
+							EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
 						}
-						FF2flags[Boss[client]]&=~FF2FLAG_TALKING;
-						emitRageSound[client]=false;
 					}
+					FF2flags[Boss[client]]&=~FF2FLAG_TALKING;
+					emitRageSound[client]=false;
 				}
 			}
 			else
@@ -4487,74 +4475,7 @@ public Action:BossTimer(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:Timer_BotRage(Handle:timer, any:bot)
-{
-	if(!IsValidClient(Boss[bot], false))
-	{
-		return;
-	}
-
-	if(!TF2_IsPlayerInCondition(Boss[bot], TFCond_Taunting))
-	{
-		FakeClientCommandEx(Boss[bot], "taunt");
-	}
-}
-
-stock OnlyScoutsLeft()
-{
-	new scouts=0;
-	for(new client=1; client<=MaxClients; client++)
-	{
-		if(IsValidClient(client) && GetClientTeam(client)==BossTeam)
-		{
-			continue;
-		}
-
-		if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)!=TFClass_Scout)
-		{
-			return 0;
-		}
-		else if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)==TFClass_Scout)
-		{
-			scouts++;
-		}
-	}
-	return scouts;
-}
-
-stock GetIndexOfWeaponSlot(client, slot)
-{
-	new weapon=GetPlayerWeaponSlot(client, slot);
-	return (weapon>MaxClients && IsValidEntity(weapon) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
-}
-
-public TF2_OnConditionAdded(client, TFCond:condition)
-{
-	if((!IsBoss(client)) || !Enabled)
-	{
-		return;
-	}
-
-	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
-	{
-		TF2_RemoveCondition(client, condition);
-	}
-	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42))
-	{
-		TF2_RemoveCondition(client, condition);
-	}
-	return;
-}
-
-public TF2_OnConditionRemoved(client, TFCond:condition)
-{
-	if(TF2_GetPlayerClass(client)==TFClass_Scout && condition==TFCond_CritHype)
-	{
-		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
-	}
-}
-
-public Action:OnTaunt(client, const String:command[], args)
+public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Float:angles[3], &weapon)
 {
 	if(!Enabled)
 	{
@@ -4568,7 +4489,7 @@ public Action:OnTaunt(client, const String:command[], args)
 		}
 		else
 		{
-			if(!IsBoss(client))
+			if(!IsBoss(client) || !(buttons & IN_ATTACK3))
 			{
 				return Plugin_Continue;
 			}
@@ -4650,6 +4571,60 @@ public Action:OnTaunt(client, const String:command[], args)
 		emitRageSound[boss]=true;
 	}
 	return Plugin_Continue;
+}
+
+stock OnlyScoutsLeft()
+{
+	new scouts=0;
+	for(new client=1; client<=MaxClients; client++)
+	{
+		if(IsValidClient(client) && GetClientTeam(client)==BossTeam)
+		{
+			continue;
+		}
+
+		if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)!=TFClass_Scout)
+		{
+			return 0;
+		}
+		else if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)==TFClass_Scout)
+		{
+			scouts++;
+		}
+	}
+	return scouts;
+}
+
+stock GetIndexOfWeaponSlot(client, slot)
+{
+	new weapon=GetPlayerWeaponSlot(client, slot);
+	return (weapon>MaxClients && IsValidEntity(weapon) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+}
+
+public TF2_OnConditionAdded(client, TFCond:condition)
+{
+	if((!IsBoss(client)) || !Enabled)
+	{
+		return;
+	}
+
+	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
+	{
+		TF2_RemoveCondition(client, condition);
+	}
+	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42))
+	{
+		TF2_RemoveCondition(client, condition);
+	}
+	return;
+}
+
+public TF2_OnConditionRemoved(client, TFCond:condition)
+{
+	if(TF2_GetPlayerClass(client)==TFClass_Scout && condition==TFCond_CritHype)
+	{
+		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
+	}
 }
 
 public Action:OnSuicide(client, const String:command[], args)
