@@ -747,10 +747,6 @@ public OnPluginStart()
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
 
-	AddCommandListener(OnTaunt, "taunt");  //Used to activate rages
-	AddCommandListener(OnTaunt, "+taunt");  //Used to activate rages
-	AddCommandListener(OnTaunt, "+use_action_slot_item_server");  //Used to activate rages
-	AddCommandListener(OnTaunt, "use_action_slot_item_server");  //Used to activate rages
 	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnDestroy, "destroy");  //Used to stop Eureka Effect from destroying buildings on teleport
@@ -4487,74 +4483,7 @@ public Action:BossTimer(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:Timer_BotRage(Handle:timer, any:bot)
-{
-	if(!IsValidClient(Boss[bot], false))
-	{
-		return;
-	}
-
-	if(!TF2_IsPlayerInCondition(Boss[bot], TFCond_Taunting))
-	{
-		FakeClientCommandEx(Boss[bot], "taunt");
-	}
-}
-
-stock OnlyScoutsLeft()
-{
-	new scouts=0;
-	for(new client=1; client<=MaxClients; client++)
-	{
-		if(IsValidClient(client) && GetClientTeam(client)==BossTeam)
-		{
-			continue;
-		}
-
-		if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)!=TFClass_Scout)
-		{
-			return 0;
-		}
-		else if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)==TFClass_Scout)
-		{
-			scouts++;
-		}
-	}
-	return scouts;
-}
-
-stock GetIndexOfWeaponSlot(client, slot)
-{
-	new weapon=GetPlayerWeaponSlot(client, slot);
-	return (weapon>MaxClients && IsValidEntity(weapon) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
-}
-
-public TF2_OnConditionAdded(client, TFCond:condition)
-{
-	if((!IsBoss(client)) || !Enabled)
-	{
-		return;
-	}
-
-	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
-	{
-		TF2_RemoveCondition(client, condition);
-	}
-	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42))
-	{
-		TF2_RemoveCondition(client, condition);
-	}
-	return;
-}
-
-public TF2_OnConditionRemoved(client, TFCond:condition)
-{
-	if(TF2_GetPlayerClass(client)==TFClass_Scout && condition==TFCond_CritHype)
-	{
-		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
-	}
-}
-
-public Action:OnTaunt(client, const String:command[], args)
+public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Float:angles[3], &weapon)
 {
 	if(!Enabled)
 	{
@@ -4568,7 +4497,7 @@ public Action:OnTaunt(client, const String:command[], args)
 		}
 		else
 		{
-			if(!IsBoss(client))
+			if(!IsBoss(client) || !(buttons & IN_ATTACK3))
 			{
 				return Plugin_Continue;
 			}
@@ -4650,6 +4579,73 @@ public Action:OnTaunt(client, const String:command[], args)
 		emitRageSound[boss]=true;
 	}
 	return Plugin_Continue;
+}
+
+public Action:Timer_BotRage(Handle:timer, any:bot)
+{
+	if(!IsValidClient(Boss[bot], false))
+	{
+		return;
+	}
+
+	if(!TF2_IsPlayerInCondition(Boss[bot], TFCond_Taunting))
+	{
+		FakeClientCommandEx(Boss[bot], "+attack3"); //If this doesn't work, blame @50Wliu (on Github)/Wliu on forums.
+	}
+}
+
+stock OnlyScoutsLeft()
+{
+	new scouts=0;
+	for(new client=1; client<=MaxClients; client++)
+	{
+		if(IsValidClient(client) && GetClientTeam(client)==BossTeam)
+		{
+			continue;
+		}
+
+		if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)!=TFClass_Scout)
+		{
+			return 0;
+		}
+		else if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)==TFClass_Scout)
+		{
+			scouts++;
+		}
+	}
+	return scouts;
+}
+
+stock GetIndexOfWeaponSlot(client, slot)
+{
+	new weapon=GetPlayerWeaponSlot(client, slot);
+	return (weapon>MaxClients && IsValidEntity(weapon) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+}
+
+public TF2_OnConditionAdded(client, TFCond:condition)
+{
+	if((!IsBoss(client)) || !Enabled)
+	{
+		return;
+	}
+
+	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
+	{
+		TF2_RemoveCondition(client, condition);
+	}
+	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42))
+	{
+		TF2_RemoveCondition(client, condition);
+	}
+	return;
+}
+
+public TF2_OnConditionRemoved(client, TFCond:condition)
+{
+	if(TF2_GetPlayerClass(client)==TFClass_Scout && condition==TFCond_CritHype)
+	{
+		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
+	}
 }
 
 public Action:OnSuicide(client, const String:command[], args)
@@ -6119,13 +6115,11 @@ stock GetBossIndex(client)
 
 stock CalcBossHealthMax(client)
 {
-	decl String:formula[128];
-	new String:value[128];
-	new String:buffer[2];
-
+	decl String:formula[1024], String:value[1024], String:buffer[2];
+	new bool:mustClose, bool:usePlayers, bool:canAdd, bool:valueReady;
 	new parentheses;
-	new Float:sum[32];
-	new _operator[32];  //Prevents compiler conflict
+	new Float:sum[128];
+	new _operator[128];
 
 	KvRewind(BossKV[Special[client]]);
 	KvGetString(BossKV[Special[client]], "health_formula", formula, sizeof(formula), "((460+n)*n)^1.075");
@@ -6134,113 +6128,64 @@ stock CalcBossHealthMax(client)
 	for(new i=0; i<=length; i++)
 	{
 		strcopy(buffer, sizeof(buffer), formula[i]);
-		if((buffer[0]>='0' && buffer[0]<='9') || buffer[0]=='.')
-		{
-			StrCat(value, sizeof(value), buffer);
-			continue;
-		}
-
-		if(buffer[0]=='(')
-		{
-			parentheses++;
-			sum[parentheses]=0.0;
-			_operator[parentheses]=0;
-		}
-		else
-		{
-			if(value[0]!=0)
-			{
-				switch(_operator[parentheses])
-				{
-					case 0, 1:
-					{
-						sum[parentheses]+=StringToFloat(value);
-					}
-					case 2:
-					{
-						sum[parentheses]-=StringToFloat(value);
-					}
-					case 3:
-					{
-						sum[parentheses]*=StringToFloat(value);
-					}
-					case 4:
-					{
-						new Float:temp=StringToFloat(value);
-						if(!temp)
-						{
-							parentheses=1;
-							break;
-						}
-						sum[parentheses]/=temp;
-					}
-					case 5:
-					{
-						sum[parentheses]=Pow(sum[parentheses], StringToFloat(value));
-					}
-				}
-				_operator[parentheses]=0;
-			}
-
-			if(buffer[0]==')')
-			{
-				parentheses--;
-				switch(_operator[parentheses])
-				{
-					case 1:
-					{
-						sum[parentheses]+=sum[parentheses+1];
-					}
-					case 2:
-					{
-						sum[parentheses]-=sum[parentheses+1];
-					}
-					case 3:
-					{
-						sum[parentheses]*=sum[parentheses+1];
-					}
-					case 4:
-					{
-						if(!sum[parentheses+1])
-						{
-							parentheses=1;
-							break;
-						}
-						sum[parentheses]/=sum[parentheses+1];
-					}
-					case 5:
-					{
-						sum[parentheses]=Pow(sum[parentheses], sum[parentheses+1]);
-					}
-				}
-				_operator[parentheses]=0;
-			}
-		}
-
 		switch(buffer[0])
 		{
+			case '(':
+			{
+				parentheses++;
+				sum[parentheses]=0.0;
+				_operator[parentheses]=0;
+			}
+			case ')':
+			{
+				valueReady=true;
+				mustClose=true;
+			}
+			case '\0':
+			{
+				valueReady=true;
+			}
+			case 'n', 'x':
+			{
+				usePlayers=true;
+			}
 			case '+':
 			{
 				_operator[parentheses]=1;
+				canAdd=true;
 			}
 			case '-':
 			{
 				_operator[parentheses]=2;
+				canAdd=true;
 			}
 			case '*':
 			{
 				_operator[parentheses]=3;
+				canAdd=true;
 			}
-			case '/', '\\':
+			case '/':
 			{
 				_operator[parentheses]=4;
+				canAdd=true;
 			}
 			case '^':
 			{
 				_operator[parentheses]=5;
+				canAdd=true;
 			}
-			case 'n', 'x':
+			default:
 			{
+				StrCat(value, sizeof(value), buffer);
+			}
+		}
+
+		if(valueReady)
+		{
+			valueReady=false;
+			if(usePlayers)
+			{
+				usePlayers=false;
 				switch(_operator[parentheses])
 				{
 					case 1:
@@ -6257,15 +6202,72 @@ stock CalcBossHealthMax(client)
 					}
 					case 4:
 					{
+						if(playing==0)
+						{
+							ThrowError("Avoiding divide by 0 error.");
+						}
 						sum[parentheses]/=playing;
 					}
 					case 5:
 					{
 						sum[parentheses]=Pow(sum[parentheses], Float:playing);
 					}
+					default:
+					{
+						parentheses=1;
+						break; //Last comment: If this breaks switch only, blame Wliu (@50Wliu on Github).
+					}
 				}
-				_operator[parentheses]=0;
 			}
+
+			if(value[0]!='\0' && canAdd)
+			{
+				canAdd=false;
+				switch(_operator[parentheses])
+				{
+					case 1:
+					{
+						sum[parentheses]+=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 2:
+					{
+						sum[parentheses]-=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 3:
+					{
+						sum[parentheses]*=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 4:
+					{
+						if(StringToFloat(value)==0)
+						{
+							ThrowError("Avoiding divide by 0 error.");
+						}
+						sum[parentheses]/=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 5:
+					{
+						sum[parentheses]=Pow(sum[parentheses], StringToFloat(value));
+						strcopy(value, sizeof(value), "");
+					}
+					default:
+					{
+						parentheses=1;
+						break;
+					}
+				}
+			}
+		}
+
+		if(mustClose)
+		{
+			mustClose=false;
+			parentheses--;
+			sum[parentheses]=sum[parentheses+1];
 		}
 	}
 

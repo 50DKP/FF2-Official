@@ -43,7 +43,7 @@
 	}
 	"do_rage"
 	{
-		"en"	"Perform a taunt to activate your \"RAGE\" ability!"
+		"en"	"Use your +attack3 key (Middle mouse button by default, or your mouse wheel, depends on mouse) to activate your \"RAGE\" ability!"
 	}
 	"rage_meter"
 	{
