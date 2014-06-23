@@ -747,10 +747,6 @@ public OnPluginStart()
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
 
-	AddCommandListener(OnTaunt, "taunt");  //Used to activate rages
-	AddCommandListener(OnTaunt, "+taunt");  //Used to activate rages
-	AddCommandListener(OnTaunt, "+use_action_slot_item_server");  //Used to activate rages
-	AddCommandListener(OnTaunt, "use_action_slot_item_server");  //Used to activate rages
 	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnDestroy, "destroy");  //Used to stop Eureka Effect from destroying buildings on teleport
