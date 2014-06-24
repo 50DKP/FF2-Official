@@ -6119,13 +6119,11 @@ stock GetBossIndex(client)
 
 stock CalcBossHealthMax(client)
 {
-	decl String:formula[128];
-	new String:value[128];
-	new String:buffer[2];
-
+	decl String:formula[1024], String:value[1024], String:buffer[2];
+	new bool:mustClose, bool:usePlayers, bool:canAdd, bool:valueReady;
 	new parentheses;
-	new Float:sum[32];
-	new _operator[32];  //Prevents compiler conflict
+	new Float:sum[128];
+	new _operator[128];
 
 	KvRewind(BossKV[Special[client]]);
 	KvGetString(BossKV[Special[client]], "health_formula", formula, sizeof(formula), "((460+n)*n)^1.075");
@@ -6134,137 +6132,146 @@ stock CalcBossHealthMax(client)
 	for(new i=0; i<=length; i++)
 	{
 		strcopy(buffer, sizeof(buffer), formula[i]);
-		if((buffer[0]>='0' && buffer[0]<='9') || buffer[0]=='.')
+		switch(buffer[0])
 		{
-			StrCat(value, sizeof(value), buffer);
-			continue;
-		}
-
-		if(buffer[0]=='(')
-		{
-			parentheses++;
-			sum[parentheses]=0.0;
-			_operator[parentheses]=0;
-		}
-		else
-		{
-			switch(buffer[0])
+			case '(':
 			{
-				case '+':
-				{
-					_operator[parentheses]=1;
-				}
-				case '-':
-				{
-					_operator[parentheses]=2;
-				}
-				case '*':
-				{
-					_operator[parentheses]=3;
-				}
-				case '/', '\\':
-				{
-					_operator[parentheses]=4;
-				}
-				case '^':
-				{
-					_operator[parentheses]=5;
-				}
-				case 'n', 'x':
-				{
-					switch(_operator[parentheses])
-					{
-						case 1:
-						{
-							sum[parentheses]+=playing;
-						}
-						case 2:
-						{
-							sum[parentheses]-=playing;
-						}
-						case 3:
-						{
-							sum[parentheses]*=playing;
-						}
-						case 4:
-						{
-							sum[parentheses]/=playing;
-						}
-						case 5:
-						{
-							sum[parentheses]=Pow(sum[parentheses], Float:playing);
-						}
-					}
-					_operator[parentheses]=0;
-				}
-			}
-			if(value[0]!=0)
-			{
-				switch(_operator[parentheses])
-				{
-					case 0, 1:
-					{
-						sum[parentheses]+=StringToFloat(value);
-					}
-					case 2:
-					{
-						sum[parentheses]-=StringToFloat(value);
-					}
-					case 3:
-					{
-						sum[parentheses]*=StringToFloat(value);
-					}
-					case 4:
-					{
-						new Float:temp=StringToFloat(value);
-						if(!temp)
-						{
-							parentheses=1;
-							break;
-						}
-						sum[parentheses]/=temp;
-					}
-					case 5:
-					{
-						sum[parentheses]=Pow(sum[parentheses], StringToFloat(value));
-					}
-				}
+				parentheses++;
+				sum[parentheses]=0.0;
 				_operator[parentheses]=0;
 			}
-
-			if(buffer[0]==')')
+			case ')':
 			{
-				parentheses--;
+				valueReady=true;
+				mustClose=true;
+			}
+			case '\0':
+			{
+				valueReady=true;
+			}
+			case 'n', 'x':
+			{
+				usePlayers=true;
+			}
+			case '+':
+			{
+				_operator[parentheses]=1;
+				canAdd=true;
+			}
+			case '-':
+			{
+				_operator[parentheses]=2;
+				canAdd=true;
+			}
+			case '*':
+			{
+				_operator[parentheses]=3;
+				canAdd=true;
+			}
+			case '/':
+			{
+				_operator[parentheses]=4;
+				canAdd=true;
+			}
+			case '^':
+			{
+				_operator[parentheses]=5;
+				canAdd=true;
+			}
+			default:
+			{
+				StrCat(value, sizeof(value), buffer);
+			}
+		}
+
+		if(valueReady)
+		{
+			valueReady=false;
+			if(usePlayers)
+			{
+				usePlayers=false;
 				switch(_operator[parentheses])
 				{
 					case 1:
 					{
-						sum[parentheses]+=sum[parentheses+1];
+						sum[parentheses]+=playing;
 					}
 					case 2:
 					{
-						sum[parentheses]-=sum[parentheses+1];
+						sum[parentheses]-=playing;
 					}
 					case 3:
 					{
-						sum[parentheses]*=sum[parentheses+1];
+						sum[parentheses]*=playing;
 					}
 					case 4:
 					{
-						if(!sum[parentheses+1])
+						if(playing==0)
 						{
-							parentheses=1;
-							break;
+							ThrowError("Avoiding divide by 0 error.");
 						}
-						sum[parentheses]/=sum[parentheses+1];
+						sum[parentheses]/=playing;
 					}
 					case 5:
 					{
-						sum[parentheses]=Pow(sum[parentheses], sum[parentheses+1]);
+						sum[parentheses]=Pow(sum[parentheses], Float:playing);
+					}
+					default:
+					{
+						parentheses=1;
+						break; //Last comment: If this breaks switch only, blame Wliu (@50Wliu on Github).
 					}
 				}
-				_operator[parentheses]=0;
 			}
+
+			if(value[0]!='\0' && canAdd)
+			{
+				canAdd=false;
+				switch(_operator[parentheses])
+				{
+					case 1:
+					{
+						sum[parentheses]+=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 2:
+					{
+						sum[parentheses]-=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 3:
+					{
+						sum[parentheses]*=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 4:
+					{
+						if(StringToFloat(value)==0)
+						{
+							ThrowError("Avoiding divide by 0 error.");
+						}
+						sum[parentheses]/=StringToFloat(value);
+						strcopy(value, sizeof(value), "");
+					}
+					case 5:
+					{
+						sum[parentheses]=Pow(sum[parentheses], StringToFloat(value));
+						strcopy(value, sizeof(value), "");
+					}
+					default:
+					{
+						parentheses=1;
+						break;
+					}
+				}
+			}
+		}
+
+		if(mustClose)
+		{
+			mustClose=false;
+			parentheses--;
+			sum[parentheses]=sum[parentheses+1];
 		}
 	}
 
