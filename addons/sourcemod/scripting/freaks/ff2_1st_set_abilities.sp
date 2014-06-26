@@ -224,11 +224,7 @@ Rage_Clone(const String:ability_name[], client)
 		}
 	}
 
-	new totalMinions=RoundToCeil(alive*ratio);
-	if(ratio==0.0)
-	{
-		totalMinions=MaxClients;
-	}
+	new totalMinions=(ratio ? RoundToCeil(alive*ratio) : MaxClients);
 	new config=GetRandomInt(0, maxKV-1);
 	new clone, temp;
 	for(new i=1; i<=dead && i<=totalMinions; i++)
@@ -245,14 +241,7 @@ Rage_Clone(const String:ability_name[], client)
 		ChangeClientTeam(clone, BossTeam);
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=client;
-		if(class)
-		{
-			TF2_SetPlayerClass(clone, TFClassType:class);
-		}
-		else
-		{
-			TF2_SetPlayerClass(clone, TFClassType:KvGetNum(bossKV[config], "class", 0));
-		}
+		TF2_SetPlayerClass(clone, (class ? (TFClassType:class) : (TFClassType:KvGetNum(bossKV[config], "class", 0))));
 
 		if(changeModel)
 		{
@@ -320,25 +309,8 @@ Rage_Clone(const String:ability_name[], client)
 	}
 	CloseHandle(players);
 
-	new entity;
-	new owner;
-	while((entity=FindEntityByClassname(entity, "tf_wearable"))!=-1)
-	{
-		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
-		{
-			TF2_RemoveWearable(owner, entity);
-		}
-	}
-
-	while((entity=FindEntityByClassname(entity, "tf_wearable_demoshield"))!=-1)
-	{
-		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
-		{
-			TF2_RemoveWearable(owner, entity);
-		}
-	}
-
-	while((entity=FindEntityByClassname(entity, "tf_powerup_bottle"))!=-1)
+	new entity, owner;
+	while((entity=FindEntityByClassname(entity, "tf_wearable"))!=-1 || (entity=FindEntityByClassname(entity, "tf_wearable_demoshield"))!=-1 || (entity=FindEntityByClassname(entity, "tf_powerup_bottle"))!=-1)
 	{
 		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
 		{
@@ -776,7 +748,7 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 	{
 		if(FF2_HasAbility(bossAttacker, this_plugin_name, "special_dropprop"))
 		{
-			if(FF2_GetAbilityArgument(bossAttacker,this_plugin_name,"special_dropprop", 3, 0))
+			if(FF2_GetAbilityArgument(bossAttacker, this_plugin_name, "special_dropprop", 3, 0))
 			{
 				CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"));
 			}
@@ -791,6 +763,7 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 				SetEntProp(prop, Prop_Send, "m_CollisionGroup", 1);
 				SetEntProp(prop, Prop_Send, "m_usSolidFlags", 16);
 				DispatchSpawn(prop);
+
 				new Float:position[3];
 				GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 				position[2]+=20;
@@ -826,13 +799,6 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 				}
 				SetEntPropEnt(attacker, Prop_Data, "m_hActiveWeapon", weapon);
 			}
-		}
-	}
-	else
-	{
-		if(GetClientTeam(client)==BossTeam)
-		{
-			CreateTimer(0.5, Timer_RestoreLastClass, GetClientUserId(client));
 		}
 	}
 

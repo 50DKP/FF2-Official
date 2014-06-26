@@ -2491,10 +2491,6 @@ public Action:StartBossTimer(Handle:timer)
 		if(Boss[client] && IsValidEdict(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
 			BossHealthMax[client]=CalcBossHealthMax(client);
-			if(BossHealthMax[client]<5)  //Qfaud?
-			{
-				BossHealthMax[client]=1322;
-			}
 			SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
 			SetBossHealthFix(Boss[client], BossHealthMax[client]);
 			BossLives[client]=BossLivesMax[client];
@@ -4487,17 +4483,97 @@ public Action:BossTimer(Handle:timer)
 	return Plugin_Continue;
 }
 
+public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Float:angles[3], &weapon)
+{
+	if(!Enabled || CheckRoundState()==0 || CheckRoundState()==2 || !IsBoss(client) || !(buttons & IN_ATTACK3))
+	{
+		return Plugin_Continue;
+	}
+
+	if(!IsPlayerAlive(client))
+	{
+		return Plugin_Handled;
+	}
+
+	new boss=GetBossIndex(client);
+	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]))
+	{
+		return Plugin_Continue;
+	}
+
+	if(RoundFloat(BossCharge[boss][0])==100)
+	{
+		decl String:ability[10];
+		decl String:lives[MAXRANDOMS][3];
+		for(new i=1; i<MAXRANDOMS; i++)
+		{
+			Format(ability, sizeof(ability), "ability%i", i);
+			KvRewind(BossKV[Special[boss]]);
+			if(KvJumpToKey(BossKV[Special[boss]], ability))
+			{
+				if(KvGetNum(BossKV[Special[boss]], "arg0", 0))
+				{
+					continue;
+				}
+
+				KvGetString(BossKV[Special[boss]], "life", ability, sizeof(ability));
+				if(!ability[0])
+				{
+					decl String:abilityName[64], String:pluginName[64];
+					KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+					KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+					UseAbility(abilityName, pluginName, boss, 0);
+				}
+				else
+				{
+					new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+					for(new j=0; j<count; j++)
+					{
+						if(StringToInt(lives[j])==BossLives[boss])
+						{
+							decl String:abilityName[64], String:pluginName[64];
+							KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+							KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+							UseAbility(abilityName, pluginName, boss, 0);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		decl Float:position[3];
+		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
+
+		decl String:sound[PLATFORM_MAX_PATH];
+		if(RandomSoundAbility("sound_ability", sound, PLATFORM_MAX_PATH, boss))
+		{
+			FF2flags[Boss[boss]]|=FF2FLAG_TALKING;
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+
+			for(new target=1; target<=MaxClients; target++)
+			{
+				if(IsClientInGame(target) && target!=Boss[boss])
+				{
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+				}
+			}
+			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
+		}
+		emitRageSound[boss]=true;
+	}
+	return Plugin_Continue;
+}
+
 public Action:Timer_BotRage(Handle:timer, any:bot)
 {
 	if(!IsValidClient(Boss[bot], false))
 	{
 		return;
 	}
-
-	if(!TF2_IsPlayerInCondition(Boss[bot], TFCond_Taunting))
-	{
-		FakeClientCommandEx(Boss[bot], "taunt");
-	}
+	FakeClientCommandEx(bot, "+attack3");
 }
 
 stock OnlyScoutsLeft()
@@ -5618,6 +5694,21 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							TF2_RemoveCondition(attacker, TFCond_Dazed);
 						}
 					}
+					case 1099:  //Tide Turner
+					{
+						SetEntProp(attacker, Prop_Send, "m_flChargeMeter", 100.0);
+					}
+					case 1104:  //Air Strike
+					{
+						static airStrikeDamage;
+						airStrikeDamage+=damage;
+						if(airStrikeDamage>=200)
+						{
+							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
+							SetEntProp(weapon, Prop_Send, "m_iClip1", GetEntProp(weapon, Prop_Send, "m_iClip1")+1);
+							airStrikeDamage-=200;
+						}
+					}
 				}
 
 				if(bIsBackstab)
@@ -5795,7 +5886,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 			}
 		}
-		else  //Wat.  TODO:  LOOK AT THIS
+		else  //TODO: LOOK AT THIS
 		{
 			if(IsValidClient(client, false) && TF2_GetPlayerClass(client)==TFClass_Soldier)
 			{
@@ -5807,15 +5898,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						damage/=10.0;
 						return Plugin_Changed;
 					}
-				}/*
-				else if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226)
-				{
-					new Float:charge=GetEntPropFloat(client, Prop_Send, "m_flRageMeter");
-					if(charge>20)
-						SetEntPropFloat(client, Prop_Send, "m_flRageMeter",charge-20.0);
-					else
-						SetEntPropFloat(client, Prop_Send, "m_flRageMeter",0.0);
-				}*/
+				}
 			}
 		}
 	}
@@ -6119,7 +6202,8 @@ stock GetBossIndex(client)
 
 stock CalcBossHealthMax(client)
 {
-	decl String:formula[1024], String:value[1024], String:buffer[2];
+	decl String:formula[1024], String:buffer[2];
+	new String:value[1024];
 	new bool:mustClose, bool:usePlayers, bool:canAdd, bool:valueReady;
 	new parentheses;
 	new Float:sum[128];
@@ -6206,10 +6290,6 @@ stock CalcBossHealthMax(client)
 					}
 					case 4:
 					{
-						if(playing==0)
-						{
-							ThrowError("Avoiding divide by 0 error.");
-						}
 						sum[parentheses]/=playing;
 					}
 					case 5:
@@ -6219,7 +6299,7 @@ stock CalcBossHealthMax(client)
 					default:
 					{
 						parentheses=1;
-						break; //Last comment: If this breaks switch only, blame Wliu (@50Wliu on Github).
+						break;
 					}
 				}
 			}
@@ -6248,7 +6328,8 @@ stock CalcBossHealthMax(client)
 					{
 						if(StringToFloat(value)==0)
 						{
-							ThrowError("Avoiding divide by 0 error.");
+							parentheses=1;
+							break;
 						}
 						sum[parentheses]/=StringToFloat(value);
 						strcopy(value, sizeof(value), "");
@@ -6530,12 +6611,6 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 
 			chances[0]=StringToInt(stringChances[0]);
 			chances[1]=StringToInt(stringChances[1]);
-			/*chances[0]=StringToInt(stringChances[1]);
-			for(chancesIndex=3; stringChances[chancesIndex][0]; chancesIndex+=2)
-			{
-				chances[chancesIndex/2]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex/2-1];
-			}
-			chancesIndex-=2;*/
 			for(chancesIndex=2; chancesIndex<amount; chancesIndex++)
 			{
 				chances[chancesIndex]=(chancesIndex % 2 ? (StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2]) : StringToInt(stringChances[chancesIndex]));
@@ -6546,16 +6621,13 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 		{
 			if(ChancesString[0])
 			{
-				/*new character;
-				new i=GetRandomInt(0, chances[chancesIndex/2]);*/
 				new i=GetRandomInt(0, chances[chancesIndex-1]);
 				Debug("PickCharacter: Random number was %i", i);
-				for(new character=chances[0]; i>chances[character+1]; character+=2)/*for(new character=chances[chancesIndex-2]; i<chances[character+1]; character-=2)*/
+				for(new character=chances[chancesIndex-2]; i<chances[character+1]; character-=2)
 				{
-					Special[client]=chances[character];  //character-1
+					Special[client]=chances[character];
 					Debug("PickCharacter: Character was %i", Special[client]);
 				}
-				//Special[client]=StringToInt(stringChances[character*2])-1;
 				KvRewind(BossKV[Special[client]]);
 			}
 			else
