@@ -2491,10 +2491,6 @@ public Action:StartBossTimer(Handle:timer)
 		if(Boss[client] && IsValidEdict(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
 			BossHealthMax[client]=CalcBossHealthMax(client);
-			if(BossHealthMax[client]<5)  //Qfaud?
-			{
-				BossHealthMax[client]=1322;
-			}
 			SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
 			SetBossHealthFix(Boss[client], BossHealthMax[client]);
 			BossLives[client]=BossLivesMax[client];
@@ -6119,7 +6115,8 @@ stock GetBossIndex(client)
 
 stock CalcBossHealthMax(client)
 {
-	decl String:formula[1024], String:value[1024], String:buffer[2];
+	decl String:formula[1024], String:buffer[2];
+	new String:value[1024];
 	new bool:mustClose, bool:usePlayers, bool:canAdd, bool:valueReady;
 	new parentheses;
 	new Float:sum[128];
@@ -6206,10 +6203,6 @@ stock CalcBossHealthMax(client)
 					}
 					case 4:
 					{
-						if(playing==0)
-						{
-							ThrowError("Avoiding divide by 0 error.");
-						}
 						sum[parentheses]/=playing;
 					}
 					case 5:
@@ -6219,7 +6212,7 @@ stock CalcBossHealthMax(client)
 					default:
 					{
 						parentheses=1;
-						break; //Last comment: If this breaks switch only, blame Wliu (@50Wliu on Github).
+						break;
 					}
 				}
 			}
@@ -6248,7 +6241,8 @@ stock CalcBossHealthMax(client)
 					{
 						if(StringToFloat(value)==0)
 						{
-							ThrowError("Avoiding divide by 0 error.");
+							parentheses=1;
+							break;
 						}
 						sum[parentheses]/=StringToFloat(value);
 						strcopy(value, sizeof(value), "");
