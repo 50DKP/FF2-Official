@@ -241,7 +241,7 @@ Rage_Clone(const String:ability_name[], client)
 		ChangeClientTeam(clone, BossTeam);
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=client;
-		TF2_SetPlayerClass(clone, (class ? TFClassType:class : TFClassType:KvGetNum(bossKV[config], "class", 0)));
+		TF2_SetPlayerClass(clone, (class ? (TFClassType:class) : (TFClassType:KvGetNum(bossKV[config], "class", 0))));
 
 		if(changeModel)
 		{
@@ -310,7 +310,7 @@ Rage_Clone(const String:ability_name[], client)
 	CloseHandle(players);
 
 	new entity, owner;
-	while((entity=FindEntityByClassname(entity, "tf_wearable"))!=-1 || entity=FindEntityByClassname(entity, "tf_wearable_demoshield"))!=-1 || entity=FindEntityByClassname(entity, "tf_powerup_bottle"))!=-1)
+	while((entity=FindEntityByClassname(entity, "tf_wearable"))!=-1 || (entity=FindEntityByClassname(entity, "tf_wearable_demoshield"))!=-1 || (entity=FindEntityByClassname(entity, "tf_powerup_bottle"))!=-1)
 	{
 		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
 		{
