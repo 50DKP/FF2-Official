@@ -6533,7 +6533,21 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 			chances[1]=StringToInt(stringChances[1]);
 			for(chancesIndex=2; chancesIndex<amount; chancesIndex++)
 			{
-				chances[chancesIndex]=(chancesIndex % 2 ? (StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2]) : StringToInt(stringChances[chancesIndex]));
+				if(chancesIndex % 2)
+				{
+					if(StringToInt(stringChances[chancesIndex])<0)
+					{
+						LogError("[FF2 Bosses] Cannot have negative chances, disregarding chances");
+						strcopy(ChancesString, sizeof(ChancesString), "");
+						break;
+					}
+					chances[chancesIndex]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2];
+					Debug("PickCharacter: Chances for character %i was %s (total chances: %i)", chances[chancesIndex-1], stringChances[chancesIndex], chances[chancesIndex]);
+				else
+				{
+					chances[chancesIndex]=StringToInt(stringChances[chancesIndex]));
+					Debug("PickCharacter: Adding character %i to chances", chances[chancesIndex]);
+				}
 			}
 		}
 
