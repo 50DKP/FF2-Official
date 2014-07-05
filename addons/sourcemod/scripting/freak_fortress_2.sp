@@ -5614,6 +5614,13 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							TF2_RemoveCondition(attacker, TFCond_Dazed);
 						}
 					}
+					case 1099:  //Tide Turner
+					{
+						if(damage>195)  //Must hit with shield *and* sword
+						{
+							SetEntProp(attacker, Prop_Send, "m_flChargeMeter", 100.0);
+						}
+					}
 					case 1104:  //Air Strike
 					{
 						static airStrikeDamage;
@@ -5802,7 +5809,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 			}
 		}
-		else  //Wat.  TODO:  LOOK AT THIS
+		else  //TODO: LOOK AT THIS
 		{
 			if(IsValidClient(client, false) && TF2_GetPlayerClass(client)==TFClass_Soldier)
 			{
@@ -5814,15 +5821,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						damage/=10.0;
 						return Plugin_Changed;
 					}
-				}/*
-				else if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226)
-				{
-					new Float:charge=GetEntPropFloat(client, Prop_Send, "m_flRageMeter");
-					if(charge>20)
-						SetEntPropFloat(client, Prop_Send, "m_flRageMeter",charge-20.0);
-					else
-						SetEntPropFloat(client, Prop_Send, "m_flRageMeter",0.0);
-				}*/
+				}
 			}
 		}
 	}
