@@ -4483,17 +4483,97 @@ public Action:BossTimer(Handle:timer)
 	return Plugin_Continue;
 }
 
+public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Float:angles[3], &weapon)
+{
+	if(!Enabled || CheckRoundState()==0 || CheckRoundState()==2 || !IsBoss(client) || !(buttons & IN_ATTACK3))
+	{
+		return Plugin_Continue;
+	}
+
+	if(!IsPlayerAlive(client))
+	{
+		return Plugin_Handled;
+	}
+
+	new boss=GetBossIndex(client);
+	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]))
+	{
+		return Plugin_Continue;
+	}
+
+	if(RoundFloat(BossCharge[boss][0])==100)
+	{
+		decl String:ability[10];
+		decl String:lives[MAXRANDOMS][3];
+		for(new i=1; i<MAXRANDOMS; i++)
+		{
+			Format(ability, sizeof(ability), "ability%i", i);
+			KvRewind(BossKV[Special[boss]]);
+			if(KvJumpToKey(BossKV[Special[boss]], ability))
+			{
+				if(KvGetNum(BossKV[Special[boss]], "arg0", 0))
+				{
+					continue;
+				}
+
+				KvGetString(BossKV[Special[boss]], "life", ability, sizeof(ability));
+				if(!ability[0])
+				{
+					decl String:abilityName[64], String:pluginName[64];
+					KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+					KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+					UseAbility(abilityName, pluginName, boss, 0);
+				}
+				else
+				{
+					new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+					for(new j=0; j<count; j++)
+					{
+						if(StringToInt(lives[j])==BossLives[boss])
+						{
+							decl String:abilityName[64], String:pluginName[64];
+							KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+							KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+							UseAbility(abilityName, pluginName, boss, 0);
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		decl Float:position[3];
+		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
+
+		decl String:sound[PLATFORM_MAX_PATH];
+		if(RandomSoundAbility("sound_ability", sound, PLATFORM_MAX_PATH, boss))
+		{
+			FF2flags[Boss[boss]]|=FF2FLAG_TALKING;
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+
+			for(new target=1; target<=MaxClients; target++)
+			{
+				if(IsClientInGame(target) && target!=Boss[boss])
+				{
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+				}
+			}
+			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
+		}
+		emitRageSound[boss]=true;
+	}
+	return Plugin_Continue;
+}
+
 public Action:Timer_BotRage(Handle:timer, any:bot)
 {
 	if(!IsValidClient(Boss[bot], false))
 	{
 		return;
 	}
-
-	if(!TF2_IsPlayerInCondition(Boss[bot], TFCond_Taunting))
-	{
-		FakeClientCommandEx(Boss[bot], "taunt");
-	}
+	FakeClientCommandEx(bot, "+attack3");
 }
 
 stock OnlyScoutsLeft()
