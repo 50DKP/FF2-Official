@@ -5614,6 +5614,15 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							TF2_RemoveCondition(attacker, TFCond_Dazed);
 						}
 					}
+					case 1104:  //Air Strike
+					{
+						static airStrikeDamage;
+						airStrikeDamage+=damage;
+						if(airStrikeDamage>=200)
+						{
+							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
+							airStrikeDamage=0;
+						}
 				}
 
 				if(bIsBackstab)
