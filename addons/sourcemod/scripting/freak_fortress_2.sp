@@ -5616,10 +5616,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 1099:  //Tide Turner
 					{
-						if(damage>195)  //Must hit with shield *and* sword
-						{
-							SetEntProp(attacker, Prop_Send, "m_flChargeMeter", 100.0);
-						}
+						SetEntProp(attacker, Prop_Send, "m_flChargeMeter", 100.0);
 					}
 					case 1104:  //Air Strike
 					{
@@ -5629,7 +5626,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
 							SetEntProp(weapon, Prop_Send, "m_iClip1", GetEntProp(weapon, Prop_Send, "m_iClip1")+1);
-							airStrikeDamage=0;
+							airStrikeDamage-=200;
 						}
 					}
 				}
@@ -6534,12 +6531,6 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 
 			chances[0]=StringToInt(stringChances[0]);
 			chances[1]=StringToInt(stringChances[1]);
-			/*chances[0]=StringToInt(stringChances[1]);
-			for(chancesIndex=3; stringChances[chancesIndex][0]; chancesIndex+=2)
-			{
-				chances[chancesIndex/2]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex/2-1];
-			}
-			chancesIndex-=2;*/
 			for(chancesIndex=2; chancesIndex<amount; chancesIndex++)
 			{
 				chances[chancesIndex]=(chancesIndex % 2 ? (StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2]) : StringToInt(stringChances[chancesIndex]));
@@ -6550,16 +6541,13 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 		{
 			if(ChancesString[0])
 			{
-				/*new character;
-				new i=GetRandomInt(0, chances[chancesIndex/2]);*/
 				new i=GetRandomInt(0, chances[chancesIndex-1]);
 				Debug("PickCharacter: Random number was %i", i);
-				for(new character=chances[0]; i>chances[character+1]; character+=2)/*for(new character=chances[chancesIndex-2]; i<chances[character+1]; character-=2)*/
+				for(new character=chances[chancesIndex-2]; i<chances[character+1]; character-=2)
 				{
-					Special[client]=chances[character];  //character-1
+					Special[client]=chances[character];
 					Debug("PickCharacter: Character was %i", Special[client]);
 				}
-				//Special[client]=StringToInt(stringChances[character*2])-1;
 				KvRewind(BossKV[Special[client]]);
 			}
 			else
