@@ -6546,7 +6546,7 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 				}
 				else
 				{
-					chances[chancesIndex]=StringToInt(stringChances[chancesIndex]));
+					chances[chancesIndex]=StringToInt(stringChances[chancesIndex]);
 					Debug("PickCharacter: Adding character %i to chances", chances[chancesIndex]);
 				}
 			}
