@@ -74,6 +74,16 @@
 		"#format" "{1:i}"
 		"en"	"Super Jump will be avaliable in {1} second(s)."
 	}
+	"ability_status"
+	{
+		"#format" "{1:s},{2:i}"
+		"en"	"{1} is {2} percent ready. When at 100 percent look up and stand up."
+	}
+	"ability_status_2"
+	{
+		"#format" "{1:s},{2:i}"
+		"en"	"{1} will be avaliable in {2} second(s)."
+	}
 	"help_scout"
 	{
 		"en"	"The Crit-a-Cola grants crits instead of minicrits.\nThe Fan O' War removes 5%% rage on hit.\nPistols gain minicrits.\nThe Candy Cane drops a health pack on hit."
