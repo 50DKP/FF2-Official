@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"July 5, 2014",		//1.10.0
-	"July 5, 2014",		//1.10.0
-	"July 5, 2014",		//1.10.0
-	"July 5, 2014",		//1.10.0
-	"July 5, 2014",		//1.10.0
-	"July 5, 2014",		//1.10.0
-	"July 5, 2014"		//1.10.0
+	"July 6, 2014",		//1.10.0
+	"July 6, 2014",		//1.10.0
+	"July 6, 2014",		//1.10.0
+	"July 6, 2014",		//1.10.0
+	"July 6, 2014",		//1.10.0
+	"July 6, 2014",		//1.10.0
+	"July 6, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -6562,7 +6562,7 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 				while(i<chances[chancesIndex-1])
 				{
 					Debug("PickCharacter: chances[%i] was %i", chancesIndex, chances[chancesIndex-1]);
-					Special[client]=chances[chancesIndex-2];
+					Special[client]=chances[chancesIndex-2]-1;
 					Debug("PickCharacter: Character was %i", Special[client]);
 					chancesIndex-=2;
 				}
@@ -6572,12 +6572,13 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 				Special[client]=GetRandomInt(0, Specials-1);
 			}
 
+			KvRewind(BossKV[Special[client]]);
 			if(KvGetNum(BossKV[Special[client]], "blocked"))
 			{
 				Special[client]=0;
 				continue;
 			}
-			KvRewind(BossKV[Special[client]]);
+			Debug("PickCharacter: Final character was %i", Special[client]);
 			break;
 		}
 	}
