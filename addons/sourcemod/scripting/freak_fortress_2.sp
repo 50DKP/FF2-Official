@@ -6556,8 +6556,7 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 		{
 			if(ChancesString[0])
 			{
-				//new i=GetRandomInt(0, chances[chancesIndex-1]);
-				new i=1;
+				new i=GetRandomInt(0, chances[chancesIndex-1]);
 				Debug("PickCharacter: Random number was %i; Specials was %i", i, Specials);
 				while(chancesIndex>=0 && i<chances[chancesIndex-1])
 				{
