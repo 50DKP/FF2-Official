@@ -58,3 +58,7 @@ deploy:
         repo: 50DKP/FF2-Official
         branch: master
         tags: true
+
+#Notifications
+notifications:
+    email: false
