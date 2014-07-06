@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"June 19, 2014",	//1.10.0
-	"June 19, 2014",	//1.10.0
-	"June 19, 2014",	//1.10.0
-	"June 19, 2014",	//1.10.0
-	"June 19, 2014",	//1.10.0
-	"June 19, 2014",	//1.10.0
-	"June 19, 2014"		//1.10.0
+	"July 5, 2014",		//1.10.0
+	"July 5, 2014",		//1.10.0
+	"July 5, 2014",		//1.10.0
+	"July 5, 2014",		//1.10.0
+	"July 5, 2014",		//1.10.0
+	"July 5, 2014",		//1.10.0
+	"July 5, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -6552,15 +6552,18 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 			}
 		}
 
+		Debug("PickCharacter: chancesIndex was %i", chancesIndex);
 		for(new tries; tries<100; tries++)
 		{
 			if(ChancesString[0])
 			{
 				new i=GetRandomInt(0, chances[chancesIndex-1]);
 				Debug("PickCharacter: Random number was %i", i);
-				for(new character=chances[chancesIndex-2]; i<chances[character+1]; character-=2)
+				Debug("PickCharacter: Chances for character %i was %i", chances[chancesIndex-2], chances[chancesIndex-1]);
+				for(/*new character=chances[chancesIndex-2]*/; i<chances[chancesIndex-1]; chancesIndex-=2)
 				{
-					Special[client]=chances[character];
+					Debug("PickCharacter: chances[%i] was %i", chancesIndex, chances[chancesIndex-1]);
+					Special[client]=chances[chancesIndex-2];
 					Debug("PickCharacter: Character was %i", Special[client]);
 				}
 				KvRewind(BossKV[Special[client]]);
