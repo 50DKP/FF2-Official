@@ -6556,10 +6556,10 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 		{
 			if(ChancesString[0])
 			{
-				new i=GetRandomInt(0, chances[chancesIndex-1]);
+				//new i=GetRandomInt(0, chances[chancesIndex-1]);
+				new i=1;
 				Debug("PickCharacter: Random number was %i; Specials was %i", i, Specials);
-				//for(/*new character=chances[chancesIndex-2]*/; i<chances[chancesIndex-1]; chancesIndex-=2)
-				while(i<chances[chancesIndex-1])
+				while(chancesIndex>=0 && i<chances[chancesIndex-1])
 				{
 					Debug("PickCharacter: chances[%i] was %i", chancesIndex, chances[chancesIndex-1]);
 					Special[client]=chances[chancesIndex-2]-1;
