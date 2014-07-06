@@ -5613,15 +5613,11 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							TF2_RemoveCondition(attacker, TFCond_Dazed);
 						}
 					}
-					case 1099:  //Tide Turner
-					{
-						SetEntProp(attacker, Prop_Send, "m_flChargeMeter", 100.0);
-					}
 					case 1104:  //Air Strike
 					{
 						static Float:airStrikeDamage;
 						airStrikeDamage+=damage;
-						Debug("OnTakeDamage; Damage was %f, airStrikeDamage is now %f", damage, airStrikeDamage);
+						Debug("OnTakeDamage: Damage was %f, airStrikeDamage is now %f", damage, airStrikeDamage);
 						if(airStrikeDamage>=200.0)
 						{
 							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
@@ -6523,7 +6519,7 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 		{
 			Debug("PickCharacter: ChancesString was %s", ChancesString);
 			new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
-			if(amount%2)
+			if(amount % 2)
 			{
 				LogError("[FF2 Bosses] Invalid chances string, disregarding chances");
 				strcopy(ChancesString, sizeof(ChancesString), "");
@@ -6535,9 +6531,9 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 			{
 				if(chancesIndex % 2)
 				{
-					if(StringToInt(stringChances[chancesIndex])<0)
+					if(StringToInt(stringChances[chancesIndex])<=0)
 					{
-						LogError("[FF2 Bosses] Cannot have negative chances, disregarding chances");
+						LogError("[FF2 Bosses] Boss cannot have a zero or negative chance, disregarding chances");
 						strcopy(ChancesString, sizeof(ChancesString), "");
 						break;
 					}
