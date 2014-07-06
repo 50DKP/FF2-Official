@@ -5619,13 +5619,14 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 1104:  //Air Strike
 					{
-						static airStrikeDamage;
+						static Float:airStrikeDamage;
 						airStrikeDamage+=damage;
-						if(airStrikeDamage>=200)
+						Debug("OnTakeDamage; Damage was %f, airStrikeDamage is now %f", damage, airStrikeDamage);
+						if(airStrikeDamage>=200.0)
 						{
 							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
-							SetEntProp(weapon, Prop_Send, "m_iClip1", GetEntProp(weapon, Prop_Send, "m_iClip1")+1);
-							airStrikeDamage-=200;
+							//SetEntProp(weapon, Prop_Send, "m_iClip1", GetEntProp(weapon, Prop_Send, "m_iClip1")+1);
+							airStrikeDamage-=200.0;
 						}
 					}
 				}
@@ -6516,8 +6517,8 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 			return true;
 		}
 
-		new chances[MAXSPECIALS], chancesIndex;
 		decl String:stringChances[MAXSPECIALS*2][8];
+		new chances[MAXSPECIALS], chancesIndex;
 		if(ChancesString[0])
 		{
 			Debug("PickCharacter: ChancesString was %s", ChancesString);
@@ -6558,7 +6559,7 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 			{
 				new i=GetRandomInt(0, chances[chancesIndex-1]);
 				Debug("PickCharacter: Random number was %i; Specials was %i", i, Specials);
-				while(chancesIndex>=0 && i<chances[chancesIndex-1])
+				while(chancesIndex>=2 && i<chances[chancesIndex-1])
 				{
 					Debug("PickCharacter: chances[%i] was %i", chancesIndex, chances[chancesIndex-1]);
 					Special[client]=chances[chancesIndex-2]-1;
