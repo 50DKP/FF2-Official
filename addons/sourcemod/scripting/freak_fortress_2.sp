@@ -747,9 +747,7 @@ public OnPluginStart()
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
 
-	AddCommandListener(OnTaunt, "taunt");  //Used to activate rages
-	AddCommandListener(OnTaunt, "+taunt");  //Used to activate rages
-	AddCommandListener(OnTaunt, "+use_action_slot_item_server");  //Used to activate rages
+	AddCommandListener(OnTaunt, "voicemenu");  //Used to activate rages
 	AddCommandListener(OnTaunt, "use_action_slot_item_server");  //Used to activate rages
 	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding before round start
@@ -4492,7 +4490,7 @@ public Action:Timer_BotRage(Handle:timer, any:bot)
 
 	if(!TF2_IsPlayerInCondition(Boss[bot], TFCond_Taunting))
 	{
-		FakeClientCommandEx(Boss[bot], "taunt");
+		FakeClientCommandEx(Boss[bot], "voicemenu 1 1");
 	}
 }
 

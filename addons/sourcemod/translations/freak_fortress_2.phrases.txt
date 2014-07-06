@@ -43,7 +43,7 @@
 	}
 	"do_rage"
 	{
-		"en"	"Perform a taunt to activate your \"RAGE\" ability!"
+		"en"	"Call for medic to rage!"
 	}
 	"rage_meter"
 	{
