@@ -1298,6 +1298,7 @@ public LoadCharacter(const String:character[])
 {
 	new String:extensions[][]={".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd"};
 	decl String:config[PLATFORM_MAX_PATH];
+
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/%s.cfg", character);
 	if(!FileExists(config))
 	{
@@ -1335,9 +1336,7 @@ public LoadCharacter(const String:character[])
 	}
 	KvRewind(BossKV[Specials]);
 
-	decl String:key[PLATFORM_MAX_PATH];
-	decl String:section[64];
-
+	decl String:key[PLATFORM_MAX_PATH], String:section[64];
 	KvSetString(BossKV[Specials], "filename", character);
 	KvGetString(BossKV[Specials], "name", config, PLATFORM_MAX_PATH);
 	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "sound_block_vo", 0);
@@ -6558,20 +6557,19 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 			if(ChancesString[0])
 			{
 				new i=GetRandomInt(0, chances[chancesIndex-1]);
-				Debug("PickCharacter: Random number was %i", i);
-				Debug("PickCharacter: Chances for character %i was %i", chances[chancesIndex-2], chances[chancesIndex-1]);
-				for(/*new character=chances[chancesIndex-2]*/; i<chances[chancesIndex-1]; chancesIndex-=2)
+				Debug("PickCharacter: Random number was %i; Specials was %i", i, Specials);
+				//for(/*new character=chances[chancesIndex-2]*/; i<chances[chancesIndex-1]; chancesIndex-=2)
+				while(i<chances[chancesIndex-1])
 				{
 					Debug("PickCharacter: chances[%i] was %i", chancesIndex, chances[chancesIndex-1]);
 					Special[client]=chances[chancesIndex-2];
 					Debug("PickCharacter: Character was %i", Special[client]);
+					chancesIndex-=2;
 				}
-				KvRewind(BossKV[Special[client]]);
 			}
 			else
 			{
 				Special[client]=GetRandomInt(0, Specials-1);
-				KvRewind(BossKV[Special[client]]);
 			}
 
 			if(KvGetNum(BossKV[Special[client]], "blocked"))
@@ -6579,6 +6577,7 @@ public bool:PickCharacter(client, companion)  //TODO: Clean this up ._.
 				Special[client]=0;
 				continue;
 			}
+			KvRewind(BossKV[Special[client]]);
 			break;
 		}
 	}
