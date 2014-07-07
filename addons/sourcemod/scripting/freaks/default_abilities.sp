@@ -136,7 +136,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 	{
 		Rage_StunSentry(ability_name, client);
 	}
-	else if(!strcmp(ability_name, "rage_preventtaunt"))
+	else if(!strcmp(ability_name, "rage_preventtaunt"))  //DEPRECATED-to be removed in 2.0.0
 	{
 		CreateTimer(0.01, Timer_StopTaunt, client);
 	}
@@ -209,11 +209,9 @@ public Action:Timer_StopUber(Handle:timer, any:client)
 
 public Action:Timer_StopTaunt(Handle:timer, any:client)
 {
-	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
-	if(!GetEntProp(boss, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(boss, Prop_Send, "m_hHighFivePartner")))
-	{
-		TF2_RemoveCondition(boss, TFCond_Taunting);
-	}
+	decl String:name[64];
+	FF2_GetBossSpecial(client, name, sizeof(name));
+	PrintToServer("[FF2] Warning: \"rage_preventtaunt\" has been deprecated!  Please remove this ability from %s", name);
 	return Plugin_Continue;
 }
 
@@ -509,7 +507,7 @@ Charge_WeighDown(client, slot)
 	{
 		if(charge>=4.0)
 		{
-			decl Float:angles[3];
+			new Float:angles[3];
 			GetClientEyeAngles(boss, angles);
 			if(angles[0]>60.0)
 			{
@@ -521,12 +519,15 @@ Charge_WeighDown(client, slot)
 					return;
 				}
 
+				new Handle:data;
 				new Float:velocity[3];
 				GetEntPropVector(boss, Prop_Data, "m_vecVelocity", velocity);
 				velocity[2]=-1000.0;
 				TeleportEntity(boss, NULL_VECTOR, NULL_VECTOR, velocity);
 				SetEntityGravity(boss, 6.0);
-				CreateTimer(2.0, Timer_ResetGravity, boss, TIMER_FLAG_NO_MAPCHANGE);
+				CreateDataTimer(2.0, Timer_ResetGravity, data, TIMER_FLAG_NO_MAPCHANGE);
+				WritePackCell(data, GetClientUserId(boss));
+				WritePackFloat(data, GetEntityGravity(boss));
 				CPrintToChat(boss, "{olive}[FF2]{default} %t", "used_weighdown");
 				FF2_SetBossCharge(client, slot, 0.0);
 			}
@@ -542,11 +543,12 @@ Charge_WeighDown(client, slot)
 	}
 }
 
-public Action:Timer_ResetGravity(Handle:timer, any:client)
+public Action:Timer_ResetGravity(Handle:timer, Handle:data)
 {
+	new client=GetClientOfUserId(ReadPackCell(data));
 	if(client && IsValidEdict(client))
 	{
-		SetEntityGravity(client, 1.0);
+		SetEntityGravity(client, ReadPackFloat(data));
 	}
 	return Plugin_Continue;
 }

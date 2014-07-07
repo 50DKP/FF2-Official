@@ -747,10 +747,10 @@ public OnPluginStart()
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
 
-	AddCommandListener(OnTaunt, "taunt");  //Used to activate rages
-	AddCommandListener(OnTaunt, "+taunt");  //Used to activate rages
+	AddCommandListener(OnCallForMedic, "voicemenu");  //Used to activate rages
+	/*AddCommandListener(OnTaunt, "+taunt");  //Used to activate rages
 	AddCommandListener(OnTaunt, "+use_action_slot_item_server");  //Used to activate rages
-	AddCommandListener(OnTaunt, "use_action_slot_item_server");  //Used to activate rages
+	AddCommandListener(OnTaunt, "use_action_slot_item_server");  //Used to activate rages*/
 	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnDestroy, "destroy");  //Used to stop Eureka Effect from destroying buildings on teleport
@@ -4421,27 +4421,28 @@ public Action:BossTimer(Handle:timer)
 		if(RedAlivePlayers==1)
 		{
 			new String:message[512];
-			decl String:name[64];
+			decl String:name[64], String:lives[4];
 			for(new boss=0; Boss[boss]; boss++)
 			{
 				KvRewind(BossKV[Special[boss]]);
-				KvGetString(BossKV[Special[boss]], "name", name, 64, "=Failed name=");
-				if(BossLives[boss]>1)
+				KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
+				Format(lives, sizeof(lives), ((BossLives[boss]>1) ? ("x%i", BossLives[boss]) : ("")));
+				/*if(BossLives[boss]>1)
+				{*/
+					Format(message, sizeof(message), "%s\n%s's HP: %i of %i%s", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				/*}
+				/*else
 				{
-					Format(message, 512, "%s\n%s's HP: %i of %ix%i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], BossLives[boss]);
-				}
-				else
-				{
-					Format(message, 512, "%s\n%s's HP: %i of %i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss]);
-				}
+					Format(message, sizeof(message), "%s\n%s's HP: %i of %i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss]);
+				}*/
 			}
 
-			for(new client2=1; client2<=MaxClients; client2++)
+			for(new target; target<=MaxClients; target++)
 			{
-				if(IsValidClient(client2) && !(FF2flags[client2] & FF2FLAG_HUDDISABLED))
+				if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
 				{
-					SetGlobalTransTarget(client2);
-					PrintCenterText(client2, message);
+					SetGlobalTransTarget(target);
+					PrintCenterText(target, message);
 				}
 			}
 
@@ -4484,34 +4485,27 @@ public Action:BossTimer(Handle:timer)
 
 public Action:Timer_BotRage(Handle:timer, any:bot)
 {
-	if(!IsValidClient(Boss[bot], false))
+	if(IsValidClient(Boss[bot], false))
 	{
-		return;
-	}
-
-	if(!TF2_IsPlayerInCondition(Boss[bot], TFCond_Taunting))
-	{
-		FakeClientCommandEx(Boss[bot], "taunt");
+		FakeClientCommandEx(Boss[bot], "voicemenu 1 1");
 	}
 }
 
 stock OnlyScoutsLeft()
 {
-	new scouts=0;
-	for(new client=1; client<=MaxClients; client++)
+	new scouts;
+	for(new client; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && GetClientTeam(client)==BossTeam)
+		if(IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client)==BossTeam)
 		{
-			continue;
-		}
-
-		if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)!=TFClass_Scout)
-		{
-			return 0;
-		}
-		else if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetPlayerClass(client)==TFClass_Scout)
-		{
-			scouts++;
+			if(TF2_GetPlayerClass(client)!=TFClass_Scout)
+			{
+				return 0;
+			}
+			else
+			{
+				scouts++;
+			}
 		}
 	}
 	return scouts;
@@ -4549,30 +4543,11 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 	}
 }
 
-public Action:OnTaunt(client, const String:command[], args)
+public Action:OnCallForMedic(client, const String:command[], args)
 {
-	if(!Enabled)
+	if(!Enabled || !IsPlayerAlive(client) || CheckRoundState()!=1 || !IsBoss(client) || !StrEqual(command, "voicemenu 1 1"))
 	{
 		return Plugin_Continue;
-	}
-	else
-	{
-		if(CheckRoundState()==0 || CheckRoundState()==2)
-		{
-			return Plugin_Continue;
-		}
-		else
-		{
-			if(!IsBoss(client))
-			{
-				return Plugin_Continue;
-			}
-		}
-	}
-
-	if(!IsPlayerAlive(client) || TF2_IsPlayerInCondition(client, TFCond_Taunting))
-	{
-		return Plugin_Handled;
 	}
 
 	new boss=GetBossIndex(client);
@@ -4583,8 +4558,7 @@ public Action:OnTaunt(client, const String:command[], args)
 
 	if(RoundFloat(BossCharge[boss][0])==100)
 	{
-		decl String:ability[10];
-		decl String:lives[MAXRANDOMS][3];
+		decl String:ability[10], String:lives[MAXRANDOMS][3];
 		for(new i=1; i<MAXRANDOMS; i++)
 		{
 			Format(ability, sizeof(ability), "ability%i", i);
@@ -4622,7 +4596,7 @@ public Action:OnTaunt(client, const String:command[], args)
 			}
 		}
 
-		decl Float:position[3];
+		new Float:position[3];
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 
 		decl String:sound[PLATFORM_MAX_PATH];
@@ -5878,15 +5852,6 @@ public Action:RTD_CanRollDice(client)
 	}
 	return Plugin_Continue;
 }
-
-/*public Action:Timer_CheckBuffRage(Handle:timer, any:userid)
-{
-	new client=GetClientOfUserId(userid);
-	if(IsValidClient(client) && IsPlayerAlive(client))
-	{
-		SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
-	}
-}*/
 
 stock GetClientCloakIndex(client)
 {
@@ -7661,7 +7626,7 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 	}
 }
 
-public Action:Timer_UseBossCharge(Handle:timer,Handle:data)
+public Action:Timer_UseBossCharge(Handle:timer, Handle:data)
 {
 	BossCharge[ReadPackCell(data)][ReadPackCell(data)]=ReadPackFloat(data);
 	return Plugin_Continue;
