@@ -4429,7 +4429,7 @@ public Action:BossTimer(Handle:timer)
 				//Format(bossLives, sizeof(bossLives), ((BossLives[boss]>1) ? ("x%i", BossLives[boss]) : ("")));
 				if(BossLives[boss]>1)
 				{
-					Format(message, sizeof(message), "%s\n%s's HP: %i of %i%s", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], bossLives);
+					Format(message, sizeof(message), "%s\n%s's HP: %i of %i%sx%i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], BossLives[boss]);
 				}
 				else
 				{
