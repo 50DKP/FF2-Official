@@ -260,13 +260,13 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"July 6, 2014",		//1.10.0
-	"July 6, 2014",		//1.10.0
-	"July 6, 2014",		//1.10.0
-	"July 6, 2014",		//1.10.0
-	"July 6, 2014",		//1.10.0
-	"July 6, 2014",		//1.10.0
-	"July 6, 2014"		//1.10.0
+	"July 7, 2014",		//1.10.0
+	"July 7, 2014",		//1.10.0
+	"July 7, 2014",		//1.10.0
+	"July 7, 2014",		//1.10.0
+	"July 7, 2014",		//1.10.0
+	"July 7, 2014",		//1.10.0
+	"July 7, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -4421,20 +4421,20 @@ public Action:BossTimer(Handle:timer)
 		if(RedAlivePlayers==1)
 		{
 			new String:message[512];
-			decl String:name[64], String:bossLives[4];
+			decl String:name[64];
 			for(new boss=0; Boss[boss]; boss++)
 			{
 				KvRewind(BossKV[Special[boss]]);
 				KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
-				Format(bossLives, sizeof(bossLives), ((BossLives[boss]>1) ? ("x%i", BossLives[boss]) : ("")));
-				/*if(BossLives[boss]>1)
-				{*/
+				//Format(bossLives, sizeof(bossLives), ((BossLives[boss]>1) ? ("x%i", BossLives[boss]) : ("")));
+				if(BossLives[boss]>1)
+				{
 					Format(message, sizeof(message), "%s\n%s's HP: %i of %i%s", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], bossLives);
-				/*}
-				/*else
+				}
+				else
 				{
 					Format(message, sizeof(message), "%s\n%s's HP: %i of %i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss]);
-				}*/
+				}
 			}
 
 			for(new target; target<=MaxClients; target++)
