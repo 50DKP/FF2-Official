@@ -43,7 +43,7 @@
 	}
 	"do_rage"
 	{
-		"en"	"Perform a taunt to activate your \"RAGE\" ability!"
+		"en"	"Call for medic to activate your \"RAGE\" ability!"
 	}
 	"rage_meter"
 	{
@@ -67,12 +67,12 @@
 	"teleport_status_2"
 	{
 		"#format" "{1:i}"
-		"en"	"Teleportation will be avaliable in {1} second(s)."
+		"en"	"Teleportation will be available in {1} second(s)."
 	}
 	"jump_status_2"
 	{
 		"#format" "{1:i}"
-		"en"	"Super Jump will be avaliable in {1} second(s)."
+		"en"	"Super Jump will be available in {1} second(s)."
 	}
 	"help_scout"
 	{
@@ -120,7 +120,7 @@
 	}
 	"menu_1"
 	{
-		"en"	"Whats up?"
+		"en"	"What's up?"
 	}
 	"menu_2"
 	{
@@ -132,7 +132,7 @@
 	}
 	"menu_4"
 	{
-		"en"	"Whats new? (/ff2new)."
+		"en"	"What's new? (/ff2new)."
 	}
 	"menu_5"
 	{
@@ -145,7 +145,7 @@
 	"whatsnew"
 	{
 		"#format" "{1:s},{2:s}"
-		"en"	"Whats new in v{1} from {2}"
+		"en"	"What's new in v{1} from {2}"
 	}
 	"help_mode"
 	{
@@ -157,7 +157,7 @@
 	}
 	"noolder"
 	{
-		"en"	"No older versions avaliable"
+		"en"	"No older versions available"
 	}
 	"newer"
 	{
@@ -165,7 +165,7 @@
 	}
 	"nonewer"
 	{
-		"en"	"No newer versions avaliable"
+		"en"	"No newer versions available"
 	}
 	"menu_7"
 	{
@@ -265,7 +265,7 @@
 	"ff2_voice"
 	{
 		"#format" "{1:s}"
-		"en"	"FF2 monolologues: {1}."
+		"en"	"FF2 monologues: {1}."
 	}
 	"ff2_voice2"
 	{
@@ -277,7 +277,7 @@
 	}
 	"menu_9"
 	{
-		"en"	"Toggle monolologues (/ff2voice)"
+		"en"	"Toggle monologues (/ff2voice)"
 	}
 	"menu_9a"
 	{
@@ -291,7 +291,7 @@
 	"ff2_last_update"
 	{
 		"#format" "{1:s},{2:s}"
-		"en"	"Whats new in v{olive}{1}{default} ({olive}{2}{default})? Type {olive}/ff2new{default}."
+		"en"	"What's new in v{olive}{1}{default} ({olive}{2}{default})? Type {olive}/ff2new{default}."
 	}
 	"charge_status"
 	{

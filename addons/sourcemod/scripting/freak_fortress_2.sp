@@ -4421,15 +4421,15 @@ public Action:BossTimer(Handle:timer)
 		if(RedAlivePlayers==1)
 		{
 			new String:message[512];
-			decl String:name[64], String:lives[4];
+			decl String:name[64], String:bossLives[4];
 			for(new boss=0; Boss[boss]; boss++)
 			{
 				KvRewind(BossKV[Special[boss]]);
 				KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
-				Format(lives, sizeof(lives), ((BossLives[boss]>1) ? ("x%i", BossLives[boss]) : ("")));
+				Format(bossLives, sizeof(bossLives), ((BossLives[boss]>1) ? ("x%i", BossLives[boss]) : ("")));
 				/*if(BossLives[boss]>1)
 				{*/
-					Format(message, sizeof(message), "%s\n%s's HP: %i of %i%s", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+					Format(message, sizeof(message), "%s\n%s's HP: %i of %i%s", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], bossLives);
 				/*}
 				/*else
 				{
