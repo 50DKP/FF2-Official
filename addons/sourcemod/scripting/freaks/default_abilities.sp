@@ -18,9 +18,9 @@ public Plugin:myinfo=
 	version=PLUGIN_VERSION,
 };
 
-new Handle:OnHaleJump=INVALID_HANDLE;
-new Handle:OnHaleRage=INVALID_HANDLE;
-new Handle:OnHaleWeighdown=INVALID_HANDLE;
+new Handle:OnHaleJump;
+new Handle:OnHaleRage;
+new Handle:OnHaleWeighdown;
 
 new Handle:jumpHUD;
 
@@ -28,7 +28,9 @@ new bool:enableSuperDuperJump[MAXPLAYERS+1];
 new Float:UberRageCount[MAXPLAYERS+1];
 new BossTeam=_:TFTeam_Blue;
 
-new Handle:cvarOldJump=INVALID_HANDLE;
+new Handle:cvarOldJump;
+
+new bool:oldJump;
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -52,8 +54,14 @@ public OnPluginStart2()
 public OnAllPluginsLoaded()
 {
 	cvarOldJump=FindConVar("ff2_oldjump");
+	HookConVarChange(cvarOldJump, CvarChange);
+	oldJump=GetConVarBool(cvarOldJump);
 }
 
+public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	oldJump=bool:StringToInt(newValue);
+}
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	for(new client=0; client<MaxClients; client++)
@@ -293,12 +301,11 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 				enableSuperDuperJump[client]=superJump;
 			}
 
-			decl Float:position[3];
-			decl Float:velocity[3];
+			new Float:position[3], Float:velocity[3];
 			GetEntPropVector(boss, Prop_Send, "m_vecOrigin", position);
 			GetEntPropVector(boss, Prop_Data, "m_vecVelocity", velocity);
 
-			if(GetConVarBool(cvarOldJump))
+			if(oldJump)
 			{
 				if(enableSuperDuperJump[client])
 				{
@@ -315,7 +322,7 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 			}
 			else
 			{
-				decl Float:angles[3];
+				new Float:angles[3];
 				GetClientEyeAngles(boss, angles);
 				if(enableSuperDuperJump[client])
 				{
@@ -339,12 +346,12 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 				EmitSoundToAll(sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 				EmitSoundToAll(sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 
-				for(new enemy=1; enemy<=MaxClients; enemy++)
+				for(new target; target<=MaxClients; target++)
 				{
-					if(IsClientInGame(enemy) && enemy!=boss)
+					if(IsClientInGame(target) && target!=boss)
 					{
-						EmitSoundToClient(enemy, sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-						EmitSoundToClient(enemy, sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
+						EmitSoundToClient(target, sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
+						EmitSoundToClient(target, sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 					}
 				}
 			}
