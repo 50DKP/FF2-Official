@@ -261,14 +261,14 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"July 7, 2014",		//1.10.0
-	"July 7, 2014",		//1.10.0
-	"July 7, 2014",		//1.10.0
-	"July 7, 2014",		//1.10.0
-	"July 7, 2014",		//1.10.0
-	"July 7, 2014",		//1.10.0
-	"July 7, 2014",		//1.10.0
-	"July 7, 2014"		//1.10.0
+	"July 8, 2014",		//1.10.0
+	"July 8, 2014",		//1.10.0
+	"July 8, 2014",		//1.10.0
+	"July 8, 2014",		//1.10.0
+	"July 8, 2014",		//1.10.0
+	"July 8, 2014",		//1.10.0
+	"July 8, 2014",		//1.10.0
+	"July 8, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -337,6 +337,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "30) [Dev] Added more natives and one additional forward (Eggman)");
 			DrawPanelText(panel, "31) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
 			DrawPanelText(panel, "32) [Dev] Fixed FF2FLAG_ISBUFFED (Wliu)");
+			DrawPanelText(panel, "33) [Dev] FF2 now checks for sane values for \"lives\" and \"health_formula\" (Wliu)");
 			DrawPanelText(panel, "Big thanks to GIANT_CRAB for finding a bunch of these bugs!");
 		}
 		case 34:  //1.9.3
@@ -1684,7 +1685,7 @@ stock bool:MapHasMusic(bool:forceRecalc=false)  //SAAAAAARGE
 	{
 		new entity=-1;
 		decl String:name[64];
-		while((entity=FindEntityByClassname2(i, "info_target"))!=-1)
+		while((entity=FindEntityByClassname2(entity, "info_target"))!=-1)
 		{
 			GetEntPropString(entity, Prop_Data, "m_iName", name, sizeof(name));
 			if(!strcmp(name, "hale_no_music", false))
@@ -3894,10 +3895,7 @@ public Action:Command_CharSet(client, args)
 		if(StrContains(config, charset, false)>=0)
 		{
 			CReplyToCommand(client, "{default}[FF2]{olive} Charset for nextmap is %s", config);
-			isCharSetSelected=true;
-			FF2CharSet=i;
-			CloseHandle(Kv);
-			return Plugin_Handled;
+			break;
 		}
 
 		if(!KvGotoNextKey(Kv))
@@ -3906,6 +3904,11 @@ public Action:Command_CharSet(client, args)
 			return Plugin_Handled;
 		}
 	}
+
+	isCharSetSelected=true;
+	FF2CharSet=i;
+	CloseHandle(Kv);
+	return Plugin_Handled;
 }
 
 public Action:Command_ReloadSubPlugins(client, args)
@@ -6563,7 +6566,8 @@ public bool:PickCharacter(client, companion)
 		new character;
 		KvRewind(BossKV[Special[companion]]);
 		KvGetString(BossKV[Special[companion]], "companion", companionName, sizeof(companionName), "=Failed companion name=");
-		for(character; character<Specials; character++)
+
+		while(character<Specials)
 		{
 			KvRewind(BossKV[character]);
 			KvGetString(BossKV[character], "name", bossName, sizeof(bossName), "=Failed name=");
@@ -6579,6 +6583,7 @@ public bool:PickCharacter(client, companion)
 				Special[client]=character;
 				break;
 			}
+			character++;
 		}
 
 		if(character==Specials)
@@ -6699,9 +6704,8 @@ public Action:QueuePanelCmd(client, Args)
 	decl String:s[512];
 	Format(s,512,"%t","thequeue");
 	new i,tBoss,bool:added[MAXPLAYERS+1];
-	decl j;
 	SetPanelTitle(panel, s);
-	for(j; j<=MaxClients; j++)
+	for(new j; j<=MaxClients; j++)
 		if((tBoss=Boss[i]) && IsValidEdict(tBoss) && IsClientInGame(tBoss))
 		{
 			added[tBoss]=true;
