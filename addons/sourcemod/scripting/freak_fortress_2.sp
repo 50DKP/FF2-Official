@@ -3895,6 +3895,8 @@ public Action:Command_CharSet(client, args)
 		if(StrContains(config, charset, false)>=0)
 		{
 			CReplyToCommand(client, "{default}[FF2]{olive} Charset for nextmap is %s", config);
+			isCharSetSelected=true;
+			FF2CharSet=i;
 			break;
 		}
 
@@ -3904,9 +3906,6 @@ public Action:Command_CharSet(client, args)
 			return Plugin_Handled;
 		}
 	}
-
-	isCharSetSelected=true;
-	FF2CharSet=i;
 	CloseHandle(Kv);
 	return Plugin_Handled;
 }
