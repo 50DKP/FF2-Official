@@ -406,7 +406,7 @@ forward Action:FF2_OnAddQueuePoints(add_points[MAXPLAYERS+1]);
  * @param charSetName	Name of boss
  * @return				You can NOT use Plugin_Stop to prevent this, but you can change CharSetName and use Plugin_Changed to change the character set.  If you want to change charSetNum, then make charSetName null.
  */
-forward Action:FF2_OnLoadCharacterSet(charSetNum, String:charSetName[]);
+forward Action:FF2_OnLoadCharacterSet(&charSetNum, String:charSetName[]);
 
 /**
  * Begins when a Boss loses a life

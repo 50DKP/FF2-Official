@@ -157,7 +157,7 @@ new String:currentmap[99];
 new bool:checkDoors=false;
 new bool:bMedieval;
 new FF2CharSet;
-new String:FF2CharSetStr[42];
+new String:FF2CharSetString[42];
 
 new tf_arena_use_queue;
 new mp_teams_unbalance_limit;
@@ -1081,7 +1081,7 @@ public EnableFF2()
 	CheckToChangeMapDoors();
 	MapHasMusic(true);
 	AddToDownload();
-	strcopy(FF2CharSetStr, 2, "");
+	strcopy(FF2CharSetString, 2, "");
 
 	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
 	{
@@ -1157,10 +1157,10 @@ public DisableFF2()
 	changeGamemode=0;
 }
 
-public AddToDownload()
+public AddToDownload()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 {
+	decl String:config[PLATFORM_MAX_PATH], String:key[4], String:charset[42];
 	Specials=0;
-	decl String:config[PLATFORM_MAX_PATH], String:i_str[4];
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
 
 	if(!FileExists(config))
@@ -1173,14 +1173,14 @@ public AddToDownload()
 	new Handle:Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, config);
 	new NumOfCharSet=FF2CharSet;
-	new Action:act=Plugin_Continue;
+
+	new Action:action=Plugin_Continue;
 	Call_StartForward(OnLoadCharacterSet);
 	Call_PushCellRef(NumOfCharSet);
-	decl String:charset[42];
-	strcopy(charset, 42, FF2CharSetStr);
-	Call_PushStringEx(charset, 42, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-	Call_Finish(act);
-	if(act==Plugin_Changed)
+	strcopy(charset, sizeof(charset), FF2CharSetString);
+	Call_PushStringEx(charset, sizeof(charset), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+	Call_Finish(action);
+	if(action==Plugin_Changed)
 	{
 		new i=-1;
 		if(strlen(charset))
@@ -1188,14 +1188,15 @@ public AddToDownload()
 			KvRewind(Kv);
 			for(i=0; ; i++)
 			{
-				KvGetSectionName(Kv, config, 64);
+				KvGetSectionName(Kv, config, sizeof(config));
 				if(!strcmp(config, charset, false))
 				{
 					FF2CharSet=i;
-					strcopy(FF2CharSetStr, PLATFORM_MAX_PATH, charset);
+					strcopy(FF2CharSetString, PLATFORM_MAX_PATH, charset);
 					KvGotoFirstSubKey(Kv);
 					break;
 				}
+
 				if(!KvGotoNextKey(Kv))
 				{
 					i=-1;
@@ -1212,26 +1213,27 @@ public AddToDownload()
 				KvGotoNextKey(Kv);
 			}
 			KvGotoFirstSubKey(Kv);
-			KvGetSectionName(Kv, FF2CharSetStr, 64);
+			KvGetSectionName(Kv, FF2CharSetString, sizeof(FF2CharSetString));
 		}
 	}
 
 	KvRewind(Kv);
-	for(new i=0; i<FF2CharSet; i++)
+	for(new i; i<FF2CharSet; i++)
 	{
 		KvGotoNextKey(Kv);
 	}
 
 	for(new i=1; i<MAXSPECIALS; i++)
 	{
-		IntToString(i, i_str, 4);
-		KvGetString(Kv, i_str, config, PLATFORM_MAX_PATH);
+		IntToString(i, key, sizeof(key));
+		KvGetString(Kv, key, config, PLATFORM_MAX_PATH);
 		if(!config[0])
 		{
 			break;
 		}
 		LoadCharacter(config);
 	}
+
 	KvGetString(Kv, "chances", ChancesString, sizeof(ChancesString));
 	CloseHandle(Kv);
 	AddFileToDownloadsTable("sound/saxton_hale/9000.wav");
@@ -3868,37 +3870,37 @@ public Action:Command_StopMusic(client, args)
 
 public Action:Command_CharSet(client, args)
 {
-	decl String:arg[32];
-	if(args<1)
+	if(!args)
 	{
 		CReplyToCommand(client, "{olive}[FF2]{default} Usage: ff2_charset <charset>");
 		return Plugin_Handled;
 	}
-	GetCmdArgString(arg, 32);
-	decl String:s[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM,s,PLATFORM_MAX_PATH,"configs/freak_fortress_2/characters.cfg");
+
+	decl String:charset[32];
+	GetCmdArgString(charset, sizeof(charset));
+	decl String:config[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
 
 	new Handle:Kv=CreateKeyValues("");
-	FileToKeyValues(Kv, s);
-	new i=0;
-	for(;;)
+	FileToKeyValues(Kv, config);
+	for(new i; ; i++)
 	{
-		KvGetSectionName(Kv, s, 64);
-		if(StrContains(s,arg,false)>=0)
+		KvGetSectionName(Kv, config, sizeof(config));
+		if(StrContains(config, charset, false)>=0)
 		{
-			CReplyToCommand(client, "{default}[FF2]{olive} Charset for nextmap is %s",s);
-			break;
+			CReplyToCommand(client, "{default}[FF2]{olive} Charset for nextmap is %s", config);
+			isCharSetSelected=true;
+			FF2CharSet=i;
+			CloseHandle(Kv);
+			return Plugin_Handled;
 		}
+
 		if(!KvGotoNextKey(Kv))
 		{
-			CReplyToCommand(client, "{default}[FF2]{olive} ff2_charset: Charset not found ");
+			CReplyToCommand(client, "{default}[FF2]{olive} Charset not found");
 			return Plugin_Handled;
 		}
 	}
-	CloseHandle(Kv);
-	FF2CharSet=i;
-	isCharSetSelected=true;
-	return Plugin_Handled;
 }
 
 public Action:Command_ReloadSubPlugins(client, args)
@@ -7391,17 +7393,22 @@ public NextmapPanelH(Handle:menu, MenuAction:action, client, selection)
 	return;
 }
 
-public NextmapPanelH2(Handle:menu,num_votes,num_clients,const client_info[][2],num_items, const item_info[][2])
+public NextmapPanelH2(Handle:menu, votes, clients, const clientInfo[][2], items, const itemInfo[][2])
 {
-	decl String:mode[42], String:nextmap[42];
-	GetMenuItem(menu, item_info[0][VOTEINFO_ITEM_INDEX], mode,42);
-	if(mode[0]=='0')
-		FF2CharSet=GetRandomInt(0,FF2CharSet);
+	decl String:item[42], String:nextmap[42];
+	GetMenuItem(menu, itemInfo[0][VOTEINFO_ITEM_INDEX], item, sizeof(item));
+	if(item[0]=='0')
+	{
+		FF2CharSet=GetRandomInt(0, FF2CharSet);
+	}
 	else
-		FF2CharSet=mode[0]-'0'-1;
-	GetConVarString(cvarNextmap,nextmap,42);
-	strcopy(FF2CharSetStr,42,mode[StrContains(mode," ")+1]);
-	CPrintToChatAll("%t","nextmap_charset",nextmap,FF2CharSetStr);
+	{
+		FF2CharSet=item[0]-'0'-1;  //Wat
+	}
+
+	GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
+	strcopy(FF2CharSetString, 42, item[StrContains(item, " ")+1]);
+	CPrintToChatAll("%t", "nextmap_charset", nextmap, FF2CharSetString);
 	isCharSetSelected=true;
 }
 
@@ -7423,16 +7430,16 @@ public Action:Timer_CvarChangeNextmap(Handle:timer)
 		return Plugin_Continue;
 	}
 
-	new Handle:dVoteMenu=CreateMenu(NextmapPanelH, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(dVoteMenu, "%t", "select_charset");
-	SetVoteResultCallback(dVoteMenu, NextmapPanelH2);
+	new Handle:menu=CreateMenu(NextmapPanelH, MenuAction:MENU_ACTIONS_ALL);
+	SetMenuTitle(menu, "%t", "select_charset");
+	SetVoteResultCallback(menu, NextmapPanelH2);
 
-	decl String:config[PLATFORM_MAX_PATH], String:s2[64];
+	decl String:config[PLATFORM_MAX_PATH], String:charset[64];
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
 
 	new Handle:Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, config);
-	AddMenuItem(dVoteMenu, "0 Random", "Random");
+	AddMenuItem(menu, "0 Random", "Random");
 	new i, j;
 	do
 	{
@@ -7443,23 +7450,23 @@ public Action:Timer_CvarChangeNextmap(Handle:timer)
 		}
 		j++;
 		KvGetSectionName(Kv, config, 64);
-		Format(s2, 64, "%i %s", i, config);
-		AddMenuItem(dVoteMenu, s2, config);
+		Format(charset, 64, "%i %s", i, config);
+		AddMenuItem(menu, charset, config);
 	}
 	while(KvGotoNextKey(Kv));
 	CloseHandle(Kv);
 
 	if(j>1)
 	{
-		FF2CharSet=i;
-		new Handle:see=FindConVar("sm_mapvote_voteduration");
-		if(see)
+		//FF2CharSet=i;  //We're going to be setting this in the map callback...
+		new Handle:voteDuration=FindConVar("sm_mapvote_voteduration");
+		if(voteDuration)
 		{
-			VoteMenuToAll(dVoteMenu, GetConVarInt(see));
+			VoteMenuToAll(menu, GetConVarInt(voteDuration));
 		}
 		else
 		{
-			VoteMenuToAll(dVoteMenu, 20);
+			VoteMenuToAll(menu, 20);
 		}
 	}
 	return Plugin_Continue;
@@ -7467,14 +7474,14 @@ public Action:Timer_CvarChangeNextmap(Handle:timer)
 
 public Action:NextMapCmd(client, args)
 {
-	if(!FF2CharSetStr[0])
+	if(!FF2CharSetString[0])
 	{
 		return Plugin_Continue;
 	}
 
 	decl String:nextmap[42];
-	GetConVarString(cvarNextmap, nextmap, 42);
-	CPrintToChat(client, "%t", "nextmap_charset", nextmap, FF2CharSetStr);
+	GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
+	CPrintToChat(client, "%t", "nextmap_charset", nextmap, FF2CharSetString);
 	return Plugin_Handled;
 }
 
@@ -7486,7 +7493,7 @@ public Action:SayCmd(client, args)
 		return Plugin_Continue;
 	}
 
-	if(!strcmp(CurrentChat, "\"nextmap\"") && FF2CharSetStr[0])
+	if(!strcmp(CurrentChat, "\"nextmap\"") && FF2CharSetString[0])
 	{
 		NextMapCmd(client, 0);
 		return Plugin_Handled;
