@@ -220,6 +220,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.0",
 	"1.10.0",
 	"1.10.0",
+	"1.10.0",
 	"1.10.0"
 };
 
@@ -266,6 +267,7 @@ static const String:ff2versiondates[][]=
 	"July 7, 2014",		//1.10.0
 	"July 7, 2014",		//1.10.0
 	"July 7, 2014",		//1.10.0
+	"July 7, 2014",		//1.10.0
 	"July 7, 2014"		//1.10.0
 };
 
@@ -273,60 +275,67 @@ stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 42:  //1.10.0
+		{
+			DrawPanelText(panel, "1) Rage is now activated by calling for medic (Wliu)");
+			DrawPanelText(panel, "2) Balanced Goomba Stomp and RTD (WildCard65)");
+			DrawPanelText(panel, "3) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
+			DrawPanelText(panel, "4) Fixed Jarate, etc. not disappearing immediately on the boss (Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
 		case 41:  //1.10.0
 		{
-			DrawPanelText(panel, "1) Balanced Goomba Stomp and RTD (WildCard65)");
-			DrawPanelText(panel, "2) Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
-			DrawPanelText(panel, "3) Fixed Jarate, etc. not disappearing immediately on the boss (Wliu)");
-			DrawPanelText(panel, "4) Fixed ability timers not resetting when the round was over (Wliu)");
+			DrawPanelText(panel, "5) Fixed ability timers not resetting when the round was over (Wliu)");
+			DrawPanelText(panel, "6) Fixed bosses losing momentum when raging in the air (Wliu)");
+			DrawPanelText(panel, "7) Fixed bosses losing health if ther companion left at round start (Wliu)");
+			DrawPanelText(panel, "8) Fixed bosses sometimes teleporting to each other if they had a companion (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 40:  //1.10.0
 		{
-			DrawPanelText(panel, "5) Fixed bosses losing momentum when raging in the air (Wliu)");
-			DrawPanelText(panel, "6) Fixed bosses losing health if ther companion left at round start (Wliu)");
-			DrawPanelText(panel, "7) Fixed bosses sometimes teleporting to each other if they had a companion (Wliu)");
-			DrawPanelText(panel, "8) Slightly tweaked default boss health formula to be more balanced (Eggman)");
+			DrawPanelText(panel, "9) Slightly tweaked default boss health formula to be more balanced (Eggman)");
+			DrawPanelText(panel, "10) Fixed and optimized the leaderboard (Wliu)");
+			DrawPanelText(panel, "11) Fixed medic minions receiving the medigun (Wliu)");
+			DrawPanelText(panel, "12) Fixed Ninja Spy slow-mo bugs (Wliu/Powerlord)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 39:  //1.10.0
 		{
-			DrawPanelText(panel, "9) Fixed and optimized the leaderboard (Wliu)");
-			DrawPanelText(panel, "10) Fixed medic minions receiving the medigun (Wliu)");
-			DrawPanelText(panel, "11) Fixed Ninja Spy slow-mo bugs (Wliu/Powerlord)");
-			DrawPanelText(panel, "12) Prevented players from changing to the incorrect team or class (Powerlord/Wliu)");
+			DrawPanelText(panel, "13) Prevented players from changing to the incorrect team or class (Powerlord/Wliu)");
+			DrawPanelText(panel, "14) Fixed bosses immediately dying after using the dead ringer (Wliu)");
+			DrawPanelText(panel, "15) Fixed a rare bug where you could get notified about being the next boss multiple times (Wliu)");
+			DrawPanelText(panel, "16) Fixed a rare bug where the leaderboard would display the wrong information (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 38:  //1.10.0
 		{
-			DrawPanelText(panel, "13) Fixed bosses immediately dying after using the dead ringer (Wliu)");
-			DrawPanelText(panel, "14) Fixed a rare bug where you could get notified about being the next boss multiple times (Wliu)");
-			DrawPanelText(panel, "15) Fixed a rare bug where the leaderboard would display the wrong information (Wliu)");
-			DrawPanelText(panel, "16) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "17) Fixed gravity not resetting correctly after a weighdown if using non-standard gravity (Wliu)");
+			DrawPanelText(panel, "18) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "19) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "20) [Server] Removed ff2_halloween (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 37:  //1.10.0
 		{
-			DrawPanelText(panel, "17) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
-			DrawPanelText(panel, "18) [Server] Removed ff2_halloween (Wliu)");
-			DrawPanelText(panel, "19) [Server] Moved convar ff2_oldjump to the main config file (Wliu)");
-			DrawPanelText(panel, "20) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "21) [Server] Moved convar ff2_oldjump to the main config file (Wliu)");
+			DrawPanelText(panel, "22) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "23) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
+			DrawPanelText(panel, "24) [Server] Added convar ff2_goomba_jump to control how high players should rebound after goomba stomping the boss (WildCard65)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 36:  //1.10.0
 		{
-			DrawPanelText(panel, "21) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
-			DrawPanelText(panel, "22) [Server] Added convar ff2_goomba_jump to control how high players should rebound after goomba stomping the boss (WildCard65)");
-			DrawPanelText(panel, "23) [Server] Fixed some convars not executing (Wliu)");
-			DrawPanelText(panel, "24) [Server] Changed how BossCrits works...again (Wliu)");
+			DrawPanelText(panel, "25) [Server] Fixed some convars not executing (Wliu)");
+			DrawPanelText(panel, "26) [Server] Changed how BossCrits works...again (Wliu)");
+			DrawPanelText(panel, "27) [Server] Fixed hale_point_enable/disable being registered twice (Wliu)");
+			DrawPanelText(panel, "28) [Server] Fixed the chances system (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "25) [Server] Fixed hale_point_enable/disable being registered twice (Wliu)");
-			DrawPanelText(panel, "26) [Dev] Added more natives and one additional forward (Eggman)");
-			DrawPanelText(panel, "27) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
-			DrawPanelText(panel, "28) [Dev] Fixed FF2FLAG_ISBUFFED (Wliu)");
+			DrawPanelText(panel, "29) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "30) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "31) [Dev] Fixed FF2FLAG_ISBUFFED (Wliu)");
 			DrawPanelText(panel, "Big thanks to GIANT_CRAB for finding a bunch of these bugs!");
 		}
 		case 34:  //1.9.3
@@ -627,7 +636,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 
 static const maxVersion=(sizeof(ff2versiontitles)-1);
 
-new Specials=0;
+new Specials;
 new Handle:BossKV[MAXSPECIALS];
 new Handle:PreAbility;
 new Handle:OnAbility;
@@ -5239,8 +5248,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 		return Plugin_Continue;
 	}
 
-	static bool:foundDmgCustom=false;
-	static bool:dmgCustomInOTD=false;
+	static bool:foundDmgCustom, bool:dmgCustomInOTD;
 	if(!foundDmgCustom)
 	{
 		dmgCustomInOTD=(GetFeatureStatus(FeatureType_Capability, "SDKHook_DmgCustomInOTD")==FeatureStatus_Available);
@@ -5257,13 +5265,13 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 		return Plugin_Continue;
 	}
 
-	if(CheckRoundState()==0 && IsBoss(client))
+	if(!CheckRoundState() && IsBoss(client))
 	{
 		damage*=0.0;
 		return Plugin_Changed;
 	}
 
-	decl Float:position[3];
+	new Float:position[3];
 	GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
 	if(IsBoss(attacker))
 	{
@@ -5352,9 +5360,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 		{
 			if(attacker<=MaxClients)
 			{
-				new bool:bIsTelefrag=false;
-				new bool:bIsBackstab=false;
-
+				new bool:bIsTelefrag, bool:bIsBackstab;
 				if(dmgCustomInOTD)
 				{
 					if(damagecustom==TF_CUSTOM_BACKSTAB)
@@ -5410,14 +5416,15 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					return Plugin_Changed;
 				}
 
+				Debug("OnTakeDamage: Weapon was %i", weapon);
 				new index=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 				switch(index)
 				{
 					case 593:  //Third Degree
 					{
 						new healers[MAXPLAYERS];
-						new healerCount=0;
-						for(new healer=1; healer<=MaxClients; healer++)
+						new healerCount;
+						for(new healer; healer<=MaxClients; healer++)
 						{
 							if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
 							{
@@ -5426,14 +5433,14 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 						}
 
-						for(new healer=0; healer<healerCount; healer++)
+						for(new healer; healer<healerCount; healer++)
 						{
 							if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
 							{
 								new medigun=GetPlayerWeaponSlot(healers[healer], TFWeaponSlot_Secondary);
 								if(IsValidEntity(medigun))
 								{
-									new String:classname[64];
+									decl String:classname[64];
 									GetEdictClassname(medigun, classname, sizeof(classname));
 									if(strcmp(classname, "tf_weapon_medigun", false)==0)
 									{
