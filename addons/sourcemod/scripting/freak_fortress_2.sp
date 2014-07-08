@@ -1080,7 +1080,7 @@ public EnableFF2()
 
 	CheckToChangeMapDoors();
 	MapHasMusic(true);
-	AddToDownload();
+	FindCharacters();
 	strcopy(FF2CharSetString, 2, "");
 
 	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
@@ -1157,7 +1157,7 @@ public DisableFF2()
 	changeGamemode=0;
 }
 
-public AddToDownload()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
+public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 {
 	decl String:config[PLATFORM_MAX_PATH], String:key[4], String:charset[42];
 	Specials=0;
@@ -1227,7 +1227,7 @@ public AddToDownload()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	{
 		IntToString(i, key, sizeof(key));
 		KvGetString(Kv, key, config, PLATFORM_MAX_PATH);
-		if(!config[0])
+		if(!config[0])  //TODO: Make this more user-friendly (don't immediately break-they might have missed a number)
 		{
 			break;
 		}
