@@ -261,14 +261,14 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"July 8, 2014",		//1.10.0
-	"July 8, 2014",		//1.10.0
-	"July 8, 2014",		//1.10.0
-	"July 8, 2014",		//1.10.0
-	"July 8, 2014",		//1.10.0
-	"July 8, 2014",		//1.10.0
-	"July 8, 2014",		//1.10.0
-	"July 8, 2014"		//1.10.0
+	"July 9, 2014",		//1.10.0
+	"July 9, 2014",		//1.10.0
+	"July 9, 2014",		//1.10.0
+	"July 9, 2014",		//1.10.0
+	"July 9, 2014",		//1.10.0
+	"July 9, 2014",		//1.10.0
+	"July 9, 2014",		//1.10.0
+	"July 9, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -4563,13 +4563,21 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 
 public Action:OnCallForMedic(client, const String:command[], args)
 {
-	if(!Enabled || !IsPlayerAlive(client) || CheckRoundState()!=1 || !IsBoss(client) || !StrEqual(command, "voicemenu 1 1"))
+	if(!Enabled || !IsPlayerAlive(client) || CheckRoundState()!=1 || !IsBoss(client) || args!=2)
 	{
 		return Plugin_Continue;
 	}
 
 	new boss=GetBossIndex(client);
 	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]))
+	{
+		return Plugin_Continue;
+	}
+
+	decl String:arg1[4], String:arg2[4];
+	GetCmdArg(1, arg1, sizeof(arg1));
+	GetCmdArg(2, arg2, sizeof(arg2));
+	if(StringToInt(arg1)!=1 || StringToInt(arg2)!=1)  //We only want "voicemenu 1 1"-thanks friagram for pointing out edge cases
 	{
 		return Plugin_Continue;
 	}
