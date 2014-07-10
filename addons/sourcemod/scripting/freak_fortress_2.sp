@@ -261,14 +261,14 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"July 9, 2014",		//1.10.0
-	"July 9, 2014",		//1.10.0
-	"July 9, 2014",		//1.10.0
-	"July 9, 2014",		//1.10.0
-	"July 9, 2014",		//1.10.0
-	"July 9, 2014",		//1.10.0
-	"July 9, 2014",		//1.10.0
-	"July 9, 2014"		//1.10.0
+	"July 10, 2014",	//1.10.0
+	"July 10, 2014",	//1.10.0
+	"July 10, 2014",	//1.10.0
+	"July 10, 2014",	//1.10.0
+	"July 10, 2014",	//1.10.0
+	"July 10, 2014",	//1.10.0
+	"July 10, 2014",	//1.10.0
+	"July 10, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -4581,9 +4581,9 @@ public Action:OnCallForMedic(client, const String:command[], args)
 	GetCmdArg(1, arg1, sizeof(arg1));
 	GetCmdArg(2, arg2, sizeof(arg2));
 	Debug("OnCallForMedic: Detected args were %s and %s", arg1, arg2);
-	if(StringToInt(arg1)!=1 || StringToInt(arg2)!=1)  //We only want "voicemenu 1 1"-thanks friagram for pointing out edge cases
-	{
-		Debug("OnCallForMedic: Returning because either arg1 or arg2 was not 1");
+	if(StringToInt(arg1) || StringToInt(arg2))  //We only want "voicemenu 0 0"-thanks friagram for pointing out edge cases
+	{  //TODO: Edge case here where rage could be activated if the sender uses a bogus command (since StringToInt returns 0 on failure)
+		Debug("OnCallForMedic: Returning because either arg1 or arg2 was not 0");
 		return Plugin_Continue;
 	}
 
