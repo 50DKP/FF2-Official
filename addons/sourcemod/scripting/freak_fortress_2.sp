@@ -4563,22 +4563,27 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 
 public Action:OnCallForMedic(client, const String:command[], args)
 {
+	Debug("OnCallForMedic: Command was %s", command);
 	if(!Enabled || !IsPlayerAlive(client) || CheckRoundState()!=1 || !IsBoss(client) || args!=2)
 	{
+		Debug("OnCallForMedic: Returning (player alive/round state/boss/args check); detected %i args", args);
 		return Plugin_Continue;
 	}
 
 	new boss=GetBossIndex(client);
 	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]))
 	{
+		Debug("OnCallForMedic: Returning because boss was invalid");
 		return Plugin_Continue;
 	}
 
 	decl String:arg1[4], String:arg2[4];
 	GetCmdArg(1, arg1, sizeof(arg1));
 	GetCmdArg(2, arg2, sizeof(arg2));
+	Debug("OnCallForMedic: Detected args were %s and %s", arg1, arg2);
 	if(StringToInt(arg1)!=1 || StringToInt(arg2)!=1)  //We only want "voicemenu 1 1"-thanks friagram for pointing out edge cases
 	{
+		Debug("OnCallForMedic: Returning because either arg1 or arg2 was not 1");
 		return Plugin_Continue;
 	}
 
