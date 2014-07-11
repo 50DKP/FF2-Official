@@ -4505,7 +4505,7 @@ public Action:Timer_BotRage(Handle:timer, any:bot)
 {
 	if(IsValidClient(Boss[bot], false))
 	{
-		FakeClientCommandEx(Boss[bot], "voicemenu 1 1");
+		FakeClientCommandEx(Boss[bot], "voicemenu 0 0");
 	}
 }
 
@@ -4514,7 +4514,7 @@ stock OnlyScoutsLeft()
 	new scouts;
 	for(new client; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client)==BossTeam)
+		if(IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
 		{
 			if(TF2_GetPlayerClass(client)!=TFClass_Scout)
 			{
@@ -4582,7 +4582,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 	GetCmdArg(2, arg2, sizeof(arg2));
 	Debug("OnCallForMedic: Detected args were %s and %s", arg1, arg2);
 	if(StringToInt(arg1) || StringToInt(arg2))  //We only want "voicemenu 0 0"-thanks friagram for pointing out edge cases
-	{  //TODO: Edge case here where rage could be activated if the sender uses a bogus command (since StringToInt returns 0 on failure)
+	{
 		Debug("OnCallForMedic: Returning because either arg1 or arg2 was not 0");
 		return Plugin_Continue;
 	}
