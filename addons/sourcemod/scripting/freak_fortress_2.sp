@@ -4955,9 +4955,9 @@ public Action:CheckAlivePlayers(Handle:timer)
 
 	RedAlivePlayers=0;
 	new BlueAlivePlayers;
-	for(new client; client<=MaxClients; client++)
+	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidEdict(client) && IsClientInGame(client) && IsPlayerAlive(client))
+		if(IsClientInGame(client) && IsPlayerAlive(client))
 		{
 			if(GetClientTeam(client)==OtherTeam)
 			{

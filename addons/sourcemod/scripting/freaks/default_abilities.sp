@@ -411,7 +411,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 			new bool:otherTeamIsAlive;
 			for(new target=1; target<=MaxClients; target++)
 			{
-				if(IsClientConnected(target) && IsPlayerAlive(target) && target!=boss && !(FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+				if(IsClientInGame(target) && IsPlayerAlive(target) && target!=boss && !(FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 				{
 					otherTeamIsAlive=true;
 					break;
