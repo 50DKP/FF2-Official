@@ -4447,7 +4447,7 @@ public Action:BossTimer(Handle:timer)
 				//Format(bossLives, sizeof(bossLives), ((BossLives[boss]>1) ? ("x%i", BossLives[boss]) : ("")));
 				if(BossLives[boss]>1)
 				{
-					Format(message, sizeof(message), "%s\n%s's HP: %i of %i%sx%i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], BossLives[boss]);
+					Format(message, sizeof(message), "%s\n%s's HP: %i of %ix%i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], BossLives[boss]);
 				}
 				else
 				{
@@ -4963,7 +4963,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			{
 				RedAlivePlayers++;
 			}
-			if(IsBoss(client))
+			else if(IsBoss(client) || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 			{
 				BlueAlivePlayers++;
 			}

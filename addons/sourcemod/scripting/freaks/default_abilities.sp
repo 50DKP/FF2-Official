@@ -346,7 +346,7 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 				EmitSoundToAll(sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 				EmitSoundToAll(sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 
-				for(new target; target<=MaxClients; target++)
+				for(new target=1; target<=MaxClients; target++)
 				{
 					if(IsClientInGame(target) && target!=boss)
 					{
@@ -528,13 +528,16 @@ Charge_WeighDown(client, slot)
 
 				new Handle:data;
 				new Float:velocity[3];
+				WritePackCell(data, GetClientUserId(boss));
+
 				GetEntPropVector(boss, Prop_Data, "m_vecVelocity", velocity);
 				velocity[2]=-1000.0;
 				TeleportEntity(boss, NULL_VECTOR, NULL_VECTOR, velocity);
+
+				WritePackFloat(data, GetEntityGravity(boss));
 				SetEntityGravity(boss, 6.0);
 				CreateDataTimer(2.0, Timer_ResetGravity, data, TIMER_FLAG_NO_MAPCHANGE);
-				WritePackCell(data, GetClientUserId(boss));
-				WritePackFloat(data, GetEntityGravity(boss));
+
 				CPrintToChat(boss, "{olive}[FF2]{default} %t", "used_weighdown");
 				FF2_SetBossCharge(client, slot, 0.0);
 			}
@@ -552,8 +555,8 @@ Charge_WeighDown(client, slot)
 
 public Action:Timer_ResetGravity(Handle:timer, Handle:data)
 {
-	new client=GetClientOfUserId(ReadPackCell(data));
-	if(client && IsValidEdict(client))
+	new client=GetClientOfUserId(FF2_GetBossOfUserId(ReadPackCell(data)));
+	if(client && IsValidEdict(client) && IsClientInGame(client))
 	{
 		SetEntityGravity(client, ReadPackFloat(data));
 	}
