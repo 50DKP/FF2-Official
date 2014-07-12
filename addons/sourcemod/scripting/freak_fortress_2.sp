@@ -4963,7 +4963,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			{
 				RedAlivePlayers++;
 			}
-			else if(IsBoss(client) || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+			else if(IsBoss(client) || (FF2_GetFF2flags(client) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 			{
 				BlueAlivePlayers++;
 			}
