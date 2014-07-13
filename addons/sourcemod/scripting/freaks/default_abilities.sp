@@ -529,6 +529,7 @@ Charge_WeighDown(client, slot)
 				new Handle:data;
 				new Float:velocity[3];
 				CreateDataTimer(2.0, Timer_ResetGravity, data, TIMER_FLAG_NO_MAPCHANGE);
+				Debug("Charge_Weighdown: Client userid was %i", GetClientUserId(boss));
 				WritePackCell(data, GetClientUserId(boss));
 				WritePackFloat(data, GetEntityGravity(boss));
 
@@ -554,7 +555,7 @@ Charge_WeighDown(client, slot)
 
 public Action:Timer_ResetGravity(Handle:timer, Handle:data)
 {
-	new client=GetClientOfUserId(FF2_GetBossUserId(ReadPackCell(data)));
+	new client=GetClientOfUserId(ReadPackCell(data));
 	if(client && IsValidEdict(client) && IsClientInGame(client))
 	{
 		SetEntityGravity(client, ReadPackFloat(data));

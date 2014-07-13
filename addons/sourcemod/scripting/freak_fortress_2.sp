@@ -261,14 +261,14 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"July 12, 2014",	//1.10.0
-	"July 12, 2014",	//1.10.0
-	"July 12, 2014",	//1.10.0
-	"July 12, 2014",	//1.10.0
-	"July 12, 2014",	//1.10.0
-	"July 12, 2014",	//1.10.0
-	"July 12, 2014",	//1.10.0
-	"July 12, 2014"		//1.10.0
+	"July 13, 2014",	//1.10.0
+	"July 13, 2014",	//1.10.0
+	"July 13, 2014",	//1.10.0
+	"July 13, 2014",	//1.10.0
+	"July 13, 2014",	//1.10.0
+	"July 13, 2014",	//1.10.0
+	"July 13, 2014",	//1.10.0
+	"July 13, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -652,7 +652,10 @@ new Handle:OnLoseLife;
 new bool:bBlockVoice[MAXSPECIALS];
 new Float:BossSpeed[MAXSPECIALS];
 new Float:BossRageDamage[MAXSPECIALS];
+
 new String:ChancesString[512];
+new chances[MAXSPECIALS];
+new chancesIndex;
 
 public Plugin:myinfo=
 {
@@ -1238,6 +1241,42 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 
 	KvGetString(Kv, "chances", ChancesString, sizeof(ChancesString));
 	CloseHandle(Kv);
+
+	decl String:stringChances[MAXSPECIALS*2][8];
+	if(ChancesString[0])
+	{
+		Debug("FindCharacters: ChancesString was %s", ChancesString);
+		new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
+		if(amount % 2)
+		{
+			LogError("[FF2 Bosses] Invalid chances string, disregarding chances");
+			strcopy(ChancesString, sizeof(ChancesString), "");
+		}
+
+		chances[0]=StringToInt(stringChances[0]);
+		chances[1]=StringToInt(stringChances[1]);
+		for(chancesIndex=2; chancesIndex<amount; chancesIndex++)
+		{
+			if(chancesIndex % 2)
+			{
+				if(StringToInt(stringChances[chancesIndex])<=0)
+				{
+					LogError("[FF2 Bosses] Boss cannot have a zero or negative chance, disregarding chances");
+					strcopy(ChancesString, sizeof(ChancesString), "");
+					break;
+				}
+				chances[chancesIndex]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2];
+				Debug("FindCharacters: Chances for character %i was %s (total chances: %i)", chances[chancesIndex-1], stringChances[chancesIndex], chances[chancesIndex]);
+			}
+			else
+			{
+				chances[chancesIndex]=StringToInt(stringChances[chancesIndex]);
+				Debug("FindCharacters: Adding character %i to chances", chances[chancesIndex]);
+			}
+		}
+		Debug("PickCharacter: chancesIndex was %i", chancesIndex);
+	}
+
 	AddFileToDownloadsTable("sound/saxton_hale/9000.wav");
 	PrecacheSound("saxton_hale/9000.wav", true);
 	PrecacheSound("vo/announcer_am_capincite01.wav", true);
@@ -5293,6 +5332,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 		return Plugin_Changed;
 	}
 
+	Debug("OnTakeDamage: Damage was %f", damage);
 	new Float:position[3];
 	GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
 	if(IsBoss(attacker))
@@ -5438,8 +5478,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					return Plugin_Changed;
 				}
 
-				Debug("OnTakeDamage: Weapon was %i", weapon);
 				new index=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+				Debug("OnTakeDamage: Weapon was %i", index);
 				switch(index)
 				{
 					case 593:  //Third Degree
@@ -5616,6 +5656,11 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							TF2_RemoveCondition(attacker, TFCond_Dazed);
 						}
 					}
+					case 1099:  //Tide Turner
+					{
+						Debug("OnTakeDamage: Entered Tide Turner, charge meter was %f", GetEntProp(attacker, Prop_Send, "m_flChargeMeter"));
+						SetEntProp(attacker, Prop_Send, "m_flChargeMeter", 100.0);
+					}
 					case 1104:  //Air Strike
 					{
 						static Float:airStrikeDamage;
@@ -5624,7 +5669,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						if(airStrikeDamage>=200.0)
 						{
 							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
-							//SetEntProp(weapon, Prop_Send, "m_iClip1", GetEntProp(weapon, Prop_Send, "m_iClip1")+1);
 							airStrikeDamage-=200.0;
 						}
 					}
@@ -6507,42 +6551,6 @@ public bool:PickCharacter(client, companion)
 			return true;
 		}
 
-		decl String:stringChances[MAXSPECIALS*2][8];
-		new chances[MAXSPECIALS], chancesIndex;
-		if(ChancesString[0])
-		{
-			Debug("PickCharacter: ChancesString was %s", ChancesString);
-			new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
-			if(amount % 2)
-			{
-				LogError("[FF2 Bosses] Invalid chances string, disregarding chances");
-				strcopy(ChancesString, sizeof(ChancesString), "");
-			}
-
-			chances[0]=StringToInt(stringChances[0]);
-			chances[1]=StringToInt(stringChances[1]);
-			for(chancesIndex=2; chancesIndex<amount; chancesIndex++)
-			{
-				if(chancesIndex % 2)
-				{
-					if(StringToInt(stringChances[chancesIndex])<=0)
-					{
-						LogError("[FF2 Bosses] Boss cannot have a zero or negative chance, disregarding chances");
-						strcopy(ChancesString, sizeof(ChancesString), "");
-						break;
-					}
-					chances[chancesIndex]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2];
-					Debug("PickCharacter: Chances for character %i was %s (total chances: %i)", chances[chancesIndex-1], stringChances[chancesIndex], chances[chancesIndex]);
-				}
-				else
-				{
-					chances[chancesIndex]=StringToInt(stringChances[chancesIndex]);
-					Debug("PickCharacter: Adding character %i to chances", chances[chancesIndex]);
-				}
-			}
-		}
-
-		Debug("PickCharacter: chancesIndex was %i", chancesIndex);
 		for(new tries; tries<100; tries++)
 		{
 			if(ChancesString[0])
