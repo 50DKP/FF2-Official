@@ -1273,7 +1273,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 				chances[chancesIndex]=StringToInt(stringChances[chancesIndex]);
 				Debug("FindCharacters: Adding character %i to chances", chances[chancesIndex]);
 			}
-			Debug("PickCharacter: chancesIndex was %i", chancesIndex);
+			Debug("FindCharacters:: chancesIndex was %i", chancesIndex);
 		}
 	}
 
