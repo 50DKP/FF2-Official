@@ -528,15 +528,14 @@ Charge_WeighDown(client, slot)
 
 				new Handle:data;
 				new Float:velocity[3];
+				CreateDataTimer(2.0, Timer_ResetGravity, data, TIMER_FLAG_NO_MAPCHANGE);
 				WritePackCell(data, GetClientUserId(boss));
+				WritePackFloat(data, GetEntityGravity(boss));
 
 				GetEntPropVector(boss, Prop_Data, "m_vecVelocity", velocity);
 				velocity[2]=-1000.0;
 				TeleportEntity(boss, NULL_VECTOR, NULL_VECTOR, velocity);
-
-				WritePackFloat(data, GetEntityGravity(boss));
 				SetEntityGravity(boss, 6.0);
-				CreateDataTimer(2.0, Timer_ResetGravity, data, TIMER_FLAG_NO_MAPCHANGE);
 
 				CPrintToChat(boss, "{olive}[FF2]{default} %t", "used_weighdown");
 				FF2_SetBossCharge(client, slot, 0.0);
