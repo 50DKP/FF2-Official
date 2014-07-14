@@ -1251,6 +1251,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 		{
 			LogError("[FF2 Bosses] Invalid chances string, disregarding chances");
 			strcopy(ChancesString, sizeof(ChancesString), "");
+			amount=0;
 		}
 
 		chances[0]=StringToInt(stringChances[0]);
@@ -1261,7 +1262,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 			{
 				if(StringToInt(stringChances[chancesIndex])<=0)
 				{
-					LogError("[FF2 Bosses] Boss cannot have a zero or negative chance, disregarding chances");
+					LogError("[FF2 Bosses] Character %i cannot have a zero or negative chance, disregarding chances", chancesIndex-1);
 					strcopy(ChancesString, sizeof(ChancesString), "");
 					break;
 				}
@@ -1273,7 +1274,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 				chances[chancesIndex]=StringToInt(stringChances[chancesIndex]);
 				Debug("FindCharacters: Adding character %i to chances", chances[chancesIndex]);
 			}
-			Debug("FindCharacters:: chancesIndex was %i", chancesIndex);
+			Debug("FindCharacters: chancesIndex was %i", chancesIndex);
 		}
 	}
 
