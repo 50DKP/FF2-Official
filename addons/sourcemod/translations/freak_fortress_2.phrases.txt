@@ -206,7 +206,7 @@
 	}
 	"select_charset"
 	{
-		"en"    "Please vote for the character set for next map."
+		"en"    "Please vote for the character set for the next map."
 	}
 	"your_points"
 	{
@@ -301,7 +301,7 @@
 	"nextmap_charset"
 	{
 		"#format" "{1:s},{2:s}"
-		"en"	"There will be {2} character set in {1} map."
+		"en"	"The character set for {1} will be {2}."
 	}
 	"ff2_buttons_reload"
 	{
