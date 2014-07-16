@@ -5296,6 +5296,18 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 		}
 	}
 
+	if(GetEntProp(GetPlayerWeaponSlot(attacker, TFWeaponSlot_Primary), Prop_Send, "m_iItemDefinitionIndex")==1104)  //Air Strike-moved from OTD
+	{
+		static airStrikeDamage;
+		airStrikeDamage+=damage;
+		Debug("event_hurt: Damage was %i, airStrikeDamage is now %i", damage, airStrikeDamage);
+		if(airStrikeDamage>=200)
+		{
+			SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
+			airStrikeDamage-=200;
+		}
+	}
+
 	if(BossCharge[boss][0]>100)
 	{
 		BossCharge[boss][0]=100.0;
@@ -5333,7 +5345,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 		return Plugin_Changed;
 	}
 
-	Debug("OnTakeDamage: Damage was %f", damage);
 	new Float:position[3];
 	GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
 	if(IsBoss(attacker))
@@ -5481,6 +5492,11 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 				new index=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 				Debug("OnTakeDamage: Weapon was %i", index);
+				if(index==1099)  //>.>
+				{
+					Debug("Test");
+				}
+
 				switch(index)
 				{
 					case 593:  //Third Degree
@@ -5662,7 +5678,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						Debug("OnTakeDamage: Entered Tide Turner, charge meter was %f", GetEntProp(attacker, Prop_Send, "m_flChargeMeter"));
 						SetEntProp(attacker, Prop_Send, "m_flChargeMeter", 100.0);
 					}
-					case 1104:  //Air Strike
+					/*case 1104:  //Air Strike-moved to event_player_hurt for now since OTD doesn't display the actual damage :/
 					{
 						static Float:airStrikeDamage;
 						airStrikeDamage+=damage;
@@ -5672,7 +5688,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
 							airStrikeDamage-=200.0;
 						}
-					}
+					}*/
 				}
 
 				if(bIsBackstab)
