@@ -7439,22 +7439,23 @@ public NextmapPanelH(Handle:menu, MenuAction:action, client, selection)
 	return;
 }
 
-public NextmapPanelH2(Handle:menu, votes, clients, const clientInfo[][2], items, const itemInfo[][2])
+public Handler_VoteCharset(Handle:menu, votes, clients, const clientInfo[][2], items, const itemInfo[][2])
 {
-	decl String:item[42], String:nextmap[42];
-	GetMenuItem(menu, itemInfo[0][VOTEINFO_ITEM_INDEX], item, sizeof(item));
-	if(item[0]=='0')
+	decl String:item[42], String:display[42], String:nextmap[42];
+	GetMenuItem(menu, itemInfo[0][VOTEINFO_ITEM_INDEX], item, sizeof(item), _, display, sizeof(display));
+	if(item[0]=='0')  //!StringToInt(item)
 	{
 		FF2CharSet=GetRandomInt(0, FF2CharSet);
 	}
 	else
 	{
 		FF2CharSet=item[0]-'0'-1;  //Wat
+		//FF2CharSet=StringToInt(item)-1
 	}
 
 	GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
 	strcopy(FF2CharSetString, 42, item[StrContains(item, " ")+1]);
-	CPrintToChatAll("%t", "nextmap_charset", nextmap, FF2CharSetString);
+	CPrintToChatAll("%t", "nextmap_charset", nextmap, FF2CharSetString);  //display
 	isCharSetSelected=true;
 }
 
@@ -7478,7 +7479,7 @@ public Action:Timer_CvarChangeNextmap(Handle:timer)
 
 	new Handle:menu=CreateMenu(NextmapPanelH, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(menu, "%t", "select_charset");
-	SetVoteResultCallback(menu, NextmapPanelH2);
+	SetVoteResultCallback(menu, Handler_VoteCharset);
 
 	decl String:config[PLATFORM_MAX_PATH], String:charset[64];
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
@@ -7486,7 +7487,8 @@ public Action:Timer_CvarChangeNextmap(Handle:timer)
 	new Handle:Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, config);
 	AddMenuItem(menu, "0 Random", "Random");
-	new i, j;
+	//AddMenuItem(menu, "0", "Random");
+	new i, charsets;
 	do
 	{
 		i++;
@@ -7494,26 +7496,20 @@ public Action:Timer_CvarChangeNextmap(Handle:timer)
 		{
 			continue;
 		}
-		j++;
+		charsets++;
 		KvGetSectionName(Kv, config, 64);
-		Format(charset, 64, "%i %s", i, config);
+		Format(charset, sizeof(charset), "%i %s", i, config);
 		AddMenuItem(menu, charset, config);
+		//AddMenuItem(menu, i, config);
 	}
 	while(KvGotoNextKey(Kv));
 	CloseHandle(Kv);
 
-	if(j>1)
+	if(charsets>1)  //We have enough to call a vote
 	{
 		//FF2CharSet=i;  //We're going to be setting this in the map callback...
 		new Handle:voteDuration=FindConVar("sm_mapvote_voteduration");
-		if(voteDuration)
-		{
-			VoteMenuToAll(menu, GetConVarInt(voteDuration));
-		}
-		else
-		{
-			VoteMenuToAll(menu, 20);
-		}
+		VoteMenuToAll(menu, voteDuration ? GetConVarInt(voteDuration) : 20);
 	}
 	return Plugin_Continue;
 }
