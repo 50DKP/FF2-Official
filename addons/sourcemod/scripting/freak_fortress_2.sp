@@ -7461,10 +7461,10 @@ public Handler_VoteCharset(Handle:menu, votes, clients, const clientInfo[][2], i
 
 public CvarChangeNextmap(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	CreateTimer(0.1, Timer_CvarChangeNextmap);
+	CreateTimer(0.1, Timer_DisplayCharsetVote);
 }
 
-public Action:Timer_CvarChangeNextmap(Handle:timer)
+public Action:Timer_DisplayCharsetVote(Handle:timer)
 {
 	if(isCharSetSelected)
 	{
@@ -7473,7 +7473,7 @@ public Action:Timer_CvarChangeNextmap(Handle:timer)
 
 	if(IsVoteInProgress())
 	{
-		CreateTimer(5.0, Timer_CvarChangeNextmap, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(5.0, Timer_DisplayCharsetVote, _, TIMER_FLAG_NO_MAPCHANGE);
 		return Plugin_Continue;
 	}
 
@@ -7497,7 +7497,9 @@ public Action:Timer_CvarChangeNextmap(Handle:timer)
 			continue;
 		}
 		charsets++;
+
 		KvGetSectionName(Kv, config, 64);
+		Debug("Timer_DisplayCharsetVote:  Found charset %s", config);
 		Format(charset, sizeof(charset), "%i %s", i, config);
 		AddMenuItem(menu, charset, config);
 		//AddMenuItem(menu, i, config);
