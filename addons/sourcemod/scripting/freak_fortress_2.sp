@@ -5296,7 +5296,8 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 		}
 	}
 
-	if(GetEntProp(GetPlayerWeaponSlot(attacker, TFWeaponSlot_Primary), Prop_Send, "m_iItemDefinitionIndex")==1104)  //Air Strike-moved from OTD
+	new weapon=GetPlayerWeaponSlot(attacker, TFWeaponSlot_Primary);
+	if(IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==1104)  //Air Strike-moved from OTD
 	{
 		static airStrikeDamage;
 		airStrikeDamage+=damage;

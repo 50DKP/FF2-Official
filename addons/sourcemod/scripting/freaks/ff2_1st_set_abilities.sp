@@ -310,7 +310,23 @@ Rage_Clone(const String:ability_name[], client)
 	CloseHandle(players);
 
 	new entity, owner;
-	while((entity=FindEntityByClassname(entity, "tf_wearable"))!=-1 || (entity=FindEntityByClassname(entity, "tf_wearable_demoshield"))!=-1 || (entity=FindEntityByClassname(entity, "tf_powerup_bottle"))!=-1)
+	while((entity=FindEntityByClassname(entity, "tf_wearable"))!=-1)
+	{
+		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
+		{
+			TF2_RemoveWearable(owner, entity);
+		}
+	}
+
+	while((entity=FindEntityByClassname(entity, "tf_wearable_demoshield"))!=-1)
+	{
+		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
+		{
+			TF2_RemoveWearable(owner, entity);
+		}
+	}
+
+	while((entity=FindEntityByClassname(entity, "tf_powerup_bottle"))!=-1)
 	{
 		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
 		{
@@ -893,7 +909,7 @@ stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute
 	return entity;
 }
 
-stock SetAmmo(client, weapon, ammo=0, clip=0)
+stock SetAmmo(client, weapon, ammo, clip=0)
 {
 	if(IsValidEntity(weapon))
 	{
@@ -901,17 +917,14 @@ stock SetAmmo(client, weapon, ammo=0, clip=0)
 		new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1);
 		if(offset!=-1)
 		{
-			if(ammo>0)
-			{
-				SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
-			}
+			SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
 		}
-		else
+		else if(ammo)
 		{
 			new String:classname[64];
 			GetEdictClassname(weapon, classname, sizeof(classname));
 			new String:bossName[32];
-			FF2_GetBossSpecial(client, bossName, sizeof(bossName));
+			FF2_GetBossSpecial(FF2_GetBossIndex(client), bossName, sizeof(bossName));
 			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
 		}
 	}

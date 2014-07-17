@@ -156,7 +156,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 
 		for(new target=1; target<=MaxClients; target++)
 		{
-			if(IsClientConnected(target) && IsPlayerAlive(target) && target!=boss && !(FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+			if(IsClientInGame(target) && IsPlayerAlive(target) && target!=boss && !(FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 			{
 				otherTeamIsAlive=true;
 				break;
