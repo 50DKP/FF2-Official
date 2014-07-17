@@ -4766,9 +4766,7 @@ public Action:OnJoinTeam(client, const String:command[], args)
 
 	if(team>_:TFTeam_Unassigned && team!=oldTeam)
 	{
-		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, team);
-		SetEntProp(client, Prop_Send, "m_lifeState", 0);
 	}
 
 	if(CheckRoundState()!=1 && !IsBoss(client) || !IsPlayerAlive(client))  //No point in showing the VGUI if they can't change teams
@@ -4906,15 +4904,11 @@ public Action:Timer_RestoreLastClass(Handle:timer, any:userid)
 	LastClass[client]=TFClass_Unknown;
 	if(BossTeam==_:TFTeam_Red)
 	{
-		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, _:TFTeam_Blue);
-		SetEntProp(client, Prop_Send, "m_lifeState", 0);
 	}
 	else
 	{
-		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, _:TFTeam_Red);
-		SetEntProp(client, Prop_Send, "m_lifeState", 0);
 	}
 	return Plugin_Continue;
 }
