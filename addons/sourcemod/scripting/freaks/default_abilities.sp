@@ -531,6 +531,7 @@ Charge_WeighDown(client, slot)
 				CreateDataTimer(2.0, Timer_ResetGravity, data, TIMER_FLAG_NO_MAPCHANGE);
 				WritePackCell(data, GetClientUserId(boss));
 				WritePackFloat(data, GetEntityGravity(boss));
+				ResetPack(data);
 
 				GetEntPropVector(boss, Prop_Data, "m_vecVelocity", velocity);
 				velocity[2]=-1000.0;
