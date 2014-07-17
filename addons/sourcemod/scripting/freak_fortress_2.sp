@@ -5493,11 +5493,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 				new index=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 				Debug("OnTakeDamage: Weapon was %i", index);
-				if(index==1099)  //>.>
-				{
-					Debug("Test");
-				}
-
 				switch(index)
 				{
 					case 593:  //Third Degree
@@ -5676,8 +5671,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 1099:  //Tide Turner
 					{
-						Debug("OnTakeDamage: Entered Tide Turner, charge meter was %f", GetEntProp(attacker, Prop_Send, "m_flChargeMeter"));
-						SetEntProp(attacker, Prop_Send, "m_flChargeMeter", 100.0);
+						Debug("OnTakeDamage: Entered Tide Turner, charge meter was %f", GetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter"));
+						SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", 100.0);
 					}
 					/*case 1104:  //Air Strike-moved to event_player_hurt for now since OTD doesn't display the actual damage :/
 					{
