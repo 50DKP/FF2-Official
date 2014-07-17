@@ -15,6 +15,11 @@ MarkNativeAsOptional("SMAC_CheatDetected");
 ```
 
 `rtd.inc`:
+Inside `public SharedPlugin:__pl_rtd = `
+* Remove:
+```sourcepawn
+required = 1
+```
 * Add: 
 ```sourcepawn
 #if defined REQUIRE_PLUGIN
@@ -23,7 +28,6 @@ required = 1
 required = 0
 #endif
 ```
-inside `public SharedPlugin:__pl_rtd = `
 
 ###Formatting
 ***
