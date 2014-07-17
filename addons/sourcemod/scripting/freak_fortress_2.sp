@@ -836,7 +836,7 @@ public OnPluginStart()
 	RegAdminCmd("ff2_stop_music", Command_StopMusic, ADMFLAG_CHEATS, "Stop any currently playing Boss music");
 	RegAdminCmd("ff2_resetqueuepoints", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 	RegAdminCmd("ff2_resetq", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
-	RegAdminCmd("ff2_charset", Command_CharSet, ADMFLAG_CHEATS, "Usage:  ff2_charset <charset>.  Forces FF2 to use a given character set");
+	RegAdminCmd("ff2_charset", Command_Charset, ADMFLAG_CHEATS, "Usage:  ff2_charset <charset>.  Forces FF2 to use a given character set");
 	RegAdminCmd("ff2_reload_subplugins", Command_ReloadSubPlugins, ADMFLAG_RCON, "Reload FF2's subplugins.");
 
 	RegAdminCmd("hale_select", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
@@ -3916,7 +3916,7 @@ public Action:Command_StopMusic(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_CharSet(client, args)
+public Action:Command_Charset(client, args)
 {
 	if(!args)
 	{
@@ -3924,9 +3924,19 @@ public Action:Command_CharSet(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:charset[32];
+	decl String:charset[32], String:rawText[16][16];
 	GetCmdArgString(charset, sizeof(charset));
-	Debug("Command_CharSet: Command argument was %s", charset);
+	Debug("Command_Charset: Raw command argument was %s", charset);
+	new amount=ExplodeString(charset, " ", rawText, 16, 16);
+	for(new i; i<amount; i++)
+	{
+		Debug("Command_Charset: rawText[%i] was %s", i, rawText[i]);
+		StripQuotes(rawText[i]);
+		Debug("Command_Charset: Stripping quotes; rawText[%i] is now %s", i, rawText[i]);
+	}
+	ImplodeStrings(rawText, amount, " ", charset, sizeof(charset));
+	Debug("Command_Charset: Processed command argument was %s", charset);
+
 	decl String:config[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
 
@@ -3935,7 +3945,7 @@ public Action:Command_CharSet(client, args)
 	for(new i; ; i++)
 	{
 		KvGetSectionName(Kv, config, sizeof(config));
-		Debug("Command_CharSet: Section name was %s", config);
+		Debug("Command_Charset: Section name was %s", config);
 		if(StrContains(config, charset, false)>=0)
 		{
 			CReplyToCommand(client, "{default}[FF2]{olive} Charset for nextmap is %s", config);
@@ -3947,7 +3957,7 @@ public Action:Command_CharSet(client, args)
 		if(!KvGotoNextKey(Kv))
 		{
 			CReplyToCommand(client, "{default}[FF2]{olive} Charset not found");
-			return Plugin_Handled;
+			break;
 		}
 	}
 	CloseHandle(Kv);
