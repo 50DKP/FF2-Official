@@ -1969,7 +1969,9 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	{
 		if(IsValidClient(Boss[0]))
 		{
+			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 2);
 			ChangeClientTeam(Boss[0], BossTeam);
+			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 0);
 			TF2_RespawnPlayer(Boss[0]);
 		}
 
