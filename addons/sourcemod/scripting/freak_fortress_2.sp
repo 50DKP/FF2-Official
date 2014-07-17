@@ -261,14 +261,14 @@ static const String:ff2versiondates[][]=
 	"March 22, 2014",	//1.9.2
 	"March 22, 2014",	//1.9.2
 	"April 5, 2014",	//1.9.3
-	"July 13, 2014",	//1.10.0
-	"July 13, 2014",	//1.10.0
-	"July 13, 2014",	//1.10.0
-	"July 13, 2014",	//1.10.0
-	"July 13, 2014",	//1.10.0
-	"July 13, 2014",	//1.10.0
-	"July 13, 2014",	//1.10.0
-	"July 13, 2014"		//1.10.0
+	"July 17, 2014",	//1.10.0
+	"July 17, 2014",	//1.10.0
+	"July 17, 2014",	//1.10.0
+	"July 17, 2014",	//1.10.0
+	"July 17, 2014",	//1.10.0
+	"July 17, 2014",	//1.10.0
+	"July 17, 2014",	//1.10.0
+	"July 17, 2014"		//1.10.0
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -3133,7 +3133,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-		case 43, 239, 1084:  //KGB, GRU, Festive GRU
+		case 43, 239, 1084, 1100:  //KGB, GRU, Festive GRU, Bread Bite
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, 239, "107 ; 1.5 ; 1 ; 0.5 ; 128 ; 1 ; 191 ; -7", true);
 			if(itemOverride!=INVALID_HANDLE)
@@ -3924,6 +3924,7 @@ public Action:Command_CharSet(client, args)
 
 	decl String:charset[32];
 	GetCmdArgString(charset, sizeof(charset));
+	Debug("Command_CharSet: Command argument was %s", charset);
 	decl String:config[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
 
@@ -3932,6 +3933,7 @@ public Action:Command_CharSet(client, args)
 	for(new i; ; i++)
 	{
 		KvGetSectionName(Kv, config, sizeof(config));
+		Debug("Command_CharSet: Section name was %s", config);
 		if(StrContains(config, charset, false)>=0)
 		{
 			CReplyToCommand(client, "{default}[FF2]{olive} Charset for nextmap is %s", config);
@@ -4959,13 +4961,12 @@ public Action:event_deflect(Handle:event, const String:name[], bool:dontBroadcas
 
 public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init)
 {
-	new client=BfReadByte(bf);
-	new victim=BfReadByte(bf);
+	new client=BfReadByte(bf), victim=BfReadByte(bf);
 	new boss=GetBossIndex(victim);
 	if(boss!=-1)
 	{
 		new jarate=GetPlayerWeaponSlot(client, 1);
-		if(jarate!=-1 && GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex")==58 && GetEntProp(jarate, Prop_Send, "m_iEntityLevel")!=-122 && BossCharge[boss][0]>0)  //Obviously, Jarate
+		if(jarate!=-1 && (GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex")==58 || GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex")==1105)) && GetEntProp(jarate, Prop_Send, "m_iEntityLevel")!=-122 && BossCharge[boss][0]>0)  //Obviously, Jarate and Snack Attack
 		{
 			BossCharge[boss][0]-=8.0;  //TODO: Allow this to be customizable
 			if(BossCharge[boss][0]<0)
