@@ -1969,7 +1969,9 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	{
 		if(IsValidClient(Boss[0]))
 		{
+			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 2);
 			ChangeClientTeam(Boss[0], BossTeam);
+			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 0);
 			TF2_RespawnPlayer(Boss[0]);
 		}
 
@@ -4966,7 +4968,7 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 	if(boss!=-1)
 	{
 		new jarate=GetPlayerWeaponSlot(client, 1);
-		if(jarate!=-1 && (GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex")==58 || GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex")==1105)) && GetEntProp(jarate, Prop_Send, "m_iEntityLevel")!=-122 && BossCharge[boss][0]>0)  //Obviously, Jarate and Snack Attack
+		if(jarate!=-1 && (GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex")==58 || GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex")==1105) && GetEntProp(jarate, Prop_Send, "m_iEntityLevel")!=-122 && BossCharge[boss][0]>0)  //Obviously, Jarate and Snack Attack
 		{
 			BossCharge[boss][0]-=8.0;  //TODO: Allow this to be customizable
 			if(BossCharge[boss][0]<0)
