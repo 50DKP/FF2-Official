@@ -13,7 +13,7 @@ It is highly recommended that you also make these changes when compiling FF2.
 ```sourcepawn
 MarkNativeAsOptional("SMAC_CheatDetected");
 ```
-
+  
 `rtd.inc`:  Inside `public SharedPlugin:__pl_rtd = `
 * Remove:
 ```sourcepawn
