@@ -309,15 +309,15 @@ stock FindVersionData(Handle:panel, versionIndex)
 		}
 		case 38:  //1.10.0
 		{
-			DrawPanelText(panel, "17) Fixed a rare bug where the leaderboard would display the wrong information (Wliu)");
-			DrawPanelText(panel, "18) Fixed gravity not resetting correctly after a weighdown if using non-standard gravity (Wliu)");
-			DrawPanelText(panel, "19) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
-			DrawPanelText(panel, "20) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "17) Fixed gravity not resetting correctly after a weighdown if using non-standard gravity (Wliu)");
+			DrawPanelText(panel, "18) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
+			DrawPanelText(panel, "19) [Server] Added ammo, clip, and health arguments to rage_cloneattack (Wliu)");
+			DrawPanelText(panel, "20) [Server] Changed how BossCrits works...again (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 37:  //1.10.0
 		{
-			DrawPanelText(panel, "21) [Server] Removed ff2_halloween (Wliu)");
+			DrawPanelText(panel, "21) [Server] Removed convar ff2_halloween (Wliu)");
 			DrawPanelText(panel, "22) [Server] Moved convar ff2_oldjump to the main config file (Wliu)");
 			DrawPanelText(panel, "23) [Server] Added convar ff2_countdown_players to control when the timer should appear (Wliu/BBG_Theory)");
 			DrawPanelText(panel, "24) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
@@ -326,19 +326,18 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 36:  //1.10.0
 		{
 			DrawPanelText(panel, "25) [Server] Added convar ff2_goomba_jump to control how high players should rebound after goomba stomping the boss (WildCard65)");
-			DrawPanelText(panel, "26) [Server] Fixed some convars not executing (Wliu)");
-			DrawPanelText(panel, "27) [Server] Changed how BossCrits works...again (Wliu)");
-			DrawPanelText(panel, "28) [Server] Fixed hale_point_enable/disable being registered twice (Wliu)");
+			DrawPanelText(panel, "26) [Server] Fixed hale_point_enable/disable being registered twice (Wliu)");
+			DrawPanelText(panel, "27) [Server] Fixed some convars not executing (Wliu)");
+			DrawPanelText(panel, "28) [Server] Fixed the chances and charset systems (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 35:  //1.10.0
 		{
-			DrawPanelText(panel, "29) [Server] Fixed the chances system (Wliu)");
-			DrawPanelText(panel, "30) [Dev] Added more natives and one additional forward (Eggman)");
-			DrawPanelText(panel, "31) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
-			DrawPanelText(panel, "32) [Dev] Fixed FF2FLAG_ISBUFFED (Wliu)");
-			DrawPanelText(panel, "33) [Dev] FF2 now checks for sane values for \"lives\" and \"health_formula\" (Wliu)");
-			DrawPanelText(panel, "Big thanks to GIANT_CRAB for finding a bunch of these bugs!");
+			DrawPanelText(panel, "29) [Dev] Added more natives and one additional forward (Eggman)");
+			DrawPanelText(panel, "30) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
+			DrawPanelText(panel, "31) [Dev] Fixed FF2FLAG_ISBUFFED (Wliu)");
+			DrawPanelText(panel, "32) [Dev] FF2 now checks for sane values for \"lives\" and \"health_formula\" (Wliu)");
+			DrawPanelText(panel, "Big thanks to GIANT_CRAB, WildCard65, and kniL for their devotion to this release!");
 		}
 		case 34:  //1.9.3
 		{
@@ -825,9 +824,9 @@ public OnPluginStart()
 	RegConsoleCmd("hale_resetpoints", ResetQueuePointsCmd);
 	RegConsoleCmd("haleresetpoints", ResetQueuePointsCmd);
 
-	RegConsoleCmd("nextmap", NextMapCmd);
-	RegConsoleCmd("say", SayCmd);
-	RegConsoleCmd("say_team", SayCmd);
+	RegConsoleCmd("nextmap", Command_Nextmap);
+	RegConsoleCmd("say", Command_Say);
+	RegConsoleCmd("say_team", Command_Say);
 
 	RegAdminCmd("ff2_special", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  ff2_special <boss>.  Forces next round to use that boss");
 	RegAdminCmd("ff2_addpoints", Command_Points, ADMFLAG_CHEATS, "Usage:  ff2_addpoints <target> <points>.  Adds queue points to any player");
@@ -7525,30 +7524,25 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:NextMapCmd(client, args)
+public Action:Command_Nextmap(client, args)
 {
-	if(!FF2CharSetString[0])
-	{
-		return Plugin_Continue;
-	}
-
 	decl String:nextmap[42];
 	GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
 	CPrintToChat(client, "%t", "nextmap_charset", nextmap, FF2CharSetString);
 	return Plugin_Handled;
 }
 
-public Action:SayCmd(client, args)
+public Action:Command_Say(client, args)
 {
-	decl String:CurrentChat[128];
-	if(GetCmdArgString(CurrentChat, sizeof(CurrentChat))<1 || !client)
+	decl String:chat[128];
+	if(GetCmdArgString(chat, sizeof(chat))<1 || !client)
 	{
 		return Plugin_Continue;
 	}
 
-	if(!strcmp(CurrentChat, "\"nextmap\"") && FF2CharSetString[0])
+	if(!strcmp(chat, "\"nextmap\"") && FF2CharSetString[0])
 	{
-		NextMapCmd(client, 0);
+		Command_Nextmap(client, 0);
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -8278,25 +8272,12 @@ SetClientGlow(client, Float:time1, Float:time2=-1.0)
 	if(GlowTimer[client]<=0.0)
 	{
 		GlowTimer[client]=0.0;
-		if(IsValidClient(Boss[client]))
-		{
-			SetEntProp(Boss[client], Prop_Send, "m_bGlowEnabled", 0);
-		}
-		else
-		{
-			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
-		}
+		SetEntProp((IsValidClient(Boss[client]) ? Boss[client] : client), Prop_Send, "m_bGlowEnabled", 0);
 	}
 	else
 	{
-		if(IsValidClient(Boss[client]))
-		{
-			SetEntProp(Boss[client], Prop_Send, "m_bGlowEnabled", 1);
-		}
-		else
-		{
-			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
-		}
+		SetEntProp((IsValidClient(Boss[client]) ? Boss[client] : client), Prop_Send, "m_bGlowEnabled", 1);
 	}
 }
+
 #include <freak_fortress_2_vsh_feedback>
