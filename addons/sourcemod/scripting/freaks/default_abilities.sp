@@ -558,7 +558,9 @@ public Action:Timer_ResetGravity(Handle:timer, Handle:data)
 	new client=GetClientOfUserId(ReadPackCell(data));
 	if(client && IsValidEdict(client) && IsClientInGame(client))
 	{
-		SetEntityGravity(client, ReadPackFloat(data));
+		new Float:TEMPREMOVEMEDEBUGONLY=ReadPackFloat(data);
+		Debug("Timer_ResetGravity: Resetting gravity to %f for %N", TEMPREMOVEMEDEBUGONLY, client);
+		SetEntityGravity(client, TEMPREMOVEMEDEBUGONLY);
 	}
 	return Plugin_Continue;
 }

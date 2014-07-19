@@ -761,9 +761,6 @@ public OnPluginStart()
 	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
 
 	AddCommandListener(OnCallForMedic, "voicemenu");  //Used to activate rages
-	/*AddCommandListener(OnTaunt, "+taunt");  //Used to activate rages
-	AddCommandListener(OnTaunt, "+use_action_slot_item_server");  //Used to activate rages
-	AddCommandListener(OnTaunt, "use_action_slot_item_server");  //Used to activate rages*/
 	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnDestroy, "destroy");  //Used to stop Eureka Effect from destroying buildings on teleport
@@ -4035,6 +4032,11 @@ public OnClientPutInServer(client)
 		SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
 	}
 	LastClass[client]=TFClass_Unknown;
+
+	#if defined DEV_VERSION
+	CPrintToChat(client, "{olive}[FF2]{default} {orange}IMPORTANT:{default} This server is running a developmental version of FF2!");
+	CPrintToChat(client, "{olive}[FF2]{default} Please report any bugs you find to https://github.com/50DKP/FF2-Official");
+	#endif
 }
 
 public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBroadcast)
@@ -4616,10 +4618,8 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 
 public Action:OnCallForMedic(client, const String:command[], args)
 {
-	Debug("OnCallForMedic: Command was %s", command);
 	if(!Enabled || !IsPlayerAlive(client) || CheckRoundState()!=1 || !IsBoss(client) || args!=2)
 	{
-		Debug("OnCallForMedic: Returning (player alive/round state/boss/args check); detected %i args", args);
 		return Plugin_Continue;
 	}
 
@@ -4636,7 +4636,6 @@ public Action:OnCallForMedic(client, const String:command[], args)
 	Debug("OnCallForMedic: Detected args were %s and %s", arg1, arg2);
 	if(StringToInt(arg1) || StringToInt(arg2))  //We only want "voicemenu 0 0"-thanks friagram for pointing out edge cases
 	{
-		Debug("OnCallForMedic: Returning because either arg1 or arg2 was not 0");
 		return Plugin_Continue;
 	}
 
@@ -5308,16 +5307,19 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 		}
 	}
 
-	new weapon=GetPlayerWeaponSlot(attacker, TFWeaponSlot_Primary);
-	if(IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==1104)  //Air Strike-moved from OTD
+	if(IsValidClient(attacker))
 	{
-		static airStrikeDamage;
-		airStrikeDamage+=damage;
-		Debug("event_hurt: Damage was %i, airStrikeDamage is now %i", damage, airStrikeDamage);
-		if(airStrikeDamage>=200)
+		new weapon=GetPlayerWeaponSlot(attacker, TFWeaponSlot_Primary);
+		if(IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==1104)  //Air Strike-moved from OTD
 		{
-			SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
-			airStrikeDamage-=200;
+			static airStrikeDamage;
+			airStrikeDamage+=damage;
+			Debug("event_hurt: Damage was %i, airStrikeDamage is now %i", damage, airStrikeDamage);
+			if(airStrikeDamage>=200)
+			{
+				SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
+				airStrikeDamage-=200;
+			}
 		}
 	}
 
@@ -5683,7 +5685,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 1099:  //Tide Turner
 					{
-						Debug("OnTakeDamage: Entered Tide Turner, charge meter was %f", GetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter"));
 						SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", 100.0);
 					}
 					/*case 1104:  //Air Strike-moved to event_player_hurt for now since OTD doesn't display the actual damage :/
@@ -5831,16 +5832,16 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				decl String:classname[64];
 				if(GetEdictClassname(attacker, classname, sizeof(classname)) && !strcmp(classname, "trigger_hurt", false))
 				{
-					new Action:act=Plugin_Continue;
+					new Action:action=Plugin_Continue;
 					Call_StartForward(OnTriggerHurt);
 					Call_PushCell(boss);
 					Call_PushCell(attacker);
 					new Float:damage2=damage;
 					Call_PushFloatRef(damage2);
-					Call_Finish(act);
-					if(act!=Plugin_Stop && act!=Plugin_Handled)
+					Call_Finish(action);
+					if(action!=Plugin_Stop && action!=Plugin_Handled)
 					{
-						if(act==Plugin_Changed)
+						if(action==Plugin_Changed)
 						{
 							damage=damage2;
 						}
@@ -5869,7 +5870,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					else
 					{
-						return act;
+						return action;
 					}
 				}
 			}
@@ -7526,9 +7527,12 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 
 public Action:Command_Nextmap(client, args)
 {
-	decl String:nextmap[42];
-	GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
-	CPrintToChat(client, "%t", "nextmap_charset", nextmap, FF2CharSetString);
+	if(FF2CharSetString[0])
+	{
+		decl String:nextmap[42];
+		GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
+		CPrintToChat(client, "%t", "nextmap_charset", nextmap, FF2CharSetString);
+	}
 	return Plugin_Handled;
 }
 
