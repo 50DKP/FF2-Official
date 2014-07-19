@@ -98,6 +98,7 @@ new timeleft;
 new Handle:cvarVersion;
 new Handle:cvarPointDelay;
 new Handle:cvarAnnounce;
+new Handle:cvarPrefix;
 new Handle:cvarEnabled;
 new Handle:cvarAliveToEnable;
 new Handle:cvarPointType;
@@ -154,6 +155,7 @@ new RoundCounter;
 new botqueuepoints;
 new Float:HPTime;
 new String:currentmap[99];
+new String:FF2Prefix[99];
 new bool:checkDoors=false;
 new bool:bMedieval;
 new FF2CharSet;
@@ -726,6 +728,7 @@ public OnPluginStart()
 	cvarPointType=CreateConVar("ff2_point_type", "0", "0-Use ff2_point_alive, 1-Use ff2_point_time", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarPointDelay=CreateConVar("ff2_point_delay", "6", "Seconds to add to the point delay per player", FCVAR_PLUGIN);
 	cvarAliveToEnable=CreateConVar("ff2_point_alive", "5", "The control point will only activate when there are this many people or less left alive", FCVAR_PLUGIN);
+	cvarPrefix=CreateConVar("ff2_prefix", "{olive}[FF2]{default}", "The prefix before each chat message.");
 	cvarAnnounce=CreateConVar("ff2_announce", "120", "Amount of seconds to wait until FF2 info is displayed again.  0 to disable", FCVAR_PLUGIN, true, 0.0);
 	cvarEnabled=CreateConVar("ff2_enabled", "1", "0-Disable FF2 (WHY?), 1-Enable FF2", FCVAR_PLUGIN|FCVAR_DONTRECORD, true, 0.0, true, 1.0);
 	cvarCrits=CreateConVar("ff2_crits", "1", "Can Boss get crits?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -772,6 +775,7 @@ public OnPluginStart()
 
 	HookConVarChange(cvarEnabled, CvarChange);
 	HookConVarChange(cvarPointDelay, CvarChange);
+	HookConVarChange(cvarPrefix, CvarChange);
 	HookConVarChange(cvarAnnounce, CvarChange);
 	HookConVarChange(cvarPointType, CvarChange);
 	HookConVarChange(cvarPointDelay, CvarChange);
@@ -1051,6 +1055,7 @@ public EnableFF2()
 	Enabled2=true;
 
 	SetConVarString(FindConVar("ff2_version"), PLUGIN_VERSION);
+	GetConVarString(cvarPrefix, FF2Prefix, sizeof(FF2Prefix));
 	Announce=GetConVarFloat(cvarAnnounce);
 	PointType=GetConVarInt(cvarPointType);
 	PointDelay=GetConVarInt(cvarPointDelay);
@@ -1507,6 +1512,10 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 			PointDelay*=-1;
 		}
 	}
+	else if(convar==cvarPrefix)
+	{
+		GetConVarString(cvarPrefix, FF2Prefix, sizeof(FF2Prefix));
+	}
 	else if(convar==cvarAnnounce)
 	{
 		Announce=StringToFloat(newValue);
@@ -1645,16 +1654,16 @@ public Action:Timer_Announce(Handle:timer)
 			}
 			case 4:
 			{
-				CPrintToChatAll("{olive}[FF2]{default} %t", "type_ff2_to_open_menu");
+				CPrintToChatAll("%s %t", FF2Prefix, "type_ff2_to_open_menu");
 			}
 			case 5:
 			{
 				announcecount=0;
-				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxVersion]);
+				CPrintToChatAll("%s %t", FF2Prefix, "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxVersion]);
 			}
 			default:
 			{
-				CPrintToChatAll("{olive}[FF2]{default} %t", "type_ff2_to_open_menu");
+				CPrintToChatAll("%s %t", FF2Prefix, "type_ff2_to_open_menu");
 			}
 		}
 	}
@@ -1884,7 +1893,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	if(GetClientCount()<=1 || playing<=1)
 	{
-		CPrintToChatAll("{olive}[FF2]{default} %t", "needmoreplayers");
+		CPrintToChatAll("%s %t", FF2Prefix, "needmoreplayers");
 		Enabled=false;
 		DisableSubPlugins();
 		SetControlPoint(true);
@@ -1892,7 +1901,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	}
 	else if(!RoundCount && !GetConVarBool(cvarFirstRound))
 	{
-		CPrintToChatAll("{olive}[FF2]{default} %t", "first_round");
+		CPrintToChatAll("%s %t", FF2Prefix, "first_round");
 		Enabled=false;
 		DisableSubPlugins();
 		SetArenaCapEnableTime(60.0);
@@ -2477,7 +2486,7 @@ stock CalcQueuePoints()
 				{
 					if(add_points2[client]>0)
 					{
-						CPrintToChat(client, "{olive}[FF2]{default} %t", "add_points", add_points2[client]);
+						CPrintToChat(client, "%s %t", FF2Prefix, "add_points", add_points2[client]);
 					}
 					SetClientQueuePoints(client, GetClientQueuePoints(client)+add_points2[client]);
 				}
@@ -2491,7 +2500,7 @@ stock CalcQueuePoints()
 				{
 					if(add_points[client]>0)
 					{
-						CPrintToChat(client, "{olive}[FF2]{default} %t", "add_points", add_points[client]);
+						CPrintToChat(client, "%s %t", FF2Prefix, "add_points", add_points[client]);
 					}
 					SetClientQueuePoints(client, GetClientQueuePoints(client)+add_points[client]);
 				}
@@ -2861,7 +2870,7 @@ public Action:Timer_NextBossPanel(Handle:timer)
 		new client=FindBosses(temp);
 		if(IsValidClient(client) && chosen[client]!=client && !IsBoss(client))
 		{
-			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_near");
+			CPrintToChat(client, "%s %t", FF2Prefix, "to0_near");
 			chosen[client]=client;
 			i++;
 		}
@@ -3547,7 +3556,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
-		CPrintToChat(client, "{olive}[FF2]{default} Respawning you because you have no weapons!");
+		CPrintToChat(client, "%s Respawning you because you have no weapons!", FF2Prefix);
 		TF2_RespawnPlayer(client);
 	}
 	civilianCheck[client]=0;
@@ -3803,7 +3812,7 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 				PrintCenterText(target, health);
 			}
 		}
-		CPrintToChatAll("{olive}[FF2]{default} %s", health);
+		CPrintToChatAll("%s %s", FF2Prefix, health);
 
 		if(GetGameTime()>=HPTime)
 		{
@@ -3820,7 +3829,7 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 		{
 			Format(waitTime, 128, "%s %i,", waitTime, BossHealthLast[boss]);
 		}
-		CPrintToChat(client, "{olive}[FF2]{default} %t", "wait_hp", RoundFloat(HPTime-GetGameTime()), waitTime);
+		CPrintToChat(client, "%s %t", FF2Prefix, "wait_hp", RoundFloat(HPTime-GetGameTime()), waitTime);
 	}
 	return Plugin_Continue;
 }
@@ -4946,7 +4955,7 @@ public Action:Timer_Damage(Handle:timer, any:userid)
 	new client=GetClientOfUserId(userid);
 	if(IsValidClient(client, false))
 	{
-		CPrintToChat(client, "{olive}[FF2] %t. %t{default}", "damage", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
+		CPrintToChat(client, "%s %t. %t{default}", FF2Prefix, "damage", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
 	}
 	return Plugin_Continue;
 }
@@ -6844,12 +6853,12 @@ public TurnToZeroPanelH(Handle:menu, MenuAction:action, client, position)
 	{
 		if(shortname[client]==client)
 		{
-			CPrintToChat(client,"{olive}[FF2]{default} %t", "to0_done");
+			CPrintToChat(client,"%s %t", FF2Prefix, "to0_done");
 		}
 		else
 		{
-			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_done_admin", shortname[client]);
-			CPrintToChat(shortname[client], "{olive}[FF2]{default} %t", "to0_done_by_admin", client);
+			CPrintToChat(client, "%s %t", FF2Prefix, "to0_done_admin", shortname[client]);
+			CPrintToChat(shortname[client], "%s %t", FF2Prefix, "to0_done_by_admin", client);
 		}
 		SetClientQueuePoints(shortname[client], 0);
 	}
@@ -7149,7 +7158,7 @@ public ClassinfoTogglePanelH(Handle:menu, MenuAction:action, param1, param2)
 			else
 				Format(s,24,"%s %s %s 1 %s %s %s",ff2cookies_values[0],ff2cookies_values[1],ff2cookies_values[2],ff2cookies_values[4],ff2cookies_values[5],ff2cookies_values[6],ff2cookies_values[7]);
 			SetClientCookie(param1, FF2Cookies,s);
-			CPrintToChat(param1,"{olive}[VSH]{default} %t","ff2_classinfo", param2==2 ? "off" : "on");
+			CPrintToChat(param1,"%s %t", FF2Prefix, "ff2_classinfo", param2==2 ? "off" : "on");
 		}
 	}
 }
@@ -7277,7 +7286,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, param1, param2)
 			}
 			else
 				SetClientSoundOptions(param1, SOUNDEXCEPT_MUSIC, true);
-			CPrintToChat(param1,"{olive}[FF2]{default} %t","ff2_music", param2==2 ? "off" : "on");
+			CPrintToChat(param1,"%s %t", FF2Prefix, "ff2_music", param2==2 ? "off" : "on");
 		}
 	}
 }
@@ -7324,7 +7333,7 @@ public VoiceTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 				SetClientSoundOptions(client, SOUNDEXCEPT_VOICE, true);
 			}
 
-			CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_voice", selection==2 ? "off" : "on");
+			CPrintToChat(client, "%s %t", FF2Prefix, "ff2_voice", selection==2 ? "off" : "on");
 			if(selection==2)
 			{
 				CPrintToChat(client, "%t", "ff2_voice2");
