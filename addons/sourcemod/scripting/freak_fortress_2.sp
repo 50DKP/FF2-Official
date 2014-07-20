@@ -1195,12 +1195,14 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 					FF2CharSet=i;
 					strcopy(FF2CharSetString, PLATFORM_MAX_PATH, charset);
 					KvGotoFirstSubKey(Kv);
+					isCharSetSelected=true;
 					break;
 				}
 
 				if(!KvGotoNextKey(Kv))
 				{
 					i=-1;
+					isCharSetSelected=false;
 					break;
 				}
 			}
@@ -1215,6 +1217,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 			}
 			KvGotoFirstSubKey(Kv);
 			KvGetSectionName(Kv, FF2CharSetString, sizeof(FF2CharSetString));
+			isCharSetSelected=true;
 		}
 	}
 
@@ -1284,7 +1287,11 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	PrecacheSound("vo/announcer_am_capenabled04.wav", true);
 	PrecacheSound("weapons/barret_arm_zap.wav", true);
 	PrecacheSound("vo/announcer_ends_2min.wav", true);
-	isCharSetSelected=false;
+
+	if(action!=Plugin_Changed)
+	{
+		isCharSetSelected=false;
+	}
 }
 
 EnableSubPlugins(bool:force=false)
