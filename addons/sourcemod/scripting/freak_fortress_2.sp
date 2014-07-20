@@ -1004,6 +1004,31 @@ public OnMapStart()
 			BossKV[specials]=INVALID_HANDLE;
 		}
 	}
+	
+	if(FindEntityByClassname(-1, "tf_logic_arena") ==-1 && GetConVarBool(cvarEnabled))
+	{
+		new String:targets[7][25] = 
+		{
+			"tf_logic_koth",
+			"tf_logic_training_mode",
+			"tf_logic_raid",
+			"tf_logic_holiday",
+			"tf_logic_medieval", 
+			"tf_logic_hybrid_ctf_cp", 
+			"tf_logic_cp_timer"
+		};
+		
+		for (new i = 0; i < sizeof(targets); i++)
+		{
+			new oldent = MaxClients+1;
+			while((oldent = FindEntityByClassname(oldent, targets[i]))!=-1)
+			{
+				AcceptEntityInput(oldent, "Kill");
+			}
+		}
+		
+		CreateEntityByName("tf_logic_arena");
+	}
 }
 
 public OnMapEnd()
