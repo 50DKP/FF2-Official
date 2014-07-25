@@ -3922,13 +3922,10 @@ public Action:Command_Charset(client, args)
 
 	decl String:charset[32], String:rawText[16][16];
 	GetCmdArgString(charset, sizeof(charset));
-	Debug("Command_Charset: Raw command argument was %s", charset);
 	new amount=ExplodeString(charset, " ", rawText, 16, 16);
 	for(new i; i<amount; i++)
 	{
-		Debug("Command_Charset: rawText[%i] was %s", i, rawText[i]);
 		StripQuotes(rawText[i]);
-		Debug("Command_Charset: Stripping quotes; rawText[%i] is now %s", i, rawText[i]);
 	}
 	ImplodeStrings(rawText, amount, " ", charset, sizeof(charset));
 	Debug("Command_Charset: Processed command argument was %s", charset);
