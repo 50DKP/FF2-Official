@@ -22,7 +22,7 @@ new Handle:OnHaleJump;
 new Handle:OnHaleRage;
 new Handle:OnHaleWeighdown;
 
-new Handle:gravityDatapack;
+new Handle:gravityDatapack[MAXPLAYERS+1];
 
 new Handle:jumpHUD;
 
@@ -500,7 +500,7 @@ public Action:Timer_StunBoss(Handle:timer, any:client)
 	{
 		return;
 	}
-	TF2_StunPlayer(boss, (enableSuperDuperJump[client] ? 4.0:2.0), 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, boss);
+	TF2_StunPlayer(boss, (enableSuperDuperJump[client] ? 4.0 : 2.0), 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, boss);
 }
 
 Charge_WeighDown(client, slot)
@@ -530,7 +530,7 @@ Charge_WeighDown(client, slot)
 
 				new Handle:data;
 				new Float:velocity[3];
-				if(gravityDatapack!=INVALID_HANDLE)
+				if(gravityDatapack[boss]==INVALID_HANDLE)
 				{
 					CreateDataTimer(2.0, Timer_ResetGravity, data, TIMER_FLAG_NO_MAPCHANGE);
 					WritePackCell(data, GetClientUserId(boss));
@@ -567,7 +567,7 @@ public Action:Timer_ResetGravity(Handle:timer, Handle:data)
 		Debug("Timer_ResetGravity: Resetting gravity to %f for %N", TEMPREMOVEMEDEBUGONLY, client);
 		SetEntityGravity(client, TEMPREMOVEMEDEBUGONLY);
 	}
-	gravityDatapack=INVALID_HANDLE;
+	gravityDatapack[client]=INVALID_HANDLE;
 	return Plugin_Continue;
 }
 
