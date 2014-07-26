@@ -29,7 +29,6 @@
 			"Source"	"Path_SM/scripting/freaks/special_noanims.sp"
 			"Source"	"Path_SM/include/freak_fortress_2.inc"
 			"Source"	"Path_SM/include/freak_fortress_2_vsh_feedback.inc"
->>>>>>> development
 		}
 
 		"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
