@@ -33,8 +33,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0 RC 1"
-#define DEV_VERSION
+#define PLUGIN_VERSION "1.10.0"
+//#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -4951,7 +4951,7 @@ public Action:event_deflect(Handle:event, const String:name[], bool:dontBroadcas
 	return Plugin_Continue;
 }
 
-public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init)
+public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init)  //TODO:  Move this into OnConditionAdded
 {
 	new client=BfReadByte(bf), victim=BfReadByte(bf);
 	new boss=GetBossIndex(victim);

@@ -563,14 +563,11 @@ public Action:Timer_ResetGravity(Handle:timer, Handle:data)
 	new client=GetClientOfUserId(ReadPackCell(data));
 	if(client && IsValidEdict(client) && IsClientInGame(client))
 	{
-		new Float:TEMPREMOVEMEDEBUGONLY=ReadPackFloat(data);
-		Debug("Timer_ResetGravity: Resetting gravity to %f for %N", TEMPREMOVEMEDEBUGONLY, client);
-		SetEntityGravity(client, TEMPREMOVEMEDEBUGONLY);
+		SetEntityGravity(client, ReadPackFloat(data));
 	}
 	gravityDatapack[client]=INVALID_HANDLE;
 	return Plugin_Continue;
 }
-
 
 public Action:event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 {
