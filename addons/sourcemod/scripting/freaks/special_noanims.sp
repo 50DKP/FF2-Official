@@ -101,12 +101,12 @@ stock SetAmmo(client, weapon, ammo, clip=0)
 		{
 			SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
 		}
-		else
+		else if(ammo)  //Only complain if we're actually trying to set ammo
 		{
 			new String:classname[64];
 			GetEdictClassname(weapon, classname, sizeof(classname));
 			new String:bossName[32];
-			FF2_GetBossSpecial(client, bossName, sizeof(bossName));
+			FF2_GetBossSpecial(FF2_GetBossIndex(client), bossName, sizeof(bossName));
 			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
 		}
 	}
