@@ -763,7 +763,6 @@ public OnPluginStart()
 	AddCommandListener(OnCallForMedic, "voicemenu");  //Used to activate rages
 	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding before round start
 	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding before round start
-	AddCommandListener(OnDestroy, "destroy");  //Used to stop Eureka Effect from destroying buildings on teleport
 	AddCommandListener(OnJoinTeam, "jointeam");  //Used to make sure players join the right team
 	AddCommandListener(OnChangeClass, "joinclass");  //Used to make sure bosses don't change class
 
@@ -4704,15 +4703,6 @@ public Action:OnCallForMedic(client, const String:command[], args)
 public Action:OnSuicide(client, const String:command[], args)
 {
 	if(Enabled && IsBoss(client) && CheckRoundState()<=0)
-	{
-		return Plugin_Handled;
-	}
-	return Plugin_Continue;
-}
-
-public Action:OnDestroy(client, const String:command[], args)  //TODO: See if this can be removed (was preventing a teleportation exploit)
-{
-	if(Enabled && IsValidClient(client) && !IsBoss(client) && TF2_IsPlayerInCondition(client, TFCond_Taunting) && GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==589)  //Eureka Effect
 	{
 		return Plugin_Handled;
 	}
