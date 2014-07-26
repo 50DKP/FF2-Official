@@ -532,7 +532,7 @@ Charge_WeighDown(client, slot)
 				new Float:velocity[3];
 				if(gravityDatapack[boss]==INVALID_HANDLE)
 				{
-					CreateDataTimer(2.0, Timer_ResetGravity, data, TIMER_FLAG_NO_MAPCHANGE);
+					gravityDatapack[boss]=CreateDataTimer(2.0, Timer_ResetGravity, data, TIMER_FLAG_NO_MAPCHANGE);
 					WritePackCell(data, GetClientUserId(boss));
 					WritePackFloat(data, GetEntityGravity(boss));
 					ResetPack(data);
