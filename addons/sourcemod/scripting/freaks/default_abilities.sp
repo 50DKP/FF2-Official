@@ -18,9 +18,11 @@ public Plugin:myinfo=
 	version=PLUGIN_VERSION,
 };
 
-new Handle:OnHaleJump=INVALID_HANDLE;
-new Handle:OnHaleRage=INVALID_HANDLE;
-new Handle:OnHaleWeighdown=INVALID_HANDLE;
+new Handle:OnHaleJump;
+new Handle:OnHaleRage;
+new Handle:OnHaleWeighdown;
+
+new Handle:gravityDatapack[MAXPLAYERS+1];
 
 new Handle:jumpHUD;
 
@@ -28,7 +30,9 @@ new bool:enableSuperDuperJump[MAXPLAYERS+1];
 new Float:UberRageCount[MAXPLAYERS+1];
 new BossTeam=_:TFTeam_Blue;
 
-new Handle:cvarOldJump=INVALID_HANDLE;
+new Handle:cvarOldJump;
+
+new bool:oldJump;
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -52,8 +56,14 @@ public OnPluginStart2()
 public OnAllPluginsLoaded()
 {
 	cvarOldJump=FindConVar("ff2_oldjump");
+	HookConVarChange(cvarOldJump, CvarChange);
+	oldJump=GetConVarBool(cvarOldJump);
 }
 
+public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	oldJump=bool:StringToInt(newValue);
+}
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	for(new client=0; client<MaxClients; client++)
@@ -136,7 +146,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 	{
 		Rage_StunSentry(ability_name, client);
 	}
-	else if(!strcmp(ability_name, "rage_preventtaunt"))
+	else if(!strcmp(ability_name, "rage_preventtaunt"))  //DEPRECATED-to be removed in 2.0.0
 	{
 		CreateTimer(0.01, Timer_StopTaunt, client);
 	}
@@ -148,7 +158,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 
 		for(new target=1; target<=MaxClients; target++)
 		{
-			if(IsClientConnected(target) && IsPlayerAlive(target) && FF2_GetBossIndex(target)==-1)
+			if(IsClientInGame(target) && IsPlayerAlive(target) && target!=boss && !(FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 			{
 				otherTeamIsAlive=true;
 				break;
@@ -170,7 +180,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 				return Plugin_Continue;
 			}
 		}
-		while(!IsValidEdict(target) || (GetClientTeam(target)==BossTeam) || !IsPlayerAlive(target));
+		while(!IsValidEdict(target) || target==boss || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target));
 
 		GetEntPropVector(target, Prop_Data, "m_vecOrigin", position);
 		TeleportEntity(boss, position, NULL_VECTOR, NULL_VECTOR);
@@ -195,7 +205,7 @@ Rage_Stun(const String:ability_name[], client)
 			if(!TF2_IsPlayerInCondition(target, TFCond_Ubercharged) && (GetVectorDistance(bossPosition, clientPosition)<=distance))
 			{
 				TF2_StunPlayer(target, duration, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, boss);
-				CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(target, "yikes_fx", 75.0)));	
+				CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(target, "yikes_fx", 75.0)));
 			}
 		}
 	}
@@ -209,11 +219,9 @@ public Action:Timer_StopUber(Handle:timer, any:client)
 
 public Action:Timer_StopTaunt(Handle:timer, any:client)
 {
-	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
-	if(!GetEntProp(boss, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(boss, Prop_Send, "m_hHighFivePartner")))
-	{
-		TF2_RemoveCondition(boss, TFCond_Taunting);
-	}
+	decl String:name[64];
+	FF2_GetBossSpecial(client, name, sizeof(name));
+	PrintToServer("[FF2] Warning: \"rage_preventtaunt\" has been deprecated!  Please remove this ability from %s", name);
 	return Plugin_Continue;
 }
 
@@ -272,7 +280,7 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 				{
 					SetHudTextParams(-1.0, 0.88, 0.15, 255, 64, 64, 255);
 					ShowSyncHudText(boss, jumpHUD, "%t", "super_duper_jump");
-				}	
+				}
 				else
 				{
 					ShowSyncHudText(boss, jumpHUD, "%t", "jump_status", RoundFloat(charge));
@@ -295,12 +303,11 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 				enableSuperDuperJump[client]=superJump;
 			}
 
-			decl Float:position[3];
-			decl Float:velocity[3];
+			new Float:position[3], Float:velocity[3];
 			GetEntPropVector(boss, Prop_Send, "m_vecOrigin", position);
 			GetEntPropVector(boss, Prop_Data, "m_vecVelocity", velocity);
 
-			if(GetConVarBool(cvarOldJump))
+			if(oldJump)
 			{
 				if(enableSuperDuperJump[client])
 				{
@@ -317,7 +324,7 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 			}
 			else
 			{
-				decl Float:angles[3];
+				new Float:angles[3];
 				GetClientEyeAngles(boss, angles);
 				if(enableSuperDuperJump[client])
 				{
@@ -341,12 +348,12 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 				EmitSoundToAll(sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 				EmitSoundToAll(sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 
-				for(new enemy=1; enemy<=MaxClients; enemy++)
+				for(new target=1; target<=MaxClients; target++)
 				{
-					if(IsClientInGame(enemy) && enemy!=boss)
+					if(IsClientInGame(target) && target!=boss)
 					{
-						EmitSoundToClient(enemy, sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-						EmitSoundToClient(enemy, sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
+						EmitSoundToClient(target, sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
+						EmitSoundToClient(target, sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 					}
 				}
 			}
@@ -367,7 +374,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 				SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 				ShowSyncHudText(boss, jumpHUD, "%t", "teleport_status_2", -RoundFloat(charge));
 			}
-		}	
+		}
 		case 2:
 		{
 			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED))
@@ -406,7 +413,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 			new bool:otherTeamIsAlive;
 			for(new target=1; target<=MaxClients; target++)
 			{
-				if(IsClientConnected(target) && IsPlayerAlive(target) && FF2_GetBossIndex(target)==-1)
+				if(IsClientInGame(target) && IsPlayerAlive(target) && target!=boss && !(FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 				{
 					otherTeamIsAlive=true;
 					break;
@@ -423,14 +430,14 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 					return;
 				}
 			}
-			while(otherTeamIsAlive && (!IsValidEdict(target) || target==boss || !IsPlayerAlive(target)));
+			while(otherTeamIsAlive && (!IsValidEdict(target) || target==boss || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target)));
 
 			decl String:particle[PLATFORM_MAX_PATH];
 			FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 4, particle, 128);
 			if(strlen(particle)>0)
 			{
-				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(boss, particle)));		
-				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(boss, particle, _, false)));		
+				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(boss, particle)));
+				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(boss, particle, _, false)));
 			}
 
 			decl Float:position[3];
@@ -465,7 +472,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 			{
 				EmitSoundToAll(sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 				EmitSoundToAll(sound, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-			
+
 				for(new enemy=1; enemy<=MaxClients; enemy++)
 				{
 					if(IsClientInGame(enemy) && enemy!=boss)
@@ -493,7 +500,7 @@ public Action:Timer_StunBoss(Handle:timer, any:client)
 	{
 		return;
 	}
-	TF2_StunPlayer(boss, (enableSuperDuperJump[client] ? 4.0:2.0), 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, boss);
+	TF2_StunPlayer(boss, (enableSuperDuperJump[client] ? 4.0 : 2.0), 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, boss);
 }
 
 Charge_WeighDown(client, slot)
@@ -509,7 +516,7 @@ Charge_WeighDown(client, slot)
 	{
 		if(charge>=4.0)
 		{
-			decl Float:angles[3];
+			new Float:angles[3];
 			GetClientEyeAngles(boss, angles);
 			if(angles[0]>60.0)
 			{
@@ -520,14 +527,23 @@ Charge_WeighDown(client, slot)
 				{
 					return;
 				}
-	
+
+				new Handle:data;
 				new Float:velocity[3];
+				if(gravityDatapack[boss]==INVALID_HANDLE)
+				{
+					gravityDatapack[boss]=CreateDataTimer(2.0, Timer_ResetGravity, data, TIMER_FLAG_NO_MAPCHANGE);
+					WritePackCell(data, GetClientUserId(boss));
+					WritePackFloat(data, GetEntityGravity(boss));
+					ResetPack(data);
+				}
+
 				GetEntPropVector(boss, Prop_Data, "m_vecVelocity", velocity);
 				velocity[2]=-1000.0;
 				TeleportEntity(boss, NULL_VECTOR, NULL_VECTOR, velocity);
 				SetEntityGravity(boss, 6.0);
-				CreateTimer(2.0, Timer_ResetGravity, boss, TIMER_FLAG_NO_MAPCHANGE);
-				CPrintToChat(boss, "{olive}[FF2]{default} %t", "used_weighdown");
+
+				//CPrintToChat(boss, "{olive}[FF2]{default} %t", "used_weighdown");  //Pretty spammy and you don't see super jump having this message
 				FF2_SetBossCharge(client, slot, 0.0);
 			}
 		}
@@ -542,15 +558,16 @@ Charge_WeighDown(client, slot)
 	}
 }
 
-public Action:Timer_ResetGravity(Handle:timer, any:client)
+public Action:Timer_ResetGravity(Handle:timer, Handle:data)
 {
-	if(client && IsValidEdict(client))
+	new client=GetClientOfUserId(ReadPackCell(data));
+	if(client && IsValidEdict(client) && IsClientInGame(client))
 	{
-		SetEntityGravity(client, 1.0);
+		SetEntityGravity(client, ReadPackFloat(data));
 	}
+	gravityDatapack[client]=INVALID_HANDLE;
 	return Plugin_Continue;
 }
-
 
 public Action:event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 {

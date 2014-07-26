@@ -1,7 +1,7 @@
 ##Welcome to the official FF2 repository!
-**LATEST VERSION**: [1.9.3](https://forums.alliedmods.net/showpost.php?p=2054933&postcount=1)
+**LATEST VERSION**: [1.10.0](https://forums.alliedmods.net/showthread.php?p=2054933#post2054933)
 
-[![Build Status](http://198.27.69.149/jenkins/buildStatus/icon?job=FF2-Official)](http://198.27.69.149/jenkins/job/FF2-Official/) - Currently Disabled
+[![Build Status](https://travis-ci.org/50DKP/FF2-Official.svg?branch=development)](https://travis-ci.org/50DKP/FF2-Official)
 
 ###Include File Changes
 ***
@@ -14,7 +14,11 @@ It is highly recommended that you also make these changes when compiling FF2.
 MarkNativeAsOptional("SMAC_CheatDetected");
 ```
 
-`rtd.inc`:
+`rtd.inc`:  Inside `public SharedPlugin:__pl_rtd = `
+* Remove:
+```sourcepawn
+required = 1
+```
 * Add: 
 ```sourcepawn
 #if defined REQUIRE_PLUGIN
@@ -23,7 +27,6 @@ required = 1
 required = 0
 #endif
 ```
-inside `public SharedPlugin:__pl_rtd = `
 
 ###Formatting
 ***
