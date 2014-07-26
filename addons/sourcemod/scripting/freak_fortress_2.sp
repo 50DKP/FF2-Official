@@ -287,7 +287,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "5) Fixed ability timers not resetting when the round was over (Wliu)");
 			DrawPanelText(panel, "6) Fixed bosses losing momentum when raging in the air (Wliu)");
-			DrawPanelText(panel, "7) Fixed bosses losing health if ther companion left at round start (Wliu)");
+			DrawPanelText(panel, "7) Fixed bosses losing health if their companion left at round start (Wliu)");
 			DrawPanelText(panel, "8) Fixed bosses sometimes teleporting to each other if they had a companion (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
