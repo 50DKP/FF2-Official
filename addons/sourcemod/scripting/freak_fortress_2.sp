@@ -156,8 +156,6 @@ new Float:HPTime;
 new String:currentmap[99];
 new bool:checkDoors=false;
 new bool:bMedieval;
-new FF2CharSet;
-new String:FF2CharSetString[42];
 
 new tf_arena_use_queue;
 new mp_teams_unbalance_limit;
@@ -167,6 +165,8 @@ new Float:tf_scout_hype_pep_max;
 new Handle:cvarNextmap;
 new bool:areSubPluginsEnabled;
 
+new FF2CharSet;
+new String:FF2CharSetString[42];
 new bool:isCharSetSelected=false;
 
 new healthBar=-1;
@@ -4028,11 +4028,6 @@ public OnClientPutInServer(client)
 		SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
 	}
 	LastClass[client]=TFClass_Unknown;
-
-	#if defined DEV_VERSION
-	CPrintToChat(client, "{olive}[FF2]{default} {orange}IMPORTANT:{default} This server is running a developmental version of FF2!");
-	CPrintToChat(client, "{olive}[FF2]{default} Please report any bugs you find to https://github.com/50DKP/FF2-Official");
-	#endif
 }
 
 public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBroadcast)
