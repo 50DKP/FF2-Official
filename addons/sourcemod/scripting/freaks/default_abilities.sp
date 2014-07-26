@@ -33,6 +33,7 @@ new BossTeam=_:TFTeam_Blue;
 new Handle:cvarOldJump;
 
 new bool:oldJump;
+new bool:spamCheck;
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -512,6 +513,11 @@ Charge_WeighDown(client, slot)
 	}
 
 	new Float:charge=FF2_GetBossCharge(client, slot)+0.2;
+	if (spamCheck && (GetEntityFlags(boss) & FL_ONGROUND)) //Hacky yes, but it actually fits the message, "You used weight down!"
+	{
+		spamCheck=false;
+		CPrintToChat(boss, "{olive}[FF2]{default} %t", "used_weighdown");
+	}
 	if(!(GetEntityFlags(boss) & FL_ONGROUND))
 	{
 		if(charge>=4.0)
@@ -542,9 +548,8 @@ Charge_WeighDown(client, slot)
 				velocity[2]=-1000.0;
 				TeleportEntity(boss, NULL_VECTOR, NULL_VECTOR, velocity);
 				SetEntityGravity(boss, 6.0);
-
-				//CPrintToChat(boss, "{olive}[FF2]{default} %t", "used_weighdown");  //Pretty spammy and you don't see super jump having this message
 				FF2_SetBossCharge(client, slot, 0.0);
+				spamCheck=true;
 			}
 		}
 		else
