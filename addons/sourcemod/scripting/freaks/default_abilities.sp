@@ -543,7 +543,7 @@ Charge_WeighDown(client, slot)
 				TeleportEntity(boss, NULL_VECTOR, NULL_VECTOR, velocity);
 				SetEntityGravity(boss, 6.0);
 
-				CPrintToChat(boss, "{olive}[FF2]{default} %t", "used_weighdown");
+				//CPrintToChat(boss, "{olive}[FF2]{default} %t", "used_weighdown");  //Pretty spammy and you don't see super jump having this message
 				FF2_SetBossCharge(client, slot, 0.0);
 			}
 		}

@@ -253,7 +253,7 @@
 	{
 		"en"	"Waiting for players to finish loading. Gamemode will be arena for this round"  //Waiting for players to load and playing common arena for the first round
 	}
-	"used_weighdown"
+	"used_weighdown"  //Deprecated-translation removed in default_abilities.sp
 	{
 		"en"	"You have used weighdown!"
 	}
