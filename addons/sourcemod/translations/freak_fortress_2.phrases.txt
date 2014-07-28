@@ -4,7 +4,7 @@
 	{
 		"en"	"Freak Fortress 2 is currently disabled. More players are required."
 	}
-	"Type /ff2 to Open Menu"
+	"Type ff2 to Open Menu"
 	{
 		"en"	"Type {olive}/ff2{default} in chat to open the menu"
 	}
@@ -28,7 +28,7 @@
 		"#format" "{1:i}"
 		"en"  "Only {1} player(s) left, the control point has been unlocked!"
 	}
-	"Top 3 Player Damage"
+	"Top 3"
 	{
 		"en"	"Most damage dealt by"
 	}
@@ -50,19 +50,19 @@
 		"#format" "{1:i}"
 		"en"	"Rage is {1} percent ready"
 	}
-	"Super Jump Ready"
+	"Super Duper Jump Ready"
 	{
 		"en"	"Super Duper jump is ready!"
 	}
-	"Teleport Charge"
+	"Teleportation Charge"
 	{
 		"#format" "{1:i}"
 		"en"	"Teleportation is {1} percent ready. When at 100 percent look up and stand up."
 	}
-	"Jump Charge"
+	"Super Jump Charge"
 	{
 		"#format" "{1:i}"
-		"en"	"Jump charge is {1} percent. Look upwards and stand up for jump"
+		"en"	"Super Jump charge is {1} percent. Look upwards and stand up for jump"
 	}
 	"Teleportation Cooldown"
 	{
@@ -151,19 +151,19 @@
 	{
 		"en"	"===Freak Fortress 2===\nOne (or more) players become one of the Bosses.\nWhile the other players have to defeat them."
 	}
-	"Older Notes"
+	"Older Version"
 	{
 		"en"	"Display older"
 	}
-	"No Older Notes"
+	"No Older Version"
 	{
 		"en"	"No older versions available"
 	}
-	"Newer Notes"
+	"Newer Version"
 	{
 		"en"	"Display newer"
 	}
-	"No Newer Notes"
+	"No Newer Version"
 	{
 		"en"	"No newer versions available"
 	}
@@ -171,7 +171,7 @@
 	{
 		"en"	"Changes to my class in FF2 (/ff2classinfo)"
 	}
-	"Damage Dealt by Player"
+	"Damage Dealt"
 	{
 		"#format" "{1:i}"
 		"en"	"You dealt {1} damage in this round"
@@ -189,7 +189,7 @@
 	{
 		"en"	"Oh no, you lost!  Don't worry, there's always next time"
 	}
-	"Boss Starting Health"
+	"Boss Info"
 	{
 		"#format" "{1:N},{2:s},{3:i},{4:s}"
 		"en"	"{1} became\n {2}\n with {3}{4} HP"
@@ -199,7 +199,7 @@
 		"#format" "{1:s},{2:i},{3:i},{4:s}"
 		"en"	"Current {1}'s HP amount is {2} of {3}{4}"
 	}
-	"Round End Boss Alive Health Value"
+	"Boss Win Final Health"
 	{
 		"#format" "{1:s},{2:i},{3:i},{4:s}"
 		"en"	"{1} left with {2} of {3}{4} HP left."
@@ -218,34 +218,34 @@
 		"#format" "{1:i}"
 		"en"    "You earned {1} queue point(s)."
 	}
-	"Points at 0"
+	"Reset Queue Points"
 	{
 		"en"	"set to 0"
 	}	
-	"Points at 0 Question"
+	"Points to 0 Confirmation"
 	{
 		"en"	"Do you really want to set your queue points to 0?"
 	}	
-	"Admin Set Player Points to 0 Question"
+	"Reset Player's Queue Points"
 	{
 		"#format" "{1:N}"
 		"en"	"Do you really want to set {1}'s queue points to 0?"
 	}	
-	"Player with 0 Points"
+	"Reset Queue Points Done"
 	{
 		"en"	"Now you have {olive}0{default} queue points"
 	}
-	"Admin Set Player Points to 0"
+	"Reset Player's Points Done"
 	{
 		"#format" "{1:N}"
-		"en"	"Now {olive}{1}{default} have {olive}0{default} queue points"
+		"en"	"Now {olive}{1}{default} has {olive}0{default} queue points"
 	}
-	"Admin Set Player Points to 0 Client View"
+	"Queue Points Reset by Admin"
 	{
 		"#format" "{1:N}"
 		"en"	"{olive}{1}{default} set your queue points to {olive}0{default}"
 	}
-	"Player Becoming Boss Soon"
+	"Next Boss"
 	{
 		"en"	"You will become the Boss soon. Type {olive}/ff2next{default} to make sure."
 	}
@@ -263,15 +263,15 @@
 		"#format" "{1:s}"
 		"en"	"FF2 monologues: {1}."
 	}
-	"FF2 Voice Option 2"
+	"FF2 Voice 2"
 	{
 		"en"	"Other sounds will be playing, but very quietly."
 	}
-	"Music Toggle"
+	"Toggle Music"
 	{
 		"en"	"Toggle music (/ff2music)"
 	}
-	"Monologue Toggle"
+	"Toggle Monologue"
 	{
 		"en"	"Toggle monologues (/ff2voice)"
 	}
@@ -284,7 +284,7 @@
 		"#format" "{1:s}"
 		"en"	"Info about changes of classes in FF2: {1}"
 	}
-	"FF2 Last Update"
+	"Last FF2 Update"
 	{
 		"#format" "{1:s},{2:s}"
 		"en"	"What's new in v{olive}{1}{default} ({olive}{2}{default})? Type {olive}/ff2new{default}."
@@ -299,20 +299,20 @@
 		"#format" "{1:s},{2:s}"
 		"en"	"The character set for {1} will be {2}."
 	}
-	"Ability by Reload Key"
+	"Ability uses Reload"
 	{
 		"en"	"Press RELOAD button to use ability!"
 	}
-	"Ability by Right Mouse Click"
+	"Ability uses Right Mouse"
 	{
 		"en"	"Press right mouse button to use ability!"
 	}
-	"Boss with 2 Lives Left"
+	"Boss with Multiple Lives Left"
 	{
 		"#format" "{1:s},{2:i}"
 		"en"	"{1} lost 1 life! There are {2} more!"
 	}
-	"Boss with 1 life left"
+	"Boss with 1 Life Left"
 	{
 		"#format" "{1:s},{2:i}"
 		"en"	"{1} lost 1 life! There is 1 more!"
