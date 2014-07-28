@@ -22,8 +22,8 @@ before_script:
     - cd addons/sourcemod/scripting/
     - wget "https://www.doctormckay.com/download/scripting/include/morecolors.inc"
     - mv morecolors.inc include/
-    - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508"
-    - mv 'attachment.php?attachmentid=116849&d=1377667508' include/tf2attributes.inc
+    - wget "https://forums.alliedmods.net/attachment.php?attachmentid=1168498" -O tf2attributes.inc
+    - mv tf2attributes.inc include/
     - chmod +x spcomp
     - mkdir compiled compiled/freaks
 script: ./compile.sh freak_fortress_2.sp freaks/*.sp
