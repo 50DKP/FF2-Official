@@ -1,4 +1,5 @@
 //Freak Fortress 2 include file.
+#include <morecolors>
 #include <sdktools>
 
 #define FF2FLAG_UBERREADY				(1<<1)		//Used when medic says "I'm charged!"
@@ -201,7 +202,7 @@ native bool:FF2_HasAbility(client, const String:pluginName[], const String:abili
  * @param slot			Slot of charge meter
  *							0 - rage
  *							1 - as usual, used for brave jump or teleport
- *							2 - other charged abilities 
+ *							2 - other charged abilities
  * @param buttonMode	How to activate the ability
  *							0 - by taunt
  *							1 - by right mouse button or duck
@@ -216,7 +217,7 @@ native FF2_DoAbility(client, const String:pluginName[], const String:abilityName
  * @param client		Boss's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
- * @param argument 		Number of argument 
+ * @param argument 		Number of argument
  * @param defValue 		Returns if argument is not defined
  * @return				Value of argument
  */
@@ -228,7 +229,7 @@ native FF2_GetAbilityArgument(client, const String:pluginName[], const String:ab
  * @param client		Boss's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
- * @param argument 		Number of argument 
+ * @param argument 		Number of argument
  * @param defValue 		Returns if argument is not defined
  * @return				Value of argument
  */
@@ -240,7 +241,7 @@ native Float:FF2_GetAbilityArgumentFloat(client, const String:plugin_name[], con
  * @param client 		Boss's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
- * @param argument 		Number of argument 
+ * @param argument 		Number of argument
  * @param buffer 		Buffer for value of argument
  * @param bufferLength	Length of buffer string
  * @noreturn
@@ -278,7 +279,7 @@ native FF2_StopMusic(client=0);
 native Handle:FF2_GetSpecialKV(client, specialIndex=0);
 
 /**
- * Gets client's flags for FF2 
+ * Gets client's flags for FF2
  *
  * @param client	Client's index
  * @return			Client's FF2 flags
@@ -286,7 +287,7 @@ native Handle:FF2_GetSpecialKV(client, specialIndex=0);
 native FF2_GetFF2flags(client);
 
 /**
- * Sets client's flags for FF2 
+ * Sets client's flags for FF2
  *
  * @param client	Client's index
  * @param flags		New flag values
@@ -356,8 +357,8 @@ native Bool:FF2_Debug();
  *							3 - In use
  * @return				Plugin_Stop can not prevent the ability. Use FF2_PreAbility with enabled=false
  */
-forward FF2_PreAbility(client, const String:pluginName[], const String:abilityName[], status, &enabled=true);
-forward Action:FF2_OnAbility(client, const String:pluginName[], const String:abilityName[], status);
+forward FF2_PreAbility(client, const String:pluginName[], const String:abilityName[], slot, status, &enabled=true);
+forward Action:FF2_OnAbility(client, const String:pluginName[], const String:abilityName[], slot, status);
 
 /**
  * Begins when Boss gets hurt by environmental damage
@@ -392,7 +393,7 @@ forward Action:FF2_OnSpecialSelected(index, &specialNum, String:specialName[]);
 /**
  * Begins when FF2 adds queue points
  *
- * @param	add_points[MAXPLAYERS+1]	
+ * @param	add_points[MAXPLAYERS+1]
  *				Use array to get and/or change additional points.
  * @return	Plugin_Stop will prevent this, Plugin_Changed will change it.
  */
@@ -405,16 +406,17 @@ forward Action:FF2_OnAddQueuePoints(add_points[MAXPLAYERS+1]);
  * @param charSetName	Name of boss
  * @return				You can NOT use Plugin_Stop to prevent this, but you can change CharSetName and use Plugin_Changed to change the character set.  If you want to change charSetNum, then make charSetName null.
  */
-forward Action:FF2_OnLoadCharacterSet(charSetNum, String:charSetName[]);
+forward Action:FF2_OnLoadCharacterSet(&charSetNum, String:charSetName[]);
 
 /**
  * Begins when a Boss loses a life
  *
  * @param client	Boss's index
  * @param lives		Number of lives left
- * @return			Plugin_Stop or Plugin_Handled to prevent this, Plugin_Changed if you want to change the number of lives.
+ * @param maxLives	Max number of lives
+ * @return			Plugin_Stop or Plugin_Handled to prevent damage that would remove a life, Plugin_Changed if you want to change the number of lives left.
 */
-forward Action:FF2_OnLoseLife(client, lives);
+forward Action:FF2_OnLoseLife(client, &lives, maxLives);
 
 /**
  * Used to consolidate debug messages
@@ -430,18 +432,19 @@ stock Debug(String:buffer[], any:...)
 		decl String:message[192];
 		VFormat(message, sizeof(message), buffer, 2);
 		CPrintToChatAll("{olive}[FF2 {darkorange}DEBUG{olive}]{default} %s", message);
+		PrintToServer("[FF2 DEBUG] %s", message);
 	}
 }
 
 /* TEMPORARY STUFF FOR TF2 WEARABLES; TO BE REMOVED AS SOON AS SOURCEMOD ADDS WEARABLE SUPPORT */
 //Created by friagram
-new Handle:removeWearable=INVALID_HANDLE; 
-new Handle:equipWearable=INVALID_HANDLE; 
+new Handle:removeWearable=INVALID_HANDLE;
+new Handle:equipWearable=INVALID_HANDLE;
 new Handle:isWearable=INVALID_HANDLE;
 
-stock TF2_RemoveWearable(client, wearable) 
+stock TF2_RemoveWearable(client, wearable)
 {
-	if(removeWearable==INVALID_HANDLE)	
+	if(removeWearable==INVALID_HANDLE)
 	{
 		new Handle:config=LoadGameConfigFile("equipwearable");
 		if(config==INVALID_HANDLE)
@@ -489,11 +492,11 @@ stock TF2_EquipWearable(client, wearable)
 		}
 	}
 	SDKCall(equipWearable, client, wearable);
-} 
+}
 
 stock TF2_IsWearable(wearable)
 {
-	if(isWearable==INVALID_HANDLE)	
+	if(isWearable==INVALID_HANDLE)
 	{
 		new Handle:config=LoadGameConfigFile("equipwearable");
 		if(config==INVALID_HANDLE)

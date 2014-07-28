@@ -1,15 +1,7 @@
 ##Welcome to the official FF2 repository!
-**LATEST VERSION**: [1.10.0](https://forums.alliedmods.net/showpost.php?p=2054933&postcount=1)
+**LATEST VERSION**: [1.10.0](https://forums.alliedmods.net/showthread.php?p=2054933#post2054933)
 
-[![Build Status](http://198.27.69.149/jenkins/buildStatus/icon?job=FF2-Official)](http://198.27.69.149/jenkins/job/FF2-Official/) - Currently Disabled
-
-FF2-Official features multiple branches, which are described below:
-* All development work towards the next major version of FF2 is done in the [development](https://github.com/50DKP/FF2-Official/tree/development) branch.
-* The [stable](https://github.com/50DKP/FF2-Official/tree/stable) branch contains bugfixes for the most recent version of FF2.
-* Once changes are considered ready for release, they are merged into the [master](https://github.com/50DKP/FF2-Official/tree/master) branch.  This branch will always contain a released version of FF2.
-* [Powerlord's](https://github.com/powerlord/) rewrite of FF2 is housed in the [rewrite](https://github.com/50DKP/FF2-Official/tree/rewrite) branch.  These changes are slowly being assimilated into the [experimental](https://github.com/50DKP/FF2-Official/tree/experimental) branch.
-* Finally, the [experimental](https://github.com/50DKP/FF2-Official/tree/experimental) branch contains experimental work being done towards the next iteration of FF2.
-* The default branch is changed to reflect where the most work is currently being done.
+[![Build Status](https://travis-ci.org/50DKP/FF2-Official.svg?branch=development)](https://travis-ci.org/50DKP/FF2-Official)
 
 ###Include File Changes
 ***
@@ -22,7 +14,11 @@ It is highly recommended that you also make these changes when compiling FF2.
 MarkNativeAsOptional("SMAC_CheatDetected");
 ```
 
-`rtd.inc`:
+`rtd.inc`:  Inside `public SharedPlugin:__pl_rtd = `
+* Remove:
+```sourcepawn
+required = 1
+```
 * Add: 
 ```sourcepawn
 #if defined REQUIRE_PLUGIN
@@ -31,7 +27,6 @@ required = 1
 required = 0
 #endif
 ```
-inside `public SharedPlugin:__pl_rtd = `
 
 ###Formatting
 ***
