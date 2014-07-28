@@ -11,7 +11,7 @@
 
 #define CBS_MAX_ARROWS 9
 
-#define PLUGIN_VERSION "1.9.3"
+#define PLUGIN_VERSION "1.10.0"
 
 public Plugin:myinfo=
 {
@@ -120,7 +120,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 			}
 			else if(action==Plugin_Changed)
 			{
-				distance=newDistance;	
+				distance=newDistance;
 			}
 		}
 	}
@@ -131,8 +131,8 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 		{
 			new boss=GetClientOfUserId(FF2_GetBossUserId(client));
 			new Float:charge=FF2_GetBossCharge(client, 0);
-			SetEntPropFloat(boss, Prop_Send, "m_flChargeMeter", 100.0);		
-			TF2_AddCondition(boss, TFCond_Charging, 0.25);	
+			SetEntPropFloat(boss, Prop_Send, "m_flChargeMeter", 100.0);
+			TF2_AddCondition(boss, TFCond_Charging, 0.25);
 			if(charge>10.0 && charge<90.0)
 			{
 				FF2_SetBossCharge(client, 0, charge-0.4);
@@ -165,7 +165,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 		Rage_Slowmo(client, ability_name);
 	}
 	return Plugin_Continue;
-}		
+}
 
 Rage_Clone(const String:ability_name[], client)
 {
@@ -183,6 +183,9 @@ Rage_Clone(const String:ability_name[], client)
 	new index=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 7, 191);
 	new String:attributes[64]="68 ; -1";
 	FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 8, attributes, sizeof(attributes));
+	new ammo=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 9, 0);
+	new clip=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 10, 0);
+	new health=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 11, 0);
 	new Float:position[3];
 	new Float:velocity[3];
 
@@ -221,11 +224,7 @@ Rage_Clone(const String:ability_name[], client)
 		}
 	}
 
-	new totalMinions=RoundToCeil(alive*ratio);
-	if(ratio==0.0)
-	{
-		totalMinions=MaxClients;
-	}
+	new totalMinions=(ratio ? RoundToCeil(alive*ratio) : MaxClients);
 	new config=GetRandomInt(0, maxKV-1);
 	new clone, temp;
 	for(new i=1; i<=dead && i<=totalMinions; i++)
@@ -242,14 +241,7 @@ Rage_Clone(const String:ability_name[], client)
 		ChangeClientTeam(clone, BossTeam);
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=client;
-		if(class)
-		{
-			TF2_SetPlayerClass(clone, TFClassType:class);
-		}
-		else
-		{
-			TF2_SetPlayerClass(clone, TFClassType:KvGetNum(bossKV[config], "class", 0));
-		}
+		TF2_SetPlayerClass(clone, (class ? (TFClassType:class) : (TFClassType:KvGetNum(bossKV[config], "class", 0))));
 
 		if(changeModel)
 		{
@@ -287,7 +279,16 @@ Rage_Clone(const String:ability_name[], client)
 					SetEntPropEnt(clone, Prop_Send, "m_hActiveWeapon", weapon);
 					SetEntProp(weapon, Prop_Send, "m_iWorldModelIndex", -1);
 				}
+
+				SetAmmo(clone, weapon, ammo, clip);
 			}
+		}
+
+		if(health)
+		{
+			SetEntProp(clone, Prop_Data, "m_iMaxHealth", health);
+			SetEntProp(clone, Prop_Data, "m_iHealth", health);
+			SetEntProp(clone, Prop_Send, "m_iHealth", health);
 		}
 
 		velocity[0]=GetRandomFloat(300.0, 500.0)*(GetRandomInt(0, 1) ? 1:-1);
@@ -308,8 +309,7 @@ Rage_Clone(const String:ability_name[], client)
 	}
 	CloseHandle(players);
 
-	new entity;
-	new owner;
+	new entity, owner;
 	while((entity=FindEntityByClassname(entity, "tf_wearable"))!=-1)
 	{
 		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
@@ -390,7 +390,7 @@ public Action:SaveMinion(client, &attacker, &inflictor, &Float:damage, &damagety
 				}
 			}
 			while(otherTeamIsAlive && (!IsValidEdict(target) || (GetClientTeam(target)==BossTeam) || !IsPlayerAlive(target)));
-			
+
 			GetEntPropVector(target, Prop_Data, "m_vecOrigin", position);
 			TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
 			TF2_StunPlayer(client, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, client);
@@ -417,7 +417,7 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)
 			}
 		}
 		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
-		return Plugin_Stop;			
+		return Plugin_Stop;
 	}
 	else
 	{
@@ -511,7 +511,7 @@ public Action:Timer_Rage_Explosive_Dance(Handle:timer, any:client)
 		explosionPosition[2]=bossPosition[2];
 		for(new i=0;i<5;i++)
 		{
-			explosion=CreateEntityByName("env_explosion");   
+			explosion=CreateEntityByName("env_explosion");
 			DispatchKeyValueFloat(explosion, "DamageForce", 180.0);
 
 			SetEntProp(explosion, Prop_Data, "m_iMagnitude", 280, 4);
@@ -533,12 +533,12 @@ public Action:Timer_Rage_Explosive_Dance(Handle:timer, any:client)
 			TeleportEntity(explosion, explosionPosition, NULL_VECTOR, NULL_VECTOR);
 			AcceptEntityInput(explosion, "Explode");
 			AcceptEntityInput(explosion, "kill");
-		
+
 			/*proj=CreateEntityByName("tf_projectile_rocket");
 			SetVariantInt(BossTeam);
 			AcceptEntityInput(proj, "TeamNum", -1, -1, 0);
 			SetVariantInt(BossTeam);
-			AcceptEntityInput(proj, "SetTeam", -1, -1, 0); 
+			AcceptEntityInput(proj, "SetTeam", -1, -1, 0);
 			SetEntPropEnt(proj, Prop_Send, "m_hOwnerEntity",boss);
 			decl Float:position[3];
 			new Float:rot[3]={0.0,90.0,0.0};
@@ -555,7 +555,7 @@ public Action:Timer_Rage_Explosive_Dance(Handle:timer, any:client)
 	}
 	else
 	{
-		SetEntityMoveType(boss, MOVETYPE_WALK);		
+		SetEntityMoveType(boss, MOVETYPE_WALK);
 		count=0;
 		return Plugin_Stop;
 	}
@@ -564,6 +564,7 @@ public Action:Timer_Rage_Explosive_Dance(Handle:timer, any:client)
 
 Rage_Slowmo(client, const String:ability_name[])
 {
+	FF2_SetFF2flags(client, FF2_GetFF2flags(client)|FF2FLAG_CHANGECVAR);
 	SetConVarFloat(cvarTimeScale, FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 2, 0.1));
 	new Float:duration=FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 1, 1.0)+1.0;
 	SloMoTimer=CreateTimer(duration, Timer_StopSlomo, client);
@@ -572,7 +573,14 @@ Rage_Slowmo(client, const String:ability_name[])
 	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
 	if(boss>0)
 	{
-		CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(boss, "scout_dodge_blue", 75.0)));
+		if(BossTeam==_:TFTeam_Blue)
+		{
+			CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(boss, "scout_dodge_blue", 75.0)));
+		}
+		else
+		{
+			CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(boss, "scout_dodge_red", 75.0)));
+		}
 	}
 	EmitSoundToAll("replay\\enterperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);
 	EmitSoundToAll("replay\\enterperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);
@@ -586,6 +594,7 @@ public Action:Timer_StopSlomo(Handle:timer, any:client)
 	UpdateClientCheatValue(0);
 	if(client!=-1)
 	{
+		FF2_SetFF2flags(client, FF2_GetFF2flags(client)&~FF2FLAG_CHANGECVAR);
 		FF2Flags[client]&=~FLAG_ONSLOMO;
 	}
 	EmitSoundToAll("replay\\exitperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);
@@ -594,7 +603,7 @@ public Action:Timer_StopSlomo(Handle:timer, any:client)
 }
 
 public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Float:angles[3], &weapon)
-{	
+{
 	new boss=FF2_GetBossIndex(client);
 	if(boss==-1 || !(FF2Flags[boss] & FLAG_ONSLOMO))
 	{
@@ -604,10 +613,10 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Floa
 	if(buttons & IN_ATTACK)
 	{
 		FF2Flags[boss]&=~FLAG_SLOMOREADYCHANGE;
-		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "rage_matrix_attack", 3, 0.2),Timer_SlomoChange, boss);
+		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "rage_matrix_attack", 3, 0.2), Timer_SlomoChange, boss);
 
 		new Float:bossPosition[3], Float:endPosition[3], Float:eyeAngles[3];
-		GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition); 
+		GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition);
 		bossPosition[2]+=65;
 		GetClientEyeAngles(client, eyeAngles);
 
@@ -639,13 +648,14 @@ public Action:Timer_Rage_Slomo_Attack(Handle:timer, Handle:data)
 	if(target>0)
 	{
 		new Float:clientPosition[3], Float:targetPosition[3];
-		GetEntPropVector(client, Prop_Send, "m_vecOrigin", clientPosition); 
-		GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPosition); 
+		GetEntPropVector(client, Prop_Send, "m_vecOrigin", clientPosition);
+		GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPosition);
 		if(GetVectorDistance(clientPosition, targetPosition)<=1500 && target!=oldTarget)
 		{
 			SetEntProp(client, Prop_Send, "m_bDucked", 1);
+			SetEntityFlags(FF2_GetBossIndex(client), GetEntityFlags(FF2_GetBossIndex(client))|FL_DUCKING);
 			SDKHooks_TakeDamage(target, client, client, 900.0);
-			TeleportEntity(client, clientPosition, NULL_VECTOR, NULL_VECTOR);
+			TeleportEntity(client, targetPosition, NULL_VECTOR, NULL_VECTOR);
 			oldTarget=target;
 		}
 	}
@@ -662,7 +672,7 @@ public bool:TraceRayDontHitSelf(entity, mask)
 	{
 		return true;
 	}
-	return false; 
+	return false;
 }
 
 
@@ -693,7 +703,7 @@ public Action:Timer_SlomoChange(Handle:timer, any:client)
 			ShowSyncHudText(boss, chargeHUD, "%t","charge_status",RoundFloat(charge*100/see));
 		}
 		case 3:
-		{				
+		{
 			FF2_SetBossCharge(index,0,charge-10);
 			decl Float:position[3];
 			decl Float:rot[3];
@@ -701,13 +711,13 @@ public Action:Timer_SlomoChange(Handle:timer, any:client)
 			GetEntPropVector(boss, Prop_Send, "m_vecOrigin", position);
 			GetClientEyeAngles(boss,rot);
 			position[2]+=63;
-				
+
 			new proj=CreateEntityByName("tf_projectile_rocket");
 			SetVariantInt(BossTeam);
 			AcceptEntityInput(proj, "TeamNum", -1, -1, 0);
 			SetVariantInt(BossTeam);
-			AcceptEntityInput(proj, "SetTeam", -1, -1, 0); 
-			SetEntPropEnt(proj, Prop_Send, "m_hOwnerEntity",boss);		
+			AcceptEntityInput(proj, "SetTeam", -1, -1, 0);
+			SetEntPropEnt(proj, Prop_Send, "m_hOwnerEntity",boss);
 			new Float:speed=FF2_GetAbilityArgumentFloat(index,this_plugin_name,ability_name,3,1000.0);
 			velocity[0]=Cosine(DegToRad(rot[0]))*Cosine(DegToRad(rot[1]))*speed;
 			velocity[1]=Cosine(DegToRad(rot[0]))*Sine(DegToRad(rot[1]))*speed;
@@ -725,7 +735,7 @@ public Action:Timer_SlomoChange(Handle:timer, any:client)
 			{
 				EmitSoundToAll(s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 				EmitSoundToAll(s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-			
+
 				for(new i=1; i<=MaxClients; i++)
 					if(IsClientInGame(i) && i!=boss)
 					{
@@ -754,7 +764,7 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 	{
 		if(FF2_HasAbility(bossAttacker, this_plugin_name, "special_dropprop"))
 		{
-			if(FF2_GetAbilityArgument(bossAttacker,this_plugin_name,"special_dropprop", 3, 0))
+			if(FF2_GetAbilityArgument(bossAttacker, this_plugin_name, "special_dropprop", 3, 0))
 			{
 				CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"));
 			}
@@ -769,9 +779,10 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 				SetEntProp(prop, Prop_Send, "m_CollisionGroup", 1);
 				SetEntProp(prop, Prop_Send, "m_usSolidFlags", 16);
 				DispatchSpawn(prop);
+
 				new Float:position[3];
 				GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
-				position[2]+=20;				
+				position[2]+=20;
 				TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
 				new Float:duration=FF2_GetAbilityArgumentFloat(bossAttacker, this_plugin_name, "special_dropprop", 2, 0.0);
 				if(duration>0.5)
@@ -804,13 +815,6 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 				}
 				SetEntPropEnt(attacker, Prop_Data, "m_hActiveWeapon", weapon);
 			}
-		}
-	}
-	else
-	{
-		if(GetClientTeam(client)==BossTeam)
-		{
-			CreateTimer(0.5, Timer_RestoreLastClass, GetClientUserId(client));
 		}
 	}
 
@@ -909,12 +913,20 @@ stock SetAmmo(client, weapon, ammo, clip=0)
 {
 	if(IsValidEntity(weapon))
 	{
-		if(clip)
-		{
-			SetEntProp(weapon, Prop_Send, "m_iClip1", clip);
-		}
+		SetEntProp(weapon, Prop_Send, "m_iClip1", clip);
 		new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1);
-		SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
+		if(offset!=-1)
+		{
+			SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
+		}
+		else if(ammo)
+		{
+			new String:classname[64];
+			GetEdictClassname(weapon, classname, sizeof(classname));
+			new String:bossName[32];
+			FF2_GetBossSpecial(FF2_GetBossIndex(client), bossName, sizeof(bossName));
+			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
+		}
 	}
 }
 

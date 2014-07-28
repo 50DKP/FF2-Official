@@ -19,23 +19,13 @@ public Native_VSHIsVSHMap(Handle:plugin, numParams)
 
 public Native_VSHIsEnabled(Handle:plugin, numParams)
 {
-	new result=(Enabled ? 2:0);
-	return result;
+	return (Enabled ? 2 : 0);
 }
 
 
 public Native_VSHGetHale(Handle:plugin, numParams)
 {
-	decl result;
-	if(IsValidClient(Boss[0]))
-	{
-		result=GetClientUserId(Boss[0]);
-	}
-	else
-	{
-		result=-1;
-	}
-	return result;
+	return (IsValidClient(Boss[0]) ? GetClientUserId(Boss[0]) : -1);
 }
 
 public Native_VSHGetTeam(Handle:plugin, numParams)
@@ -66,14 +56,5 @@ public Native_VSHGetRoundState(Handle:plugin, numParams)
 public Native_VSHGetDamage(Handle:plugin, numParams)
 {
 	new client=GetNativeCell(1);
-	decl result;
-	if(!IsValidClient(client))
-	{
-		result=0;
-	}
-	else
-	{
-		result=Damage[client];
-	}
-	return result;
+	return (IsValidClient(client) ? Damage[client] : 0);
 }
