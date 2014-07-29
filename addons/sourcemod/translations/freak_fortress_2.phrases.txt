@@ -8,11 +8,6 @@
 	{
 		"en"	"Type {olive}/ff2{default} in chat to open the menu"
 	}
-	"FF2 Next Map"
-	{
-		"#format" "{1:s}"
-		"en"	"The gamemode will be {olive}Freak Fortress 2{default} on {olive}{1}{default}"
-	}
 	"Wait for Health Value"
 	{
 		"#format" "{1:i},{2:s}"
@@ -32,7 +27,7 @@
 	{
 		"en"	"Most damage dealt by"
 	}
-	"Ubercharge"
+	"UberCharge"
 	{
 		"en"	"Ubercharge rate"
 	}
@@ -130,7 +125,7 @@
 	{
 		"en"	"Help about FF2 (/ff2help)."
 	}
-	"Whats New In FF2"
+	"What's New in FF2"
 	{
 		"en"	"What's new? (/ff2new)."
 	}
@@ -171,7 +166,7 @@
 	{
 		"en"	"Changes to my class in FF2 (/ff2classinfo)"
 	}
-	"Damage Dealt"
+	"Damage Dealt Round End"
 	{
 		"#format" "{1:i}"
 		"en"	"You dealt {1} damage in this round"
@@ -222,7 +217,7 @@
 	{
 		"en"	"set to 0"
 	}	
-	"Points to 0 Confirmation"
+	"Reset Queue Points Confirmation"
 	{
 		"en"	"Do you really want to set your queue points to 0?"
 	}	
@@ -275,7 +270,7 @@
 	{
 		"en"	"Toggle monologues (/ff2voice)"
 	}
-	"Changes of Classes Toggle"
+	"Toggle Changes of Classes"
 	{
 		"en"	"Toggle info about changes of classes in FF2"
 	}
