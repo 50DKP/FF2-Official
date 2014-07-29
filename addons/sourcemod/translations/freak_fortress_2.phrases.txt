@@ -166,7 +166,7 @@
 	{
 		"en"	"Changes to my class in FF2 (/ff2classinfo)"
 	}
-	"Damage Dealt Round End"
+	"Total Damage Dealt"
 	{
 		"#format" "{1:i}"
 		"en"	"You dealt {1} damage in this round"
@@ -270,7 +270,7 @@
 	{
 		"en"	"Toggle monologues (/ff2voice)"
 	}
-	"Toggle Changes of Classes"
+	"Toggle Class Changes"
 	{
 		"en"	"Toggle info about changes of classes in FF2"
 	}

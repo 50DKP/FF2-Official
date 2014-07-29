@@ -411,7 +411,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "1) Removed checkFirstHale (Wliu)");
 			DrawPanelText(panel, "2) [Server] Fixed invalid healthbar entity bug (Wliu)");
-			DrawPanelText(panel, "3) Changed default medic ubercharge percentage to 40% (Wliu)");
+			DrawPanelText(panel, "3) Changed default medic UberCharge percentage to 40% (Wliu)");
 			DrawPanelText(panel, "4) Whitelisted festive variants of weapons (Wliu/BBG_Theory)");
 			DrawPanelText(panel, "5) [Server] Added convars to control last player glow and timer health cutoff (Wliu");
 			DrawPanelText(panel, "See next page (press 1)");
@@ -659,7 +659,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Restoring player's default class, after his round as Boss");
 			DrawPanelText(panel, "===UPDATES OF VS SAXTON HALE MODE===");
 			DrawPanelText(panel, "1) Added !ff2_resetqueuepoints command (also there is admin version)");
-			DrawPanelText(panel, "2) Medic is credited 100% of damage done during ubercharge");
+			DrawPanelText(panel, "2) Medic is credited 100% of damage done during UberCharge");
 			DrawPanelText(panel, "3) If map changes mid-round, queue points not lost");
 			DrawPanelText(panel, "4) Dead Ringer will not be able to activate for 2s after backstab");
 			DrawPanelText(panel, "5) Added ff2_spec_force_boss cvar");
@@ -2420,7 +2420,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			}
 			else
 			{
-				ShowHudText(client, -1, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", sound, "Top 3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "Damage Dealt Round End", Damage[client], "Points Earned", RoundFloat(Damage[client]/600.0));
+				ShowHudText(client, -1, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", sound, "Top 3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "Total Damage Dealt", Damage[client], "Points Earned", RoundFloat(Damage[client]/600.0));
 			}
 		}
 	}
@@ -7250,7 +7250,7 @@ public Action:FF2Panel(client, args)
 	DrawPanelItem(panel, s);
 	Format(s,256,"%t","Toggle Monologue");
 	DrawPanelItem(panel, s);
-	Format(s,256,"%t","Toggle Changes of Classes");
+	Format(s,256,"%t","Toggle Class Changes");
 	DrawPanelItem(panel, s);
 	Format(s,256,"%t","Exit Menu");
 	DrawPanelItem(panel, s);
