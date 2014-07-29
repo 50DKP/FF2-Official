@@ -742,7 +742,7 @@ public OnPluginStart()
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How high players should rebound after goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "1", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
+	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
@@ -758,7 +758,7 @@ public OnPluginStart()
 	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
 	HookEvent("deploy_buff_banner", OnDeployBackup);
 
-	HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
+	//HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
 
 	AddCommandListener(OnCallForMedic, "voicemenu");  //Used to activate rages
 	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding before round start
@@ -785,8 +785,7 @@ public OnPluginStart()
 	HookConVarChange(cvarBossRTD, CvarChange);
 	HookConVarChange(cvarUpdater, CvarChange);
 	HookConVarChange(cvarBossTeleporter, CvarChange);
-	cvarNextmap=FindConVar("sm_nextmap");
-	HookConVarChange(cvarNextmap, CvarChangeNextmap);
+	HookConVarChange(cvarNextmap=FindConVar("sm_nextmap"), CvarChangeNextmap);
 
 	RegConsoleCmd("ff2", FF2Panel);
 	RegConsoleCmd("ff2_hp", Command_GetHPCmd);
@@ -4583,25 +4582,25 @@ stock GetIndexOfWeaponSlot(client, slot)
 
 public TF2_OnConditionAdded(client, TFCond:condition)
 {
-	if((!IsBoss(client)) || !Enabled)
-	{
-		return;
-	}
-
-	if(condition==TFCond_Jarated || condition==TFCond_MarkedForDeath)
+	if(Enabled && IsBoss(client) && condition==TFCond_Jarated || condition==TFCond_MarkedForDeath || (condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42)))
 	{
 		TF2_RemoveCondition(client, condition);
-	}
-	else if(condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42))
-	{
-		TF2_RemoveCondition(client, condition);
+		new boss=GetBossIndex(client);
+		if(condition==TFCond_Jarated && BossCharge[boss][0]>0)
+		{
+			BossCharge[boss][0]-=8.0;  //TODO: Allow this to be customizable
+			if(BossCharge[boss][0]<0)
+			{
+				BossCharge[boss][0]=0.0;
+			}
+		}
 	}
 	return;
 }
 
 public TF2_OnConditionRemoved(client, TFCond:condition)
 {
-	if(TF2_GetPlayerClass(client)==TFClass_Scout && condition==TFCond_CritHype)
+	if(Enabled && TF2_GetPlayerClass(client)==TFClass_Scout && condition==TFCond_CritHype)
 	{
 		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
 	}
@@ -4951,7 +4950,7 @@ public Action:event_deflect(Handle:event, const String:name[], bool:dontBroadcas
 	return Plugin_Continue;
 }
 
-public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init)  //TODO:  Move this into OnConditionAdded
+/*public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init)  //TODO:  Move this into OnConditionAdded
 {
 	new client=BfReadByte(bf), victim=BfReadByte(bf);
 	new boss=GetBossIndex(victim);
@@ -4968,7 +4967,7 @@ public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNu
 		}
 	}
 	return Plugin_Continue;
-}
+}*/
 
 public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadcast)
 {
