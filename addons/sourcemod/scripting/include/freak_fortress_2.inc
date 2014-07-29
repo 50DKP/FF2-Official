@@ -437,11 +437,8 @@ stock Debug(String:buffer[], any:...)
 }
 
 /* TEMPORARY STUFF FOR TF2 WEARABLES; TO BE REMOVED AS SOON AS SOURCEMOD ADDS WEARABLE SUPPORT */
-//Created by friagram
-new Handle:removeWearable=INVALID_HANDLE;
-new Handle:equipWearable=INVALID_HANDLE;
-new Handle:isWearable=INVALID_HANDLE;
-
+//Credits go to friagram and rswallen
+new Handle:removeWearable, Handle:equipWearable, Handle:isWearable;
 stock TF2_RemoveWearable(client, wearable)
 {
 	if(removeWearable==INVALID_HANDLE)
@@ -450,7 +447,6 @@ stock TF2_RemoveWearable(client, wearable)
 		if(config==INVALID_HANDLE)
 		{
 			LogError("[FF2] EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
-			PrintToServer("[FF2] WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
 			AcceptEntityInput(wearable, "kill");
 			return;
 		}
@@ -462,7 +458,6 @@ stock TF2_RemoveWearable(client, wearable)
 		if((removeWearable=EndPrepSDKCall())==INVALID_HANDLE)
 		{
 			LogError("[FF2] Couldn't load SDK function (CTFPlayer::RemoveWearable). SDK call failed.");
-			PrintToServer("[FF2] WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
 			AcceptEntityInput(wearable, "kill");
 			return;
 		}
@@ -529,6 +524,13 @@ stock TF2_RemoveWeaponSlot2(client, slot)
 		{
 			TF2_RemoveWearable(client, wearable);
 		}
+
+		wearable=GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearableViewModel");
+		if(IsValidEntity(wearable))
+		{
+			TF2_RemoveWearable(client, wearable);
+		}
+
 		RemovePlayerItem(client, weaponIndex);
 		AcceptEntityInput(weaponIndex, "Kill");
 	}
@@ -543,14 +545,14 @@ stock TF2_RemoveAllWeapons2(client)
 }
 /* End temp wearable stocks */
 
-public SharedPlugin:__pl_FF2 =
+public SharedPlugin:__pl_FF2=
 {
-	name = "freak_fortress_2",
-	file = "freak_fortress_2.smx",
+	name="freak_fortress_2",
+	file="freak_fortress_2.smx",
 	#if defined REQUIRE_PLUGIN
-		required = 1,
+		required=1,
 	#else
-		required = 0,
+		required=0,
 	#endif
 };
 
