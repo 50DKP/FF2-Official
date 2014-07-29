@@ -2,314 +2,314 @@
 {
 	"More Players Needed"
 	{
-		"en"	"Freak Fortress 2 is currently disabled. More players are required."
+		"en"		"Freak Fortress 2 is currently disabled. More players are required."
 	}
 	"Type ff2 to Open Menu"
 	{
-		"en"	"Type {olive}/ff2{default} in chat to open the menu"
+		"en"		"Type {olive}/ff2{default} in chat to open the menu"
 	}
 	"Wait for Health Value"
 	{
-		"#format" "{1:i},{2:s}"
-		"en"  "You cannot check the boss' HP right now. Wait {1} more second(s). Last known HP value was {2}"
+		"#format"	"{1:i},{2:s}"
+		"en"		"You cannot check the boss' HP right now. Wait {1} more second(s).  Last known HP value was {2}."
 	}
 	"Damage Dealt"
 	{
-		"#format" "{1:i}"
-		"en"	"Damage dealt by you - {1}"
+		"#format"	"{1:i}"
+		"en"		"Damage dealt by you - {1}"
 	}
 	"Point Unlocked"
 	{
-		"#format" "{1:i}"
-		"en"  "Only {1} player(s) left, the control point has been unlocked!"
+		"#format"	"{1:i}"
+		"en"		"Only {1} player(s) left, the control point has been unlocked!"
 	}
 	"Top 3"
 	{
-		"en"	"Most damage dealt by"
+		"en"		"Most damage dealt by"
 	}
-	"UberCharge"
+	"Ubercharge"
 	{
-		"en"	"Ubercharge rate"
+		"en"		"Ubercharge rate"
 	}
 	"Boss Health"
 	{
-		"#format" "{1:i},{2:i}"
-		"en"	"Health: {1} out of {2}"
+		"#format"	"{1:i},{2:i}"
+		"en"		"Health: {1} out of {2}"
 	}
 	"Rage Activation"
 	{
-		"en"	"Call for medic to activate your \"RAGE\" ability!"
+		"en"		"Call for medic to activate your \"RAGE\" ability!"
 	}
 	"Rage Meter"
 	{
-		"#format" "{1:i}"
-		"en"	"Rage is {1} percent ready"
+		"#format"	"{1:i}"
+		"en"		"Rage is {1} percent ready"
 	}
 	"Super Duper Jump Ready"
 	{
-		"en"	"Super Duper jump is ready!"
+		"en"		"Super Duper Jump is ready!"
 	}
 	"Teleportation Charge"
 	{
-		"#format" "{1:i}"
-		"en"	"Teleportation is {1} percent ready. When at 100 percent look up and stand up."
+		"#format"	"{1:i}"
+		"en"		"Teleportation is {1} percent ready. When at 100 percent look up and stand up."
 	}
 	"Super Jump Charge"
 	{
-		"#format" "{1:i}"
-		"en"	"Super Jump charge is {1} percent. Look upwards and stand up for jump"
+		"#format"	"{1:i}"
+		"en"		"Super Jump charge is {1} percent. Look upwards and stand up for jump"
 	}
 	"Teleportation Cooldown"
 	{
-		"#format" "{1:i}"
-		"en"	"Teleportation will be available in {1} second(s)."
+		"#format"	"{1:i}"
+		"en"		"Teleportation will be available in {1} second(s)."
 	}
 	"Super Jump Cooldown"
 	{
-		"#format" "{1:i}"
-		"en"	"Super Jump will be available in {1} second(s)."
+		"#format"	"{1:i}"
+		"en"		"Super Jump will be available in {1} second(s)."
 	}
 	"Scout Advice"
 	{
-		"en"	"The Crit-a-Cola grants crits instead of minicrits.\nThe Fan O' War removes 5%% rage on hit.\nPistols gain minicrits.\nThe Candy Cane drops a health pack on hit."
+		"en"		"The Crit-a-Cola grants crits instead of minicrits.\nThe Fan O' War removes 5%% rage on hit.\nPistols gain minicrits.\nThe Candy Cane drops a health pack on hit."
 	}
 	"Soldier Advice"
 	{
-		"en"	"The Battalion's Backup fills its meter when hit. Damage is heavily reduced to nearby players while active.\nThe Half-Zatoichi heals 35HP on hit, overheals to +25, and honorbound is removed on hit.\nBoots reduce fall damage and Mantreads create greater rocketjumps.\nAll guns minicrit Boss in midair (Direct Hit gets crits), and the Reserve Shooter has faster weapon switch and a small damage buff."
+		"en"		"The Battalion's Backup fills its meter when hit. Damage is heavily reduced to nearby players while active.\nThe Half-Zatoichi heals 35HP on hit, overheals to +25, and honorbound is removed on hit.\nBoots reduce fall damage and Mantreads create greater rocketjumps.\nAll guns minicrit Boss in midair (Direct Hit gets crits), and the Reserve Shooter has faster weapon switch and a small damage buff."
 	}
 	"Pyro Advice"
 	{
-		"en"	"Postal Pummeler and skins uses stats of Fire Axe.\nThe Flare Gun is replaced by the Mega Detonator.\nAirblasting the boss builds rage and lengthens the Vagineer's uber."
+		"en"		"Postal Pummeler and skins uses stats of Fire Axe.\nThe Flare Gun is replaced by the Mega Detonator.\nAirblasting the boss builds rage and lengthens the Vagineer's uber."
 	}
 	"Demo Advice"
 	{
-		"en"	"The shields block one hit from the Boss.\nUsing the shields grants criticals.\nEyelander/reskins gain heads on hit.\nThe Half-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit."
+		"en"		"The shields block one hit from the Boss.\nUsing the shields grants criticals.\nEyelander/reskins gain heads on hit.\nThe Half-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit."
 	}
 	"Heavy Advice"
 	{
-		"en"	"Natascha, the KGB, and the Fists of Steel are replaced with the\nMinigun, Gloves of Running, and Fists, respectively.\nThe Gloves of Running are quite quick but cause you to lose more health.\nThe Holiday Punch will remove any stun on you if you hit Boss while stunned."
+		"en"		"Natascha, the KGB, and the Fists of Steel are replaced with the\nMinigun, Gloves of Running, and Fists, respectively.\nThe Gloves of Running are quite quick but cause you to lose more health.\nThe Holiday Punch will remove any stun on you if you hit Boss while stunned."
 	}
 	"Engineer Advice"
 	{
-		"en"	"All maps have only small ammo packs.\nThe Frontier Justice gains crits only while your sentry is targetting Boss."
+		"en"		"All maps only have small ammo packs.\nThe Frontier Justice gains crits only while your sentry is targeting the Boss."
 	}
 	"Medic Advice"
 	{
-		"en"	"Charge: Kritz+Uber. Charge starts at 40 percent.\nCharge lasts for 150 percent after activation.\nSyringe Gun: on hit: +5%% ubercharge, has Overdose's speed effect.\nCrossbow: Always crits, +150%% damage, +10%% uber on hit."
+		"en"		"Charge: Kritz+Uber. Charge starts at 40 percent.\nCharge lasts for 150 percent after activation.\nSyringe Gun: on hit: +5%% ubercharge, has Overdose's speed effect.\nCrossbow: Always crits, +150%% damage, +10%% uber on hit."
 	}
 	"Sniper Advice"
 	{
-		"en"	"All your weapons have critical hits.\nJarate removes 8%% rage.\nBack-equipped weapons are replaced with SMG.\nDefault Sniper Rifle causes Boss to glow. Glow time scales with charge."
+		"en"		"All your weapons have critical hits.\nJarate removes 8%% rage.\nBack-equipped weapons are replaced with SMG.\nDefault Sniper Rifle causes Boss to glow. Glow time scales with charge."
 	}
 	"Spy Advice"
 	{
-		"en"	"Backstab does about 10 percent of Boss's max health.\nCloak and Dagger replaced with normal watch.\nAll revolvers minicrit.\nYour Eternal Reward/Wanga Prick backstabs will disguise you instantly.\nKunai backstabs will give you a health bonus."
+		"en"		"Backstab does about 10 percent of Boss's max health.\nCloak and Dagger replaced with normal watch.\nAll revolvers minicrit.\nYour Eternal Reward/Wanga Prick backstabs will disguise you instantly.\nKunai backstabs will give you a health bonus."
 	}
 	"Melee Advice"
 	{
-		"en"	"All melee weapons (except the Spy knives) deal critical hits.\nUse /ff2 menu to disable this notifications."
+		"en"		"All melee weapons (except the Spy knives) deal critical hits.\nUse /ff2 menu to disable this notifications."
 	}
 	"Boss Queue"
 	{
-		"en"	"Boss Queue"
+		"en"		"Boss Queue"
 	}
 	"What's Up"
 	{
-		"en"	"What's up?"
+		"en"		"What's up?"
 	}
 	"Observe Health Value"
 	{
-		"en"	"Investigate the boss's current health level (/ff2hp)"
+		"en"		"Investigate the boss's current health level (/ff2hp)"
 	}
 	"FF2 Help"
 	{
-		"en"	"Help about FF2 (/ff2help)."
+		"en"		"Help about FF2 (/ff2help)."
 	}
 	"What's New in FF2"
 	{
-		"en"	"What's new? (/ff2new)."
+		"en"		"What's new? (/ff2new)."
 	}
 	"View Queue Points"
 	{
-		"en"	"Queue points"
+		"en"		"Queue points"
 	}
 	"Exit Menu"
 	{
-		"en"	"Exit"
+		"en"		"Exit"
 	}
 	"New Version"
 	{
-		"#format" "{1:s},{2:s}"
-		"en"	"What's new in v{1} from {2}"
+		"#format"	"{1:s},{2:s}"
+		"en"		"What's new in v{1} from {2}"
 	}
 	"FF2 Objective"
 	{
-		"en"	"===Freak Fortress 2===\nOne (or more) players become one of the Bosses.\nWhile the other players have to defeat them."
+		"en"		"===Freak Fortress 2===\nOne (or more) players become one of the Bosses.\nThe other players have to defeat them."
 	}
 	"Older Version"
 	{
-		"en"	"Display older"
+		"en"		"Display older"
 	}
 	"No Older Version"
 	{
-		"en"	"No older versions available"
+		"en"		"No older versions available"
 	}
 	"Newer Version"
 	{
-		"en"	"Display newer"
+		"en"		"Display newer"
 	}
 	"No Newer Version"
 	{
-		"en"	"No newer versions available"
+		"en"		"No newer versions available"
 	}
-	"Changes to Classes"
+	"Class Changes"
 	{
-		"en"	"Changes to my class in FF2 (/ff2classinfo)"
+		"en"		"Changes to my class in FF2 (/ff2classinfo)"
 	}
 	"Total Damage Dealt"
 	{
-		"#format" "{1:i}"
-		"en"	"You dealt {1} damage in this round"
+		"#format"	"{1:i}"
+		"en"		"You dealt {1} damage in this round"
 	}
 	"Points Earned"
 	{
-		"#format" "{1:i}"
-		"en"	"You earned {1} points in this round"
+		"#format"	"{1:i}"
+		"en"		"You earned {1} points in this round"
 	}
 	"Boss Victory"
 	{
-		"en"	"Congratulations!  You won!"
+		"en"		"Congratulations!  You won!"
 	}
 	"Boss Defeat"
 	{
-		"en"	"Oh no, you lost!  Don't worry, there's always next time"
+		"en"		"Oh no, you lost!  Don't worry, there's always next time"
 	}
 	"Boss Info"
 	{
-		"#format" "{1:N},{2:s},{3:i},{4:s}"
-		"en"	"{1} became\n {2}\n with {3}{4} HP"
+		"#format"	"{1:N},{2:s},{3:i},{4:s}"
+		"en"		"{1} became\n {2}\n with {3}{4} HP"
 	}
 	"Boss Current Health"
 	{
-		"#format" "{1:s},{2:i},{3:i},{4:s}"
-		"en"	"Current {1}'s HP amount is {2} of {3}{4}"
+		"#format"	"{1:s},{2:i},{3:i},{4:s}"
+		"en"		"Current {1}'s HP amount is {2} of {3}{4}"
 	}
 	"Boss Win Final Health"
 	{
-		"#format" "{1:s},{2:i},{3:i},{4:s}"
-		"en"	"{1} left with {2} of {3}{4} HP left."
+		"#format"	"{1:s},{2:i},{3:i},{4:s}"
+		"en"		"{1} left with {2} of {3}{4} HP left."
 	}
 	"Vote for Character Set"
 	{
-		"en"    "Please vote for the character set for the next map."
+		"en"		"Please vote for the character set for the next map."
 	}
 	"Your Queue Points"
 	{
-		"#format" "{1:i}"
-		"en"    "Your queue point(s) is {1}."
+		"#format"	"{1:i}"
+		"en"		"You have {1} queue point(s)."
 	}
 	"Points Earned"
 	{
-		"#format" "{1:i}"
-		"en"    "You earned {1} queue point(s)."
+		"#format"	"{1:i}"
+		"en"		"You earned {1} queue point(s)."
 	}
 	"Reset Queue Points"
 	{
-		"en"	"set to 0"
+		"en"		"Set to 0"
 	}	
 	"Reset Queue Points Confirmation"
 	{
-		"en"	"Do you really want to set your queue points to 0?"
+		"en"		"Do you really want to set your queue points to 0?"
 	}	
 	"Reset Player's Queue Points"
 	{
-		"#format" "{1:N}"
-		"en"	"Do you really want to set {1}'s queue points to 0?"
+		"#format"	"{1:N}"
+		"en"		"Do you really want to set {1}'s queue points to 0?"
 	}	
 	"Reset Queue Points Done"
 	{
-		"en"	"Now you have {olive}0{default} queue points"
+		"en"		"Now you have {olive}0{default} queue points"
 	}
 	"Reset Player's Points Done"
 	{
-		"#format" "{1:N}"
-		"en"	"Now {olive}{1}{default} has {olive}0{default} queue points"
+		"#format"	"{1:N}"
+		"en"		"Now {olive}{1}{default} has {olive}0{default} queue points"
 	}
 	"Queue Points Reset by Admin"
 	{
-		"#format" "{1:N}"
-		"en"	"{olive}{1}{default} set your queue points to {olive}0{default}"
+		"#format"	"{1:N}"
+		"en"		"{olive}{1}{default} set your queue points to {olive}0{default}"
 	}
 	"Next Boss"
 	{
-		"en"	"You will become the Boss soon. Type {olive}/ff2next{default} to make sure."
+		"en"		"You will become the Boss soon. Type {olive}/ff2next{default} to make sure."
 	}
 	"First Round Arena"
 	{
-		"en"	"Waiting for players to finish loading. Gamemode will be arena for this round"  //Waiting for players to load and playing common arena for the first round
+		"en"		"Waiting for players to finish loading. Gamemode will be arena for this round"  //Waiting for players to load and playing common arena for the first round
 	}
 	"FF2 Music"
 	{
-		"#format" "{1:s}"
-		"en"	"Freak Fortress 2 Boss' music is {1} now"
+		"#format"	"{1:s}"
+		"en"		"Freak Fortress 2 Boss' music is {1} now"
 	}
 	"FF2 Voice"
 	{
-		"#format" "{1:s}"
-		"en"	"FF2 monologues: {1}."
+		"#format"	"{1:s}"
+		"en"		"FF2 monologues: {1}."
 	}
 	"FF2 Voice 2"
 	{
-		"en"	"Other sounds will be playing, but very quietly."
+		"en"		"Other sounds will be playing, but very quietly."
 	}
 	"Toggle Music"
 	{
-		"en"	"Toggle music (/ff2music)"
+		"en"		"Toggle music (/ff2music)"
 	}
 	"Toggle Monologue"
 	{
-		"en"	"Toggle monologues (/ff2voice)"
+		"en"		"Toggle monologues (/ff2voice)"
 	}
 	"Toggle Class Changes"
 	{
-		"en"	"Toggle info about changes of classes in FF2"
+		"en"		"Toggle info about class changes in FF2"
 	}
 	"FF2 Class Info"
 	{
-		"#format" "{1:s}"
-		"en"	"Info about changes of classes in FF2: {1}"
+		"#format"	"{1:s}"
+		"en"		"Info about class changes in FF2: {1}"
 	}
 	"Last FF2 Update"
 	{
-		"#format" "{1:s},{2:s}"
-		"en"	"What's new in v{olive}{1}{default} ({olive}{2}{default})? Type {olive}/ff2new{default}."
+		"#format"	"{1:s},{2:s}"
+		"en"		"What's new in v{olive}{1}{default} ({olive}{2}{default})? Type {olive}/ff2new{default}."
 	}
 	"Charge Status"
 	{
-		"#format" "{1:i}"
-		"en"	"Charge is {1} percent ready. When at 100 percent let go of the charge button."
+		"#format"	"{1:i}"
+		"en"		"Charge is {1} percent ready. When at 100 percent let go of the charge button."
 	}
 	"Character Set Next Map"
 	{
-		"#format" "{1:s},{2:s}"
-		"en"	"The character set for {1} will be {2}."
+		"#format"	"{1:s},{2:s}"
+		"en"		"The character set for {1} will be {2}."
 	}
 	"Ability uses Reload"
 	{
-		"en"	"Press RELOAD button to use ability!"
+		"en"		"Press RELOAD button to use ability!"
 	}
 	"Ability uses Right Mouse"
 	{
-		"en"	"Press right mouse button to use ability!"
+		"en"		"Press right mouse button to use ability!"
 	}
 	"Boss with Multiple Lives Left"
 	{
-		"#format" "{1:s},{2:i}"
-		"en"	"{1} lost 1 life! There are {2} more!"
+		"#format"	"{1:s},{2:i}"
+		"en"		"{1} lost 1 life! There are {2} more!"
 	}
 	"Boss with 1 Life Left"
 	{
-		"#format" "{1:s},{2:i}"
-		"en"	"{1} lost 1 life! There is 1 more!"
+		"#format"	"{1:s},{2:i}"
+		"en"		"{1} lost 1 life! There is 1 more!"
 	}
 }

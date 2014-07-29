@@ -411,7 +411,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "1) Removed checkFirstHale (Wliu)");
 			DrawPanelText(panel, "2) [Server] Fixed invalid healthbar entity bug (Wliu)");
-			DrawPanelText(panel, "3) Changed default medic UberCharge percentage to 40% (Wliu)");
+			DrawPanelText(panel, "3) Changed default medic ubercharge percentage to 40% (Wliu)");
 			DrawPanelText(panel, "4) Whitelisted festive variants of weapons (Wliu/BBG_Theory)");
 			DrawPanelText(panel, "5) [Server] Added convars to control last player glow and timer health cutoff (Wliu");
 			DrawPanelText(panel, "See next page (press 1)");
@@ -659,7 +659,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Restoring player's default class, after his round as Boss");
 			DrawPanelText(panel, "===UPDATES OF VS SAXTON HALE MODE===");
 			DrawPanelText(panel, "1) Added !ff2_resetqueuepoints command (also there is admin version)");
-			DrawPanelText(panel, "2) Medic is credited 100% of damage done during UberCharge");
+			DrawPanelText(panel, "2) Medic is credited 100% of damage done during ubercharge");
 			DrawPanelText(panel, "3) If map changes mid-round, queue points not lost");
 			DrawPanelText(panel, "4) Dead Ringer will not be able to activate for 2s after backstab");
 			DrawPanelText(panel, "5) Added ff2_spec_force_boss cvar");
@@ -4398,7 +4398,7 @@ public Action:ClientTimer(Handle:timer)
 						if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
 						{
 							SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
-							ShowSyncHudText(client, jumpHUD, "%T: %i", "UberCharge", client, charge);
+							ShowSyncHudText(client, jumpHUD, "%T: %i", "Ubercharge", client, charge);
 						}
 
 						if(charge==100 && !(FF2flags[client] & FF2FLAG_UBERREADY))
@@ -4513,7 +4513,7 @@ public Action:ClientTimer(Handle:timer)
 						{
 							SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
 							new charge=RoundToFloor(GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")*100);
-							ShowHudText(client, -1, "%T: %i", "UberCharge", client, charge);
+							ShowHudText(client, -1, "%T: %i", "Ubercharge", client, charge);
 							if(charge==100 && !(FF2flags[client] & FF2FLAG_UBERREADY))
 							{
 								FakeClientCommand(client,"voicemenu 1 7");
@@ -7240,7 +7240,7 @@ public Action:FF2Panel(client, args)
 	SetPanelTitle(panel, s);
 	Format(s,256,"%t","FF2 Help");
 	DrawPanelItem(panel, s);
-	Format(s,256,"%t","Changes to Classes");
+	Format(s,256,"%t","Class Changes");
 	DrawPanelItem(panel, s);
 	Format(s,256,"%t","What's New in FF2");
 	DrawPanelItem(panel, s);
