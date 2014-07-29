@@ -33,8 +33,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.0"
-//#define DEV_VERSION
+#define PLUGIN_VERSION "1.10.1 Beta"
+#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -5855,6 +5855,11 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						return action;
 					}
 				}
+			}
+
+			if(BossCharge[boss][0]>100)
+			{
+				BossCharge[boss][0]=100.0;
 			}
 		}
 		else  //TODO: LOOK AT THIS
