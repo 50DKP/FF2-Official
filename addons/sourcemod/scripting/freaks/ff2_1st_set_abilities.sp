@@ -935,20 +935,7 @@ public Action:Timer_RemoveEntity(Handle:timer, any:entid)
 	new entity=EntRefToEntIndex(entid);
 	if(IsValidEdict(entity) && entity>MaxClients)
 	{
-		if(TF2_IsWearable(entity))
-		{
-			for(new client=1; client<MaxClients; client++)
-			{
-				if(IsValidEdict(client) && IsClientInGame(client))
-				{
-					TF2_RemoveWearable(client, entity);
-				}
-			}
-		}
-		else
-		{
-			AcceptEntityInput(entity, "Kill");
-		}
+		AcceptEntityInput(entity, "Kill");
 	}
 }
 
