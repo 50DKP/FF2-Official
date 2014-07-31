@@ -37,7 +37,7 @@ native bool:FF2_IsFF2Enabled();
  *			1 - round is in progress (due to a bug in arena mode, stalemate will also return 1)
  *			2 - someone wins
  */
-native FF2RoundState:FF2_GetRoundState();
+native FF2_GetRoundState();
 
 /**
  * Gets UserID of current Boss

@@ -8040,7 +8040,7 @@ public Native_SetBossCharge(Handle:plugin, numParams)
 
 public Native_GetRoundState(Handle:plugin, numParams)
 {
-	return CheckRoundState()==FF2RoundState_Setup ? FF2RoundState_Setup : CheckRoundState();
+	return _:CheckRoundState()==-1 ? 0 : _:CheckRoundState();
 }
 
 public Native_GetRageDist(Handle:plugin, numParams)
@@ -8366,7 +8366,7 @@ public Action:VSH_OnGetRoundState(&result)
 {
 	if(Enabled)
 	{
-		result=CheckRoundState();
+		result=_:CheckRoundState();
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;

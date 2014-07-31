@@ -48,9 +48,9 @@ public Native_VSHGetHealthMax(Handle:plugin, numParams)
 	return BossHealthMax[0];
 }
 
-public FF2RoundState:Native_VSHGetRoundState(Handle:plugin, numParams)
+public Native_VSHGetRoundState(Handle:plugin, numParams)
 {
-	return CheckRoundState();
+	return _:CheckRoundState();
 }
 
 public Native_VSHGetDamage(Handle:plugin, numParams)
