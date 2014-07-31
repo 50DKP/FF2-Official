@@ -20,7 +20,7 @@ new Handle:cvarBossRTD;
 
 new bool:goomba;
 new Float:goombaDamage;
-new Float:goombaReboundPower;
+new Float:goombaRebound;
 new bool:rtd;
 new bool:canBossRTD;
 
@@ -34,11 +34,11 @@ public Plugin:myinfo=
 
 public OnPluginStart()
 {
-	cvarGoomba=CreateConvar("ff2_goomba", "1", "Allow FF2 to integrate with Goomba Stomp?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarGoombaDamage=CreateConvar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multiplied by", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarGoombaRebound=CreateConvar("ff2_goomba_rebound", "300.0", "How high players should rebound after a Goomba stomp", FCVAR_PLUGIN, true, 0.0);
-	cvarRTD=CreateConvar("ff2_rtd", "1", "Allow FF2 to integrate with RTD?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarBossRTD=CreateConvar("ff2_boss_rtd", "0", "Allow the boss to use RTD?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarGoomba=CreateConVar("ff2_goomba", "1", "Allow FF2 to integrate with Goomba Stomp?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multiplied by", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarGoombaRebound=CreateConVar("ff2_goomba_rebound", "300.0", "How high players should rebound after a Goomba stomp", FCVAR_PLUGIN, true, 0.0);
+	cvarRTD=CreateConVar("ff2_rtd", "1", "Allow FF2 to integrate with RTD?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Allow the boss to use RTD?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
 	HookConVarChange(cvarGoomba, CvarChange);
 	HookConVarChange(cvarGoombaDamage, CvarChange);
