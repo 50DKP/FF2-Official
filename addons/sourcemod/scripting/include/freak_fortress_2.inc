@@ -22,6 +22,11 @@
 #endif
 #define _FF2_included
 
+#undef REQUIRE_PLUGIN
+#tryinclude <goomba>
+#tryinclude <rtd>
+#define REQUIRE_PLUGIN
+
 /**
  * Is Freak Fortress enabled?
  *
@@ -418,6 +423,31 @@ forward Action:FF2_OnLoadCharacterSet(&charSetNum, String:charSetName[]);
  * @return			Plugin_Stop or Plugin_Handled to prevent damage that would remove a life, Plugin_Changed if you want to change the number of lives left.
 */
 forward Action:FF2_OnLoseLife(client, &lives, maxLives);
+
+//Note: These external integration forwards are handled by ff2_external_integration.ff2
+#if defined _goomba_included_
+/*
+ * This forward is for subplugin authors to use as it will tell FF2 if it's override for the enemy of the boss needs to be cancelled out.
+ * Note: This is called when the boss is stomping the player.
+ * @return Plugin_Continue to allow FF2 to do it's override, Plugin_Changed to override FF2's override, Plugin_Handled to stop stomp alltogether.
+ */
+forward Action:OnFF2PlayerStompOverride(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower);
+
+/*
+ * This forward is for subplugin authors to use as it will tell FF2 if it's override for the boss needs to be cancelled out.
+ * Note: This is called when the boss is being stomped.
+ * @return Plugin_Continue to allow FF2 to do it's override, Plugin_Changed to override FF2's override, Plugin_Handled to stop stomp alltogether.
+ */
+forward Action:OnFF2BossStompOverride(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower);
+#endif
+
+#if defined _rtd_included
+/*
+ * This forward is for subplugin authors to use as it will tell FF2 if it's override needs to be cancelled out.
+ * @return Plugin_Continue to allow FF2 to do it's override, Plugin_Handled to stop roll alltogether.
+ */
+forward Action:OnFF2RtdOverride(client);
+#endif
 
 /**
  * Used to consolidate debug messages

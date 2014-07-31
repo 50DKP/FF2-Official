@@ -33,8 +33,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #undef REQUIRE_PLUGIN
 #tryinclude <smac>
 #tryinclude <updater>
-/*#tryinclude <goomba>
-#tryinclude <rtd>*/
 #define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "2.0.0 Alpha 2"
@@ -65,10 +63,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #if defined _steamtools_included
 new bool:steamtools=false;
 #endif
-
-/*#if defined _goomba_included
-new bool:goomba=false;
-#endif*/
 
 new OtherTeam=2;
 new BossTeam=3;
@@ -121,9 +115,6 @@ new Handle:cvarEnableEurekaEffect;
 new Handle:cvarForceBossTeam;
 new Handle:cvarHealthBar;
 new Handle:cvarLastPlayerGlow;
-/*new Handle:cvarGoombaDamage;
-new Handle:cvarGoombaRebound;
-new Handle:cvarBossRTD;*/
 new Handle:cvarBossTeleporter;
 new Handle:cvarUpdater;
 new Handle:cvarDebug;
@@ -150,9 +141,6 @@ new countdownTime=120;
 new countdownHealth=2000;
 new bool:lastPlayerGlow=true;
 new bool:SpecForceBoss=false;
-/*new Float:GoombaDamage=0.05;
-new Float:reboundPower=300.0;
-new bool:canBossRTD=false;*/
 new bool:bossTeleportation=true;
 
 new Handle:MusicTimer;
@@ -776,9 +764,6 @@ public OnPluginStart()
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	/*cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
-	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How high players should rebound after goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.0);
-	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", FCVAR_PLUGIN, true, 0.0, true, 1.0);*/
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "1", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -817,9 +802,6 @@ public OnPluginStart()
 	HookConVarChange(cvarCountdownHealth, CvarChange);
 	HookConVarChange(cvarLastPlayerGlow, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
-	/*HookConVarChange(cvarGoombaDamage, CvarChange);
-	HookConVarChange(cvarGoombaRebound, CvarChange);
-	HookConVarChange(cvarBossRTD, CvarChange);*/
 	HookConVarChange(cvarUpdater, CvarChange);
 	HookConVarChange(cvarBossTeleporter, CvarChange);
 	cvarNextmap=FindConVar("sm_nextmap");
@@ -944,13 +926,6 @@ public OnLibraryAdded(const String:name[])
 	}
 	#endif
 
-	/*#if defined _goomba_included
-	if(!strcmp(name, "goomba", false))
-	{
-		goomba=true;
-	}
-	#endif*/
-
 	#if defined _updater_included && !defined DEV_VERSION
 	if(StrEqual(name, "updater") && GetConVarBool(cvarUpdater))
 	{
@@ -967,13 +942,6 @@ public OnLibraryRemoved(const String:name[])
 		steamtools=false;
 	}
 	#endif
-
-	/*#if defined _goomba_included
-	if(!strcmp(name, "goomba", false))
-	{
-		goomba=false;
-	}
-	#endif*/
 
 	#if defined _updater_included
 	if(StrEqual(name, "updater"))
@@ -1092,9 +1060,6 @@ public EnableFF2()
 	{
 		PointDelay*=-1;
 	}
-	/*GoombaDamage=GetConVarFloat(cvarGoombaDamage);
-	reboundPower=GetConVarFloat(cvarGoombaRebound);
-	canBossRTD=GetConVarBool(cvarBossRTD);*/
 	AliveToEnable=GetConVarInt(cvarAliveToEnable);
 	BossCrits=GetConVarBool(cvarCrits);
 	circuitStun=GetConVarFloat(cvarCircuitStun);
@@ -1574,18 +1539,6 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		lastPlayerGlow=bool:StringToInt(newValue);
 	}
-	/*else if(convar==cvarGoombaDamage)
-	{
-		GoombaDamage=StringToFloat(newValue);
-	}
-	else if(convar==cvarGoombaRebound)
-	{
-		reboundPower=StringToFloat(newValue);
-	}
-	else if(convar==cvarBossRTD)
-	{
-		canBossRTD=bool:StringToInt(newValue);
-	}*/
 	else if(convar==cvarSpecForceBoss)
 	{
 		SpecForceBoss=bool:StringToInt(newValue);
@@ -6143,44 +6096,6 @@ public Action:TF2_OnPlayerTeleport(client, teleporter, &bool:result)
 	}
 	return Plugin_Continue;
 }
-
-/*public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
-{
-	if(!Enabled || !IsValidClient(attacker) || !IsValidClient(victim) || attacker==victim)
-	{
-		return Plugin_Continue;
-	}
-
-	if(IsBoss(attacker))
-	{
-		new Float:position[3];
-		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
-		damageMultiplier=900.0;
-		JumpPower=0.0;
-		PrintCenterText(victim, "Ouch!  Watch your head!");
-		PrintCenterText(attacker, "You just goomba stomped somebody!");
-		return Plugin_Changed;
-	}
-	else if(IsBoss(victim))
-	{
-		damageMultiplier=GoombaDamage;
-		JumpPower=reboundPower;
-		PrintCenterText(victim, "You were just goomba stomped!");
-		PrintCenterText(attacker, "You just goomba stomped the boss!");
-		UpdateHealthBar();
-		return Plugin_Changed;
-	}
-	return Plugin_Continue;
-}
-
-public Action:RTD_CanRollDice(client)
-{
-	if(Enabled && IsBoss(client) && !canBossRTD)
-	{
-		return Plugin_Handled;
-	}
-	return Plugin_Continue;
-}*/
 
 stock GetClientCloakIndex(client)
 {
