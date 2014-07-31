@@ -1,6 +1,7 @@
 //Freak Fortress 2 include file.
 #include <morecolors>
 #include <sdktools>
+#include <tf2>
 
 #define FF2FLAG_UBERREADY				(1<<1)		//Used when medic says "I'm charged!"
 #define FF2FLAG_ISBUFFED				(1<<2)		//Used when soldier uses backup's buff.
