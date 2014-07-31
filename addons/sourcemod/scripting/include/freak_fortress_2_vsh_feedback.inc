@@ -12,7 +12,7 @@ AskPluginLoad_VSH()
 	RegPluginLibrary("saxtonhale");
 }
 
-public Native_VSHIsVSHMap(Handle:plugin, numParams)
+public bool:Native_VSHIsVSHMap(Handle:plugin, numParams)
 {
 	return IsFF2Map();
 }
@@ -48,7 +48,7 @@ public Native_VSHGetHealthMax(Handle:plugin, numParams)
 	return BossHealthMax[0];
 }
 
-public Native_VSHGetRoundState(Handle:plugin, numParams)
+public FF2RoundState:Native_VSHGetRoundState(Handle:plugin, numParams)
 {
 	return CheckRoundState();
 }

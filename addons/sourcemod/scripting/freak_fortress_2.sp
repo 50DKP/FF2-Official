@@ -2130,7 +2130,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 public Action:Timer_EnableCap(Handle:timer)
 {
-	if(CheckRoundState()==-1 && (Enabled || Enabled2))
+	if(CheckRoundState()==FF2RoundState_Loading && (Enabled || Enabled2))
 	{
 		SetControlPoint(true);
 		if(checkDoors)
@@ -2246,7 +2246,7 @@ public Action:Timer_CheckDoors(Handle:timer)
 		return Plugin_Stop;
 	}
 
-	if((!Enabled && CheckRoundState()!=-1) || (Enabled && CheckRoundState()!=1))
+	if((!Enabled && CheckRoundState()!=FF2RoundState_Loading) || (Enabled && CheckRoundState()!=FF2RoundState_RoundRunning))
 	{
 		return Plugin_Continue;
 	}
@@ -2606,7 +2606,7 @@ public Action:StartBossTimer(Handle:timer)
 
 public Action:Timer_MusicPlay(Handle:timer, any:client)
 {
-	if(CheckRoundState()!=1)
+	if(CheckRoundState()!=FF2RoundState_RoundRunning)
 	{
 		return Plugin_Continue;
 	}
@@ -2696,7 +2696,7 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 public Action:Timer_MusicTheme(Handle:timer, any:userid)
 {
 	MusicTimer=INVALID_HANDLE;
-	if(Enabled && CheckRoundState()==1)
+	if(Enabled && CheckRoundState()==FF2RoundState_RoundRunning)
 	{
 		KvRewind(BossKV[Special[0]]);
 		if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
@@ -2965,7 +2965,7 @@ public Action:MessageTimer(Handle:timer)
 
 public Action:MakeModelTimer(Handle:timer, any:client)
 {
-	if(!Boss[client] || !IsValidEdict(Boss[client]) || !IsClientInGame(Boss[client]) || !IsPlayerAlive(Boss[client]) || CheckRoundState()==2)
+	if(!Boss[client] || !IsValidEdict(Boss[client]) || !IsClientInGame(Boss[client]) || !IsPlayerAlive(Boss[client]) || CheckRoundState()==FF2RoundState_RoundEnd)
 	{
 		return Plugin_Stop;
 	}
@@ -3593,7 +3593,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 public Action:MakeNotBoss(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
-	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==FF2RoundState_RoundEnd || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		return Plugin_Continue;
 	}
@@ -3628,7 +3628,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 
 public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 {
-	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==FF2RoundState_RoundEnd || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		return Plugin_Continue;
 	}
@@ -3959,7 +3959,7 @@ public Action:event_uber_deployed(Handle:event, const String:name[], bool:dontBr
 public Action:Timer_Uber(Handle:timer, any:medigunid)
 {
 	new medigun=EntRefToEntIndex(medigunid);
-	if(medigun && IsValidEntity(medigun) && CheckRoundState()==1)
+	if(medigun && IsValidEntity(medigun) && CheckRoundState()==FF2RoundState_RoundRunning)
 	{
 		new client=GetEntPropEnt(medigun, Prop_Send, "m_hOwnerEntity");
 		new Float:charge=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
@@ -4007,7 +4007,7 @@ public Action:Timer_ResetUberCharge(Handle:timer, any:medigunid)
 
 public Action:Command_GetHPCmd(client, args)
 {
-	if(!IsValidClient(client) || !Enabled || CheckRoundState()!=1)
+	if(!IsValidClient(client) || !Enabled || CheckRoundState()!=FF2RoundState_RoundRunning)
 	{
 		return Plugin_Continue;
 	}
@@ -4300,7 +4300,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
-		if(CheckRoundState()!=1)
+		if(CheckRoundState()!=FF2RoundState_RoundRunning)
 		{
 			if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
 			{
@@ -4319,7 +4319,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 		}
 	}
 
-	if(CheckRoundState()==1)
+	if(CheckRoundState()==FF2RoundState_RoundRunning)
 	{
 		CreateTimer(0.1, CheckAlivePlayers);
 	}
@@ -4340,7 +4340,7 @@ public Action:Timer_RegenPlayer(Handle:timer, any:userid)
 
 public Action:ClientTimer(Handle:timer)
 {
-	if(CheckRoundState()==2 || CheckRoundState()==-1 || !Enabled)
+	if(CheckRoundState()==FF2RoundState_RoundEnd || CheckRoundState()==FF2RoundState_Loading || !Enabled)
 	{
 		return Plugin_Stop;
 	}
@@ -4613,7 +4613,7 @@ public Action:BossTimer(Handle:timer)
 		return Plugin_Stop;
 	}
 
-	if(CheckRoundState()==2)
+	if(CheckRoundState()==FF2RoundState_RoundEnd)
 	{
 		return Plugin_Stop;
 	}
@@ -4856,7 +4856,7 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 
 public Action:OnCallForMedic(client, const String:command[], args)
 {
-	if(!Enabled || !IsPlayerAlive(client) || CheckRoundState()!=1 || !IsBoss(client) || args!=2)
+	if(!Enabled || !IsPlayerAlive(client) || CheckRoundState()!=FF2RoundState_RoundRunning || !IsBoss(client) || args!=2)
 	{
 		return Plugin_Continue;
 	}
@@ -4944,7 +4944,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 
 public Action:OnSuicide(client, const String:command[], args)
 {
-	if(Enabled && IsBoss(client) && CheckRoundState()<=0)
+	if(Enabled && IsBoss(client) && CheckRoundState()<=FF2RoundState_Setup)
 	{
 		return Plugin_Handled;
 	}
@@ -5008,7 +5008,7 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		ChangeClientTeam(client, team);
 	}
 
-	if(CheckRoundState()!=1 && !IsBoss(client) || !IsPlayerAlive(client))  //No point in showing the VGUI if they can't change teams
+	if(CheckRoundState()!=FF2RoundState_RoundRunning && !IsBoss(client) || !IsPlayerAlive(client))  //No point in showing the VGUI if they can't change teams
 	{
 		switch(team)
 		{
@@ -5027,7 +5027,7 @@ public Action:OnJoinTeam(client, const String:command[], args)
 
 public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBroadcast)
 {
-	if(CheckRoundState()!=1 || !Enabled || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+	if(CheckRoundState()!=FF2RoundState_RoundRunning || !Enabled || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
 		return;
 	}
@@ -5228,7 +5228,7 @@ public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadca
 
 public Action:CheckAlivePlayers(Handle:timer)
 {
-	if(CheckRoundState()==2)
+	if(CheckRoundState()==FF2RoundState_RoundEnd)
 	{
 		return Plugin_Continue;
 	}
@@ -5305,7 +5305,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 
 public Action:Timer_DrawGame(Handle:timer)
 {
-	if(BossHealth[0]<countdownHealth || CheckRoundState()!=1)
+	if(BossHealth[0]<countdownHealth || CheckRoundState()!=FF2RoundState_RoundRunning)
 	{
 		return Plugin_Stop;
 	}
@@ -5794,7 +5794,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Festive Sniper Rifle, Botkiller Sniper Rifles
 							{
-								if(CheckRoundState()!=2)
+								if(CheckRoundState()!=FF2RoundState_RoundEnd)
 								{
 									new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 									new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
@@ -5808,7 +5808,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 						}
 
-						if(index==752 && CheckRoundState()!=2)  //Hitman's Heatmaker
+						if(index==752 && CheckRoundState()!=FF2RoundState_RoundEnd)  //Hitman's Heatmaker
 						{
 							new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 							new Float:add=10+(chargelevel/10);
@@ -6363,7 +6363,7 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 
 public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
 {
-	if(Enabled && IsBoss(client) && CheckRoundState()==1 && !TF2_IsPlayerCritBuffed(client) && !BossCrits)
+	if(Enabled && IsBoss(client) && CheckRoundState()==FF2RoundState_RoundRunning && !TF2_IsPlayerCritBuffed(client) && !BossCrits)
 	{
 		result=false;
 		return Plugin_Changed;
@@ -8374,40 +8374,30 @@ public Action:VSH_OnGetRoundState(&result)
 
 public OnTakeDamagePost(client, attacker, inflictor, Float:damage, damagetype)
 {
-	if(IsBoss(client) && Enabled)
+	if(Enabled && IsBoss(client))
 	{
-		if(GetBossIndex(client)!=-1)
-		{
-			UpdateHealthBar();
-		}
+		UpdateHealthBar();
 	}
 }
 
 public OnEntityCreated(entity, const String:classname[])
 {
-	if(!GetConVarBool(cvarHealthBar))
+	if(GetConVarBool(cvarHealthBar))
 	{
-		return;
-	}
+		if(StrEqual(classname, HEALTHBAR_CLASS))
+		{
+			healthBar=entity;
+		}
 
-	if(StrEqual(classname, HEALTHBAR_CLASS))
-	{
-		healthBar=entity;
-	}
-
-	if(g_Monoculus==-1 && StrEqual(classname, MONOCULUS))
-	{
-		g_Monoculus=entity;
+		if(g_Monoculus==-1 && StrEqual(classname, MONOCULUS))
+		{
+			g_Monoculus=entity;
+		}
 	}
 }
 
 public OnEntityDestroyed(entity)
 {
-	if(entity==-1)
-	{
-		return;
-	}
-
 	if(entity==g_Monoculus)
 	{
 		g_Monoculus=FindEntityByClassname(-1, MONOCULUS);
@@ -8453,7 +8443,7 @@ FindHealthBar()
 
 public HealthbarEnableChanged(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	if(GetConVarBool(cvarHealthBar) && Enabled)
+	if(Enabled && GetConVarBool(cvarHealthBar))
 	{
 		UpdateHealthBar();
 	}
@@ -8465,7 +8455,7 @@ public HealthbarEnableChanged(Handle:convar, const String:oldValue[], const Stri
 
 UpdateHealthBar()
 {
-	if(!Enabled || !GetConVarBool(cvarHealthBar) || g_Monoculus!=-1 || CheckRoundState()==-1)
+	if(!Enabled || !GetConVarBool(cvarHealthBar) || g_Monoculus!=-1 || CheckRoundState()==FF2RoundState_Loading)
 	{
 		return;
 	}
