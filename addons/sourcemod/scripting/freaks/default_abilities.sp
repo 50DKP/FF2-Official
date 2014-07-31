@@ -192,7 +192,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 
 Rage_Stun(const String:ability_name[], client)
 {
-	new Float:bossPosition[3], Float:clientPosition;
+	new Float:bossPosition[3], Float:clientPosition[3];
 	new Float:duration=FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 1, 5.0);
 	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
 	new Float:distance=FF2_GetRageDist(client, this_plugin_name, ability_name);
