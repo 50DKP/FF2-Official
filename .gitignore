@@ -42,6 +42,7 @@ resource/
 scripts/
 *.*~
 *.bak
+*.bz2
 *.ztmp
 
 /*.bat
