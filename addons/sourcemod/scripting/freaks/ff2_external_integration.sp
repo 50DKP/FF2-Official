@@ -53,24 +53,23 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 {
 	if(convar==cvarGoomba)
 	{
-			goomba=bool:StringToInt(newValue);
-		}
-		else if(convar==cvarGoombaDamage)
-		{
-			goombaDamage=StringToFloat(newValue);
-		}
-		else if(convar==cvarGoombaRebound)
-		{
-			goombaRebound=StringToFloat(newValue);
-		}
-		else if(convar==cvarRTD)
-		{
-			rtd=bool:StringToInt(newValue);
-		}
-		else if(convar==cvarBossRTD)
-		{
-			canBossRTD=bool:StringToInt(newValue);
-		}
+		goomba=bool:StringToInt(newValue);
+	}
+	else if(convar==cvarGoombaDamage)
+	{
+		goombaDamage=StringToFloat(newValue);
+	}
+	else if(convar==cvarGoombaRebound)
+	{
+		goombaRebound=StringToFloat(newValue);
+	}
+	else if(convar==cvarRTD)
+	{
+		rtd=bool:StringToInt(newValue);
+	}
+	else if(convar==cvarBossRTD)
+	{
+		canBossRTD=bool:StringToInt(newValue);
 	}
 }
 
@@ -87,7 +86,7 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 {
 	if(goomba)
 	{
-		if(FF2_GetBossIndex(client)!=-1)
+		if(FF2_GetBossIndex(attacker)!=-1)
 		{
 			new Float:position[3];
 			GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
@@ -97,13 +96,12 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 			PrintCenterText(attacker, "You just goomba stomped somebody!");
 			return Plugin_Changed;
 		}
-		else if(FF2_GetBossIndex(client)!=-1)
+		else if(FF2_GetBossIndex(victim)!=-1)
 		{
 			damageMultiplier=goombaDamage;
 			JumpPower=goombaRebound;
 			PrintCenterText(victim, "You were just goomba stomped!");
 			PrintCenterText(attacker, "You just goomba stomped the boss!");
-			UpdateHealthBar();
 			return Plugin_Changed;
 		}
 	}
