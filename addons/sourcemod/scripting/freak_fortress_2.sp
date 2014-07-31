@@ -189,6 +189,14 @@ new changeGamemode=0;
 //new Handle:kvWeaponSpecials;
 new Handle:kvWeaponMods=INVALID_HANDLE;
 
+enum FF2RoundState
+{
+	FF2RoundState_Loading=-1,
+	FF2RoundState_Setup,
+	FF2RoundState_RoundRunning,
+	FF2RoundState_RoundEnd,
+}
+
 enum FF2WeaponSpecials
 {
 	FF2WeaponSpecial_PreventDamage,
@@ -8032,11 +8040,7 @@ public Native_SetBossCharge(Handle:plugin, numParams)
 
 public Native_GetRoundState(Handle:plugin, numParams)
 {
-	if(CheckRoundState()<=0)
-	{
-		return 0;
-	}
-	return CheckRoundState();
+	return CheckRoundState()==FF2RoundState_Setup ? FF2RoundState_Setup : CheckRoundState();
 }
 
 public Native_GetRageDist(Handle:plugin, numParams)
@@ -8414,28 +8418,28 @@ public OnEntityDestroyed(entity)
 	}
 }
 
-public CheckRoundState()
+public FF2RoundState:CheckRoundState()
 {
 	switch(GameRules_GetRoundState())
 	{
 		case RoundState_Init, RoundState_Pregame:
 		{
-			return -1;
+			return FF2RoundState_Loading;
 		}
 		case RoundState_StartGame, RoundState_Preround:
 		{
-			return 0;
+			return FF2RoundState_Setup;
 		}
 		case RoundState_RoundRunning, RoundState_Stalemate:  //Oh Valve.
 		{
-			return 1;
+			return FF2RoundState_RoundRunning;
 		}
 		default:
 		{
-			return 2;
+			return FF2RoundState_RoundEnd;
 		}
 	}
-	return -1;
+	return FF2RoundState_Loading;
 }
 
 FindHealthBar()
