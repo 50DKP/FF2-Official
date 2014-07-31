@@ -221,7 +221,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.0",
 	"1.10.0",
 	"1.10.0",
-	"1.10.0"
+	"1.10.0",
+	"1.10.1"
 };
 
 static const String:ff2versiondates[][]=
@@ -268,13 +269,23 @@ static const String:ff2versiondates[][]=
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
-	"July 26, 2014"		//1.10.0
+	"July 26, 2014",	//1.10.0
+	"July 31, 2014"		//1.10.1
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 43:  //1.10.1
+		{
+			DrawPanelText(panel, "1) Fixed rare bug where rage could go over 100% (Wliu)");
+			DrawPanelText(panel, "2) Botkiller heads are now removed properly (Wliu)");
+			DrawPanelText(panel, "3) [Server] Changed ff2_boss_teleporter's default value to 0 (Wliu)");
+			DrawPanelText(panel, "4) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
+			DrawPanelText(panel, "4) [Dev] Added a new native, FF2_GetAlivePlayers (Wliu/AliceTaylor)");
+			DrawPanelText(panel, "5) [Dev] Fixed a bug in the main include file (Wliu)");
+		}
 		case 42:  //1.10.0
 		{
 			DrawPanelText(panel, "1) Rage is now activated by calling for medic (Wliu)");
@@ -698,6 +709,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_SetQueuePoints", Native_SetQueuePoints);
 	CreateNative("FF2_GetClientGlow", Native_GetClientGlow);
 	CreateNative("FF2_SetClientGlow", Native_SetClientGlow);
+	CreateNative("FF2_GetAlivePlayers", Native_GetAlivePlayers);
 	CreateNative("FF2_Debug", Native_Debug);
 
 	PreAbility=CreateGlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);
@@ -8030,6 +8042,11 @@ public Native_GetClientGlow(Handle:plugin, numParams)
 public Native_SetClientGlow(Handle:plugin, numParams)
 {
 	SetClientGlow(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3));
+}
+
+public Native_GetAlivePlayers(Handle:plugin, numParams)
+{
+	return RedAlivePlayers;
 }
 
 public Native_Debug(Handle:plugin, numParams)

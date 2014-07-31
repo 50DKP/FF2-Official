@@ -331,10 +331,17 @@ native Float:FF2_GetClientGlow(client);
 native FF2_SetClientGlow(client, Float:time1, Float:time2=-1.0);
 
 /**
+ * Retrives the number of alive players left (not including bosses)
+ *
+ * @return			Number of non-boss players left alive
+ */
+native FF2_GetAlivePlayers();
+
+/**
  * Returns whether or not debug is enabled
  * @return			True if enabled, false otherwise
  */
-native Bool:FF2_Debug();
+native bool:FF2_Debug();
 
 /**
  * FF2_OnAbility:
