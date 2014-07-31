@@ -12,7 +12,7 @@ AskPluginLoad_VSH()
 	RegPluginLibrary("saxtonhale");
 }
 
-public bool:Native_VSHIsVSHMap(Handle:plugin, numParams)
+public Native_VSHIsVSHMap(Handle:plugin, numParams)
 {
 	return IsFF2Map();
 }
