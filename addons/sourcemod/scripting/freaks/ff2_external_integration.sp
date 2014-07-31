@@ -51,27 +51,25 @@ public OnPluginStart()
 
 public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	switch(convar)
+	if(convar==cvarGoomba)
 	{
-		case cvarGoomba:
-		{
 			goomba=bool:StringToInt(newValue);
 		}
-		case cvarGoombaDamage:
+		else if(convar==cvarGoombaDamage)
 		{
 			goombaDamage=StringToFloat(newValue);
 		}
-		case cvarGoombaRebound:
+		else if(convar==cvarGoombaRebound)
 		{
 			goombaRebound=StringToFloat(newValue);
 		}
-		case cvarRTD:
+		else if(convar==cvarRTD)
 		{
 			rtd=bool:StringToInt(newValue);
 		}
-		case cvarBossRTD:
+		else if(convar==cvarBossRTD)
 		{
-			rtd=bool:StringToInt(newValue);
+			canBossRTD=bool:StringToInt(newValue);
 		}
 	}
 }
