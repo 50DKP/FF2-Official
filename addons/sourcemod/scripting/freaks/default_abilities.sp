@@ -192,8 +192,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 
 Rage_Stun(const String:ability_name[], client)
 {
-	decl Float:bossPosition[3];
-	decl Float:clientPosition[3];
+	new Float:bossPosition[3], Float:clientPosition;
 	new Float:duration=FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 1, 5.0);
 	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
 	new Float:distance=FF2_GetRageDist(client, this_plugin_name, ability_name);
@@ -616,20 +615,7 @@ public Action:RemoveEntity(Handle:timer, any:entid)
 	new entity=EntRefToEntIndex(entid);
 	if(IsValidEdict(entity) && entity>MaxClients)
 	{
-			if(TF2_IsWearable(entity))
-			{
-				for(new client=1; client<MaxClients; client++)
-				{
-					if(IsValidEdict(client) && IsClientInGame(client))
-					{
-						TF2_RemoveWearable(client, entity);
-					}
-				}
-			}
-			else
-			{
-				AcceptEntityInput(entity, "Kill");
-			}
+		AcceptEntityInput(entity, "Kill");
 	}
 }
 
