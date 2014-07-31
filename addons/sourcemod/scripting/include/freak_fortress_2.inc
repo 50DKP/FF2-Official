@@ -437,10 +437,63 @@ stock Debug(String:buffer[], any:...)
 	}
 }
 
-/* TEMPORARY STUFF FOR TF2 WEARABLES; TO BE REMOVED AS SOON AS SOURCEMOD ADDS (full) WEARABLE SUPPORT */
+/* TEMPORARY STUFF FOR TF2 WEARABLES; TO BE REMOVED AS SOON AS SOURCEMOD ADDS WEARABLE SUPPORT */
+//Created by friagram
+new Handle:equipWearable=INVALID_HANDLE;
+new Handle:isWearable=INVALID_HANDLE;
+
+stock TF2_EquipWearable(client, wearable)
+{
+	if(equipWearable==INVALID_HANDLE)
+	{
+		new Handle:config=LoadGameConfigFile("equipwearable");
+		if(config==INVALID_HANDLE)
+		{
+			LogError("[FF2] EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
+			return;
+		}
+
+		StartPrepSDKCall(SDKCall_Player);
+		PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "equipwearable");
+		CloseHandle(config);
+		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+		if((equipWearable=EndPrepSDKCall())==INVALID_HANDLE)
+		{
+			LogError("[FF2] Couldn't load SDK function (CTFPlayer::EquipWearable). SDK call failed.");
+			return;
+		}
+	}
+	SDKCall(equipWearable, client, wearable);
+}
+
+stock TF2_IsWearable(wearable)
+{
+	if(isWearable==INVALID_HANDLE)
+	{
+		new Handle:config=LoadGameConfigFile("equipwearable");
+		if(config==INVALID_HANDLE)
+		{
+			LogError("[FF2] EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
+			return false;
+		}
+
+		StartPrepSDKCall(SDKCall_Entity);
+		PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "IsWearable");
+		CloseHandle(config);
+		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
+		if((isWearable=EndPrepSDKCall())==INVALID_HANDLE)
+		{
+			LogError("[FF2] Couldn't load SDK function (CTFPlayer::IsWearable). SDK call failed.");
+			return false;
+		}
+	}
+	return SDKCall(isWearable, wearable);
+}
+
 stock TF2_RemoveWeaponSlot2(client, slot)
 {
-	new weaponIndex, wearable;
+	decl wearable;
+	new weaponIndex;
 	while((weaponIndex=GetPlayerWeaponSlot(client, slot))!=-1)
 	{
 		wearable=GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearable");
@@ -462,14 +515,14 @@ stock TF2_RemoveAllWeapons2(client)
 }
 /* End temp wearable stocks */
 
-public SharedPlugin:__pl_FF2=
+public SharedPlugin:__pl_FF2 =
 {
-	name="freak_fortress_2",
-	file="freak_fortress_2.smx",
+	name = "freak_fortress_2",
+	file = "freak_fortress_2.smx",
 	#if defined REQUIRE_PLUGIN
-		required=1,
+		required = 1,
 	#else
-		required=0,
+		required = 0,
 	#endif
 };
 
