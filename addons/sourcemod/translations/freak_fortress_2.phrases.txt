@@ -2,7 +2,7 @@
 {
 	"More Players Needed"
 	{
-		"en"		"Freak Fortress 2 is currently disabled. More players are required."
+		"en"		"Freak Fortress 2 is currently disabled.  More players are required."
 	}
 	"Type ff2 to Open Menu"
 	{
@@ -11,7 +11,7 @@
 	"Wait for Health Value"
 	{
 		"#format"	"{1:i},{2:s}"
-		"en"		"You cannot check the boss' HP right now. Wait {1} more second(s).  Last known HP value was {2}."
+		"en"		"You cannot check the boss' health right now. Wait {1} more second(s).  The last known health value was {2}."
 	}
 	"Damage Dealt"
 	{
@@ -52,7 +52,7 @@
 	"Teleportation Charge"
 	{
 		"#format"	"{1:i}"
-		"en"		"Teleportation is {1} percent ready. When at 100 percent look up and stand up."
+		"en"		"Teleportation is {1} percent ready. When at 100 percent look up and stand up"
 	}
 	"Super Jump Charge"
 	{
@@ -62,12 +62,12 @@
 	"Teleportation Cooldown"
 	{
 		"#format"	"{1:i}"
-		"en"		"Teleportation will be available in {1} second(s)."
+		"en"		"Teleportation will be available in {1} second(s)"
 	}
 	"Super Jump Cooldown"
 	{
 		"#format"	"{1:i}"
-		"en"		"Super Jump will be available in {1} second(s)."
+		"en"		"Super Jump will be available in {1} second(s)"
 	}
 	"Scout Advice"
 	{
@@ -75,7 +75,7 @@
 	}
 	"Soldier Advice"
 	{
-		"en"		"The Battalion's Backup fills its meter when hit. Damage is heavily reduced to nearby players while active.\nThe Half-Zatoichi heals 35HP on hit, overheals to +25, and honorbound is removed on hit.\nBoots reduce fall damage and Mantreads create greater rocketjumps.\nAll guns minicrit Boss in midair (Direct Hit gets crits), and the Reserve Shooter has faster weapon switch and a small damage buff."
+		"en"		"The Battalion's Backup fills its meter when hit. Damage is heavily reduced to nearby players while active.\nThe Half-Zatoichi heals 35HP on hit, overheals to +25, and honorbound is removed on hit.\nBoots reduce fall damage and Mantreads create greater rocket jumps.\nAll guns minicrit Boss in midair (Direct Hit gets crits), and the Reserve Shooter has faster weapon switch and a small damage buff.\nAir Strike gains an extra shot every 200 damage."
 	}
 	"Pyro Advice"
 	{
@@ -83,7 +83,7 @@
 	}
 	"Demo Advice"
 	{
-		"en"		"The shields block one hit from the Boss.\nUsing the shields grants criticals.\nEyelander/reskins gain heads on hit.\nThe Half-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit."
+		"en"		"The shields block one hit from the Boss.\nUsing the shields grant criticals.\nEyelander gains heads on hit.\nThe Tide Turner recharges if you hit the boss.\nThe Half-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit."
 	}
 	"Heavy Advice"
 	{
@@ -95,19 +95,19 @@
 	}
 	"Medic Advice"
 	{
-		"en"		"Charge: Kritz+Uber. Charge starts at 40 percent.\nCharge lasts for 150 percent after activation.\nSyringe Gun: on hit: +5%% ubercharge, has Overdose's speed effect.\nCrossbow: Always crits, +150%% damage, +10%% uber on hit."
+		"en"		"Your medigun is a combination of the Medigun, Kritzkrieg, and Quick-Fix. Charge starts at 40 percent and lasts for 150 percent after activation.\nSyringe Gun: on hit: +5%% ubercharge, has Overdose's speed effect.\nCrossbow: Always crits, +150%% damage, +10%% uber on hit."
 	}
 	"Sniper Advice"
 	{
-		"en"		"All your weapons have critical hits.\nJarate removes 8%% rage.\nBack-equipped weapons are replaced with SMG.\nDefault Sniper Rifle causes Boss to glow. Glow time scales with charge."
+		"en"		"All of your weapons have critical hits.\nJarate removes 8%% rage.\nBack-equipped weapons are replaced with SMG.\nDefault Sniper Rifle causes Boss to glow. Glow time scales with charge."
 	}
 	"Spy Advice"
 	{
-		"en"		"Backstab does about 10 percent of Boss's max health.\nCloak and Dagger replaced with normal watch.\nAll revolvers minicrit.\nYour Eternal Reward/Wanga Prick backstabs will disguise you instantly.\nKunai backstabs will give you a health bonus."
+		"en"		"Backstab does about 10 percent of Boss's max health.\nThe Cloak and Dagger is replaced with the normal watch.\nAll revolvers minicrit.\nYour Eternal Reward/Wanga Prick backstabs will disguise you instantly.\nKunai backstabs will give you a health bonus."
 	}
 	"Melee Advice"
 	{
-		"en"		"All melee weapons (except the Spy knives) deal critical hits.\nUse /ff2 menu to disable this notifications."
+		"en"		"All melee weapons (except the Spy knives) deal critical hits.\nUse /ff2 menu to disable these notifications."
 	}
 	"Boss Queue"
 	{
@@ -123,7 +123,7 @@
 	}
 	"FF2 Help"
 	{
-		"en"		"Help about FF2 (/ff2help)."
+		"en"		"FF2 help (/ff2help)."
 	}
 	"What's New in FF2"
 	{
@@ -140,7 +140,7 @@
 	"New Version"
 	{
 		"#format"	"{1:s},{2:s}"
-		"en"		"What's new in v{1} from {2}"
+		"en"		"What's new in v{1} ({2})"
 	}
 	"FF2 Objective"
 	{
@@ -164,7 +164,7 @@
 	}
 	"Class Changes"
 	{
-		"en"		"Changes to my class in FF2 (/ff2classinfo)"
+		"en"		"My class changes (/ff2classinfo)"
 	}
 	"Total Damage Dealt"
 	{
@@ -187,17 +187,17 @@
 	"Boss Info"
 	{
 		"#format"	"{1:N},{2:s},{3:i},{4:s}"
-		"en"		"{1} became\n {2}\n with {3}{4} HP"
+		"en"		"{1} became\n {2}\n with {3}{4} health"
 	}
 	"Boss Current Health"
 	{
 		"#format"	"{1:s},{2:i},{3:i},{4:s}"
-		"en"		"Current {1}'s HP amount is {2} of {3}{4}"
+		"en"		"{1}'s current health is {2} of {3}{4}"
 	}
 	"Boss Win Final Health"
 	{
 		"#format"	"{1:s},{2:i},{3:i},{4:s}"
-		"en"		"{1} left with {2} of {3}{4} HP left."
+		"en"		"{1} left with {2} of {3}{4} health left."
 	}
 	"Vote for Character Set"
 	{
@@ -241,21 +241,21 @@
 	}
 	"First Round Arena"
 	{
-		"en"		"Waiting for players to finish loading. Gamemode will be arena for this round"  //Waiting for players to load and playing common arena for the first round
+		"en"		"Waiting for players to finish loading.  The gamemode will be arena for this round"
 	}
 	"FF2 Music"
 	{
 		"#format"	"{1:s}"
-		"en"		"Freak Fortress 2 Boss' music is {1} now"
+		"en"		"Freak Fortress 2 Boss's music is now {1}"
 	}
 	"FF2 Voice"
 	{
 		"#format"	"{1:s}"
-		"en"		"FF2 monologues: {1}."
+		"en"		"FF2 monologues are now {1}"
 	}
 	"FF2 Voice 2"
 	{
-		"en"		"Other sounds will be playing, but very quietly."
+		"en"		"Other sounds will be playing, but very quietly"
 	}
 	"Toggle Music"
 	{
@@ -272,7 +272,7 @@
 	"FF2 Class Info"
 	{
 		"#format"	"{1:s}"
-		"en"		"Info about class changes in FF2: {1}"
+		"en"		"Info about class changes in FF2 is now {1}"
 	}
 	"Last FF2 Update"
 	{
@@ -291,11 +291,11 @@
 	}
 	"Ability uses Reload"
 	{
-		"en"		"Press RELOAD button to use ability!"
+		"en"		"Press reload to use ability!"
 	}
 	"Ability uses Right Mouse"
 	{
-		"en"		"Press right mouse button to use ability!"
+		"en"		"Press right mouse to use ability!"
 	}
 	"Boss with Multiple Lives Left"
 	{
@@ -310,6 +310,6 @@
 	"Seeldier Rage Message"
 	{
 		"#format"	"{1:s}"
-		"en"		"Now you are {1}'s minion! Attack other team!"
+		"en"		"Now you are {1}'s minion! Go attack the other team!"
 	}
 }
