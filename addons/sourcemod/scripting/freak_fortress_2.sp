@@ -27,7 +27,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include <tf2items>
 #include <tf2attributes>
 #include <clientprefs>
-#include <recursivetries>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
@@ -6118,7 +6117,7 @@ ParseBosses()
 	g_hBossesTrie = CreateIterTrie(MAX_SUB_NAME);
 	if (g_hBossesTrie == INVALID_HANDLE)
 		SetFailState("Unable to create a new trie!");
-	decl String:path[PLATFORM_MAX_PATH], String:strBuffer[MAX_BOSS_NAME];
+	decl String:path[PLATFORM_MAX_PATH];//, String:strBuffer[MAX_BOSS_NAME];
 	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "configs/freak_fortress_2/ff2_boss_packs.cfg");
 	new Handle:parser = CreateKeyValues("Freak Fortress 2 Packs Parser");
 	if (!FileToKeyValues(parser, path))
@@ -6126,35 +6125,27 @@ ParseBosses()
 		CloseHandle(parser);
 		SetFailState("Unable to find %s, please make sure one exists.", path);
 	}
-	KvGetSectionName(parser, strBuffer, sizeof(strBuffer));
-	if (!StrEqual(strBuffer, "Freak Fortress 2 Packs"))
-		SetFailState("Boss packs config file is not correct...");
 	decl String:packName[MAX_BOSS_NAME];
 	if (!StrEqual(g_sNBossPack, ""))
 	{
 		strcopy(g_sCBossPack, MAX_BOSS_NAME, g_sNBossPack);
 		strcopy(g_sNBossPack, MAX_BOSS_NAME, "");
 	}
-	if (KvGotoFirstSubKey(parser, false))
+	if (StrEqual(g_sCBossPack, ""))
+		KvGetSectionName(parser, g_sCBossPack, MAX_BOSS_NAME);
+	//If below doesn't work with topnodes... blame Wliu. SourceMod's wiki does not have anything in it about topnodes and tf2items's stock plugin does a topnode check then iterate what's in the topnode.
+	do
 	{
-		if (StrEqual(g_sCBossPack, ""))
-			KvGetSectionName(parser, g_sCBossPack, MAX_BOSS_NAME);
-		do
-		{
-			KvGetSectionName(parser, packName, MAX_BOSS_NAME);
-			Debug("Parsing a pack called: %s", packName);
-			Debug("{");
-			new Handle:packHandle = InsertNewChildIterTrie(g_hBossesTrie, packName, MAX_BOSS_NAME);
-			if (packHandle == INVALID_HANDLE)
-				SetFailState("%T", "FF2 Pack Exist", LANG_SERVER, packName);
-			ParseBossNames(parser, packHandle);
-			Debug("}");
-		}
-		while (KvGotoNextKey(parser, false));
-		KvGoBack(parser);
+		KvGetSectionName(parser, packName, MAX_BOSS_NAME);
+		Debug("Parsing a pack called: %s", packName);
+		Debug("{");
+		new Handle:packHandle = InsertNewChildIterTrie(g_hBossesTrie, packName, MAX_BOSS_NAME);
+		if (packHandle == INVALID_HANDLE)
+			SetFailState("%T", "FF2 Pack Exist", LANG_SERVER, packName);
+		ParseBossNames(parser, packHandle);
+		Debug("}");
 	}
-	else
-		SetFailState("Unable to go to first subkey of bosspacks.");
+	while (KvGotoNextKey(parser, false));
 	CloseHandle(parser);
 	Debug("}");
 }
@@ -9351,6 +9342,92 @@ stock bool:InsertStringIntoTrie(Handle:trie, const String:entry[], const String:
 		return false;
 	PushArrayString(keyNames, entry);
 	return true;
+}
+
+stock bool:InsertIntoTrie(Handle:trie, const String:entry[], _:item)
+{
+	new Handle:keyNames;
+	if (!GetTrieValue(trie, "keyNames", keyNames))
+		return false;
+	if (keyNames == INVALID_HANDLE)
+		return false;
+	if (!SetTrieValue(trie, entry, item, false))
+		return false;
+	PushArrayString(keyNames, entry);
+	return true;
+}
+
+stock Handle:CreateIterTrie(maxBlockSize)
+{
+	new Handle:trie = CreateTrie();
+	new Handle:keyNames = CreateArray(maxBlockSize);
+	if (!SetTrieValue(trie, "keyNames", keyNames))
+		return INVALID_HANDLE;
+	return trie;
+}
+
+stock Handle:InsertNewChildTrie(Handle:parent, const String:entry[])
+{
+	new Handle:trie = CreateTrie();
+	if (!InsertIntoTrie(parent, entry, _:trie))
+		return INVALID_HANDLE;
+	return trie;
+}
+
+stock Handle:InsertNewChildIterTrie(Handle:parent, const String:entry[], maxBlockSize)
+{
+	new Handle:trie = CreateIterTrie(maxBlockSize);
+	if (trie == INVALID_HANDLE)
+		return INVALID_HANDLE;
+	if (!InsertIntoTrie(parent, entry, _:trie))
+		return INVALID_HANDLE;
+	return trie;
+}
+
+stock bool:CheckForChildren(Handle:trieCheck)
+{
+    new bool:hasC, bool:forceFalse, Handle:keyNames;
+    GetTrieValue(trieCheck, "forceNoChild", forceFalse);
+    if (GetTrieValue(trieCheck, "keyNames", keyNames))
+    {
+        if (keyNames == INVALID_HANDLE)
+            SetFailState("keyNames array I found is invalid. HOW COULD THIS OF HAPPEN!");
+        if (GetArraySize(keyNames) == 0 || forceFalse)
+        {
+            CloseHandle(keyNames);
+            hasC = false;
+        }
+        else
+            hasC = true;
+    }
+    return hasC;
+}
+
+stock FreeChildren(Handle:trieCheck, MAX_KEYNAME_LENGTH)
+{
+	new Handle:keyNames, bool:isSpecial;
+	decl String:strBuffer[MAX_KEYNAME_LENGTH];
+	if (!GetTrieValue(trieCheck, "keyNames", keyNames))
+		SetFailState("Can't get keyNames array. HOW COULD THIS OF HAPPEN!");
+	if (keyNames == INVALID_HANDLE)
+		SetFailState("keyNames array I found is invalid. HOW COULD THIS OF HAPPEN!");
+	GetTrieValue(trieCheck, "isSpecial", isSpecial);
+	if ((GetArraySize(keyNames) == 0 || GetTrieSize(trieCheck)-1 != GetArraySize(keyNames)) && !isSpecial)
+		SetFailState("keyNames array has nothing or missing items. HOW COULD THIS OF HAPPEN!");
+	for (new i = 0; i < GetArraySize(keyNames); i++)
+	{
+		GetArrayString(keyNames, i, strBuffer, MAX_KEYNAME_LENGTH);
+		new Handle:tempHandle;
+		if (!GetTrieValue(trieCheck, strBuffer, tempHandle))
+			SetFailState("WERE MISSING SOMETHING!");
+		if (CheckForChildren(tempHandle))
+			FreeChildren(tempHandle, MAX_KEYNAME_LENGTH);
+		else
+			CloseHandle(tempHandle);
+	}
+	CloseHandle(keyNames);
+	CloseHandle(trieCheck);
+	trieCheck = INVALID_HANDLE;
 }
 
 #include <freak_fortress_2_vsh_feedback>

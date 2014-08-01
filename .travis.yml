@@ -24,8 +24,6 @@ before_script:
     - mv morecolors.inc include/
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508"
     - mv 'attachment.php?attachmentid=116849&d=1377667508' include/tf2attributes.inc
-    - wget "https://forums.alliedmods.net/attachment.php?attachmentid=136466&d=1406891195" -O recursivetries.inc
-    - mv recursivetries.inc ./include
     - chmod +x spcomp
     - mkdir compiled compiled/freaks
 script: ./compile.sh freak_fortress_2.sp freaks/*.sp
