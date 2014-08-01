@@ -1393,6 +1393,7 @@ public LoadCharacter(const String:character[])
 		return;
 	}
 	BossKV[Specials]=CreateKeyValues("character");
+	KvSetEscapeSequences(BossKV[Specials], true);
 	FileToKeyValues(BossKV[Specials], config);
 
 	new version=KvGetNum(BossKV[Specials], "version", 1);
@@ -7487,16 +7488,22 @@ public Action:HelpPanel2(client)
 public Action:HelpPanelBoss(index)
 {
 	decl String:text[512], String:lang[20];
-	GetLanguageInfo(GetClientLanguage(Boss[index]),lang,8,text,8);
-	Format(lang,20,"description_%s",lang);
+	GetLanguageInfo(GetClientLanguage(Boss[index]), lang, 8, text, 8);
+	Format(lang, sizeof(lang), "description_%s", lang);
 	KvRewind(BossKV[Special[index]]);
-	KvGetString(BossKV[Special[index]], lang, text, 512);
+	KvGetString(BossKV[Special[index]], lang, text, sizeof(text));
 	if(!text[0])
-		return Plugin_Continue;
-	ReplaceString(text,512,"\\n","\n");
+	{
+		KvGetString(BossKV[Special[index]], "description_en", text, sizeof(text));  //Default to if client's language isn't available
+		if(!text[0])
+		{
+			return Plugin_Continue;  //If English isn't available either, then exit
+		}
+	}
+
 	new Handle:panel=CreatePanel();
-	SetPanelTitle(panel,text);
-	DrawPanelItem(panel,"Exit");
+	SetPanelTitle(panel, text);
+	DrawPanelItem(panel, "Exit");
 	SendPanelToClient(panel, Boss[index], HintPanelH, 20);
 	CloseHandle(panel);
 	return Plugin_Continue;
