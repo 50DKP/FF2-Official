@@ -8426,6 +8426,11 @@ public OnEntityCreated(entity, const String:classname[])
 			g_Monoculus=entity;
 		}
 	}
+
+	if(StrEqual(classname, "tf_logic_koth"))
+	{
+		SDKHook(entity, SDKHook_Spawn, Spawn_Koth);
+	}
 }
 
 public OnEntityDestroyed(entity)
@@ -8438,6 +8443,12 @@ public OnEntityDestroyed(entity)
 			g_Monoculus=FindEntityByClassname(entity, MONOCULUS);
 		}
 	}
+}
+
+public Action:Spawn_Koth(entity)
+{
+	DispatchSpawn(CreateEntityByClassname("tf_logic_arena"));
+	return Plugin_Stop;  //Stop koth logic from being created
 }
 
 public FF2RoundState:CheckRoundState()
