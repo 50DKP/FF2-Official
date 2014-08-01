@@ -208,7 +208,7 @@
 		"#format"	"{1:i}"
 		"en"		"You have {1} queue point(s)."
 	}
-	"Points Earned"
+	"Points Added"
 	{
 		"#format"	"{1:i}"
 		"en"		"You earned {1} queue point(s)."
