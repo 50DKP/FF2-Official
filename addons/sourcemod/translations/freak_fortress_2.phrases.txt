@@ -208,11 +208,6 @@
 		"#format"	"{1:i}"
 		"en"		"You have {1} queue point(s)."
 	}
-	"Points Added"
-	{
-		"#format"	"{1:i}"
-		"en"		"You earned {1} queue point(s)."
-	}
 	"Reset Queue Points"
 	{
 		"en"		"Set to 0"
@@ -311,5 +306,10 @@
 	{
 		"#format"	"{1:s},{2:i}"
 		"en"		"{1} lost 1 life! There is 1 more!"
+	}
+	"Seeldier Rage Message"
+	{
+		"#format"	"{1:s}"
+		"en"		"Now you are {1}'s minion! Attack other team!"
 	}
 }

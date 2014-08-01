@@ -50,7 +50,7 @@ public OnPluginStart2()
 	HookEvent("teamplay_round_start", event_round_start);
 	HookEvent("teamplay_round_win", event_round_end);
 	HookEvent("player_death", event_player_death);
-	LoadTranslations("ff2_1st_set.phrases");
+	LoadTranslations("freak_fortress_2.phrases");
 
 	cvarTimeScale=FindConVar("host_timescale");
 	cvarCheats=FindConVar("sv_cheats");
