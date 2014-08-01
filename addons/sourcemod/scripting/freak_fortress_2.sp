@@ -8454,7 +8454,7 @@ public OnEntityDestroyed(entity)
 
 public Action:Spawn_Koth(entity)
 {
-	DispatchSpawn(CreateEntityByClassname("tf_logic_arena"));
+	DispatchSpawn(CreateEntityByName("tf_logic_arena"));
 	return Plugin_Stop;  //Stop koth logic from being created
 }
 
