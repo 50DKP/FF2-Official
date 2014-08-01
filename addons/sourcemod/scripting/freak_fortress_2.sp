@@ -6985,16 +6985,16 @@ public Action:QueuePanelCmd(client, Args)
 		return Plugin_Continue;
 	new Handle:panel=CreatePanel();
 	SetGlobalTransTarget(client);
-	decl String:s[512];
-	Format(s,512,"%t","Boss Queue");
+	decl String:text[512];
+	Format(text,512,"%t","Boss Queue");
 	new i,tBoss,bool:added[MAXPLAYERS+1];
-	SetPanelTitle(panel, s);
+	SetPanelTitle(panel, text);
 	for(new j; j<=MaxClients; j++)
 		if((tBoss=Boss[i]) && IsValidEdict(tBoss) && IsClientInGame(tBoss))
 		{
 			added[tBoss]=true;
-			Format(s,64,"%N-%i",tBoss,GetClientQueuePoints(tBoss));
-			DrawPanelItem(panel,s);
+			Format(text,64,"%N-%i",tBoss,GetClientQueuePoints(tBoss));
+			DrawPanelItem(panel,text);
 			i++;
 		}
 	DrawPanelText(panel,"---");
@@ -7006,14 +7006,14 @@ public Action:QueuePanelCmd(client, Args)
 		{
 			if(client==tBoss)
 			{
-				Format(s,64,"%N-%i",tBoss,GetClientQueuePoints(tBoss));
-				DrawPanelText(panel,s);
+				Format(text,64,"%N-%i",tBoss,GetClientQueuePoints(tBoss));
+				DrawPanelText(panel,text);
 				i--;
 			}
 			else
 			{
-				Format(s,64,"%N-%i",tBoss,GetClientQueuePoints(tBoss));
-				DrawPanelItem(panel,s);
+				Format(text,64,"%N-%i",tBoss,GetClientQueuePoints(tBoss));
+				DrawPanelItem(panel,text);
 			}
 			added[tBoss]=true;
 			i++;
@@ -7023,9 +7023,9 @@ public Action:QueuePanelCmd(client, Args)
 	while(i<9 && pingas<100);
 	for(; i<9; i++)
 		DrawPanelItem(panel,"");
-	Format(s,64,"%t (%t)","Your Queue Points",GetClientQueuePoints(client),"Reset Queue Points");
-	DrawPanelItem(panel,s);
-	SendPanelToClient(panel, client, QueuePanelH, 9001);
+	Format(text,64,"%t (%t)","Your Queue Points",GetClientQueuePoints(client),"Reset Queue Points");
+	DrawPanelItem(panel,text);
+	SendPanelToClient(panel, client, QueuePanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Handled;
 }
@@ -7194,7 +7194,42 @@ DoOverlay(client, const String:overlay[])
 	SetCommandFlags("r_screenoverlay", flags);
 }
 
-public FF2PanelH(Handle:menu, MenuAction:action, client, selection)
+public Action:FF2Panel(client, args)
+{
+	if(!Enabled2 || !IsValidClient(client, false))
+	{
+		return Plugin_Continue;
+	}
+
+	SetEntPropFloat(client, Prop_Send, "m_flCloakMeter", 0.8);  //Wat
+
+	new Handle:panel=CreatePanel();
+	decl String:text[512];
+	SetGlobalTransTarget(client);
+	Format(text, sizeof(text), "%t", "What's Up");
+	SetPanelTitle(panel, text);
+	Format(text, sizeof(text), "%t", "FF2 Help");
+	DrawPanelItem(panel, text);
+	Format(text, sizeof(text), "%t", "Class Changes");
+	DrawPanelItem(panel, text);
+	Format(text, sizeof(text), "%t", "What's New in FF2");
+	DrawPanelItem(panel, text);
+	Format(text, sizeof(text), "%t", "View Queue Points");
+	DrawPanelItem(panel, text);
+	Format(text, sizeof(text), "%t", "Toggle Music");
+	DrawPanelItem(panel, text);
+	Format(text, sizeof(text), "%t", "Toggle Monologue");
+	DrawPanelItem(panel, text);
+	Format(text, sizeof(text), "%t", "Toggle Class Changes");
+	DrawPanelItem(panel, text);
+	Format(text, sizeof(text), "%t", "Exit Menu");
+	DrawPanelItem(panel, text);
+	SendPanelToClient(panel, client, Handler_FF2Panel, MENU_TIME_FOREVER);
+	CloseHandle(panel);
+	return Plugin_Handled;
+}
+
+public Handler_FF2Panel(Handle:menu, MenuAction:action, client, selection)
 {
 	if(action==MenuAction_Select)
 	{
@@ -7234,37 +7269,6 @@ public FF2PanelH(Handle:menu, MenuAction:action, client, selection)
 			}
 		}
 	}
-}
-
-public Action:FF2Panel(client, args)
-{
-	if(!Enabled2 || !IsValidClient(client, false))
-		return Plugin_Continue;
-	SetEntPropFloat(client, Prop_Send, "m_flCloakMeter", 0.8);
-	new Handle:panel=CreatePanel();
-	decl String:s[256];
-	SetGlobalTransTarget(client);
-	Format(s,256,"%t","What's Up");
-	SetPanelTitle(panel, s);
-	Format(s,256,"%t","FF2 Help");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","Class Changes");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","What's New in FF2");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","View Queue Points");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","Toggle Music");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","Toggle Monologue");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","Toggle Class Changes");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","Exit Menu");
-	DrawPanelItem(panel, s);
-	SendPanelToClient(panel, client, FF2PanelH, 9001);
-	CloseHandle(panel);
-	return Plugin_Handled;
 }
 
 public NewPanelH(Handle:menu, MenuAction:action, param1, param2)
@@ -7409,44 +7413,72 @@ public Action:HelpPanel2Cmd(client, args)
 public Action:HelpPanel2(client)
 {
 	if(!Enabled)
-		return Plugin_Continue;
-	new index=GetBossIndex(client);
-	if(index!=-1)
 	{
-		HelpPanelBoss(index);
 		return Plugin_Continue;
 	}
-	decl String:s[512];
+
+	new boss=GetBossIndex(client);
+	if(boss!=-1)
+	{
+		HelpPanelBoss(boss);
+		return Plugin_Continue;
+	}
+
+	decl String:text[1024];
 	new TFClassType:class=TF2_GetPlayerClass(client);
 	SetGlobalTransTarget(client);
 	switch(class)
 	{
 		case TFClass_Scout:
-			Format(s,512,"%t","Scout Advice");
+		{
+			Format(text, sizeof(text), "%t", "Scout Advice");
+		}
 		case TFClass_Soldier:
-			Format(s,512,"%t","Soldier Advice");
+		{
+			Format(text, sizeof(text), "%t", "Soldier Advice");
+		}
 		case TFClass_Pyro:
-			Format(s,512,"%t","Pyro Advice");
+		{
+			Format(text, sizeof(text), "%t", "Pyro Advice");
+		}
 		case TFClass_DemoMan:
-			Format(s,512,"%t","Demo Advice");
+		{
+			Format(text, sizeof(text), "%t", "Demo Advice");
+		}
 		case TFClass_Heavy:
-			Format(s,512,"%t","Heavy Advice");
+		{
+			Format(text, sizeof(text), "%t", "Heavy Advice");
+		}
 		case TFClass_Engineer:
-			Format(s,512,"%t","Engineer Advice");
+		{
+			Format(text, sizeof(text), "%t", "Engineer Advice");
+		}
 		case TFClass_Medic:
-			Format(s,512,"%t","Medic Advice");
+		{
+			Format(text, sizeof(text), "%t", "Medic Advice");
+		}
 		case TFClass_Sniper:
-			Format(s,512,"%t","Sniper Advice");
+		{
+			Format(text, sizeof(text), "%t", "Sniper Advice");
+		}
 		case TFClass_Spy:
-			Format(s,512,"%t","Spy Advice");
+		{
+			Format(text, sizeof(text), "%t", "Spy Advice");
+		}
 		default:
-			Format(s, 512, "");
+		{
+			Format(text, sizeof(text), "");
+		}
 	}
-	new Handle:panel=CreatePanel();
+
 	if(class!=TFClass_Sniper)
-		Format(s,512,"%t\n%s","Melee Advice",s);
-	SetPanelTitle(panel,s);
-	DrawPanelItem(panel,"Exit");
+	{
+		Format(text, sizeof(text), "%t\n%s", "Melee Advice", text);
+	}
+
+	new Handle:panel=CreatePanel();
+	SetPanelTitle(panel, text);
+	DrawPanelItem(panel, "Exit");
 	SendPanelToClient(panel, client, HintPanelH, 20);
 	CloseHandle(panel);
 	return Plugin_Continue;
@@ -7454,16 +7486,16 @@ public Action:HelpPanel2(client)
 
 public Action:HelpPanelBoss(index)
 {
-	decl String:s[512], String:lang[20];
-	GetLanguageInfo(GetClientLanguage(Boss[index]),lang,8,s,8);
+	decl String:text[512], String:lang[20];
+	GetLanguageInfo(GetClientLanguage(Boss[index]),lang,8,text,8);
 	Format(lang,20,"description_%s",lang);
 	KvRewind(BossKV[Special[index]]);
-	KvGetString(BossKV[Special[index]], lang, s, 512);
-	if(!s[0])
+	KvGetString(BossKV[Special[index]], lang, text, 512);
+	if(!text[0])
 		return Plugin_Continue;
-	ReplaceString(s,512,"\\n","\n");
+	ReplaceString(text,512,"\\n","\n");
 	new Handle:panel=CreatePanel();
-	SetPanelTitle(panel,s);
+	SetPanelTitle(panel,text);
 	DrawPanelItem(panel,"Exit");
 	SendPanelToClient(panel, Boss[index], HintPanelH, 20);
 	CloseHandle(panel);

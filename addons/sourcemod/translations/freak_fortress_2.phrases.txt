@@ -75,7 +75,7 @@
 	}
 	"Soldier Advice"
 	{
-		"en"		"The Battalion's Backup fills its meter when hit. Damage is heavily reduced to nearby players while active.\nThe Half-Zatoichi heals 35HP on hit, overheals to +25, and honorbound is removed on hit.\nBoots reduce fall damage and Mantreads create greater rocket jumps.\nAll guns minicrit Boss in midair (Direct Hit gets crits), and the Reserve Shooter has faster weapon switch and a small damage buff.\nAir Strike gains an extra shot every 200 damage."
+		"en"		"The Battalion's Backup fills its meter when hit.  Damage is heavily reduced to nearby players while active.\nThe Half-Zatoichi heals 35HP on hit, overheals to +25, and honorbound is removed on hit.\nBoots reduce fall damage and Mantreads create greater rocket jumps.\nAll guns minicrit Boss in midair (Direct Hit gets crits), and the Reserve Shooter has faster weapon switch and a small damage buff.\nAir Strike gains an extra shot every 200 damage."
 	}
 	"Pyro Advice"
 	{
