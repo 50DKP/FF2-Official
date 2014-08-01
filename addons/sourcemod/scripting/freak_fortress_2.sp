@@ -27,6 +27,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include <tf2items>
 #include <tf2attributes>
 #include <clientprefs>
+#include <recursivetries>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
@@ -59,6 +60,15 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define BOSS_CONFIG "characters.cfg"
 #define DOORS_CONFIG "doors.cfg"
 #define WEAPONS_CONFIG "weapons.cfg"
+
+#define MAX_SUB_NAME 256
+#define MAX_ABILITY_NAME 256
+#define MAX_ABILITY_DESC 2048
+#define MAX_STRING_ARG_LENGTH 256
+#define MAX_ARG_DESC 2048
+#define MAX_BOSS_NAME 124
+#define MAX_TOP_KEYNAMES		17
+#define MAX_CLASSNAME_LENGTH	64
 
 #define CHANGELOG "data/ff2_changelog.txt"
 
@@ -186,8 +196,68 @@ static bool:executed2=false;
 
 new changeGamemode=0;
 
+new String:g_sCBossPack[MAX_BOSS_NAME];
+new String:g_sNBossPack[MAX_BOSS_NAME];
+new Handle:g_hBossesTrie;
+new bool:g_bBossesParsed;
+
 //new Handle:kvWeaponSpecials;
 new Handle:kvWeaponMods=INVALID_HANDLE;
+
+enum FF2_TopTypes
+{
+	FF2_TopType_Int=0,
+	FF2_TopType_Float=1,
+	FF2_TopType_String=2,
+	FF2_TopType_Section=3,
+};
+enum FF2_TopInfos
+{
+	String:Name[MAX_BOSS_NAME],
+	FF2_TopTypes:Type,
+	DefIntValue,
+	Float:DefFloatValue,
+	String:DefStringValue[MAX_ABILITY_DESC],
+};
+
+new bossTopInfo[MAX_TOP_KEYNAMES][FF2_TopInfos] =
+{
+	{ "name", FF2_TopType_String, 0, 0.0, "Example Boss" },
+	{ "class", FF2_TopType_Int, 9, 0.0, "" },
+	{ "model", FF2_TopType_String, 0, 0.0, "models/player/engineer.mdl" },
+	{ "ragedist", FF2_TopType_Float, 0, 400.0, "" },
+	{ "descriptions", FF2_TopType_Section, 0, 0.0, "" },
+	{ "health_formula", FF2_TopType_String, 0, 0.0, "((400+n)*n)^1.13" },
+	{ "lives", FF2_TopType_Int, 1, 0.0, "" },
+	{ "speed", FF2_TopType_Float, 0, 520.0, "" },
+	{ "sound_block_voice", FF2_TopType_Int, 1, 0.0, "" },
+	{ "companions", FF2_TopType_Section, 0, 0.0, "" },
+	{ "damage_before_rage", FF2_TopType_Int, 1000, 0.0, "" },
+	{ "no_single_rage", FF2_TopType_Int, 1, 0.0, "" },
+	{ "blocked", FF2_TopType_Int, 0, 0.0, "" },
+	{ "weapons", FF2_TopType_Section, 0, 0.0, "" },
+	{ "abilities", FF2_TopType_Section, 0, 0.0, "" },
+	{ "sounds", FF2_TopType_Section, 0, 0.0, "" },
+	{ "downloads", FF2_TopType_Section, 0, 0.0, "" }
+};
+new String:soundTable[15][MAX_BOSS_NAME] =
+{
+	"begin",
+	"killing_spree",
+	"win",
+	"lost",
+	"damaged",
+	"kill",
+	"teleport",
+	"class_specific",
+	"lastman",
+	"buildables",
+	"catch_phrase",
+	"stabbed",
+	"abilities",
+	"bgm",
+	"precache"
+};
 
 enum FF2RoundState
 {
@@ -789,7 +859,7 @@ public OnPluginStart()
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", FCVAR_PLUGIN, true, 0.0, true, 1.0);*/
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "1", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarDebug=CreateConVar("Debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
@@ -1018,6 +1088,7 @@ public OnConfigsExecuted()
 
 public OnMapStart()
 {
+	ParseBosses();
 	HPTime=0.0;
 	MusicTimer=INVALID_HANDLE;
 	RoundCounter=0;
@@ -1042,6 +1113,7 @@ public OnMapStart()
 
 public OnMapEnd()
 {
+	DestroyBosses();
 	if(Enabled2 || Enabled)
 	{
 		SetConVarInt(FindConVar("tf_arena_use_queue"), tf_arena_use_queue);
@@ -5375,6 +5447,732 @@ public Action:Timer_DrawGame(Handle:timer)
 	return Plugin_Continue;
 }
 
+HandleDownloadAndPrecache()
+{
+	new String:extensions[][]={".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd"};
+	Debug("Adding files to download table and precaching.");
+	Debug("{");
+	AddFileToDownloadsTable("sound/saxton_hale/9000.wav");
+	PrecacheSound("saxton_hale/9000.wav");
+	PrecacheSound("vo/announcer_am_capincite01.wav");
+	PrecacheSound("vo/announcer_am_capincite03.wav");
+	PrecacheSound("vo/announcer_am_capenabled01.wav");
+	PrecacheSound("vo/announcer_am_capenabled02.wav");
+	PrecacheSound("vo/announcer_am_capenabled03.wav");
+	PrecacheSound("vo/announcer_am_capenabled04.wav");
+	PrecacheSound("weapons/barret_arm_zap.wav");
+	PrecacheSound("vo/announcer_ends_2min.wav");
+	new Handle:packTrie, Handle:keyNames, Handle:bossHandle, Handle:tempHandle, Handle:tempH, Handle:tempKeys;
+	if (!GetTrieValue(g_hBossesTrie, g_sCBossPack, packTrie))
+		SetFailState("Unable to get current pack trie!");
+	if (packTrie == INVALID_HANDLE)
+		SetFailState("Invalid pack handle!");
+	if (!GetTrieValue(packTrie, "keyNames", keyNames))
+		SetFailState("Unable to get boss list!");
+	if (keyNames == INVALID_HANDLE)
+		SetFailState("Boss list is an invalid handle!");
+	decl String:bossName[MAX_BOSS_NAME], String:soundPath[PLATFORM_MAX_PATH], String:soundKey[10], String:temp[10];
+	for (new i = 0; i < GetArraySize(keyNames); i++)
+	{
+		GetArrayString(keyNames, i, bossName, MAX_BOSS_NAME);
+		if (!GetTrieValue(packTrie, bossName, bossHandle))
+			SetFailState("Can't retrieve %s's trie handle!", bossName);
+		if (!GetTrieValue(bossHandle, bossTopInfo[15][Name], tempHandle))
+			SetFailState("Can't retrieve %s's %s trie!", bossName, bossTopInfo[15][Name]);
+		for (new x = 0; x < 15; x++)
+		{
+			if (GetTrieValue(tempHandle, soundTable[x], tempH))
+			{
+				if (StrEqual(soundTable[x], "class_specific"))
+				{
+					for (new xx = 1; xx <= 9; xx++)
+					{
+						new Handle:cHandle;
+						Format(temp, sizeof(temp), "%d", xx);
+						if (GetTrieValue(tempH, temp, cHandle))
+						{
+							if (!GetTrieValue(cHandle, "keyNames", tempKeys))
+								SetFailState("Can't retrieve %s's keyNames for class #%d!", soundTable[x], xx);
+							for (new z = 0; z < GetArraySize(tempKeys); z++)
+							{
+								GetArrayString(tempKeys, z, soundKey, sizeof(soundKey));
+								if (!GetTrieString(cHandle, soundKey, soundPath, PLATFORM_MAX_PATH))
+									SetFailState("Entry %s not found in %s for class #%d", soundKey, soundTable[x], xx);
+								decl String:downPath[PLATFORM_MAX_PATH];
+								Format(downPath, PLATFORM_MAX_PATH, "sound/%s", soundPath);
+								PrecacheSound(soundPath);
+								AddFileToDownloadsTable(downPath);
+								Debug("Handled sound file path: %s", soundPath);
+							}
+						}
+					}
+				}
+				else if (StrEqual(soundTable[x], "abilities"))
+				{
+					for (new FF2_A0Mode:xx = FF2_A0Mode_Kill; xx <= FF2_A0Mode_Stabbed; xx++)
+					{
+						new Handle:cHandle;
+						Format(temp, sizeof(temp), "%d", xx);
+						if (GetTrieValue(tempH, temp, cHandle))
+						{
+							if (!GetTrieValue(cHandle, "keyNames", tempKeys))
+								SetFailState("Can't retrieve %s's keyNames for arg 0 val of %d!", soundTable[x], xx);
+							for (new z = 0; z < GetArraySize(tempKeys); z++)
+							{
+								GetArrayString(tempKeys, z, soundKey, sizeof(soundKey));
+								if (!GetTrieString(cHandle, soundKey, soundPath, PLATFORM_MAX_PATH))
+									SetFailState("Entry %s not found in %s for arg 0 val of %d", soundKey, soundTable[x], xx);
+								decl String:downPath[PLATFORM_MAX_PATH];
+								Format(downPath, PLATFORM_MAX_PATH, "sound/%s", soundPath);
+								PrecacheSound(soundPath);
+								AddFileToDownloadsTable(downPath);
+								Debug("Handled sound file path: %s", soundPath);
+							}
+						}
+					}
+				}
+				else if (StrEqual(soundTable[x], "bgm"))
+				{
+					new Handle:tempHH;
+					if (!GetTrieValue(tempH, "keyNames", tempKeys))
+						SetFailState("Can't retrieve %s's keyNames!", soundTable[x]);
+					for (new z = 0; z < GetArraySize(tempKeys); z++)
+					{
+						GetArrayString(tempKeys, z, temp, sizeof(temp));
+						if (!GetTrieValue(tempH, temp, tempHH))
+							SetFailState("Can't get bgm entry %s", temp);
+						GetTrieString(tempHH, "path", soundPath, PLATFORM_MAX_PATH);
+						decl String:downPath[PLATFORM_MAX_PATH];
+						Format(downPath, PLATFORM_MAX_PATH, "sound/%s", soundPath);
+						PrecacheSound(soundPath);
+						AddFileToDownloadsTable(downPath);
+						Debug("Handled sound file path: %s", soundPath);
+					}
+				}
+				else
+				{
+					if (!GetTrieValue(tempH, "keyNames", tempKeys))
+						SetFailState("Can't retrieve %s's keyNames!", soundTable[x]);
+					for (new z = 0; z < GetArraySize(tempKeys); z++)
+					{
+						GetArrayString(tempKeys, z, soundKey, sizeof(soundKey));
+						if (!GetTrieString(tempH, soundKey, soundPath, PLATFORM_MAX_PATH))
+							SetFailState("Entry %s not found in %s", soundKey, soundTable[x]);
+						decl String:downPath[PLATFORM_MAX_PATH];
+						Format(downPath, PLATFORM_MAX_PATH, "sound/%s", soundPath);
+						PrecacheSound(soundPath);
+						AddFileToDownloadsTable(downPath);
+						Debug("Handled sound file path: %s", soundPath);
+					}
+				}
+			}
+		}
+		if (!GetTrieValue(bossHandle, bossTopInfo[16][Name], tempHandle))
+			SetFailState("Can't retrieve %s's %s trie!", bossName, bossTopInfo[16][Name]);
+		if (GetTrieValue(tempHandle, "models", tempH))
+		{
+			if (!GetTrieValue(tempH, "keyNames", tempKeys))
+				SetFailState("Can't retrieve download models's keyNames!");
+			for (new z = 0; z < GetArraySize(tempKeys); z++)
+			{
+				GetArrayString(tempKeys, z, soundKey, sizeof(soundKey));
+				if (!GetTrieString(tempH, soundKey, soundPath, PLATFORM_MAX_PATH))
+					SetFailState("Entry %s not found in download models", soundKey);
+				if (!GetTrieString(tempH, soundKey, soundPath, PLATFORM_MAX_PATH))
+					SetFailState("Entry %s not found in download models", soundKey);
+				decl String:mdl[PLATFORM_MAX_PATH];
+				Format(mdl, sizeof(mdl), "%s%s", soundPath, extensions[0]);
+				PrecacheModel(mdl);
+				for(new extension; extension<sizeof(extensions); extension++)
+				{
+					decl String:downPath[PLATFORM_MAX_PATH];
+					Format(downPath, PLATFORM_MAX_PATH, "%s%s", soundPath, extensions[extension]);
+					AddFileToDownloadsTable(downPath);
+					Debug("Handled model file path: %s%s", soundPath, extensions[extension]);
+				}
+			}
+		}
+		if (GetTrieValue(tempHandle, "materials", tempH))
+		{
+			if (!GetTrieValue(tempH, "keyNames", tempKeys))
+				SetFailState("Can't retrieve download materials's keyNames!");
+			for (new z = 0; z < GetArraySize(tempKeys); z++)
+			{
+				GetArrayString(tempKeys, z, soundKey, sizeof(soundKey));
+				if (!GetTrieString(tempH, soundKey, soundPath, PLATFORM_MAX_PATH))
+					SetFailState("Entry %s not found in download materials", soundKey);
+				if (!GetTrieString(tempH, soundKey, soundPath, PLATFORM_MAX_PATH))
+					SetFailState("Entry %s not found in download materials", soundKey);
+				decl String:downPathvtf[PLATFORM_MAX_PATH], String:downPathvmt[PLATFORM_MAX_PATH];
+				Format(downPathvtf, PLATFORM_MAX_PATH, "%s.vtf", soundPath);
+				Format(downPathvmt, PLATFORM_MAX_PATH, "%s.vmt", soundPath);
+				AddFileToDownloadsTable(downPathvtf);
+				AddFileToDownloadsTable(downPathvmt);
+				Debug("Handled material file path: %s.vtf", soundPath);
+				Debug("Handled material file path: %s.vmt", soundPath);
+			}
+		}
+		if (GetTrieValue(tempHandle, "other", tempH))
+		{
+			if (!GetTrieValue(tempH, "keyNames", tempKeys))
+				SetFailState("Can't retrieve download other's keyNames!");
+			for (new z = 0; z < GetArraySize(tempKeys); z++)
+			{
+				GetArrayString(tempKeys, z, soundKey, sizeof(soundKey));
+				if (!GetTrieString(tempH, soundKey, soundPath, PLATFORM_MAX_PATH))
+					SetFailState("Entry %s not found in download other", soundKey);
+				if (!GetTrieString(tempH, soundKey, soundPath, PLATFORM_MAX_PATH))
+					SetFailState("Entry %s not found in download other", soundKey);
+				decl String:downPath[PLATFORM_MAX_PATH];
+				Format(downPath, PLATFORM_MAX_PATH, "%s", soundPath);
+				AddFileToDownloadsTable(downPath);
+				Debug("Handled other file path: %s", soundPath);
+			}
+		}
+	}
+	Debug("}");
+}
+
+ParseAttributes(Handle:bossParser, Handle:attributes)
+{
+	Debug("Preparing to parse attributes.");
+	Debug("{");
+	decl String:keyName[MAX_BOSS_NAME];
+	if (KvGotoFirstSubKey(bossParser, false))
+	{
+		do
+		{
+			Debug("Parsing an attribute.");
+			Debug("{");
+			KvGetSectionName(bossParser, keyName, MAX_BOSS_NAME);
+			new Handle:attriHandle = InsertNewChildTrie(attributes, keyName);
+			if (attriHandle == INVALID_HANDLE)
+				SetFailState("Unable to parse an attribute!");
+			new attriIndex, Float:attriValue;
+			attriIndex = KvGetNum(bossParser, "index", 0);
+			attriValue = KvGetFloat(bossParser, "value", 0.0);
+			if (attriIndex == 0)
+				SetFailState("Invalid attri found!");
+			if (!SetTrieValue(attriHandle, "index", attriIndex, false))
+				SetFailState("Unable to add attri index.");
+			if (!SetTrieValue(attriHandle, "value", attriValue, false))
+				SetFailState("Unable to add attri value.");
+			Debug("Parsed attribute #%s", keyName);
+			Debug("Index: %d", attriIndex);
+			Debug("Value: %f", attriValue);
+			Debug("}");
+		}
+		while (KvGotoNextKey(bossParser, false));
+		KvGoBack(bossParser);
+	}
+	Debug("}");
+}
+
+ParseWeapons(Handle:bossParser, Handle:weaponsHandle)
+{
+	Debug("Preparing to parse weapons.");
+	Debug("{");
+	decl String:keyName[MAX_BOSS_NAME];
+	if (KvGotoFirstSubKey(bossParser, false))
+	{
+		do
+		{
+			Debug("Parsing a weapon.");
+			Debug("{");
+			KvGetSectionName(bossParser, keyName, MAX_BOSS_NAME);
+			new Handle:weaponHandle = InsertNewChildIterTrie(weaponsHandle, keyName, MAX_BOSS_NAME);
+			if (weaponHandle == INVALID_HANDLE)
+				SetFailState("Unable to parse a weapon!");
+			if (!SetTrieValue(weaponHandle, "isSpecial", true, false))
+				SetFailState("Can't... enable... isSpecial... NOOOOOOOOOO! *cough* *hack* *dies*");
+			decl String:className[MAX_CLASSNAME_LENGTH];
+			new itemIndex, Float:damage, Float:bDamage;
+			KvGetString(bossParser, "classname", className, MAX_CLASSNAME_LENGTH, "tf_weapon_wrench");
+			itemIndex = KvGetNum(bossParser, "item_index", 7);
+			damage = KvGetFloat(bossParser, "damage", 2.0);
+			bDamage = KvGetFloat(bossParser, "buildingDamage", 3.0);
+			if (!SetTrieString(weaponHandle, "className", className, false))
+				SetFailState("Already got a classname...");
+			if (!SetTrieValue(weaponHandle, "itemIndex", itemIndex, false))
+				SetFailState("Already got an item Index...");
+			if (!SetTrieValue(weaponHandle, "damage", damage, false))
+				SetFailState("Already got damage amount...");
+			if (!SetTrieValue(weaponHandle, "buildingDamage", bDamage, false))
+				SetFailState("Already got building damage amount...");
+			if (KvJumpToKey(bossParser, "attributes"))
+			{
+				new Handle:attributes = InsertNewChildIterTrie(weaponHandle, "attributes", MAX_BOSS_NAME);
+				if (attributes == INVALID_HANDLE)
+					SetFailState("We already have attributes trie.");
+				ParseAttributes(bossParser, attributes);
+				KvGoBack(bossParser);
+			}
+			Debug("Parsed weapon keyNamed %s", keyName);
+			Debug("Weapon className is: %s", className);
+			Debug("Weapon index is: %d", itemIndex);
+			Debug("Damage multiplier is: %f", damage);
+			Debug("}");
+		}
+		while (KvGotoNextKey(bossParser, false));
+		KvGoBack(bossParser);
+	}
+	Debug("}");
+}
+
+ParseAbilities(Handle:bossParser, Handle:abilitiesHandle)
+{
+	Debug("Preparing to parse abilities.");
+	Debug("{");
+	decl String:keyName[MAX_BOSS_NAME], String:abilityName[MAX_ABILITY_NAME], String:controllerName[MAX_SUB_NAME];
+	new Float:charge, Float:cooldown;
+	if (KvGotoFirstSubKey(bossParser, false))
+	{
+		do
+		{
+			Debug("Parsing an ability.");
+			Debug("{");
+			KvGetSectionName(bossParser, keyName, MAX_BOSS_NAME);
+			KvGetString(bossParser, "name", abilityName, MAX_ABILITY_NAME, "");
+			KvGetString(bossParser, "ability_controller", controllerName, MAX_SUB_NAME, "");
+			charge = KvGetFloat(bossParser, "charge", 0.0);
+			cooldown = KvGetFloat(bossParser, "cooldown", 0.0);
+			if (StrEqual(abilityName, ""))
+				SetFailState("No ability name found.");
+			if (StrEqual(controllerName, ""))
+				SetFailState("No controller name found.");
+			/*if (!FF2_ControllerExists(controllerName))
+				SetFailState("Boss I am parsing is missing a subplugin named %s!", controllerName);
+			if (!FF2_AbilityExists(controllerName, abilityName))
+				SetFailState("%s is missing an ability name %s!", controllerName, abilityName);
+			new Handle:abilityHandle = InsertNewChildIterTrie(abilitiesHandle, keyName, MAX_BOSS_NAME);
+			if (abilityHandle == INVALID_HANDLE)
+				SetFailState("We can't create an abilityHandle");
+			if (!SetTrieValue(abilityHandle, "isSpecial", true, false))
+				SetFailState("Can't make trie special!");
+			if (!SetTrieString(abilityHandle, "abilityName", abilityName))
+				SetFailState("We can't store the abilityName");
+			if (!SetTrieString(abilityHandle, "controllerName", controllerName))
+				SetFailState("We can't store the controllerName");
+			if (!SetTrieValue(abilityHandle, "charge", charge))
+				SetFailState("Unable to store charge time.");
+			if (!SetTrieValue(abilityHandle, "cooldown", cooldown))
+				SetFailState("Unable to store cooldown time.");
+			new Handle:argsHandle = InsertNewChildIterTrie(abilityHandle, "args", MAX_SUB_NAME);
+			if (argsHandle == INVALID_HANDLE)
+				SetFailState("Unable to add an args trie!");
+			if (!SetTrieValue(argsHandle, "forceNoChild", true, false))
+				SetFailState("Unable to make trie special!");
+			new numArgs = FF2_GetNumArgs(controllerName, abilityName);
+			new bool:inArgs;
+			if (KvJumpToKey(bossParser, "args"))
+				inArgs = true;
+			if (numArgs == 0)
+				SetFailState("Ability must have at least 1 arg(arg #0)");
+			for (new x = 0; x < numArgs; x++)
+			{
+				decl String:argString[10];
+				Format(argString, sizeof(argString), "%d", x);
+				switch (FF2_GetArgType(controllerName, abilityName, argString))
+				{
+					case FF2_ArgType_Int:
+					{
+						new defValue = FF2_GetArgDefIntValue(controllerName, abilityName, argString);
+						new argVal = defValue;
+						if (inArgs)
+							argVal = KvGetNum(bossParser, argString, defValue);
+						if (!InsertIntoTrie(argsHandle, argString, argVal))
+							SetFailState("Unable to store arg value for arg #%s", argString);
+						Debug("Arg #%d is type int, value is %d.", x, argVal);
+					}
+					case FF2_ArgType_Float:
+					{
+						new Float:defValue = FF2_GetArgDefFloatValue(controllerName, abilityName, argString);
+						new Float:argVal = defValue;
+						if (inArgs)
+							argVal = KvGetFloat(bossParser, argString, defValue);
+						if (!InsertIntoTrie(argsHandle, argString, _:argVal))
+							SetFailState("Unable to store arg value for arg #%s", argString);
+						Debug("Arg #%d is type float, value is %f.", x, argVal);
+					}
+					case FF2_ArgType_String:
+					{
+						decl String:defValue[MAX_STRING_ARG_LENGTH], String:argVal[MAX_STRING_ARG_LENGTH];
+						FF2_GetArgDefStringValue(controllerName, abilityName, argString, defValue, MAX_STRING_ARG_LENGTH);
+						strcopy(argVal, MAX_STRING_ARG_LENGTH, defValue);
+						if (inArgs)
+							KvGetString(bossParser, argString, argVal, MAX_STRING_ARG_LENGTH, defValue);
+						if (!InsertStringIntoTrie(argsHandle, argString, argVal))
+							SetFailState("Unable to store arg value for arg #%s", argString);
+						Debug("Arg #%d is type string, value is %s.", x, argVal);
+					}
+				}
+			}
+			if (inArgs)
+				KvGoBack(bossParser);*/
+			Debug("Ability named %s parsed", abilityName);
+			Debug("Ability was registered to %s", controllerName);
+			Debug("If needed, the time needed to charge to 100%s for ability is %f", "%%", charge);
+			Debug("If needed, the time needed to cooldown ability is %f", cooldown);
+			Debug("}");
+		}
+		while (KvGotoNextKey(bossParser, false));
+		KvGoBack(bossParser);
+	}
+	Debug("}");
+}
+
+ParseSounds(Handle:bossParser, Handle:soundsHandle)
+{
+	Debug("Preparing to parse sounds.");
+	Debug("{");
+	decl String:keyName[MAX_BOSS_NAME], String:soundPath[PLATFORM_MAX_PATH], String:soundKey[MAX_BOSS_NAME];
+	if (KvGotoFirstSubKey(bossParser, false))
+	{
+		do
+		{
+			KvGetSectionName(bossParser, keyName, MAX_BOSS_NAME);
+			new Handle:sectionName = InsertNewChildIterTrie(soundsHandle, keyName, PLATFORM_MAX_PATH);
+			if (sectionName == INVALID_HANDLE)
+				SetFailState("Unable to create a new trie!");
+			Debug("Parsing %s", keyName);
+			Debug("{");
+			if (StrEqual(keyName, "class_specific"))
+			{
+				for (new x = 1; x <= 9; x++) //I don't count the # of sections for class_specific because there should be 9 entries max that are numbered 1 to 9 that we care about.
+				{
+					decl String:buffer[2];
+					Format(buffer, sizeof(buffer), "%d", x);
+					if (KvJumpToKey(bossParser, buffer))
+					{
+						if (KvGotoFirstSubKey(bossParser, false))
+						{
+							Debug("Parsing sounds for class #%d", x);
+							Debug("{");
+							new Handle:classSHandle = InsertNewChildIterTrie(sectionName, buffer, PLATFORM_MAX_PATH);
+							if (!SetTrieValue(classSHandle, "forceNoChild", true, false))
+								SetFailState("Unable to make trie special!");
+							do
+							{
+								KvGetSectionName(bossParser, soundKey, MAX_BOSS_NAME);
+								KvGetString(bossParser, NULL_STRING, soundPath, PLATFORM_MAX_PATH, "");
+								if (!InsertStringIntoTrie(classSHandle, soundKey, soundPath))
+									SetFailState("Unable to store sound path!");
+								Debug("Parsed sound path for #%s: %s", soundKey, soundPath);
+							}
+							while (KvGotoNextKey(bossParser, false));
+							KvGoBack(bossParser);
+							Debug("}");
+						}
+						KvGoBack(bossParser);
+					}
+				}
+			}
+			else if (StrEqual(keyName, "abilities"))
+			{
+				for (new FF2_A0Mode:x = FF2_A0Mode_Kill; x <= FF2_A0Mode_Stabbed; x++) //I don't count the # of sections for abilities as we need sections matching to ability activator #.
+				{
+					decl String:buffer[3];
+					Format(buffer, sizeof(buffer), "%d", x);
+					if (KvJumpToKey(bossParser, buffer))
+					{
+						if (KvGotoFirstSubKey(bossParser, false))
+						{
+							Debug("Parsing sounds for arg #0 activation number #%d", x);
+							Debug("{");
+							new Handle:classSHandle = InsertNewChildIterTrie(sectionName, buffer, PLATFORM_MAX_PATH);
+							if (!SetTrieValue(classSHandle, "forceNoChild", true, false))
+								SetFailState("Unable to make trie special!");
+							do
+							{
+								KvGetSectionName(bossParser, soundKey, MAX_BOSS_NAME);
+								KvGetString(bossParser, NULL_STRING, soundPath, PLATFORM_MAX_PATH, "");
+								if (!InsertStringIntoTrie(classSHandle, soundKey, soundPath))
+									SetFailState("Unable to store sound path!");
+								Debug("Parsed sound path for #%s: %s", soundKey, soundPath);
+							}
+							while (KvGotoNextKey(bossParser, false));
+							KvGoBack(bossParser);
+							Debug("}");
+						}
+						KvGoBack(bossParser);
+					}
+				}
+			}
+			else if (StrEqual(keyName, "bgm"))
+			{
+				if (KvGotoFirstSubKey(bossParser, false))
+				{
+					do
+					{
+						KvGetSectionName(bossParser, soundKey, MAX_BOSS_NAME);
+						Debug("Parsing bgm info at key %s", soundKey);
+						Debug("{");
+						new Handle:bgmSHandle = InsertNewChildTrie(sectionName, soundKey);
+						KvGetString(bossParser, "path", soundPath, PLATFORM_MAX_PATH, "");
+						new bgmTime = KvGetNum(bossParser, "time", 0);
+						if (!SetTrieString(bgmSHandle, "path", soundPath))
+							SetFailState("Unable to store bgm sound path!");
+						if (!SetTrieValue(bgmSHandle, "time", bgmTime))
+							SetFailState("Unable to store bgm sound length!");
+						Debug("Path: %s", soundPath);
+						Debug("Sound length: %d", bgmTime);
+						Debug("}");
+					}
+					while (KvGotoNextKey(bossParser, false));
+					KvGoBack(bossParser);
+				}
+			}
+			else
+			{
+				if (KvGotoFirstSubKey(bossParser, false))
+				{
+					if (!SetTrieValue(sectionName, "forceNoChild", true, false))
+						SetFailState("Unable to make trie special!");
+					do
+					{
+						KvGetSectionName(bossParser, soundKey, MAX_BOSS_NAME);
+						KvGetString(bossParser, NULL_STRING, soundPath, PLATFORM_MAX_PATH, "");
+						if (!InsertStringIntoTrie(sectionName, soundKey, soundPath))
+							SetFailState("Unable to store sound path!");
+						Debug("Parsed sound path for #%s: %s", soundKey, soundPath);
+					}
+					while (KvGotoNextKey(bossParser, false));
+					KvGoBack(bossParser);
+				}
+			}
+			Debug("}");
+		}
+		while (KvGotoNextKey(bossParser, false));
+		KvGoBack(bossParser);
+	}
+	Debug("}");
+}
+
+ParseDownloads(Handle:bossParser, Handle:downloadsHandle)
+{
+	decl String:keyName[MAX_BOSS_NAME], String:modelPath[PLATFORM_MAX_PATH], String:modelKey[MAX_BOSS_NAME];
+	if (KvGotoFirstSubKey(bossParser, false))
+	{
+		do
+		{
+			KvGetSectionName(bossParser, keyName, MAX_BOSS_NAME);
+			new Handle:downInfo = InsertNewChildIterTrie(downloadsHandle, keyName, PLATFORM_MAX_PATH);
+			if (!SetTrieValue(downInfo, "forceNoChild", true, false))
+				SetFailState("Unable to make trie special!");
+			Debug("Parsing downloads section %s", keyName);
+			Debug("{");
+			if (KvGotoFirstSubKey(bossParser, false))
+			{
+				do
+				{
+					KvGetSectionName(bossParser, modelKey, MAX_BOSS_NAME);
+					KvGetString(bossParser, NULL_STRING, modelPath, PLATFORM_MAX_PATH, "");
+					if (!InsertStringIntoTrie(downInfo, modelKey, modelPath))
+						SetFailState("Unable to store download path!");
+					Debug("Parsed %s with path of %s", modelKey, modelPath);
+				}
+				while (KvGotoNextKey(bossParser, false));
+				KvGoBack(bossParser);
+			}
+			Debug("}");
+		}
+		while (KvGotoNextKey(bossParser, false));
+		KvGoBack(bossParser);
+	}
+}
+
+ParseBoss(Handle:bossParser, Handle:bossHandle)
+{
+	for (new i = 0; i < MAX_TOP_KEYNAMES; i++)
+	{
+		switch(bossTopInfo[i][Type])
+		{
+			case FF2_TopType_Int:
+			{
+				new value = KvGetNum(bossParser, bossTopInfo[i][Name], bossTopInfo[i][DefIntValue]);
+				if (!SetTrieValue(bossHandle, bossTopInfo[i][Name], value, false))
+					SetFailState("Entry %s already exists!", bossTopInfo[i][Name]);
+				Debug("Value recieved for %s, which is type integer, is %d", bossTopInfo[i][Name], value);
+			}
+			case FF2_TopType_Float:
+			{
+				new Float:value = KvGetFloat(bossParser, bossTopInfo[i][Name], bossTopInfo[i][DefFloatValue]);
+				if (!SetTrieValue(bossHandle, bossTopInfo[i][Name], value, false))
+					SetFailState("Entry %s already exists!", bossTopInfo[i][Name]);
+				Debug("Value recieved for %s, which is type integer, is %f", bossTopInfo[i][Name], value);
+			}
+			case FF2_TopType_String:
+			{
+				new String:value[MAX_ABILITY_DESC];
+				KvGetString(bossParser, bossTopInfo[i][Name], value, MAX_ABILITY_DESC, bossTopInfo[i][DefStringValue]);
+				if (!SetTrieString(bossHandle, bossTopInfo[i][Name], value, false))
+					SetFailState("Entry %s already exists!", bossTopInfo[i][Name]);
+				Debug("Value recieved for %s, which is type integer, is %s", bossTopInfo[i][Name], value);
+			}
+			case FF2_TopType_Section:
+			{
+				if (KvJumpToKey(bossParser, bossTopInfo[i][Name]))
+				{
+					Debug("Parsing %s", bossTopInfo[i][Name]);
+					Debug("{");
+					if (StrEqual(bossTopInfo[i][Name], "descriptions"))
+					{
+						if (!KvGotoFirstSubKey(bossParser, false))
+							SetFailState("Can't parse descs!");
+						new Handle:descHandle = InsertNewChildTrie(bossHandle, bossTopInfo[i][Name]);
+						if (descHandle == INVALID_HANDLE)
+							SetFailState("Failed to parse descriptions!");
+						do
+						{
+							decl String:desc[MAX_ABILITY_NAME], String:lang[5];
+							KvGetSectionName(bossParser, lang, sizeof(lang));
+							KvGetString(bossParser, NULL_STRING, desc, MAX_ABILITY_DESC);
+							if (!SetTrieString(descHandle, lang, desc, false))
+								SetFailState("Failed to add a description in language %s", lang);
+							Debug("Description in lang %s is %s", lang, desc);
+						}
+						while (KvGotoNextKey(bossParser, false));
+						KvGoBack(bossParser);
+					}
+					if (StrEqual(bossTopInfo[i][Name], "weapons"))
+					{
+						new Handle:weaponsHandle = InsertNewChildIterTrie(bossHandle, bossTopInfo[i][Name], MAX_SUB_NAME);
+						if (weaponsHandle == INVALID_HANDLE)
+							SetFailState("Failed to create a weapons trie!");
+						ParseWeapons(bossParser, weaponsHandle);
+					}
+					if (StrEqual(bossTopInfo[i][Name], "abilities"))
+					{
+						new Handle:abilitiesHandle = InsertNewChildIterTrie(bossHandle, bossTopInfo[i][Name], MAX_SUB_NAME);
+						if (abilitiesHandle == INVALID_HANDLE)
+							SetFailState("Failed to create an abilities trie!");
+						ParseAbilities(bossParser, abilitiesHandle);
+					}
+					if (StrEqual(bossTopInfo[i][Name], "sounds"))
+					{
+						new Handle:soundsHandle = InsertNewChildIterTrie(bossHandle, bossTopInfo[i][Name], MAX_SUB_NAME);
+						if (soundsHandle == INVALID_HANDLE)
+							SetFailState("Failed to create a sounds trie!");
+						ParseSounds(bossParser, soundsHandle);
+					}
+					if (StrEqual(bossTopInfo[i][Name], "downloads"))
+					{
+						new Handle:downloadsHandle = InsertNewChildIterTrie(bossHandle, bossTopInfo[i][Name], MAX_SUB_NAME);
+						if (downloadsHandle == INVALID_HANDLE)
+							SetFailState("Failed to create a downloadss trie!");
+						ParseDownloads(bossParser, downloadsHandle);
+					}
+					Debug("}");
+					KvGoBack(bossParser);
+				}
+			}
+		}
+	}
+}
+
+ParseBossNames(Handle:parser, Handle:packHandle)
+{
+	Debug("Preparing to parse boss names");
+	Debug("{");
+	decl String:bossName[MAX_BOSS_NAME], String:path[PLATFORM_MAX_PATH], String:strBuffer[MAX_BOSS_NAME];
+	if (KvGotoFirstSubKey(parser, false))
+	{
+		do
+		{
+			KvGetString(parser, NULL_STRING, bossName, MAX_BOSS_NAME, "");
+			Debug("Parsing a boss called: %s", bossName);
+			Debug("{");
+			BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "configs/freak_fortress_2/%s.cfg", bossName);
+			new Handle:bossParser = CreateKeyValues("Freak Fortress 2 Boss Parser");
+			if (!FileToKeyValues(bossParser, path))
+			{
+				CloseHandle(bossParser);
+				CloseHandle(parser);
+				SetFailState("Unable to find %s, please make sure one exists.", path);
+			}
+			KvGetSectionName(bossParser, strBuffer, sizeof(strBuffer));
+			if (!StrEqual(strBuffer, "Freak Fortress 2 Boss"))
+				SetFailState("Boss config file is not correct...");
+			new Handle:bossHandle = InsertNewChildIterTrie(packHandle, bossName, MAX_BOSS_NAME);
+			if (bossHandle == INVALID_HANDLE)
+				SetFailState("%T", "FF2 Boss Exist", LANG_SERVER, bossName);
+			if (!SetTrieValue(bossHandle, "isSpecial", true, false))
+				SetFailState("Unable to make boss info trie special!");
+			ParseBoss(bossParser, bossHandle);
+			CloseHandle(bossParser);
+			Debug("}");
+		}
+		while (KvGotoNextKey(parser, false));
+		KvGoBack(parser);
+	}
+	else
+		SetFailState("Unable to go to first subkey of a bosspack.");
+	Debug("}");
+}
+
+ParseBosses()
+{
+	DestroyBosses();
+	Debug("Preparing to parse boss packs and bosses.");
+	Debug("{");
+	g_hBossesTrie = CreateIterTrie(MAX_SUB_NAME);
+	if (g_hBossesTrie == INVALID_HANDLE)
+		SetFailState("Unable to create a new trie!");
+	decl String:path[PLATFORM_MAX_PATH], String:strBuffer[MAX_BOSS_NAME];
+	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "configs/freak_fortress_2/ff2_boss_packs.cfg");
+	new Handle:parser = CreateKeyValues("Freak Fortress 2 Packs Parser");
+	if (!FileToKeyValues(parser, path))
+	{
+		CloseHandle(parser);
+		SetFailState("Unable to find %s, please make sure one exists.", path);
+	}
+	KvGetSectionName(parser, strBuffer, sizeof(strBuffer));
+	if (!StrEqual(strBuffer, "Freak Fortress 2 Packs"))
+		SetFailState("Boss packs config file is not correct...");
+	decl String:packName[MAX_BOSS_NAME];
+	if (!StrEqual(g_sNBossPack, ""))
+	{
+		strcopy(g_sCBossPack, MAX_BOSS_NAME, g_sNBossPack);
+		strcopy(g_sNBossPack, MAX_BOSS_NAME, "");
+	}
+	if (KvGotoFirstSubKey(parser, false))
+	{
+		if (StrEqual(g_sCBossPack, ""))
+			KvGetSectionName(parser, g_sCBossPack, MAX_BOSS_NAME);
+		do
+		{
+			KvGetSectionName(parser, packName, MAX_BOSS_NAME);
+			Debug("Parsing a pack called: %s", packName);
+			Debug("{");
+			new Handle:packHandle = InsertNewChildIterTrie(g_hBossesTrie, packName, MAX_BOSS_NAME);
+			if (packHandle == INVALID_HANDLE)
+				SetFailState("%T", "FF2 Pack Exist", LANG_SERVER, packName);
+			ParseBossNames(parser, packHandle);
+			Debug("}");
+		}
+		while (KvGotoNextKey(parser, false));
+		KvGoBack(parser);
+	}
+	else
+		SetFailState("Unable to go to first subkey of bosspacks.");
+	CloseHandle(parser);
+	Debug("}");
+}
+
+DestroyBosses()
+{
+	if (g_hBossesTrie != INVALID_HANDLE)
+	{
+		if (CheckForChildren(g_hBossesTrie))
+			FreeChildren(g_hBossesTrie, MAX_ABILITY_DESC);
+		else
+		{
+			CloseHandle(g_hBossesTrie);
+			g_hBossesTrie = INVALID_HANDLE;
+		}
+	}
+}
+
 public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled)
@@ -8540,6 +9338,19 @@ SetClientGlow(client, Float:time1, Float:time2=-1.0)
 	{
 		SetEntProp((IsValidClient(Boss[client]) ? Boss[client] : client), Prop_Send, "m_bGlowEnabled", 1);
 	}
+}
+
+stock bool:InsertStringIntoTrie(Handle:trie, const String:entry[], const String:item[])
+{
+	new Handle:keyNames;
+	if (!GetTrieValue(trie, "keyNames", keyNames))
+		return false;
+	if (keyNames == INVALID_HANDLE)
+		return false;
+	if (!SetTrieString(trie, entry, item, false))
+		return false;
+	PushArrayString(keyNames, entry);
+	return true;
 }
 
 #include <freak_fortress_2_vsh_feedback>
