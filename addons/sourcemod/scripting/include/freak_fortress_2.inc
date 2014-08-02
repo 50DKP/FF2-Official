@@ -22,6 +22,23 @@
 #endif
 #define _FF2_included
 
+enum FF2_A0Mode
+{
+	FF2_A0Mode_Kill=-2,
+	FF2_A0Mode_LifeLoss=-1,
+	FF2_A0Mode_Rage=0,
+	FF2_A0Mode_RMBEyeUp=1,
+	FF2_A0Mode_RMBEyeDown=2,
+	FF2_A0Mode_RMBNoEye=3,
+	FF2_A0Mode_CrouchEyeUp=4,
+	FF2_A0Mode_CrouchEyeDown=5,
+	FF2_A0Mode_CrouchNoEye=6,
+	FF2_A0Mode_ReloadEyeUp=7,
+	FF2_A0Mode_ReloadEyeDown=8,
+	FF2_A0Mode_ReloadNoEye=9,
+	FF2_A0Mode_Stabbed=10,
+};
+
 /**
  * Is Freak Fortress enabled?
  *
