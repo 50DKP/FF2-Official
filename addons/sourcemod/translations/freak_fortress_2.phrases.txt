@@ -312,4 +312,18 @@
 		"#format"	"{1:s}"
 		"en"		"Now you are {1}'s minion! Go attack the other team!"
 	}
+	"No Weapons Respawn"
+	{
+		"en"		"Respawning you because you have no weapons!"
+	}
+	"VSH and FF2 Group"
+	{
+		"en"		"VS Saxton Hale/Freak Fortress 2 group: {olive}http://steamcommunity.com/groups/vssaxtonhale{default}"
+	}
+	"FF2 Contributors"
+	{
+		"#format"	"{1:s}"
+		"en"		"=== Freak Fortress 2 v{1} (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) === "}
+	}
+
 }

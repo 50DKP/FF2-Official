@@ -1673,11 +1673,11 @@ public Action:Timer_Announce(Handle:timer)
 		{
 			case 1:
 			{
-				CPrintToChatAll("{olive}[FF2]{default} VS Saxton Hale/Freak Fortress 2 group: {olive}http://steamcommunity.com/groups/vssaxtonhale{default}");
+				CPrintToChatAll("{olive}[FF2]{default} %t", "FF2 and VSH Group");
 			}
 			case 3:
 			{
-				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) === ", PLUGIN_VERSION);
+				CPrintToChatAll("{default} v%s", "FF2 Contributors", PLUGIN_VERSION);
 			}
 			case 4:
 			{
@@ -3791,7 +3791,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
-		CPrintToChat(client, "{olive}[FF2]{default} Respawning you because you have no weapons!");
+		CPrintToChat(client, "{olive}[FF2]{default} %t","No Weapons Respawn");
 		TF2_RespawnPlayer(client);
 	}
 	civilianCheck[client]=0;
