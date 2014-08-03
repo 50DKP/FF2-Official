@@ -211,16 +211,16 @@
 	"Reset Queue Points"
 	{
 		"en"		"Set to 0"
-	}	
+	}
 	"Reset Queue Points Confirmation"
 	{
 		"en"		"Do you really want to set your queue points to 0?"
-	}	
+	}
 	"Reset Player's Queue Points"
 	{
 		"#format"	"{1:N}"
 		"en"		"Do you really want to set {1}'s queue points to 0?"
-	}	
+	}
 	"Reset Queue Points Done"
 	{
 		"en"		"Now you have {olive}0{default} queue points"
@@ -323,7 +323,6 @@
 	"FF2 Contributors"
 	{
 		"#format"	"{1:s}"
-		"en"		"=== Freak Fortress 2 v{1} (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) === "}
+		"en"		"=== Freak Fortress 2 v{1} (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) ==="
 	}
-
 }

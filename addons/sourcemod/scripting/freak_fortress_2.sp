@@ -1677,7 +1677,7 @@ public Action:Timer_Announce(Handle:timer)
 			}
 			case 3:
 			{
-				CPrintToChatAll("{default} v%s", "FF2 Contributors", PLUGIN_VERSION);
+				CPrintToChatAll("%t", "FF2 Contributors", PLUGIN_VERSION);
 			}
 			case 4:
 			{
@@ -1690,7 +1690,7 @@ public Action:Timer_Announce(Handle:timer)
 			}
 			default:
 			{
-				CPrintToChatAll("{olive}[FF2]{default} %t", "type_ff2_to_open_menu");
+				CPrintToChatAll("{olive}[FF2]{default} %t", "Type ff2 to Open Menu");
 			}
 		}
 	}
@@ -3791,7 +3791,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
-		CPrintToChat(client, "{olive}[FF2]{default} %t","No Weapons Respawn");
+		CPrintToChat(client, "{olive}[FF2]{default} %t", "No Weapons Respawn");
 		TF2_RespawnPlayer(client);
 	}
 	civilianCheck[client]=0;
