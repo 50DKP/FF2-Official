@@ -37,8 +37,19 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>*/
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.0.0 Alpha 2"
+#define MAJOR_REVISION "2"
+#define MINOR_REVISION "0"
+#define STABLE_REVISION "0"
+#define DEV_REVISION "Alpha 2"
+#if defined DEV_REVISION
 #define DEV_VERSION
+#endif
+
+#if defined DEV_VERSION
+#define PLUGIN_VERSION MAJOR_REVISION ... "." ... MINOR_REVISION ... "." ... STABLE_REVISION ... " " ... DEV_REVISION
+#else
+#define PLUGIN_VERSION MAJOR_REVISION ... "." ... MINOR_REVISION ... "." ... STABLE_REVISION
+#endif
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -2153,7 +2164,7 @@ public Action:Timer_EnableCap(Handle:timer)
 
 public Action:Timer_GogoBoss(Handle:timer)
 {
-	if(!CheckRoundState())
+	if(CheckRoundState()==FF2RoundState_Setup)
 	{
 		for(new client; client<=MaxClients; client++)
 		{
@@ -3051,7 +3062,7 @@ public Action:MakeBoss(Handle:timer, any:client)
 
 	if(!IsPlayerAlive(Boss[client]))
 	{
-		if(!CheckRoundState())
+		if(CheckRoundState()==FF2RoundState_Setup)
 		{
 			TF2_RespawnPlayer(Boss[client]);
 		}
@@ -4294,7 +4305,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
 
-	if(GetBossIndex(client)>=0 && !CheckRoundState())
+	if(GetBossIndex(client)>=0 && CheckRoundState()==FF2RoundState_Setup)
 	{
 		TF2_RemoveAllWeapons(client);
 	}
@@ -5577,7 +5588,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 		return Plugin_Continue;
 	}
 
-	if(!CheckRoundState() && IsBoss(client))
+	if(CheckRoundState()==FF2RoundState_Setup && IsBoss(client))
 	{
 		damage*=0.0;
 		return Plugin_Changed;
