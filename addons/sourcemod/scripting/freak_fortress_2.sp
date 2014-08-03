@@ -283,7 +283,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Botkiller heads are now removed properly (rswallen)");
 			DrawPanelText(panel, "3) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
 			DrawPanelText(panel, "4) [Server] Fixed a rare healthbar error (Wliu)");
-			DrawPanelText(panel, "5) [Dev] Added FF2_GetAlivePlayers (Wliu/AliceTaylor)");
+			DrawPanelText(panel, "5) [Dev] Added FF2_GetAlivePlayers and FF2_GetBossPlayers (Wliu/AliceTaylor)");
 			DrawPanelText(panel, "6) [Dev] Fixed a bug in the main include file (Wliu)");
 			DrawPanelText(panel, "7) [Dev] Enabled escape sequences in configs (Wliu)");
 		}
