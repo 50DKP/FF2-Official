@@ -711,6 +711,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_GetClientGlow", Native_GetClientGlow);
 	CreateNative("FF2_SetClientGlow", Native_SetClientGlow);
 	CreateNative("FF2_GetAlivePlayers", Native_GetAlivePlayers);
+	CreateNative("FF2_GetBossPlayers", Native_GetBossPlayers);
 	CreateNative("FF2_Debug", Native_Debug);
 
 	PreAbility=CreateGlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);
@@ -8027,6 +8028,11 @@ public Native_SetClientGlow(Handle:plugin, numParams)
 public Native_GetAlivePlayers(Handle:plugin, numParams)
 {
 	return RedAlivePlayers;
+}
+
+public Native_GetBossPlayers(Handle:plugin, numParams)
+{
+	return BlueAlivePlayers;
 }
 
 public Native_Debug(Handle:plugin, numParams)
