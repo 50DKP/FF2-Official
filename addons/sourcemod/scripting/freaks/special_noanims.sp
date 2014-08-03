@@ -76,7 +76,7 @@ Rage_New_Weapon(boss, const String:ability_name[])
 	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 1, classname, 64);
 	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, attributes, 64);
 	new slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 4);
-	TF2_RemoveWeaponSlot2(client, slot);
+	TF2_RemoveWeaponSlot(client, slot);
 	new weapon=SpawnWeapon(client, classname, FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2, 56), 100, 5, attributes);
 	if(FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 6))
 	{

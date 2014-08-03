@@ -437,31 +437,6 @@ stock Debug(String:buffer[], any:...)
 	}
 }
 
-/* TEMPORARY STUFF FOR TF2 WEARABLES; TO BE REMOVED AS SOON AS SOURCEMOD ADDS (full) WEARABLE SUPPORT */
-stock TF2_RemoveWeaponSlot2(client, slot)
-{
-	new weaponIndex, wearable;
-	while((weaponIndex=GetPlayerWeaponSlot(client, slot))!=-1)
-	{
-		wearable=GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearable");
-		if(IsValidEntity(wearable))
-		{
-			TF2_RemoveWearable(client, wearable);
-		}
-		RemovePlayerItem(client, weaponIndex);
-		AcceptEntityInput(weaponIndex, "Kill");
-	}
-}
-
-stock TF2_RemoveAllWeapons2(client)
-{
-	for(new slot=0; slot<=5; slot++)
-	{
-		TF2_RemoveWeaponSlot2(client, slot);
-	}
-}
-/* End temp wearable stocks */
-
 public SharedPlugin:__pl_FF2=
 {
 	name="freak_fortress_2",
