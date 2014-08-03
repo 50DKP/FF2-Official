@@ -279,12 +279,13 @@ stock FindVersionData(Handle:panel, versionIndex)
 	{
 		case 43:  //1.10.1
 		{
-			DrawPanelText(panel, "1) Fixed rare bug where rage could go over 100% (Wliu)");
-			DrawPanelText(panel, "2) Botkiller heads are now removed properly (Wliu)");
-			DrawPanelText(panel, "3) [Server] Changed ff2_boss_teleporter's default value to 0 (Wliu)");
-			DrawPanelText(panel, "4) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
-			DrawPanelText(panel, "4) [Dev] Added a new native, FF2_GetAlivePlayers (Wliu/AliceTaylor)");
-			DrawPanelText(panel, "5) [Dev] Fixed a bug in the main include file (Wliu)");
+			DrawPanelText(panel, "1) Fixed a rare bug where rage could go over 100% (Wliu)");
+			DrawPanelText(panel, "2) Botkiller heads are now removed properly (rswallen)");
+			DrawPanelText(panel, "3) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
+			DrawPanelText(panel, "4) [Server] Fixed a rare healthbar error (Wliu)");
+			DrawPanelText(panel, "5) [Dev] Added FF2_GetAlivePlayers (Wliu/AliceTaylor)");
+			DrawPanelText(panel, "6) [Dev] Fixed a bug in the main include file (Wliu)");
+			DrawPanelText(panel, "7) [Dev] Enabled escape sequences in configs (Wliu)");
 		}
 		case 42:  //1.10.0
 		{
@@ -1346,7 +1347,7 @@ DisableSubPlugins(bool:force=false)
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
-			InsertServerCommand("sm plugins unload freaks/%s", filename);
+			InsertServerCommand("sm plugins unload freaks/%s", filename);  //ServerCommand will not work when switching maps
 		}
 	}
 	ServerExecute();
@@ -1365,6 +1366,7 @@ public LoadCharacter(const String:character[])
 		return;
 	}
 	BossKV[Specials]=CreateKeyValues("character");
+	KvSetEscapeSequences(BossKV[Specials], true);
 	FileToKeyValues(BossKV[Specials], config);
 
 	new version=KvGetNum(BossKV[Specials], "version", 1);
@@ -4403,7 +4405,7 @@ public Action:BossTimer(Handle:timer)
 		{
 			SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
 			ShowSyncHudText(Boss[client], healthHUD, "%t", "health", BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client]);
-			if(RoundFloat(BossCharge[client][0])==100)
+			if(RoundFloat(BossCharge[client][0])==100.0)
 			{
 				if(IsFakeClient(Boss[client]) && !(FF2flags[Boss[client]] & FF2FLAG_BOTRAGE))
 				{
@@ -4527,10 +4529,10 @@ public Action:BossTimer(Handle:timer)
 			}
 		}
 
-		if(BossCharge[client][0]<100)
+		if(BossCharge[client][0]<100.0)
 		{
 			BossCharge[client][0]+=OnlyScoutsLeft()*0.2;
-			if(BossCharge[client][0]>100)
+			if(BossCharge[client][0]>100.0)
 			{
 				BossCharge[client][0]=100.0;
 			}
@@ -4598,16 +4600,15 @@ public TF2_OnConditionAdded(client, TFCond:condition)
 	{
 		TF2_RemoveCondition(client, condition);
 		new boss=GetBossIndex(client);
-		if(condition==TFCond_Jarated && BossCharge[boss][0]>0)
+		if(condition==TFCond_Jarated && BossCharge[boss][0]>0.0)
 		{
 			BossCharge[boss][0]-=8.0;  //TODO: Allow this to be customizable
-			if(BossCharge[boss][0]<0)
+			if(BossCharge[boss][0]<0.0)
 			{
 				BossCharge[boss][0]=0.0;
 			}
 		}
 	}
-	return;
 }
 
 public TF2_OnConditionRemoved(client, TFCond:condition)
@@ -4951,35 +4952,16 @@ public Action:event_deflect(Handle:event, const String:name[], bool:dontBroadcas
 	}
 
 	new boss=GetBossIndex(GetClientOfUserId(GetEventInt(event, "ownerid")));
-	if(boss!=-1 && BossCharge[boss][0]<100)
+	if(boss!=-1 && BossCharge[boss][0]<100.0)
 	{
-		BossCharge[boss][0]+=7;  //TODO: Allow this to be customizable
-		if(BossCharge[boss][0]>100)
+		BossCharge[boss][0]+=7.0;  //TODO: Allow this to be customizable
+		if(BossCharge[boss][0]>100.0)
 		{
 			BossCharge[boss][0]=100.0;
 		}
 	}
 	return Plugin_Continue;
 }
-
-/*public Action:event_jarate(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init)  //TODO:  Move this into OnConditionAdded
-{
-	new client=BfReadByte(bf), victim=BfReadByte(bf);
-	new boss=GetBossIndex(victim);
-	if(boss!=-1)
-	{
-		new jarate=GetPlayerWeaponSlot(client, 1);
-		if(jarate!=-1 && (GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex")==58 || GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex")==1105) && GetEntProp(jarate, Prop_Send, "m_iEntityLevel")!=-122 && BossCharge[boss][0]>0)  //Obviously, Jarate and Snack Attack
-		{
-			BossCharge[boss][0]-=8.0;  //TODO: Allow this to be customizable
-			if(BossCharge[boss][0]<0)
-			{
-				BossCharge[boss][0]=0.0;
-			}
-		}
-	}
-	return Plugin_Continue;
-}*/
 
 public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -5316,7 +5298,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 		}
 	}
 
-	if(BossCharge[boss][0]>100)
+	if(BossCharge[boss][0]>100.0)
 	{
 		BossCharge[boss][0]=100.0;
 	}
@@ -5583,7 +5565,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 							else
 							{
-								if(index!=230 || BossCharge[boss][0]>90)  //Sydney Sleeper
+								if(index!=230 || BossCharge[boss][0]>90.0)  //Sydney Sleeper
 								{
 									damage*=2.9;
 								}
@@ -5597,10 +5579,10 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 355:  //Fan O' War
 					{
-						if(BossCharge[boss][0]>0)
+						if(BossCharge[boss][0]>0.0)
 						{
 							BossCharge[boss][0]-=5.0;
-							if(BossCharge[boss][0]<0)
+							if(BossCharge[boss][0]<0.0)
 							{
 								BossCharge[boss][0]=0.0;
 							}
@@ -5708,7 +5690,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 
 					BossHealth[boss]-=iChangeDamage;
-					BossCharge[boss][0]+=changedamage*100/BossRageDamage[Special[boss]];
+					BossCharge[boss][0]+=changedamage*100.0/BossRageDamage[Special[boss]];
 					if(BossCharge[boss][0]>100.0)
 					{
 						BossCharge[boss][0]=100.0;
@@ -5849,13 +5831,13 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							damage=490.0;
 						}
 						BossHealth[boss]-=RoundFloat(damage);
-						BossCharge[boss][0]+=damage*100/BossRageDamage[Special[boss]];
+						BossCharge[boss][0]+=damage*100.0/BossRageDamage[Special[boss]];
 						if(BossHealth[boss]<=0)  //Wat
 						{
 							damage*=5;
 						}
 
-						if(BossCharge[boss][0]>100)
+						if(BossCharge[boss][0]>100.0)
 						{
 							BossCharge[boss][0]=100.0;
 						}
@@ -5868,7 +5850,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 			}
 
-			if(BossCharge[boss][0]>100)
+			if(BossCharge[boss][0]>100.0)
 			{
 				BossCharge[boss][0]=100.0;
 			}
@@ -7632,12 +7614,12 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 				}
 			}
 
-			if(BossCharge[client][slot]>=0)
+			if(BossCharge[client][slot]>=0.0)
 			{
 				Call_PushCell(2);  //Status
 				Call_Finish(action);
 				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(client, plugin_name, ability_name, 1, 1.5);
-				if(BossCharge[client][slot]+charge<100)
+				if(BossCharge[client][slot]+charge<100.0)
 				{
 					BossCharge[client][slot]+=charge;
 				}
@@ -7675,7 +7657,7 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 				BossCharge[client][slot]=0.0;
 			}
 		}
-		else if(BossCharge[client][slot]<0)
+		else if(BossCharge[client][slot]<0.0)
 		{
 			Call_PushCell(1);  //Status
 			Call_Finish(action);
@@ -7786,14 +7768,12 @@ public Native_SetBossMaxLives(Handle:plugin, numParams)
 
 public Native_GetBossCharge(Handle:plugin, numParams)
 {
-	new client=GetNativeCell(1), slot=GetNativeCell(2);
-	return _:BossCharge[client][slot];
+	return _:BossCharge[GetNativeCell(1)][GetNativeCell(2)];
 }
 
 public Native_SetBossCharge(Handle:plugin, numParams)
 {
-	new client=GetNativeCell(1), slot=GetNativeCell(2);
-	BossCharge[client][slot]=Float:GetNativeCell(3);
+	BossCharge[GetNativeCell(1)][GetNativeCell(2)]=Float:GetNativeCell(3);
 }
 
 public Native_GetRoundState(Handle:plugin, numParams)
@@ -8206,7 +8186,7 @@ public CheckRoundState()
 			return 2;
 		}
 	}
-	return -1;
+	return -1;  //Compiler bug-doesn't recognize 'default' as a valid catch-all
 }
 
 FindHealthBar()
@@ -8224,7 +8204,7 @@ public HealthbarEnableChanged(Handle:convar, const String:oldValue[], const Stri
 	{
 		UpdateHealthBar();
 	}
-	else if(g_Monoculus==-1)
+	else if(g_Monoculus==-1 && healthBar!=-1)
 	{
 		SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, 0);
 	}
