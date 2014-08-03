@@ -5567,13 +5567,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 		return Plugin_Continue;
 	}
 
-	static bool:foundDmgCustom, bool:dmgCustomInOTD;
-	if(!foundDmgCustom)
-	{
-		dmgCustomInOTD=(GetFeatureStatus(FeatureType_Capability, "SDKHook_DmgCustomInOTD")==FeatureStatus_Available);
-		foundDmgCustom=true;
-	}
-
 	if((attacker<=0 || client==attacker) && IsBoss(client))
 	{
 		return Plugin_Handled;
@@ -5679,32 +5672,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 		{
 			if(attacker<=MaxClients)
 			{
-				new bool:bIsTelefrag, bool:bIsBackstab;
-				if(dmgCustomInOTD)
-				{
-					if(damagecustom==TF_CUSTOM_BACKSTAB)
-					{
-						bIsBackstab=true;
-					}
-					else if(damagecustom==TF_CUSTOM_TELEFRAG)
-					{
-						bIsTelefrag=true;
-					}
-				}
-				else if(weapon!=4095 && IsValidEdict(weapon) && weapon==GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee) && damage>1000.0)
-				{
-					decl String:classname[32];
-					if(GetEdictClassname(weapon, classname, sizeof(classname)) && !strcmp(classname, "tf_weapon_knife", false))
-					{
-						bIsBackstab=true;
-					}
-				}
-				else if(!IsValidEntity(weapon) && (damagetype & DMG_CRUSH)==DMG_CRUSH && damage==1000.0)
-				{
-					bIsTelefrag=true;
-				}
-
-				if(bIsTelefrag)
+				if(damagecustom==TF_CUSTOM_TELEFRAG)
 				{
 					if(!IsPlayerAlive(attacker))
 					{
@@ -5939,7 +5907,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}*/
 				}
 
-				if(bIsBackstab)
+				if(damagecustom==TF_CUSTOM_BACKSTAB)
 				{
 					new Float:changedamage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90);
 					new iChangeDamage=RoundFloat(changedamage);
