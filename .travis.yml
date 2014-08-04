@@ -1,6 +1,6 @@
 env:
-    - SMVERSION=1.6
-    - SMVERSION=1.7
+    - SMVERSION=1.6.0
+#    - SMVERSION=1.7
 matrix:
   fast_finish: true
   allow_failures:
@@ -8,11 +8,12 @@ matrix:
 before_install:
     - sudo apt-get -qq update && sudo apt-get install gcc-multilib lynx
 install:
-    - SMPATTERN="http:.*sourcemod-.*-git.*-linux.*"
-    - SMURL="http://www.sourcemod.net/smdrop/$SMVERSION/"
-    - SMPACKAGE=`lynx -dump "$SMURL" | egrep -o "$SMPATTERN" | tail -1`
-    - wget $SMPACKAGE
-    - tar -xzf $(basename "$SMPACKAGE")
+#    - SMPATTERN="http:.*sourcemod-.*-git.*-linux.*"
+#    - SMURL="http://www.sourcemod.net/smdrop/$SMVERSION/"
+#    - SMPACKAGE=`lynx -dump "$SMURL" | egrep -o "$SMPATTERN" | tail -1`
+#    - wget $SMPACKAGE
+    - wget "http://www.sourcemod.net/dl.php?filename=sourcemod-1.6.0-linux.tar.gz" -O sourcemod.tar.gz
+    - tar -xzf "sourcemod.tar.gz"
     - TF2ITEMSURL="http://builds.limetech.org/files/"
     - TF2ITEMSPATTERN="http:.*tf2items-.*-.*-linux.zip"
     - TF2ITEMSPACKAGE=`lynx -dump "$TF2ITEMSURL" | egrep -o "$TF2ITEMSPATTERN" | tail -1`
