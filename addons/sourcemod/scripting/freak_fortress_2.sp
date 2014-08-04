@@ -33,7 +33,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.1 Beta"
+#define PLUGIN_VERSION "1.10.1"
 #define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -66,6 +66,7 @@ new BossTeam=3;
 new playing;
 new healthcheckused;
 new RedAlivePlayers;
+new BlueAlivePlayers;
 new RoundCount;
 new Special[MAXPLAYERS+1];
 new Incoming[MAXPLAYERS+1];
@@ -270,7 +271,7 @@ static const String:ff2versiondates[][]=
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
-	"July 31, 2014"		//1.10.1
+	"August 1, 2014"	//1.10.1
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -4981,7 +4982,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 	}
 
 	RedAlivePlayers=0;
-	new BlueAlivePlayers;
+	BlueAlivePlayers=0;
 	for(new client=1; client<=MaxClients; client++)
 	{
 		if(IsClientInGame(client) && IsPlayerAlive(client))
