@@ -271,7 +271,7 @@ static const String:ff2versiondates[][]=
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
-	"August 1, 2014"	//1.10.1
+	"August 4, 2014"	//1.10.1
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -772,8 +772,6 @@ public OnPluginStart()
 	HookEvent("object_destroyed", event_destroy, EventHookMode_Pre);
 	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
 	HookEvent("deploy_buff_banner", OnDeployBackup);
-
-	//HookUserMessage(GetUserMessageId("PlayerJarated"), event_jarate);
 
 	AddCommandListener(OnCallForMedic, "voicemenu");  //Used to activate rages
 	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding before round start

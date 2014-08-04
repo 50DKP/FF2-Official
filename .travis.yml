@@ -13,7 +13,7 @@ install:
 #    - SMPACKAGE=`lynx -dump "$SMURL" | egrep -o "$SMPATTERN" | tail -1`
 #    - wget $SMPACKAGE
     - wget "http://www.sourcemod.net/dl.php?filename=sourcemod-1.6.0-linux.tar.gz" -O sourcemod.tar.gz
-    - tar -xzf "sourcemod.tar.gz"
+    - tar -xzf sourcemod.tar.gz
     - TF2ITEMSURL="http://builds.limetech.org/files/"
     - TF2ITEMSPATTERN="http:.*tf2items-.*-.*-linux.zip"
     - TF2ITEMSPACKAGE=`lynx -dump "$TF2ITEMSURL" | egrep -o "$TF2ITEMSPATTERN" | tail -1`
