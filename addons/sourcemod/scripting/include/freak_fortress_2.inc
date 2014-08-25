@@ -452,33 +452,7 @@ stock Debug(String:buffer[], any:...)
 
 /* TEMPORARY STUFF FOR TF2 WEARABLES; TO BE REMOVED AS SOON AS SOURCEMOD ADDS WEARABLE SUPPORT */
 //Credits go to friagram and rswallen
-new Handle:removeWearable, Handle:equipWearable, Handle:isWearable;
-stock TF2_RemoveWearable(client, wearable)
-{
-	if(removeWearable==INVALID_HANDLE)
-	{
-		new Handle:config=LoadGameConfigFile("equipwearable");
-		if(config==INVALID_HANDLE)
-		{
-			LogError("[FF2] EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
-			AcceptEntityInput(wearable, "kill");
-			return;
-		}
-
-		StartPrepSDKCall(SDKCall_Player);
-		PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "RemoveWearable");
-		CloseHandle(config);
-		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-		if((removeWearable=EndPrepSDKCall())==INVALID_HANDLE)
-		{
-			LogError("[FF2] Couldn't load SDK function (CTFPlayer::RemoveWearable). SDK call failed.");
-			AcceptEntityInput(wearable, "kill");
-			return;
-		}
-	}
-	SDKCall(removeWearable, client, wearable);
-}
-
+new Handle:equipWearable, Handle:isWearable;
 stock TF2_EquipWearable(client, wearable)
 {
 	if(equipWearable==INVALID_HANDLE)
