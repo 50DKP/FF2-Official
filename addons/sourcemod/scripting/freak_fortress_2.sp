@@ -767,7 +767,7 @@ public OnPluginStart()
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
-	cvarBossSuicide=CreateConVar("ff2_boss_suicide", "0", "Allow the boss to suicide/join spectator after the round starts?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarBossSuicide=CreateConVar("ff2_boss_suicide", "0", "Allow the boss to suicide after the round starts?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How high players should rebound after goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -4143,14 +4143,14 @@ public Action:ClientTimer(Handle:timer)
 					new observer=GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
 					if(IsValidClient(observer) && !IsBoss(observer) && observer!=client)
 					{
-						if(!(GetClientButtons(observer) & IN_SCORE))
+						if(!(GetClientButtons(client) & IN_SCORE))
 						{
 							ShowSyncHudText(client, rageHUD, "Damage: %d-%N's Damage: %d", Damage[client], observer, Damage[observer]);
 						}
 					}
 					else
 					{
-						if(!(GetClientButtons(observer) & IN_SCORE))
+						if(!(GetClientButtons(client) & IN_SCORE))
 						{
 							ShowSyncHudText(client, rageHUD, "Damage: %d", Damage[client]);
 						}
@@ -5638,10 +5638,10 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 525, 595:  //Diamondback, Manmelter
 					{
-                        if(GetEntProp(attacker, Prop_Send, "m_iRevengeCrits"))  //If a revenge crit was used, give a damage bonus
-                        {
-                            damage=85.0;  //255 final damage
-                        }
+						if(GetEntProp(attacker, Prop_Send, "m_iRevengeCrits"))  //If a revenge crit was used, give a damage bonus
+						{
+							damage=85.0;  //255 final damage
+						}
 					}
 					case 528:  //Short Circuit
 					{
