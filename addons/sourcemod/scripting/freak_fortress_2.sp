@@ -287,17 +287,18 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Updated to use Sourcemod 1.6.1 (Powerlord)");
 			DrawPanelText(panel, "3) Fixed goomba stomp ignoring demoshields (Wliu)");
 			DrawPanelText(panel, "4) Disabled boss from spectating (Wliu)");
-			DrawPanelText(panel, "5) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
+			DrawPanelText(panel, "5) Synced with VSH 1.49 (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 43:  //1.10.1
 		{
-			DrawPanelText(panel, "6) [Server] Fixed a rare healthbar error (Wliu)");
-			DrawPanelText(panel, "7) [Server] Added convar ff2_boss_suicide to control whether or not the boss can suicide (Wliu)");
-			DrawPanelText(panel, "8) [Server] Changed ff2_boss_teleporter's default value to 0 (Wliu)");
-			DrawPanelText(panel, "9) [Dev] Added FF2_GetAlivePlayers and FF2_GetBossPlayers (Wliu/AliceTaylor)");
-			DrawPanelText(panel, "10) [Dev] Fixed a bug in the main include file (Wliu)");
-			DrawPanelText(panel, "11) [Dev] Enabled escape sequences in configs (Wliu)");
+			DrawPanelText(panel, "6) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
+			DrawPanelText(panel, "7) [Server] Fixed a rare healthbar error (Wliu)");
+			DrawPanelText(panel, "8) [Server] Added convar ff2_boss_suicide to control whether or not the boss can suicide (Wliu)");
+			DrawPanelText(panel, "9) [Server] Changed ff2_boss_teleporter's default value to 0 (Wliu)");
+			DrawPanelText(panel, "10) [Dev] Added FF2_GetAlivePlayers and FF2_GetBossPlayers (Wliu/AliceTaylor)");
+			DrawPanelText(panel, "11) [Dev] Fixed a bug in the main include file (Wliu)");
+			DrawPanelText(panel, "12) [Dev] Enabled escape sequences in configs (Wliu)");
 		}
 		case 42:  //1.10.0
 		{
@@ -2201,20 +2202,26 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:client)
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[client]);
-		if(need_info_bout_rmb)
+		if(!(GetClientButtons(Boss[client]) & IN_SCORE))
 		{
-			ShowSyncHudText(Boss[client], abilitiesHUD, "%t\n%t", "ff2_buttons_reload", "ff2_buttons_rmb");
-		}
-		else
-		{
-			ShowSyncHudText(Boss[client], abilitiesHUD, "%t", "ff2_buttons_reload");
+			if(need_info_bout_rmb)
+			{
+				ShowSyncHudText(Boss[client], abilitiesHUD, "%t\n%t", "ff2_buttons_reload", "ff2_buttons_rmb");
+			}
+			else
+			{
+				ShowSyncHudText(Boss[client], abilitiesHUD, "%t", "ff2_buttons_reload");
+			}
 		}
 	}
 	else if(need_info_bout_rmb)
 	{
-		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
-		SetGlobalTransTarget(Boss[client]);
-		ShowSyncHudText(Boss[client], abilitiesHUD, "%t", "ff2_buttons_rmb");
+		if(!(GetClientButtons(Boss[client]) & IN_SCORE))
+		{
+			SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
+			SetGlobalTransTarget(Boss[client]);
+			ShowSyncHudText(Boss[client], abilitiesHUD, "%t", "ff2_buttons_rmb");
+		}
 	}
 	else
 	{
@@ -2913,7 +2920,7 @@ public Action:MessageTimer(Handle:timer)
 		}
 	}
 
-	SetHudTextParams(-1.0, 0.4, 10.0, 255, 255, 255, 255);
+	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	new String:text[512];
 	decl String:lives[4];
 	decl String:name[64];
@@ -3193,7 +3200,6 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 226:  //Battalion's Backup
 		{
-//			new Handle:itemOverride=PrepareItemHandle(item, _, _, "116 ; 4.0", true);
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "140 ; 10.0");
 			if(itemOverride!=INVALID_HANDLE)
 			{
@@ -3212,7 +3218,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 415:  //Reserve Shooter
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "265 ; 99999.0 ; 178 ; 0.6 ; 2 ; 1.1 ; 3 ; 0.5", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "265 ; 99999.0 ; 178 ; 0.6 ; 179 ; 1 ; 2 ; 1.1 ; 3 ; 0.5", true);
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3433,23 +3439,6 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
 		{
-			case 41:  //Natascha
-			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				weapon=SpawnWeapon(client, "tf_weapon_minigun", 15, 1, 0, "");
-			}
-			case 402:  //Bazaar Bargain
-			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				SpawnWeapon(client, "tf_weapon_sniperrifle", 14, 1, 0, "");
-			}
-			case 237:  //Rocket Jumper
-			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				weapon=SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "265 ; 99999.0");
-					//265: Mini-crits airborne targets for 99999 seconds
-				SetAmmo(client, 0, 20);
-			}
 			case 17, 204, 36, 412:  //Syringe Guns
 			{
 				if(GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)
@@ -3459,6 +3448,23 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 						//17: +5 uber/hit
 						//144:  NOOP
 				}
+			}
+			case 41:  //Natascha
+			{
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
+				weapon=SpawnWeapon(client, "tf_weapon_minigun", 15, 1, 0, "");
+			}
+			case 237:  //Rocket Jumper
+			{
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
+				weapon=SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "265 ; 99999.0");
+					//265: Mini-crits airborne targets for 99999 seconds
+				SetAmmo(client, 0, 20);
+			}
+			case 402:  //Bazaar Bargain
+			{
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
+				SpawnWeapon(client, "tf_weapon_sniperrifle", 14, 1, 0, "");
 			}
 		}
 	}
@@ -4137,15 +4143,25 @@ public Action:ClientTimer(Handle:timer)
 					new observer=GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
 					if(IsValidClient(observer) && !IsBoss(observer) && observer!=client)
 					{
-						ShowSyncHudText(client, rageHUD, "Damage: %d-%N's Damage: %d", Damage[client], observer, Damage[observer]);
+						if(!(GetClientButtons(observer) & IN_SCORE))
+						{
+							ShowSyncHudText(client, rageHUD, "Damage: %d-%N's Damage: %d", Damage[client], observer, Damage[observer]);
+						}
 					}
 					else
 					{
-						ShowSyncHudText(client, rageHUD, "Damage: %d", Damage[client]);
+						if(!(GetClientButtons(observer) & IN_SCORE))
+						{
+							ShowSyncHudText(client, rageHUD, "Damage: %d", Damage[client]);
+						}
 					}
 					continue;
 				}
-				ShowSyncHudText(client, rageHUD, "Damage: %d", Damage[client]);
+
+				if(!(GetClientButtons(client) & IN_SCORE))
+				{
+					ShowSyncHudText(client, rageHUD, "Damage: %d", Damage[client]);
+				}
 			}
 
 			new TFClassType:class=TF2_GetPlayerClass(client);
@@ -4181,7 +4197,7 @@ public Action:ClientTimer(Handle:timer)
 					if(IsValidEdict(medigun) && GetEdictClassname(medigun, mediclassname, sizeof(mediclassname)) && !strcmp(mediclassname, "tf_weapon_medigun", false))
 					{
 						new charge=RoundToFloor(GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")*100);
-						if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
+						if(!(FF2flags[client] & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
 						{
 							SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
 							ShowSyncHudText(client, jumpHUD, "%T: %i", "uber-charge", client, charge);
@@ -4264,7 +4280,7 @@ public Action:ClientTimer(Handle:timer)
 
 			switch(index)
 			{
-				case 16, 56, 203, 305, 1005, 1079, 1092:  //SMG, Huntsman, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow, Fortified Compound
+				case 16, 56, 203, 305, 1005, 1079, 1092, 1100:  //SMG, Huntsman, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow, Fortified Compound, Bread Bite
 				{
 					addthecrit=true;
 				}
@@ -4415,8 +4431,12 @@ public Action:BossTimer(Handle:timer)
 
 		if(!(FF2flags[Boss[client]] & FF2FLAG_HUDDISABLED))
 		{
-			SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
-			ShowSyncHudText(Boss[client], healthHUD, "%t", "health", BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client]);
+			if(!(GetClientButtons(Boss[client]) & IN_SCORE))
+			{
+				SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
+				ShowSyncHudText(Boss[client], healthHUD, "%t", "health", BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client]);
+			}
+
 			if(RoundFloat(BossCharge[client][0])==100.0)
 			{
 				if(IsFakeClient(Boss[client]) && !(FF2flags[Boss[client]] & FF2FLAG_BOTRAGE))
@@ -4426,8 +4446,11 @@ public Action:BossTimer(Handle:timer)
 				}
 				else
 				{
-					SetHudTextParams(-1.0, 0.83, 0.15, 255, 64, 64, 255);
-					ShowSyncHudText(Boss[client], rageHUD, "%t", "do_rage");
+					if(!(GetClientButtons(Boss[client]) & IN_SCORE))
+					{
+						SetHudTextParams(-1.0, 0.83, 0.15, 255, 64, 64, 255);
+						ShowSyncHudText(Boss[client], rageHUD, "%t", "do_rage");
+					}
 
 					decl String:sound[PLATFORM_MAX_PATH];
 					if(RandomSound("sound_full_rage", sound, PLATFORM_MAX_PATH, client) && emitRageSound[client])
@@ -4452,7 +4475,7 @@ public Action:BossTimer(Handle:timer)
 					}
 				}
 			}
-			else
+			else if(!(GetClientButtons(Boss[client]) & IN_SCORE))
 			{
 				SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255);
 				ShowSyncHudText(Boss[client], rageHUD, "%t", "rage_meter", RoundFloat(BossCharge[client][0]));
@@ -5086,7 +5109,7 @@ public Action:Timer_DrawGame(Handle:timer)
 	SetHudTextParams(-1.0, 0.17, 1.1, 255, 255, 255, 255);
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && IsClientConnected(client) && !(FF2flags[client] & FF2FLAG_HUDDISABLED))
+		if(IsValidClient(client) && IsClientConnected(client) && !(FF2flags[client] & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
 		{
 			ShowSyncHudText(client, timeleftHUD, timeDisplay);
 		}
@@ -5490,47 +5513,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				Debug("OnTakeDamage: Weapon was %i", index);
 				switch(index)
 				{
-					case 593:  //Third Degree
-					{
-						new healers[MAXPLAYERS];
-						new healerCount;
-						for(new healer; healer<=MaxClients; healer++)
-						{
-							if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
-							{
-								healers[healerCount]=healer;
-								healerCount++;
-							}
-						}
-
-						for(new healer; healer<healerCount; healer++)
-						{
-							if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
-							{
-								new medigun=GetPlayerWeaponSlot(healers[healer], TFWeaponSlot_Secondary);
-								if(IsValidEntity(medigun))
-								{
-									decl String:classname[64];
-									GetEdictClassname(medigun, classname, sizeof(classname));
-									if(!strcmp(classname, "tf_weapon_medigun", false))
-									{
-										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healerCount);
-										new Float:max=1.0;
-										if(GetEntProp(medigun, Prop_Send, "m_bChargeRelease"))
-										{
-											max=1.5;
-										}
-
-										if(uber>max)
-										{
-											uber=max;
-										}
-										SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", uber);
-									}
-								}
-							}
-						}
-					}
 					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Sydney Sleeper, Bazaar Bargain, Machina, Festive Sniper Rifle, Hitman's Heatmaker, Botkiller Sniper Rifles
 					{
 						switch(index)
@@ -5583,16 +5565,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							return Plugin_Changed;
 						}
 					}
-					case 355:  //Fan O' War
+					case 61, 1006:  //Ambassador, Festive Ambassador
 					{
-						if(BossCharge[boss][0]>0.0)
-						{
-							BossCharge[boss][0]-=5.0;
-							if(BossCharge[boss][0]<0.0)
-							{
-								BossCharge[boss][0]=0.0;
-							}
-						}
+						if(damagecustom==TF_CUSTOM_HEADSHOT)
+                        {
+                            damage=85.0;  //Final damage 255
+                        }
 					}
 					case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander
 					{
@@ -5622,6 +5600,17 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						SpawnSmallHealthPackAt(client, GetClientTeam(attacker));
 					}
+					case 355:  //Fan O' War
+					{
+						if(BossCharge[boss][0]>0.0)
+						{
+							BossCharge[boss][0]-=5.0;
+							if(BossCharge[boss][0]<0.0)
+							{
+								BossCharge[boss][0]=0.0;
+							}
+						}
+					}
 					case 357:  //Half-Zatoichi
 					{
 						SetEntProp(weapon, Prop_Send, "m_bIsBloody", 1);
@@ -5647,14 +5636,69 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							TF2_RemoveCondition(attacker, TFCond_OnFire);
 						}
 					}
+					case 525, 595:  //Diamondback, Manmelter
+					{
+                        if(GetEntProp(attacker, Prop_Send, "m_iRevengeCrits"))  //If a revenge crit was used, give a damage bonus
+                        {
+                            damage=85.0;  //255 final damage
+                        }
+					}
 					case 528:  //Short Circuit
 					{
-						if(circuitStun>0.0)
+						if(circuitStun)
 						{
 							TF2_StunPlayer(client, circuitStun, 0.0, TF_STUNFLAGS_SMALLBONK|TF_STUNFLAG_NOSOUNDOREFFECT, attacker);
 							EmitSoundToAll("weapons/barret_arm_zap.wav", client);
 							EmitSoundToClient(client, "weapons/barret_arm_zap.wav");
 						}
+					}
+					case 593:  //Third Degree
+					{
+						new healers[MAXPLAYERS];
+						new healerCount;
+						for(new healer; healer<=MaxClients; healer++)
+						{
+							if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
+							{
+								healers[healerCount]=healer;
+								healerCount++;
+							}
+						}
+
+						for(new healer; healer<healerCount; healer++)
+						{
+							if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
+							{
+								new medigun=GetPlayerWeaponSlot(healers[healer], TFWeaponSlot_Secondary);
+								if(IsValidEntity(medigun))
+								{
+									decl String:classname[64];
+									GetEdictClassname(medigun, classname, sizeof(classname));
+									if(!strcmp(classname, "tf_weapon_medigun", false))
+									{
+										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healerCount);
+										new Float:max=1.0;
+										if(GetEntProp(medigun, Prop_Send, "m_bChargeRelease"))
+										{
+											max=1.5;
+										}
+
+										if(uber>max)
+										{
+											uber=max;
+										}
+										SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", uber);
+									}
+								}
+							}
+						}
+					}
+					case 594:  //Phlogistinator
+					{
+						if(!TF2_IsPlayerInCondition(attacker, TFCond_CritMmmph))
+                        {
+                            damage/=2.0;
+                        }
 					}
 					case 656:  //Holiday Punch
 					{
@@ -5766,6 +5810,15 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						}
 						SetEntProp(attacker, Prop_Data, "m_iHealth", health);
 						SetEntProp(attacker, Prop_Send, "m_iHealth", health);
+					}
+					else if(index==461)  //Big Earner
+					{
+						SetEntPropFloat(attacker, Prop_Send, "m_flCloakMeter", 100.0);  //Full cloak
+					}
+
+					if(GetIndexOfWeaponSlot(attacker, TFWeaponSlot_Primary)==525)  //Diamondback
+					{
+						SetEntProp(attacker, Prop_Send, "m_iRevengeCrits", GetEntProp(attacker, Prop_Send, "m_iRevengeCrits")+2);
 					}
 
 					decl String:sound[PLATFORM_MAX_PATH];
