@@ -113,10 +113,11 @@ new Handle:cvarEnableEurekaEffect;
 new Handle:cvarForceBossTeam;
 new Handle:cvarHealthBar;
 new Handle:cvarLastPlayerGlow;
+new Handle:cvarBossTeleporter;
+new Handle:cvarBossSuicide;
 new Handle:cvarGoombaDamage;
 new Handle:cvarGoombaRebound;
 new Handle:cvarBossRTD;
-new Handle:cvarBossTeleporter;
 new Handle:cvarUpdater;
 new Handle:cvarDebug;
 
@@ -140,12 +141,13 @@ new Float:circuitStun;
 new countdownPlayers=1;
 new countdownTime=120;
 new countdownHealth=2000;
-new bool:lastPlayerGlow=true;
 new bool:SpecForceBoss=false;
+new bool:lastPlayerGlow=true;
+new bool:bossTeleportation=true;
+new bool:allowBossSuicide=false;
 new Float:GoombaDamage=0.05;
 new Float:reboundPower=300.0;
 new bool:canBossRTD=false;
-new bool:bossTeleportation=true;
 
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -223,6 +225,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.0",
 	"1.10.0",
 	"1.10.0",
+	"1.10.1",
 	"1.10.1"
 };
 
@@ -271,6 +274,7 @@ static const String:ff2versiondates[][]=
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
+	"August 26, 2014",	//1.10.1
 	"August 26, 2014"	//1.10.1
 };
 
@@ -278,15 +282,22 @@ stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 43:  //1.10.1
+		case 44:  //1.10.1
 		{
 			DrawPanelText(panel, "1) Fixed a rare bug where rage could go over 100% (Wliu)");
-			DrawPanelText(panel, "2) Botkiller heads are now removed properly (rswallen)");
-			DrawPanelText(panel, "3) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
-			DrawPanelText(panel, "4) [Server] Fixed a rare healthbar error (Wliu)");
-			DrawPanelText(panel, "5) [Dev] Added FF2_GetAlivePlayers and FF2_GetBossPlayers (Wliu/AliceTaylor)");
-			DrawPanelText(panel, "6) [Dev] Fixed a bug in the main include file (Wliu)");
-			DrawPanelText(panel, "7) [Dev] Enabled escape sequences in configs (Wliu)");
+			DrawPanelText(panel, "2) Updated to use Sourcemod 1.6.1 (Powerlord)");
+			DrawPanelText(panel, "3) Fixed goomba stomp ignoring demoshields (Wliu)");
+			DrawPanelText(panel, "4) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
+			DrawPanelText(panel, "5) [Server] Fixed a rare healthbar error (Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
+		case 43:  //1.10.1
+		{
+			DrawPanelText(panel, "6) [Server] Added convar ff2_boss_suicide to control whether or not the boss can suicide (Wliu)");
+			DrawPanelText(panel, "7) [Server] Changed ff2_boss_teleporter's default value to 0 (Wliu)");
+			DrawPanelText(panel, "8) [Dev] Added FF2_GetAlivePlayers and FF2_GetBossPlayers (Wliu/AliceTaylor)");
+			DrawPanelText(panel, "9) [Dev] Fixed a bug in the main include file (Wliu)");
+			DrawPanelText(panel, "10) [Dev] Enabled escape sequences in configs (Wliu)");
 		}
 		case 42:  //1.10.0
 		{
@@ -754,10 +765,11 @@ public OnPluginStart()
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
+	cvarBossSuicide=CreateConVar("ff2_boss_suicide", "0", "Allow the boss to suicide/join spectator after the round starts?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How high players should rebound after goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
@@ -774,8 +786,8 @@ public OnPluginStart()
 	HookEvent("deploy_buff_banner", OnDeployBackup);
 
 	AddCommandListener(OnCallForMedic, "voicemenu");  //Used to activate rages
-	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding before round start
-	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding before round start
+	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding
+	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding
 	AddCommandListener(OnJoinTeam, "jointeam");  //Used to make sure players join the right team
 	AddCommandListener(OnChangeClass, "joinclass");  //Used to make sure bosses don't change class
 
@@ -1077,6 +1089,7 @@ public EnableFF2()
 	countdownTime=GetConVarInt(cvarCountdownTime);
 	lastPlayerGlow=GetConVarBool(cvarLastPlayerGlow);
 	bossTeleportation=GetConVarBool(cvarBossTeleporter);
+	allowBossSuicide=GetConVarBool(cvarBossSuicide);
 
 	SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
 	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
@@ -1556,6 +1569,14 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		lastPlayerGlow=bool:StringToInt(newValue);
 	}
+	else if(convar==cvarBossTeleporter)
+	{
+		bossTeleportation=bool:StringToInt(newValue);
+	}
+	else if(convar==cvarBossSuicide)
+	{
+		allowBossSuicide=bool:StringToInt(newValue);
+	}
 	else if(convar==cvarGoombaDamage)
 	{
 		GoombaDamage=StringToFloat(newValue);
@@ -1571,10 +1592,6 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarSpecForceBoss)
 	{
 		SpecForceBoss=bool:StringToInt(newValue);
-	}
-	else if(convar==cvarBossTeleporter)
-	{
-		bossTeleportation=bool:StringToInt(newValue);
 	}
 	else if(convar==cvarUpdater)
 	{
@@ -4709,8 +4726,9 @@ public Action:OnCallForMedic(client, const String:command[], args)
 
 public Action:OnSuicide(client, const String:command[], args)
 {
-	if(Enabled && IsBoss(client) && CheckRoundState()<=0)
+	if(Enabled && IsBoss(client) && (allowBossSuicide ? !CheckRoundState() : true))
 	{
+		CPrintToChat(client, "{olive}[FF2]{default} %t", CheckRoundState() ? "Boss Suicide Denied" : "Boss Suicide Pre-round");
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -4751,6 +4769,11 @@ public Action:OnJoinTeam(client, const String:command[], args)
 	{
 		if(GetConVarBool(FindConVar("mp_allowspectators")))
 		{
+			if(IsBoss(client) && !allowBossSuicide)
+			{
+				CPrintToChat(client, "{olive}[FF2]{default} %t", "Boss Suicide Denied");
+				return Plugin_Handled;
+			}
 			team=_:TFTeam_Spectator;
 		}
 		else
