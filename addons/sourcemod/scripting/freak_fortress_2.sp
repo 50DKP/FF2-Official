@@ -144,7 +144,6 @@ new countdownHealth=2000;
 new bool:SpecForceBoss=false;
 new bool:lastPlayerGlow=true;
 new bool:bossTeleportation=true;
-new bool:allowBossSuicide=false;
 new Float:GoombaDamage=0.05;
 new Float:reboundPower=300.0;
 new bool:canBossRTD=false;
@@ -287,17 +286,18 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "1) Fixed a rare bug where rage could go over 100% (Wliu)");
 			DrawPanelText(panel, "2) Updated to use Sourcemod 1.6.1 (Powerlord)");
 			DrawPanelText(panel, "3) Fixed goomba stomp ignoring demoshields (Wliu)");
-			DrawPanelText(panel, "4) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
-			DrawPanelText(panel, "5) [Server] Fixed a rare healthbar error (Wliu)");
+			DrawPanelText(panel, "4) Disabled boss from spectating (Wliu)");
+			DrawPanelText(panel, "5) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 43:  //1.10.1
 		{
-			DrawPanelText(panel, "6) [Server] Added convar ff2_boss_suicide to control whether or not the boss can suicide (Wliu)");
-			DrawPanelText(panel, "7) [Server] Changed ff2_boss_teleporter's default value to 0 (Wliu)");
-			DrawPanelText(panel, "8) [Dev] Added FF2_GetAlivePlayers and FF2_GetBossPlayers (Wliu/AliceTaylor)");
-			DrawPanelText(panel, "9) [Dev] Fixed a bug in the main include file (Wliu)");
-			DrawPanelText(panel, "10) [Dev] Enabled escape sequences in configs (Wliu)");
+			DrawPanelText(panel, "6) [Server] Fixed a rare healthbar error (Wliu)");
+			DrawPanelText(panel, "7) [Server] Added convar ff2_boss_suicide to control whether or not the boss can suicide (Wliu)");
+			DrawPanelText(panel, "8) [Server] Changed ff2_boss_teleporter's default value to 0 (Wliu)");
+			DrawPanelText(panel, "9) [Dev] Added FF2_GetAlivePlayers and FF2_GetBossPlayers (Wliu/AliceTaylor)");
+			DrawPanelText(panel, "10) [Dev] Fixed a bug in the main include file (Wliu)");
+			DrawPanelText(panel, "11) [Dev] Enabled escape sequences in configs (Wliu)");
 		}
 		case 42:  //1.10.0
 		{
@@ -1089,7 +1089,6 @@ public EnableFF2()
 	countdownTime=GetConVarInt(cvarCountdownTime);
 	lastPlayerGlow=GetConVarBool(cvarLastPlayerGlow);
 	bossTeleportation=GetConVarBool(cvarBossTeleporter);
-	allowBossSuicide=GetConVarBool(cvarBossSuicide);
 
 	SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
 	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
@@ -1572,10 +1571,6 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarBossTeleporter)
 	{
 		bossTeleportation=bool:StringToInt(newValue);
-	}
-	else if(convar==cvarBossSuicide)
-	{
-		allowBossSuicide=bool:StringToInt(newValue);
 	}
 	else if(convar==cvarGoombaDamage)
 	{
@@ -4726,7 +4721,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 
 public Action:OnSuicide(client, const String:command[], args)
 {
-	if(Enabled && IsBoss(client) && (allowBossSuicide ? !CheckRoundState() : true))
+	if(Enabled && IsBoss(client) && (GetConVarBool(cvarBossSuicide) ? !CheckRoundState() : true))
 	{
 		CPrintToChat(client, "{olive}[FF2]{default} %t", CheckRoundState() ? "Boss Suicide Denied" : "Boss Suicide Pre-round");
 		return Plugin_Handled;
@@ -4765,21 +4760,9 @@ public Action:OnJoinTeam(client, const String:command[], args)
 	{
 		team=OtherTeam;
 	}
-	else if(StrEqual(teamString, "spectate", false))
+	else if(StrEqual(teamString, "spectate", false) && !IsBoss(client) && GetConVarBool(FindConVar("mp_allowspectators")))
 	{
-		if(GetConVarBool(FindConVar("mp_allowspectators")))
-		{
-			if(IsBoss(client) && !allowBossSuicide)
-			{
-				CPrintToChat(client, "{olive}[FF2]{default} %t", "Boss Suicide Denied");
-				return Plugin_Handled;
-			}
-			team=_:TFTeam_Spectator;
-		}
-		else
-		{
-			team=OtherTeam;
-		}
+		team=_:TFTeam_Spectator;
 	}
 
 	if(team==BossTeam && !IsBoss(client))
@@ -6934,30 +6917,26 @@ GetClientQueuePoints(client)
 
 SetClientQueuePoints(client, points)
 {
-	if(!IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client))
+	if(IsValidClient(client) && !IsFakeClient(client) && AreClientCookiesCached(client))
 	{
-		return;
+		decl String:cookies[24], String:values[8][5];
+		GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+		ExplodeString(cookies, " ", values, 8, 5);
+		Format(cookies, sizeof(cookies), "%i %s %s %s %s %s %s %s", points, values[1], values[2], values[3], values[4], values[5], values[6], values[7]);
+		SetClientCookie(client, FF2Cookies, cookies);
 	}
-
-	decl String:cookies[24], String:values[8][5];
-	GetClientCookie(client, FF2Cookies, cookies, 24);
-	ExplodeString(cookies, " ", values, 8, 5);
-	Format(cookies, 24, "%i %s %s %s %s %s %s %s", points, values[1], values[2], values[3], values[4], values[5], values[6], values[7]);
-	SetClientCookie(client, FF2Cookies, cookies);
 }
 
 stock bool:IsBoss(client)
 {
-	if(!IsValidClient(client))
+	if(IsValidClient(client))
 	{
-		return false;
-	}
-
-	for(new boss; boss<=MaxClients; boss++)
-	{
-		if(Boss[boss]==client)
+		for(new boss; boss<=MaxClients; boss++)
 		{
-			return true;
+			if(Boss[boss]==client)
+			{
+				return true;
+			}
 		}
 	}
 	return false;
