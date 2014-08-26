@@ -571,19 +571,12 @@ Rage_Slowmo(client, const String:ability_name[])
 	FF2Flags[client]=FF2Flags[client]|FLAG_SLOMOREADYCHANGE|FLAG_ONSLOMO;
 	UpdateClientCheatValue(1);
 	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
-	if(boss>0)
+	if(boss)
 	{
-		if(BossTeam==_:TFTeam_Blue)
-		{
-			CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(boss, "scout_dodge_blue", 75.0)));
-		}
-		else
-		{
-			CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(boss, "scout_dodge_red", 75.0)));
-		}
+		CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(boss, BossTeam==_:TFTeam_Blue ? "scout_dodge_blue" : "scout_dodge_red", 75.0)));
 	}
-	EmitSoundToAll("replay\\enterperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);
-	EmitSoundToAll("replay\\enterperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);
+	EmitSoundToAll("replay\\enterperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, _, _, 100, _, _, _, false);
+	EmitSoundToAll("replay\\enterperformancemode.wav", _, _, SNDLEVEL_TRAFFIC, _, _, 100, _, _, _, false);
 }
 
 public Action:Timer_StopSlomo(Handle:timer, any:client)
