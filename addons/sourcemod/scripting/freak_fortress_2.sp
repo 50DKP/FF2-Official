@@ -271,7 +271,7 @@ static const String:ff2versiondates[][]=
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
-	"August 9, 2014"	//1.10.1
+	"August 26, 2014"	//1.10.1
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -2956,7 +2956,7 @@ public Action:MakeModelTimer(Handle:timer, any:client)
 EquipBoss(client)
 {
 	DoOverlay(Boss[client], "");
-	TF2_RemoveAllWeapons2(Boss[client]);
+	TF2_RemoveAllWeapons(Boss[client]);
 	decl String:weapon[64], String:attributes[128];
 	for(new i=1; ; i++)
 	{
@@ -3410,7 +3410,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		weapon=GetPlayerWeaponSlot(client, 4);
 		if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
 		{
-			TF2_RemoveWeaponSlot2(client, 4);
+			TF2_RemoveWeaponSlot(client, 4);
 			weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
 		}
 		return Plugin_Continue;
@@ -3423,17 +3423,17 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		{
 			case 41:  //Natascha
 			{
-				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Primary);
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 				weapon=SpawnWeapon(client, "tf_weapon_minigun", 15, 1, 0, "");
 			}
 			case 402:  //Bazaar Bargain
 			{
-				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Primary);
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 				SpawnWeapon(client, "tf_weapon_sniperrifle", 14, 1, 0, "");
 			}
 			case 237:  //Rocket Jumper
 			{
-				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Primary);
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 				weapon=SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "265 ; 99999.0");
 					//265: Mini-crits airborne targets for 99999 seconds
 				SetAmmo(client, 0, 20);
@@ -3442,7 +3442,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 			{
 				if(GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)
 				{
-					TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Primary);
+					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 					SpawnWeapon(client, "tf_weapon_syringegun_medic", 17, 1, 10, "17 ; 0.05 ; 144 ; 1");
 						//17: +5 uber/hit
 						//144:  NOOP
@@ -3463,12 +3463,12 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		{
 			case 57, 231:  //Razorback, Darwin's Danger Shield
 			{
-				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Secondary);
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 0, "");
 			}
 			case 265:  //Stickybomb Jumper
 			{
-				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Secondary);
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				weapon=SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
 				SetAmmo(client, 1, 24);
 			}
@@ -3507,7 +3507,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		{
 			case 331:  //Fists of Steel
 			{
-				TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Melee);
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 				weapon=SpawnWeapon(client, "tf_weapon_fists", 5, 1, 6, "");
 			}
 			case 357:  //Half-Zatoichi
@@ -3518,7 +3518,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 			{
 				if(!GetConVarBool(cvarEnableEurekaEffect))
 				{
-					TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Melee);
+					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 					weapon=SpawnWeapon(client, "tf_weapon_wrench", 7, 1, 0, "");
 				}
 			}
@@ -3532,7 +3532,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 	weapon=GetPlayerWeaponSlot(client, 4);
 	if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
 	{
-		TF2_RemoveWeaponSlot2(client, 4);
+		TF2_RemoveWeaponSlot(client, 4);
 		weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
 	}
 
@@ -3542,7 +3542,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		new mediquality=(weapon>MaxClients && IsValidEdict(weapon) ? GetEntProp(weapon, Prop_Send, "m_iEntityQuality") : -1);
 		if(mediquality!=10)
 		{
-			TF2_RemoveWeaponSlot2(client, TFWeaponSlot_Secondary);
+			TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 			weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");  //200 ; 1 for area of effect healing	//; 178 ; 0.75 ; 128 ; 1.0 Faster switch-to
 			if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
 			{
@@ -4061,7 +4061,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(GetBossIndex(client)>=0 && !CheckRoundState())
 	{
-		TF2_RemoveAllWeapons2(client);
+		TF2_RemoveAllWeapons(client);
 	}
 
 	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
@@ -4073,7 +4073,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 				FF2flags[client]|=FF2FLAG_HASONGIVED;
 				RemovePlayerBack(client, {57, 133, 231, 405, 444, 608, 642}, 7);
 				RemovePlayerTarge(client);
-				TF2_RemoveAllWeapons2(client);
+				TF2_RemoveAllWeapons(client);
 				TF2_RegeneratePlayer(client);
 				CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}

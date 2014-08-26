@@ -258,12 +258,12 @@ Rage_Clone(const String:ability_name[], client)
 		{
 			case 0:
 			{
-				TF2_RemoveAllWeapons2(clone);
+				TF2_RemoveAllWeapons(clone);
 			}
 			case 1:
 			{
 				new weapon;
-				TF2_RemoveAllWeapons2(clone);
+				TF2_RemoveAllWeapons(clone);
 				if(classname[0]=='\0')
 				{
 					classname="tf_weapon_bottle";
@@ -449,7 +449,7 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)
 Rage_Bow(client)
 {
 	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
-	TF2_RemoveWeaponSlot2(boss, TFWeaponSlot_Primary);
+	TF2_RemoveWeaponSlot(boss, TFWeaponSlot_Primary);
 	new weapon=SpawnWeapon(boss, "tf_weapon_compound_bow", 1005, 100, 5, "6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19");
 	SetEntPropEnt(boss, Prop_Send, "m_hActiveWeapon", weapon);
 	new TFTeam:team=(FF2_GetBossTeam()==_:TFTeam_Blue ? TFTeam_Red:TFTeam_Blue);
@@ -796,7 +796,7 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 		{
 			if(GetEntPropEnt(attacker, Prop_Send, "m_hActiveWeapon")==GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee))
 			{
-				TF2_RemoveWeaponSlot2(attacker, TFWeaponSlot_Melee);
+				TF2_RemoveWeaponSlot(attacker, TFWeaponSlot_Melee);
 				new weapon;
 				switch(GetRandomInt(0, 2))
 				{
@@ -935,20 +935,7 @@ public Action:Timer_RemoveEntity(Handle:timer, any:entid)
 	new entity=EntRefToEntIndex(entid);
 	if(IsValidEdict(entity) && entity>MaxClients)
 	{
-		if(TF2_IsWearable(entity))
-		{
-			for(new client=1; client<MaxClients; client++)
-			{
-				if(IsValidEdict(client) && IsClientInGame(client))
-				{
-					TF2_RemoveWearable(client, entity);
-				}
-			}
-		}
-		else
-		{
-			AcceptEntityInput(entity, "Kill");
-		}
+		AcceptEntityInput(entity, "Kill");
 	}
 }
 
