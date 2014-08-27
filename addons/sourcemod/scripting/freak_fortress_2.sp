@@ -275,8 +275,8 @@ static const String:ff2versiondates[][]=
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
-	"August 26, 2014",	//1.10.1
-	"August 26, 2014"	//1.10.1
+	"August 27, 2014",	//1.10.1
+	"August 27, 2014"	//1.10.1
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -289,14 +289,14 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Updated to use Sourcemod 1.6.1 (Powerlord)");
 			DrawPanelText(panel, "3) Fixed goomba stomp ignoring demoshields (Wliu)");
 			DrawPanelText(panel, "4) Disabled boss from spectating (Wliu)");
-			DrawPanelText(panel, "5) Synced with VSH 1.49 (Wliu)");
+			DrawPanelText(panel, "5) Partial sync with VSH 1.49 (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 43:  //1.10.1
 		{
 			DrawPanelText(panel, "6) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
 			DrawPanelText(panel, "7) [Server] Fixed a rare healthbar error (Wliu)");
-			DrawPanelText(panel, "8) [Server] Added convar ff2_boss_suicide to control whether or not the boss can suicide (Wliu)");
+			DrawPanelText(panel, "8) [Server] Added convar ff2_boss_suicide to control whether or not the boss can suicide after the round starts (Wliu)");
 			DrawPanelText(panel, "9) [Server] Changed ff2_boss_teleporter's default value to 0 (Wliu)");
 			DrawPanelText(panel, "10) [Dev] Added FF2_GetAlivePlayers and FF2_GetBossPlayers (Wliu/AliceTaylor)");
 			DrawPanelText(panel, "11) [Dev] Fixed a bug in the main include file (Wliu)");
@@ -4759,9 +4759,10 @@ public Action:OnCallForMedic(client, const String:command[], args)
 
 public Action:OnSuicide(client, const String:command[], args)
 {
-	if(Enabled && IsBoss(client) && (GetConVarBool(cvarBossSuicide) ? !CheckRoundState() : true))
+	new bool:canBossSuicide=GetConVarBool(cvarBossSuicide);
+	if(Enabled && IsBoss(client) && (canBossSuicide ? !CheckRoundState() : true))
 	{
-		CPrintToChat(client, "{olive}[FF2]{default} %t", CheckRoundState() ? "Boss Suicide Denied" : "Boss Suicide Pre-round");
+		CPrintToChat(client, "{olive}[FF2]{default} %t", canBossSuicide ? "Boss Suicide Denied" : "Boss Suicide Pre-round");
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
