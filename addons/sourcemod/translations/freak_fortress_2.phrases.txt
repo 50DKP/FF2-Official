@@ -329,4 +329,20 @@
 	{
 		"en"	"You are not allowed to suicide before the round starts!"
 	}
+	"Backstab"
+	{
+		"en"	"You just backstabbed the boss!"
+	}
+	"Backstabbed"
+	{
+		"en"	"You just got backstabbed!"
+	}
+	"Market Gardener"
+	{
+		"en"	"You just market-gardened the boss!"
+	}
+	"Market Gardened"
+	{
+		"en"	"You just got market-gardened!"
+	}
 }

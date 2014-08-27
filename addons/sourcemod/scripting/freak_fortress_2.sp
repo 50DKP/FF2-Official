@@ -76,6 +76,7 @@ new Damage[MAXPLAYERS+1];
 new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new demoShield[MAXPLAYERS+1];
+new isClientRocketJumping[MAXPLAYERS+1];
 
 new FF2flags[MAXPLAYERS+1];
 
@@ -87,6 +88,7 @@ new BossLives[MAXPLAYERS+1];
 new BossLivesMax[MAXPLAYERS+1];
 new Float:BossCharge[MAXPLAYERS+1][8];
 new Float:Stabbed[MAXPLAYERS+1];
+new Float:Marketed[MAXPLAYERS+1];
 new Float:KSpreeTimer[MAXPLAYERS+1];
 new KSpreeCount[MAXPLAYERS+1];
 new Float:GlowTimer[MAXPLAYERS+1];
@@ -785,6 +787,8 @@ public OnPluginStart()
 	HookEvent("object_destroyed", event_destroy, EventHookMode_Pre);
 	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
 	HookEvent("deploy_buff_banner", OnDeployBackup);
+	HookEvent("rocket_jump", OnRocketJump);
+	HookEvent("rocket_jump_landed", OnRocketJump);
 
 	AddCommandListener(OnCallForMedic, "voicemenu");  //Used to activate rages
 	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding
@@ -1897,6 +1901,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	{
 		Damage[client]=0;
 		uberTarget[client]=-1;
+		isClientRocketJumping[client]=false;
 		emitRageSound[client]=true;
 		if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator)
 		{
@@ -2111,6 +2116,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			DispatchSpawn(pack);
 		}
 	}
+
 	healthcheckused=0;
 	return Plugin_Continue;
 }
@@ -3207,6 +3213,15 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
+		case 231:  //Darwin's Danger Shield
+		{
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "26 ; 50");  //+50 health
+			if(itemOverride!=INVALID_HANDLE)
+			{
+				item=itemOverride;
+				return Plugin_Changed;
+			}
+		}
 		case 305, 1079:  //Crusader's Crossbow, Festive Crusader's Crossbow
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.1 ; 2 ; 1.2"); //; 266 ; 1.0");
@@ -3497,9 +3512,9 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		civilianCheck[client]++;
 	}
 
-	if(IsValidEntity(FindPlayerBack(client, {57, 231}, 2)))  //Razorback, Darwin's Danger Shield
+	if(IsValidEntity(FindPlayerBack(client, {57}, 2)))  //Razorback
 	{
-		RemovePlayerBack(client, {57 , 231}, 2);
+		RemovePlayerBack(client, {57}, 2);
 		weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 0, "");
 	}
 
@@ -4897,6 +4912,9 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		UpdateHealthBar();
 
 		CreateTimer(0.5, Timer_RestoreLastClass, GetClientUserId(client));
+
+		Stabbed[boss]=0.0;
+		Marketed[boss]=0.0;
 		return;
 	}
 
@@ -4999,6 +5017,11 @@ public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadca
 		FF2flags[GetClientOfUserId(GetEventInt(event, "buff_owner"))]|=FF2FLAG_ISBUFFED;
 	}
 	return Plugin_Continue;
+}
+
+public Action:OnRocketJump(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	isClientRocketJumping[GetClientOfUserId(GetEventInt(event, "userid"))]=StrEqual(name, "rocket_jump", false);
 }
 
 public Action:CheckAlivePlayers(Handle:timer)
@@ -5175,10 +5198,10 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		damage*=5;
 	}
-	else if(custom==TF_CUSTOM_BACKSTAB)
+	/*else if(custom==TF_CUSTOM_BACKSTAB)
 	{
 		damage=RoundFloat(BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90));
-	}
+	}*/
 
 	if(GetEventBool(event, "minicrit") && GetEventBool(event, "allseecrit"))
 	{
@@ -5368,7 +5391,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 	GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
 	if(IsBoss(attacker))
 	{
-		if(IsValidClient(client) && !IsBoss(client) && !TF2_IsPlayerInCondition(client, TFCond_Bonked) && !TF2_IsPlayerInCondition(client, TFCond_Ubercharged))
+		if(IsValidClient(client) && !IsBoss(client) && !TF2_IsPlayerInCondition(client, TFCond_Bonked))
 		{
 			if(TF2_IsPlayerInCondition(client, TFCond_DefenseBuffed))
 			{
@@ -5381,6 +5404,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			{
 				damage*=9;
 				TF2_AddCondition(client, TFCond_Bonked, 0.1);
+				return Plugin_Changed;
+			}
+
+			if(TF2_IsPlayerInCondition(client, TFCond_CritMmmph))
+			{
+				damage*=0.25;
 				return Plugin_Changed;
 			}
 
@@ -5636,6 +5665,27 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							TF2_RemoveCondition(attacker, TFCond_OnFire);
 						}
 					}
+					case 416:  //Market Gardener (courtesy of Chdata)
+                    {
+                        if(isClientRocketJumping[attacker])
+                        {
+                            damage=(Pow(float(BossHealthMax[boss]), (0.74074))+512.0-(Marketed[Boss[boss]]/128*float(BossHealthMax[boss])))/3.0;
+                            damagetype|=DMG_CRIT;
+
+                            if(Marketed[Boss[boss]]<5)
+							{
+								Marketed[Boss[boss]]++;
+							}
+
+                            PrintCenterText(attacker, "%t", "Market Gardener");
+                            PrintCenterText(client, "%t", "Market Gardened");
+
+                            EmitSoundToClient(client, "player/doubledonk.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.6, 100, _, position, _, false);
+                            EmitSoundToClient(attacker, "player/doubledonk.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.6, 100, _, position, _, false);
+
+                            return Plugin_Changed;
+                        }
+                    }
 					case 525, 595:  //Diamondback, Manmelter
 					{
 						if(GetEntProp(attacker, Prop_Send, "m_iRevengeCrits"))  //If a revenge crit was used, give a damage bonus
@@ -5727,7 +5777,9 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 				if(bIsBackstab)
 				{
-					new Float:changedamage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90);
+					damage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90)/3;
+					damagetype|=DMG_CRIT;
+					/*new Float:changedamage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90);
 					new iChangeDamage=RoundFloat(changedamage);
 					Damage[attacker]+=iChangeDamage;
 					if(BossHealth[boss]>iChangeDamage)
@@ -5744,15 +5796,16 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					if(BossCharge[boss][0]>100.0)
 					{
 						BossCharge[boss][0]=100.0;
-					}
+					}*/
 
-					EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(client, "player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, _, NULL_VECTOR, false, 0.0);
-					EmitSoundToClient(attacker, "player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, _, NULL_VECTOR, false, 0.0);
+					EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
+					EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
+					EmitSoundToClient(client, "player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, _, _, false);
+					EmitSoundToClient(attacker, "player/crit_received3.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, _, _, false);
 					SetEntPropFloat(weapon, Prop_Send, "m_flNextPrimaryAttack", GetGameTime()+2.0);
 					SetEntPropFloat(attacker, Prop_Send, "m_flNextAttack", GetGameTime()+2.0);
 					SetEntPropFloat(attacker, Prop_Send, "m_flStealthNextChangeTime", GetGameTime()+2.0);
+
 					new viewmodel=GetEntPropEnt(attacker, Prop_Send, "m_hViewModel");
 					if(viewmodel>MaxClients && IsValidEntity(viewmodel) && TF2_GetPlayerClass(attacker)==TFClass_Spy)
 					{
@@ -5778,15 +5831,15 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 					if(!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
 					{
-						PrintCenterText(attacker, "You backstabbed the boss!");
+						PrintCenterText(attacker, "%t", "Backstab");
 					}
 
 					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
 					{
-						PrintCenterText(client, "You were just backstabbed!");
+						PrintCenterText(client, "%t", "Backstabbed");
 					}
 
-					new Handle:stabevent=CreateEvent("player_hurt", true);
+					/*new Handle:stabevent=CreateEvent("player_hurt", true);
 					SetEventInt(stabevent, "userid", GetClientUserId(client));
 					SetEventInt(stabevent, "health", BossHealth[boss]);
 					SetEventInt(stabevent, "attacker", GetClientUserId(attacker));
@@ -5796,7 +5849,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					SetEventBool(stabevent, "minicrit", false);
 					SetEventBool(stabevent, "allseecrit", true);
 					SetEventInt(stabevent, "weaponid", TF_WEAPON_KNIFE);
-					FireEvent(stabevent);
+					FireEvent(stabevent);*/
 					if(index==225 || index==574)  //Your Eternal Reward, Wanga Prick
 					{
 						CreateTimer(0.3, Timer_DisguiseBackstab, GetClientUserId(attacker));
@@ -5824,8 +5877,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					decl String:sound[PLATFORM_MAX_PATH];
 					if(RandomSound("sound_stabbed", sound, PLATFORM_MAX_PATH, boss))
 					{
-						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[boss], _, NULL_VECTOR, false, 0.0);
-						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[boss], _, NULL_VECTOR, false, 0.0);
+						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[boss], _, _, false);
+						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[boss], _, _, false);
 					}
 
 					if(Stabbed[boss]<3)
@@ -5833,7 +5886,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						Stabbed[boss]++;
 					}
 
-					new healers[MAXPLAYERS];
+					/*new healers[MAXPLAYERS];  //player_hurt
 					new healerCount;
 					for(new healer; healer<=MaxClients; healer++)
 					{
@@ -5857,7 +5910,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 								Damage[healers[healer]]+=RoundFloat(changedamage/(healerCount+1));
 							}
 						}
-					}
+					}*/
 					return Plugin_Changed;
 				}
 			}
