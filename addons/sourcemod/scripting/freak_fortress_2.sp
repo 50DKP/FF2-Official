@@ -1312,6 +1312,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	PrecacheSound("vo/announcer_am_capenabled04.wav", true);
 	PrecacheSound("weapons/barret_arm_zap.wav", true);
 	PrecacheSound("vo/announcer_ends_2min.wav", true);
+	PrecacheSound("player/doubledonk.wav", true);
 	isCharSetSelected=false;
 }
 
