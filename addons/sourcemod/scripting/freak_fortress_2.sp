@@ -5666,26 +5666,26 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						}
 					}
 					case 416:  //Market Gardener (courtesy of Chdata)
-                    {
-                        if(isClientRocketJumping[attacker])
-                        {
-                            damage=(Pow(float(BossHealthMax[boss]), (0.74074))+512.0-(Marketed[Boss[boss]]/128*float(BossHealthMax[boss])))/3.0;
-                            damagetype|=DMG_CRIT;
+					{
+						if(isClientRocketJumping[attacker])
+						{
+							damage=(Pow(float(BossHealthMax[boss]), (0.74074))+512.0-(Marketed[Boss[boss]]/128*float(BossHealthMax[boss])))/3.0;
+							damagetype|=DMG_CRIT;
 
-                            if(Marketed[Boss[boss]]<5)
+							if(Marketed[Boss[boss]]<5)
 							{
 								Marketed[Boss[boss]]++;
 							}
 
-                            PrintCenterText(attacker, "%t", "Market Gardener");
-                            PrintCenterText(client, "%t", "Market Gardened");
+							PrintCenterText(attacker, "%t", "Market Gardener");
+							PrintCenterText(client, "%t", "Market Gardened");
 
-                            EmitSoundToClient(client, "player/doubledonk.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.6, 100, _, position, _, false);
-                            EmitSoundToClient(attacker, "player/doubledonk.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.6, 100, _, position, _, false);
+							EmitSoundToClient(client, "player/doubledonk.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.6, 100, _, position, _, false);
+							EmitSoundToClient(attacker, "player/doubledonk.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.6, 100, _, position, _, false);
 
-                            return Plugin_Changed;
-                        }
-                    }
+							return Plugin_Changed;
+						}
+					}
 					case 525, 595:  //Diamondback, Manmelter
 					{
 						if(GetEntProp(attacker, Prop_Send, "m_iRevengeCrits"))  //If a revenge crit was used, give a damage bonus
