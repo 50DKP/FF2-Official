@@ -5597,9 +5597,9 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					case 61, 1006:  //Ambassador, Festive Ambassador
 					{
 						if(damagecustom==TF_CUSTOM_HEADSHOT)
-                        {
-                            damage=85.0;  //Final damage 255
-                        }
+						{
+							damage=85.0;  //Final damage 255
+						}
 					}
 					case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander
 					{
@@ -5746,9 +5746,9 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					case 594:  //Phlogistinator
 					{
 						if(!TF2_IsPlayerInCondition(attacker, TFCond_CritMmmph))
-                        {
-                            damage/=2.0;
-                        }
+						{
+							damage/=2.0;
+						}
 					}
 					case 656:  //Holiday Punch
 					{
