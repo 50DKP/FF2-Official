@@ -2289,8 +2289,8 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	{
 		if(RandomSound("sound_win", sound, PLATFORM_MAX_PATH))
 		{
-			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[0], _, NULL_VECTOR, false, 0.0);
-			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[0], _, NULL_VECTOR, false, 0.0);
+			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[0], _, _, false);
+			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[0], _, _, false);
 		}
 	}
 
@@ -2439,9 +2439,9 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 public Action:Timer_NineThousand(Handle:timer)
 {
-	EmitSoundToAll("saxton_hale/9000.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, false, 0.0);
-	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, false, 0.0);
-	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 1.0, 100, _, _, NULL_VECTOR, false, 0.0);
+	EmitSoundToAll("saxton_hale/9000.wav", _, _, SNDLEVEL_TRAFFIC, _, 1.0, 100, _, _, _, false);
+	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, SNDLEVEL_TRAFFIC, _, 1.0, 100, _, _, _, false);
+	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, _, SNDLEVEL_TRAFFIC, _, 1.0, 100, _, _, _, false);
 	return Plugin_Continue;
 }
 
@@ -2742,7 +2742,7 @@ public Action:Timer_MusicTheme(Handle:timer, any:userid)
 			{
 				if(!client)
 				{
-					EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music, _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, NULL_VECTOR, NULL_VECTOR, false, 0.0);
+					EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music, _, _, SNDLEVEL_TRAFFIC, _, _, 100, _, _, _, false);
 				}
 				else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 				{
@@ -4474,15 +4474,15 @@ public Action:BossTimer(Handle:timer)
 						GetEntPropVector(Boss[client], Prop_Send, "m_vecOrigin", position);
 
 						FF2flags[Boss[client]]|=FF2FLAG_TALKING;
-						EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
-						EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
+						EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
+						EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
 
 						for(new target=1; target<=MaxClients; target++)
 						{
 							if(IsClientInGame(target) && target!=Boss[client])
 							{
-								EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
-								EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, Boss[client], position);
+								EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
+								EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
 							}
 						}
 						FF2flags[Boss[client]]&=~FF2FLAG_TALKING;
@@ -4739,15 +4739,15 @@ public Action:OnCallForMedic(client, const String:command[], args)
 		if(RandomSoundAbility("sound_ability", sound, PLATFORM_MAX_PATH, boss))
 		{
 			FF2flags[Boss[boss]]|=FF2FLAG_TALKING;
-			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
-			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, _, _, 100, client, position);
+			EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, _, _, 100, client, position);
 
 			for(new target=1; target<=MaxClients; target++)
 			{
 				if(IsClientInGame(target) && target!=Boss[boss])
 				{
-					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
-					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position);
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, _, _, 100, client, position);
+					EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, _, _, 100, client, position);
 				}
 			}
 			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
@@ -5416,10 +5416,10 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			if(demoShield[client])
 			{
 				TF2_RemoveWearable(client, demoShield[client]);
-				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
-				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
-				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
-				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false, 0.0);
+				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
+				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
+				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
+				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 				TF2_AddCondition(client, TFCond_Bonked, 0.1);
 				demoShield[client]=0;
 				return Plugin_Continue;
@@ -6021,10 +6021,10 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 			GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
 
 			TF2_RemoveWearable(victim, demoShield[victim]);
-			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false);
-			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false);
-			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false);
-			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, 0.7, 100, _, position, NULL_VECTOR, false);
+			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
+			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
+			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
+			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 			TF2_AddCondition(victim, TFCond_Bonked, 0.1);
 			demoShield[victim]=0;
 			return Plugin_Handled;
