@@ -33,7 +33,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.1"
+#define PLUGIN_VERSION "1.10.2"
 //#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
@@ -233,7 +233,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.1",
 	"1.10.1",
 	"1.10.1",
-	"1.10.1"
+	"1.10.1",
+	"1.10.2"
 };
 
 static const String:ff2versiondates[][]=
@@ -285,13 +286,19 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
-	"August 28, 2014"	//1.10.1
+	"August 28, 2014",	//1.10.1
+	"August 28, 2014"	//1.10.2
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 48:  //1.10.2
+		{
+			DrawPanelText(panel, "1) Fixed a critical bug that rendered most bosses as errors without sound (Wliu; thanks to slavko17 for reporting)");
+			DrawPanelText(panel, "2) Reverted escape sequences change, which is what caused this bug");
+		}
 		case 47:  //1.10.1
 		{
 			DrawPanelText(panel, "1) Fixed a rare bug where rage could go over 100% (Wliu)");
@@ -1420,7 +1427,6 @@ public LoadCharacter(const String:character[])
 		return;
 	}
 	BossKV[Specials]=CreateKeyValues("character");
-	KvSetEscapeSequences(BossKV[Specials], true);
 	FileToKeyValues(BossKV[Specials], config);
 
 	new version=KvGetNum(BossKV[Specials], "version", 1);
