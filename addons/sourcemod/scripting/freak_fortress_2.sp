@@ -34,7 +34,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define REQUIRE_PLUGIN
 
 #define PLUGIN_VERSION "1.10.1"
-#define DEV_VERSION
+//#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -230,6 +230,9 @@ static const String:ff2versiontitles[][]=
 	"1.10.0",
 	"1.10.0",
 	"1.10.1",
+	"1.10.1",
+	"1.10.1",
+	"1.10.1",
 	"1.10.1"
 };
 
@@ -279,6 +282,9 @@ static const String:ff2versiondates[][]=
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
 	"August 28, 2014",	//1.10.1
+	"August 28, 2014",	//1.10.1
+	"August 28, 2014",	//1.10.1
+	"August 28, 2014",	//1.10.1
 	"August 28, 2014"	//1.10.1
 };
 
@@ -286,24 +292,47 @@ stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 44:  //1.10.1
+		case 47:  //1.10.1
 		{
 			DrawPanelText(panel, "1) Fixed a rare bug where rage could go over 100% (Wliu)");
 			DrawPanelText(panel, "2) Updated to use Sourcemod 1.6.1 (Powerlord)");
 			DrawPanelText(panel, "3) Fixed goomba stomp ignoring demoshields (Wliu)");
 			DrawPanelText(panel, "4) Disabled boss from spectating (Wliu)");
-			DrawPanelText(panel, "5) Partial sync with VSH 1.49 (Wliu)");
+			DrawPanelText(panel, "5) Fixed some possible overlapping HUD text (Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
+		case 46:  //1.10.1
+		{
+			DrawPanelText(panel, "6) Fixed ff2_charset displaying incorrect colors (Wliu)");
+			DrawPanelText(panel, "7) Boss info text now also displays in the chat area (Wliu)");
+			DrawPanelText(panel, "--Partially synced with VSH 1.49 (all VSH changes listed courtesy of Chdata)--");
+			DrawPanelText(panel, "8) VSH: Do not show HUD text if the scoreboard is open");
+			DrawPanelText(panel, "9) VSH: Added market gardener 'backstab'");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
+		case 45:  //1.10.1
+		{
+			DrawPanelText(panel, "10) VSH: Removed Darwin's Danger Shield from the blacklist (Chdata) and gave it a +50 health bonus (Wliu)");
+			DrawPanelText(panel, "11) VSH: Rebalanced Phlogistinator");
+			DrawPanelText(panel, "12) VSH: Improved backstab code");
+			DrawPanelText(panel, "13) VSH: Added ff2_shield_crits cvar to control whether or not demomen get crits when using shields");
+			DrawPanelText(panel, "14) VSH: Reserve Shooter now deals crits to bosses in mid-air");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
+		case 44:  //1.10.1
+		{
+			DrawPanelText(panel, "15) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
+			DrawPanelText(panel, "16) [Server] Fixed a rare healthbar error (Wliu)");
+			DrawPanelText(panel, "17) [Server] Added convar ff2_boss_suicide to control whether or not the boss can suicide after the round starts (Wliu)");
+			DrawPanelText(panel, "18) [Server] Changed ff2_boss_teleporter's default value to 0 (Wliu)");
+			DrawPanelText(panel, "19) [Server] Updated translations (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 43:  //1.10.1
 		{
-			DrawPanelText(panel, "6) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
-			DrawPanelText(panel, "7) [Server] Fixed a rare healthbar error (Wliu)");
-			DrawPanelText(panel, "8) [Server] Added convar ff2_boss_suicide to control whether or not the boss can suicide after the round starts (Wliu)");
-			DrawPanelText(panel, "9) [Server] Changed ff2_boss_teleporter's default value to 0 (Wliu)");
-			DrawPanelText(panel, "10) [Dev] Added FF2_GetAlivePlayers and FF2_GetBossPlayers (Wliu/AliceTaylor)");
-			DrawPanelText(panel, "11) [Dev] Fixed a bug in the main include file (Wliu)");
-			DrawPanelText(panel, "12) [Dev] Enabled escape sequences in configs (Wliu)");
+			DrawPanelText(panel, "20) [Dev] Added FF2_GetAlivePlayers and FF2_GetBossPlayers (Wliu/AliceTaylor)");
+			DrawPanelText(panel, "21) [Dev] Fixed a bug in the main include file (Wliu)");
+			DrawPanelText(panel, "22) [Dev] Enabled escape sequences in configs (Wliu)");
 		}
 		case 42:  //1.10.0
 		{
