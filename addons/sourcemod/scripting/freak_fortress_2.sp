@@ -4776,7 +4776,7 @@ public Action:OnSuicide(client, const String:command[], args)
 	new bool:canBossSuicide=GetConVarBool(cvarBossSuicide);
 	if(Enabled && IsBoss(client) && (canBossSuicide ? !CheckRoundState() : true))
 	{
-		CPrintToChat(client, "{olive}[FF2]{default} %t", canBossSuicide ? "Boss Suicide Denied" : "Boss Suicide Pre-round");
+		CPrintToChat(client, "{olive}[FF2]{default} %t", canBossSuicide ? "Boss Suicide Pre-round" : "Boss Suicide Denied");
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -7579,7 +7579,7 @@ public Handler_VoteCharset(Handle:menu, votes, clients, const clientInfo[][2], i
 
 	GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
 	strcopy(FF2CharSetString, 42, item[StrContains(item, " ")+1]);
-	CPrintToChatAll("%t", "nextmap_charset", nextmap, FF2CharSetString);  //display
+	CPrintToChatAll("%t", "{olive}[FF2]{default} nextmap_charset", nextmap, FF2CharSetString);  //display
 	isCharSetSelected=true;
 }
 
@@ -7646,7 +7646,7 @@ public Action:Command_Nextmap(client, args)
 	{
 		decl String:nextmap[42];
 		GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
-		CPrintToChat(client, "%t", "nextmap_charset", nextmap, FF2CharSetString);
+		CPrintToChat(client, "%t", "{olive}[FF2]{default} nextmap_charset", nextmap, FF2CharSetString);
 	}
 	return Plugin_Handled;
 }
