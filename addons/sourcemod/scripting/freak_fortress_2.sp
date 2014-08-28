@@ -117,6 +117,7 @@ new Handle:cvarHealthBar;
 new Handle:cvarLastPlayerGlow;
 new Handle:cvarBossTeleporter;
 new Handle:cvarBossSuicide;
+new Handle:cvarShieldCrits;
 new Handle:cvarGoombaDamage;
 new Handle:cvarGoombaRebound;
 new Handle:cvarBossRTD;
@@ -146,6 +147,7 @@ new countdownHealth=2000;
 new bool:SpecForceBoss=false;
 new bool:lastPlayerGlow=true;
 new bool:bossTeleportation=true;
+new shieldCrits;
 new Float:GoombaDamage=0.05;
 new Float:reboundPower=300.0;
 new bool:canBossRTD=false;
@@ -275,8 +277,8 @@ static const String:ff2versiondates[][]=
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
 	"July 26, 2014",	//1.10.0
-	"August 27, 2014",	//1.10.1
-	"August 27, 2014"	//1.10.1
+	"August 28, 2014",	//1.10.1
+	"August 28, 2014"	//1.10.1
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -770,6 +772,7 @@ public OnPluginStart()
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
 	cvarBossSuicide=CreateConVar("ff2_boss_suicide", "0", "Allow the boss to suicide after the round starts?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarShieldCrits=CreateConVar("ff2_shield_crits", "0", "0 to disable grenade launcher crits when equipping a shield, 1 for minicrits, 2 for crits", FCVAR_PLUGIN, true, 0.0, true, 2.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How high players should rebound after goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -810,6 +813,7 @@ public OnPluginStart()
 	HookConVarChange(cvarCountdownHealth, CvarChange);
 	HookConVarChange(cvarLastPlayerGlow, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
+	HookConVarChange(cvarShieldCrits, CvarChange);
 	HookConVarChange(cvarGoombaDamage, CvarChange);
 	HookConVarChange(cvarGoombaRebound, CvarChange);
 	HookConVarChange(cvarBossRTD, CvarChange);
@@ -1094,6 +1098,7 @@ public EnableFF2()
 	countdownTime=GetConVarInt(cvarCountdownTime);
 	lastPlayerGlow=GetConVarBool(cvarLastPlayerGlow);
 	bossTeleportation=GetConVarBool(cvarBossTeleporter);
+	shieldCrits=GetConVarInt(cvarShieldCrits);
 
 	SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
 	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
@@ -1577,6 +1582,10 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarBossTeleporter)
 	{
 		bossTeleportation=bool:StringToInt(newValue);
+	}
+	else if(convar==cvarShieldCrits)
+	{
+		shieldCrits=StringToInt(newValue);
 	}
 	else if(convar==cvarGoombaDamage)
 	{
@@ -4350,9 +4359,13 @@ public Action:ClientTimer(Handle:timer)
 				}
 				case TFClass_DemoMan:
 				{
-					if(!IsValidEntity(GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)))
+					if(!IsValidEntity(GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)) && shieldCrits)  //Demoshields
 					{
 						addthecrit=true;
+						if(shieldCrits==1)
+						{
+							cond=TFCond_Buffed;
+						}
 					}
 				}
 				case TFClass_Spy:
