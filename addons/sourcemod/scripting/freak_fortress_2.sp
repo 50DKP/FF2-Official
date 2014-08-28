@@ -131,7 +131,7 @@ new Handle:rageHUD;
 new Handle:healthHUD;
 new Handle:timeleftHUD;
 new Handle:abilitiesHUD;
-new Handle:doorCheckTimer;
+new Handle:infoHUD;
 
 new bool:Enabled=true;
 new bool:Enabled2=true;
@@ -155,6 +155,7 @@ new bool:canBossRTD=false;
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
 new Handle:DrawGameTimer;
+new Handle:doorCheckTimer;
 
 new RoundCounter;
 new botqueuepoints;
@@ -885,6 +886,7 @@ public OnPluginStart()
 	healthHUD=CreateHudSynchronizer();
 	abilitiesHUD=CreateHudSynchronizer();
 	timeleftHUD=CreateHudSynchronizer();
+	infoHUD=CreateHudSynchronizer();
 
 	decl String:oldVersion[64];
 	GetConVarString(cvarVersion, oldVersion, sizeof(oldVersion));
@@ -2428,16 +2430,16 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			{
 				if(bossWin)
 				{
-					ShowHudText(client, -1, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_win");
+					ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_win");
 				}
 				else
 				{
-					ShowHudText(client, -1, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_lose");
+					ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_lose");
 				}
 			}
 			else
 			{
-				ShowHudText(client, -1, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
+				ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
 			}
 		}
 	}
@@ -2961,14 +2963,16 @@ public Action:MessageTimer(Handle:timer)
 		Format(text, 512, "%s\n%t", text, "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
 	}
 
-	for(new client=1; client<=MaxClients; client++)
+	for(new client; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client) && !(FF2flags[client] & FF2FLAG_HUDDISABLED))
 		{
 			SetGlobalTransTarget(client);
-			ShowHudText(client, -1, text);
+			ShowSyncHudText(client, infoHUD, text);
 		}
 	}
+	ReplaceString(text, sizeof(text), "\n", "");  //Get rid of newlines
+	CPrintToChatAll("{olive}[FF2]{default} %s!", text);
 	return Plugin_Continue;
 }
 
@@ -3996,7 +4000,7 @@ public Action:Command_Charset(client, args)
 		Debug("Command_Charset: Section name was %s", config);
 		if(StrContains(config, charset, false)>=0)
 		{
-			CReplyToCommand(client, "{default}[FF2]{olive} Charset for nextmap is %s", config);
+			CReplyToCommand(client, "{olive}[FF2]{default} Charset for nextmap is %s", config);
 			isCharSetSelected=true;
 			FF2CharSet=i;
 			break;
@@ -4004,7 +4008,7 @@ public Action:Command_Charset(client, args)
 
 		if(!KvGotoNextKey(Kv))
 		{
-			CReplyToCommand(client, "{default}[FF2]{olive} Charset not found");
+			CReplyToCommand(client, "{olive}[FF2]{default} Charset not found");
 			break;
 		}
 	}
