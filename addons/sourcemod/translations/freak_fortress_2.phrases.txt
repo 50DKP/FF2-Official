@@ -221,16 +221,16 @@
 	"to0"
 	{
 		"en"	"set to 0"
-	}	
+	}
 	"to0_title"
 	{
 		"en"	"Do you really want to set your queue points to 0?"
-	}	
+	}
 	"to0_title_admin"
 	{
 		"#format" "{1:N}"
 		"en"	"Do you really want to set {1}'s queue points to 0?"
-	}	
+	}
 	"to0_done"
 	{
 		"en"	"Now you have {olive}0{default} queue points"
@@ -320,5 +320,29 @@
 	{
 		"#format" "{1:s},{2:i}"
 		"en"	"{1} lost 1 life! There is 1 more!"
+	}
+	"Boss Suicide Denied"
+	{
+		"en"	"You are not allowed to suicide as the boss!"
+	}
+	"Boss Suicide Pre-round"
+	{
+		"en"	"You are not allowed to suicide before the round starts!"
+	}
+	"Backstab"
+	{
+		"en"	"You just backstabbed the boss!"
+	}
+	"Backstabbed"
+	{
+		"en"	"You just got backstabbed!"
+	}
+	"Market Gardener"
+	{
+		"en"	"You just market-gardened the boss!"
+	}
+	"Market Gardened"
+	{
+		"en"	"You just got market-gardened!"
 	}
 }

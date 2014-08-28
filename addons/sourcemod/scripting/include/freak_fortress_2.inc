@@ -3,17 +3,17 @@
 #include <sdktools>
 
 #define FF2FLAG_UBERREADY				(1<<1)		//Used when medic says "I'm charged!"
-#define FF2FLAG_ISBUFFED				(1<<2)		//Used when soldier uses backup's buff.
-#define FF2FLAG_CLASSTIMERDISABLED 		(1<<3)		//Used to prevent clients' timer.
-#define FF2FLAG_HUDDISABLED				(1<<4)		//Used to prevent custom hud from clients' timer.
-#define FF2FLAG_BOTRAGE					(1<<5)		//Used by bots to use Boss' rage.
-#define FF2FLAG_TALKING					(1<<6)		//Used by Bosses with "sound_block_vo" to disable block for some lines.
-#define FF2FLAG_ALLOWSPAWNINBOSSTEAM	(1<<7)		//Used to allow spawn players in Boss' team.
-#define FF2FLAG_USEBOSSTIMER			(1<<8)		//Used to prevent Boss' timer.
-#define FF2FLAG_USINGABILITY			(1<<9)		//Used to prevent Boss' hints about abilities buttons.
+#define FF2FLAG_ISBUFFED				(1<<2)		//Used when soldier uses the Battalion's Backup
+#define FF2FLAG_CLASSTIMERDISABLED 		(1<<3)		//Used to prevent clients' timer
+#define FF2FLAG_HUDDISABLED				(1<<4)		//Used to prevent custom hud from clients' timer
+#define FF2FLAG_BOTRAGE					(1<<5)		//Used by bots to use Boss's rage
+#define FF2FLAG_TALKING					(1<<6)		//Used by Bosses with "sound_block_vo" to disable block for some lines
+#define FF2FLAG_ALLOWSPAWNINBOSSTEAM	(1<<7)		//Used to allow spawn players in Boss's team
+#define FF2FLAG_USEBOSSTIMER			(1<<8)		//Used to prevent Boss's timer
+#define FF2FLAG_USINGABILITY			(1<<9)		//Used to prevent Boss's hints about abilities buttons
 #define FF2FLAG_CLASSHELPED				(1<<10)
 #define FF2FLAG_HASONGIVED				(1<<11)
-#define FF2FLAG_CHANGECVAR				(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages.
+#define FF2FLAG_CHANGECVAR				(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages
 #define FF2FLAGS_SPAWN					~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & ~FF2FLAG_CHANGECVAR & FF2FLAG_USEBOSSTIMER & FF2FLAG_USINGABILITY
 
 #if defined _FF2_included
@@ -331,10 +331,24 @@ native Float:FF2_GetClientGlow(client);
 native FF2_SetClientGlow(client, Float:time1, Float:time2=-1.0);
 
 /**
+ * Retrieves the number of alive players left (not including bosses)
+ *
+ * @return			Number of non-boss players left alive
+ */
+native FF2_GetAlivePlayers();
+
+/**
+ * Retrieves the number of boss players left (including minions)
+ *
+ * @return          Number of boss players left alive
+ */
+native FF2_GetBossPlayers();
+
+/**
  * Returns whether or not debug is enabled
  * @return			True if enabled, false otherwise
  */
-native Bool:FF2_Debug();
+native bool:FF2_Debug();
 
 /**
  * FF2_OnAbility:
@@ -436,121 +450,30 @@ stock Debug(String:buffer[], any:...)
 	}
 }
 
-/* TEMPORARY STUFF FOR TF2 WEARABLES; TO BE REMOVED AS SOON AS SOURCEMOD ADDS WEARABLE SUPPORT */
-//Created by friagram
-new Handle:removeWearable=INVALID_HANDLE;
-new Handle:equipWearable=INVALID_HANDLE;
-new Handle:isWearable=INVALID_HANDLE;
-
-stock TF2_RemoveWearable(client, wearable)
-{
-	if(removeWearable==INVALID_HANDLE)
-	{
-		new Handle:config=LoadGameConfigFile("equipwearable");
-		if(config==INVALID_HANDLE)
-		{
-			LogError("[FF2] EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
-			PrintToServer("[FF2] WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
-			AcceptEntityInput(wearable, "kill");
-			return;
-		}
-
-		StartPrepSDKCall(SDKCall_Player);
-		PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "RemoveWearable");
-		CloseHandle(config);
-		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-		if((removeWearable=EndPrepSDKCall())==INVALID_HANDLE)
-		{
-			LogError("[FF2] Couldn't load SDK function (CTFPlayer::RemoveWearable). SDK call failed.");
-			PrintToServer("[FF2] WARNING: Using legacy method of removing wearables, VISUAL GLITCHES MAY OCCUR!");
-			AcceptEntityInput(wearable, "kill");
-			return;
-		}
-	}
-	SDKCall(removeWearable, client, wearable);
-}
-
-stock TF2_EquipWearable(client, wearable)
-{
-	if(equipWearable==INVALID_HANDLE)
-	{
-		new Handle:config=LoadGameConfigFile("equipwearable");
-		if(config==INVALID_HANDLE)
-		{
-			LogError("[FF2] EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
-			return;
-		}
-
-		StartPrepSDKCall(SDKCall_Player);
-		PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "equipwearable");
-		CloseHandle(config);
-		PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
-		if((equipWearable=EndPrepSDKCall())==INVALID_HANDLE)
-		{
-			LogError("[FF2] Couldn't load SDK function (CTFPlayer::EquipWearable). SDK call failed.");
-			return;
-		}
-	}
-	SDKCall(equipWearable, client, wearable);
-}
-
-stock TF2_IsWearable(wearable)
-{
-	if(isWearable==INVALID_HANDLE)
-	{
-		new Handle:config=LoadGameConfigFile("equipwearable");
-		if(config==INVALID_HANDLE)
-		{
-			LogError("[FF2] EquipWearable gamedata could not be found; make sure /gamedata/equipwearable.txt exists.");
-			return false;
-		}
-
-		StartPrepSDKCall(SDKCall_Entity);
-		PrepSDKCall_SetFromConf(config, SDKConf_Virtual, "IsWearable");
-		CloseHandle(config);
-		PrepSDKCall_SetReturnInfo(SDKType_Bool, SDKPass_Plain);
-		if((isWearable=EndPrepSDKCall())==INVALID_HANDLE)
-		{
-			LogError("[FF2] Couldn't load SDK function (CTFPlayer::IsWearable). SDK call failed.");
-			return false;
-		}
-	}
-	return SDKCall(isWearable, wearable);
-}
-
+// These exist for compatibility reasons (<1.10.1)
+#pragma deprecated Use TF2_RemoveWeaponSlot
 stock TF2_RemoveWeaponSlot2(client, slot)
 {
-	decl wearable;
-	new weaponIndex;
-	while((weaponIndex=GetPlayerWeaponSlot(client, slot))!=-1)
-	{
-		wearable=GetEntPropEnt(weaponIndex, Prop_Send, "m_hExtraWearable");
-		if(IsValidEntity(wearable))
-		{
-			TF2_RemoveWearable(client, wearable);
-		}
-		RemovePlayerItem(client, weaponIndex);
-		AcceptEntityInput(weaponIndex, "Kill");
-	}
+	TF2_RemoveWeaponSlot(client, slot);
 }
 
+#pragma deprecated Use TF2_RemoveAllWeapons
 stock TF2_RemoveAllWeapons2(client)
 {
 	for(new slot=0; slot<=5; slot++)
 	{
-		TF2_RemoveWeaponSlot2(client, slot);
+		TF2_RemoveWeaponSlot(client, slot);
 	}
 }
-/* End temp wearable stocks */
 
-public SharedPlugin:__pl_FF2 =
+public SharedPlugin:__pl_FF2=
 {
-	name = "freak_fortress_2",
-	file = "freak_fortress_2.smx",
+	name="freak_fortress_2",
+	file="freak_fortress_2.smx",
 	#if defined REQUIRE_PLUGIN
-		required = 1,
+		required=1,
 	#else
-		required = 0,
+		required=0,
 	#endif
 };
 
@@ -587,5 +510,9 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetFF2flags");
 	MarkNativeAsOptional("FF2_SetFF2flags");
 	MarkNativeAsOptional("FF2_DoAbility");
+    MarkNativeAsOptional("FF2_GetClientGlow");
+    MarkNativeAsOptional("FF2_SetClientGlow");
+    MarkNativeAsOptional("FF2_GetAlivePlayers");
+    MarkNativeAsOptional("FF2_GetBossPlayers");
 }
 #endif

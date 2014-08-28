@@ -265,7 +265,7 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 	{
 		case 1:
 		{
-			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED))
+			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(boss) & IN_SCORE))
 			{
 				SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 				ShowSyncHudText(boss, jumpHUD, "%t", "jump_status_2", -RoundFloat(charge));
@@ -273,7 +273,7 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 		}
 		case 2:
 		{
-			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED))
+			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(boss) & IN_SCORE))
 			{
 				SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 				if(enableSuperDuperJump[client])
@@ -369,7 +369,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 	{
 		case 1:
 		{
-			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED))
+			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(boss) & IN_SCORE))
 			{
 				SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 				ShowSyncHudText(boss, jumpHUD, "%t", "teleport_status_2", -RoundFloat(charge));
@@ -377,7 +377,7 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 		}
 		case 2:
 		{
-			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED))
+			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(boss) & IN_SCORE))
 			{
 				SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 				ShowSyncHudText(boss, jumpHUD, "%t", "teleport_status", RoundFloat(charge));
@@ -615,20 +615,7 @@ public Action:RemoveEntity(Handle:timer, any:entid)
 	new entity=EntRefToEntIndex(entid);
 	if(IsValidEdict(entity) && entity>MaxClients)
 	{
-			if(TF2_IsWearable(entity))
-			{
-				for(new client=1; client<MaxClients; client++)
-				{
-					if(IsValidEdict(client) && IsClientInGame(client))
-					{
-						TF2_RemoveWearable(client, entity);
-					}
-				}
-			}
-			else
-			{
-				AcceptEntityInput(entity, "Kill");
-			}
+		AcceptEntityInput(entity, "Kill");
 	}
 }
 
