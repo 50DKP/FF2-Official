@@ -4978,7 +4978,7 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 
 public Action:OnCallForMedic(client, const String:command[], args)
 {
-	if(!Enabled || !IsPlayerAlive(client) || CheckRoundState()!=1 || !IsBoss(client) || args!=2)
+	if(!Enabled || !IsPlayerAlive(client) || CheckRoundState()!=FF2RoundState_Running || !IsBoss(client) || args!=2)
 	{
 		return Plugin_Continue;
 	}
@@ -5827,47 +5827,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				Debug("OnTakeDamage: Weapon was %i", index);
 				switch(index)
 				{
-					case 593:  //Third Degree
-					{
-						new healers[MAXPLAYERS];
-						new healerCount;
-						for(new healer; healer<=MaxClients; healer++)
-						{
-							if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
-							{
-								healers[healerCount]=healer;
-								healerCount++;
-							}
-						}
-
-						for(new healer; healer<healerCount; healer++)
-						{
-							if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
-							{
-								new medigun=GetPlayerWeaponSlot(healers[healer], TFWeaponSlot_Secondary);
-								if(IsValidEntity(medigun))
-								{
-									decl String:classname[64];
-									GetEdictClassname(medigun, classname, sizeof(classname));
-									if(!strcmp(classname, "tf_weapon_medigun", false))
-									{
-										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healerCount);
-										new Float:max=1.0;
-										if(GetEntProp(medigun, Prop_Send, "m_bChargeRelease"))
-										{
-											max=1.5;
-										}
-
-										if(uber>max)
-										{
-											uber=max;
-										}
-										SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", uber);
-									}
-								}
-							}
-						}
-					}
 					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Sydney Sleeper, Bazaar Bargain, Machina, Festive Sniper Rifle, Hitman's Heatmaker, Botkiller Sniper Rifles
 					{
 						switch(index)
@@ -8468,7 +8427,6 @@ public Native_RandomSound(Handle:plugin, numParams)
 	new slot=GetNativeCell(5);
 	new String:sound[length];
 	new kvLength;
-<<<<<<< HEAD
 
 	GetNativeStringLength(1, kvLength);
 	kvLength++;
@@ -8476,15 +8434,6 @@ public Native_RandomSound(Handle:plugin, numParams)
 	decl String:keyvalue[kvLength];
 	GetNativeString(1, keyvalue, kvLength);
 
-=======
-
-	GetNativeStringLength(1, kvLength);
-	kvLength++;
-
-	decl String:keyvalue[kvLength];
-	GetNativeString(1, keyvalue, kvLength);
-
->>>>>>> origin/master
 	new bool:soundExists;
 	if(!strcmp(keyvalue, "sound_ability"))
 	{
