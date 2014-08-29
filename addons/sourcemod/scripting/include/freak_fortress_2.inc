@@ -4,17 +4,17 @@
 #include <tf2>
 
 #define FF2FLAG_UBERREADY				(1<<1)		//Used when medic says "I'm charged!"
-#define FF2FLAG_ISBUFFED				(1<<2)		//Used when soldier uses backup's buff.
-#define FF2FLAG_CLASSTIMERDISABLED 		(1<<3)		//Used to prevent clients' timer.
-#define FF2FLAG_HUDDISABLED				(1<<4)		//Used to prevent custom hud from clients' timer.
-#define FF2FLAG_BOTRAGE					(1<<5)		//Used by bots to use Boss' rage.
-#define FF2FLAG_TALKING					(1<<6)		//Used by Bosses with "sound_block_vo" to disable block for some lines.
-#define FF2FLAG_ALLOWSPAWNINBOSSTEAM	(1<<7)		//Used to allow spawn players in Boss' team.
-#define FF2FLAG_USEBOSSTIMER			(1<<8)		//Used to prevent Boss' timer.
-#define FF2FLAG_USINGABILITY			(1<<9)		//Used to prevent Boss' hints about abilities buttons.
+#define FF2FLAG_ISBUFFED				(1<<2)		//Used when soldier uses the Battalion's Backup
+#define FF2FLAG_CLASSTIMERDISABLED 		(1<<3)		//Used to prevent clients' timer
+#define FF2FLAG_HUDDISABLED				(1<<4)		//Used to prevent custom hud from clients' timer
+#define FF2FLAG_BOTRAGE					(1<<5)		//Used by bots to use Boss's rage
+#define FF2FLAG_TALKING					(1<<6)		//Used by Bosses with "sound_block_vo" to disable block for some lines
+#define FF2FLAG_ALLOWSPAWNINBOSSTEAM	(1<<7)		//Used to allow spawn players in Boss's team
+#define FF2FLAG_USEBOSSTIMER			(1<<8)		//Used to prevent Boss's timer
+#define FF2FLAG_USINGABILITY			(1<<9)		//Used to prevent Boss's hints about abilities buttons
 #define FF2FLAG_CLASSHELPED				(1<<10)
 #define FF2FLAG_HASONGIVED				(1<<11)
-#define FF2FLAG_CHANGECVAR				(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages.
+#define FF2FLAG_CHANGECVAR				(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages
 #define FF2FLAGS_SPAWN					~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & ~FF2FLAG_CHANGECVAR & FF2FLAG_USEBOSSTIMER & FF2FLAG_USINGABILITY
 
 #if defined _FF2_included
@@ -332,10 +332,24 @@ native Float:FF2_GetClientGlow(client);
 native FF2_SetClientGlow(client, Float:time1, Float:time2=-1.0);
 
 /**
+ * Retrieves the number of alive players left (not including bosses)
+ *
+ * @return			Number of non-boss players left alive
+ */
+native FF2_GetAlivePlayers();
+
+/**
+ * Retrieves the number of boss players left (including minions)
+ *
+ * @return          Number of boss players left alive
+ */
+native FF2_GetBossPlayers();
+
+/**
  * Returns whether or not debug is enabled
  * @return			True if enabled, false otherwise
  */
-native Bool:FF2_Debug();
+native bool:FF2_Debug();
 
 /**
  * FF2_OnAbility:
@@ -437,6 +451,22 @@ stock Debug(String:buffer[], any:...)
 	}
 }
 
+// These exist for compatibility reasons (<1.10.1)
+#pragma deprecated Use TF2_RemoveWeaponSlot
+stock TF2_RemoveWeaponSlot2(client, slot)
+{
+	TF2_RemoveWeaponSlot(client, slot);
+}
+
+#pragma deprecated Use TF2_RemoveAllWeapons
+stock TF2_RemoveAllWeapons2(client)
+{
+	for(new slot=0; slot<=5; slot++)
+	{
+		TF2_RemoveWeaponSlot(client, slot);
+	}
+}
+
 public SharedPlugin:__pl_FF2=
 {
 	name="freak_fortress_2",
@@ -481,5 +511,9 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetFF2flags");
 	MarkNativeAsOptional("FF2_SetFF2flags");
 	MarkNativeAsOptional("FF2_DoAbility");
+    MarkNativeAsOptional("FF2_GetClientGlow");
+    MarkNativeAsOptional("FF2_SetClientGlow");
+    MarkNativeAsOptional("FF2_GetAlivePlayers");
+    MarkNativeAsOptional("FF2_GetBossPlayers");
 }
 #endif

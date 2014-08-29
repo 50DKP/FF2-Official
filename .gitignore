@@ -2,7 +2,6 @@
 addons/metamod/
 addons/sourcemod/bin/
 addons/sourcemod/configs/**
-!addons/sourcemod/configs/freak_fortress_2/
 !addons/sourcemod/configs/freak_fortress_2/**
 addons/sourcemod/translations/**
 !addons/sourcemod/translations/ru/

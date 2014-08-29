@@ -325,4 +325,28 @@
 		"#format"	"{1:s}"
 		"en"		"=== Freak Fortress 2 v{1} (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) ==="
 	}
+	"Boss Suicide Denied"
+	{
+		"en"	"You are not allowed to suicide as the boss!"
+	}
+	"Boss Suicide Pre-round"
+	{
+		"en"	"You are not allowed to suicide before the round starts!"
+	}
+	"Backstab"
+	{
+		"en"	"You just backstabbed the boss!"
+	}
+	"Backstabbed"
+	{
+		"en"	"You just got backstabbed!"
+	}
+	"Market Gardener"
+	{
+		"en"	"You just market-gardened the boss!"
+	}
+	"Market Gardened"
+	{
+		"en"	"You just got market-gardened!"
+	}
 }
