@@ -141,9 +141,6 @@ new Handle:cvarBossRTD;*/
 new Handle:cvarBossTeleporter;
 new Handle:cvarBossSuicide;
 new Handle:cvarShieldCrits;
-new Handle:cvarGoombaDamage;
-new Handle:cvarGoombaRebound;
-new Handle:cvarBossRTD;
 new Handle:cvarUpdater;
 new Handle:cvarDebug;
 
@@ -4978,7 +4975,7 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 
 public Action:OnCallForMedic(client, const String:command[], args)
 {
-	if(!Enabled || !IsPlayerAlive(client) || CheckRoundState()!=FF2RoundState_Running || !IsBoss(client) || args!=2)
+	if(!Enabled || !IsPlayerAlive(client) || CheckRoundState()!=FF2RoundState_RoundRunning || !IsBoss(client) || args!=2)
 	{
 		return Plugin_Continue;
 	}
