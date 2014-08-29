@@ -1147,12 +1147,6 @@ public OnMapEnd()
 			KillTimer(MusicTimer);
 			MusicTimer=INVALID_HANDLE;
 		}
-
-		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
-		{
-			ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
-			ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
-		}
 	}
 }
 
@@ -2075,7 +2069,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		{
 			new TFTeam:team=TFTeam:GetClientTeam(client);
 			if(!teamHasPlayers[0] && team==TFTeam_Blue)
-<<<<<<< HEAD
 			{
 				teamHasPlayers[0]=true;
 			}
@@ -2086,18 +2079,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 			if(teamHasPlayers[0] && teamHasPlayers[1])
 			{
-=======
-			{
-				teamHasPlayers[0]=true;
-			}
-			else if(!teamHasPlayers[1] && team==TFTeam_Red)
-			{
-				teamHasPlayers[1]=true;
-			}
-
-			if(teamHasPlayers[0] && teamHasPlayers[1])
-			{
->>>>>>> origin/master
 				break;
 			}
 		}
