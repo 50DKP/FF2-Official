@@ -4,14 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.10.0"
-			"Previous"	"1.9.3"
+			"Latest"	"1.10.2"
+			"Previous"	"1.10.1"
 		}
 
-		"Notes"	"Last major FF2 v1 version"
-		"Notes"	"Primarily contains bugfixes"
-		"Notes"	"It is highly recommended that you remove rage_preventtaunt from your boss configs (since they don't get auto-updated)"
-		"Notes"	"See in-game changelog for details"
+		"Notes"	"Critical bugfix for 1.10.1"
 	}
 
 	"Files"
@@ -19,16 +16,7 @@
 		"Patch"
 		{
 			"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
-			"Plugin"	"Path_SM/plugins/freaks/default_abilities.ff2"
-			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
-			"Plugin"	"Path_SM/plugins/freaks/special_noanims.ff2"
-			"Plugin"	"Path_SM/translations/freak_fortress_2.phrases.txt"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
-			"Source"	"Path_SM/scripting/freaks/default_abilities.sp"
-			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
-			"Source"	"Path_SM/scripting/freaks/special_noanims.sp"
-			"Source"	"Path_SM/include/freak_fortress_2.inc"
-			"Source"	"Path_SM/include/freak_fortress_2_vsh_feedback.inc"
 		}
 
 		"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"

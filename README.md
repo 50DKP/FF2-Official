@@ -1,5 +1,5 @@
 ##Welcome to the official FF2 repository!
-**LATEST VERSION**: [1.10.0](https://forums.alliedmods.net/showthread.php?p=2054933#post2054933)
+**LATEST VERSION**: [1.10.2](https://forums.alliedmods.net/showthread.php?p=2054933#post2054933)
 
 [![Build Status](https://travis-ci.org/50DKP/FF2-Official.svg?branch=development)](https://travis-ci.org/50DKP/FF2-Official)
 
@@ -9,7 +9,7 @@ Some third-party include files were modified in order to make FF2 work properly 
 It is highly recommended that you also make these changes when compiling FF2.
 
 `smac.inc`:
-* Remove: 
+* Remove:
 ```sourcepawn
 MarkNativeAsOptional("SMAC_CheatDetected");
 ```
@@ -19,7 +19,7 @@ MarkNativeAsOptional("SMAC_CheatDetected");
 ```sourcepawn
 required = 1
 ```
-* Add: 
+* Add:
 ```sourcepawn
 #if defined REQUIRE_PLUGIN
 required = 1
