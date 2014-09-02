@@ -33,8 +33,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.2"
-//#define DEV_VERSION
+#define PLUGIN_VERSION "1.10.3 Beta"
+#define DEV_VERSION
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -234,7 +234,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.1",
 	"1.10.1",
 	"1.10.1",
-	"1.10.2"
+	"1.10.2",
+	"1.10.3"
 };
 
 static const String:ff2versiondates[][]=
@@ -287,13 +288,21 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
-	"August 28, 2014"	//1.10.2
+	"August 28, 2014",	//1.10.2
+	"September 2, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 49:  //1.10.3
+		{
+			DrawPanelText(panel, "1) Fixed a bug with respawning bosses (Wliu/Spyper)");
+			DrawPanelText(panel, "2) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu/Spyper)");
+			DrawPanelText(panel, "3) Fixed 'nextmap_charset' VFormat errors in console (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "4) Fixed an issue with displaying boss info in chat (Wliu)");
+		}
 		case 48:  //1.10.2
 		{
 			DrawPanelText(panel, "1) Fixed a critical bug that rendered most bosses as errors without sound (Wliu; thanks to slavko17 for reporting)");
@@ -2975,6 +2984,7 @@ public Action:MessageTimer(Handle:timer)
 
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	new String:text[512];
+	decl String:textChat[512];
 	decl String:lives[4];
 	decl String:name[64];
 	for(new client; Boss[client]; client++)
@@ -2995,7 +3005,12 @@ public Action:MessageTimer(Handle:timer)
 		{
 			strcopy(lives, 2, "");
 		}
-		Format(text, 512, "%s\n%t", text, "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
+
+		Format(text, sizeof(text), "%s\n%t", text, "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
+		Format(textChat, sizeof(textChat), "{olive}[FF2]{default} %t!", "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
+		ReplaceString(textChat, sizeof(textChat), "\n", "");  //Get rid of newlines
+		CPrintToChatAll("%s", textChat);
+		
 	}
 
 	for(new client; client<=MaxClients; client++)
@@ -3006,8 +3021,6 @@ public Action:MessageTimer(Handle:timer)
 			ShowSyncHudText(client, infoHUD, text);
 		}
 	}
-	ReplaceString(text, sizeof(text), "\n", "");  //Get rid of newlines
-	CPrintToChatAll("{olive}[FF2]{default} %s!", text);
 	return Plugin_Continue;
 }
 
@@ -4133,17 +4146,13 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	}
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
-	if(!IsValidClient(client, false))
-	{
-		return Plugin_Continue;
-	}
-
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
 
-	if(GetBossIndex(client)>=0 && !CheckRoundState())
+	if(IsBoss(client))// && !CheckRoundState())
 	{
 		TF2_RemoveAllWeapons(client);
+		CreateTimer(0.1, MakeBoss, GetClientUserId(client));
 	}
 
 	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
@@ -4153,7 +4162,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 			if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
 			{
 				FF2flags[client]|=FF2FLAG_HASONGIVED;
-				RemovePlayerBack(client, {57, 133, 231, 405, 444, 608, 642}, 7);
+				RemovePlayerBack(client, {57, 133, 405, 444, 608, 642}, 7);
 				RemovePlayerTarge(client);
 				TF2_RemoveAllWeapons(client);
 				TF2_RegeneratePlayer(client);
@@ -5147,8 +5156,6 @@ public Action:CheckAlivePlayers(Handle:timer)
 		{
 			timeleft=countdownTime;
 			DrawGameTimer=CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-			EmitSoundToAll("vo/announcer_ends_2min.wav");
-			EmitSoundToAll("vo/announcer_ends_2min.wav");
 		}
 		executed2=true;
 	}
@@ -5157,8 +5164,9 @@ public Action:CheckAlivePlayers(Handle:timer)
 
 public Action:Timer_DrawGame(Handle:timer)
 {
-	if(BossHealth[0]<countdownHealth || CheckRoundState()!=1)
+	if(BossHealth[0]<countdownHealth || CheckRoundState()!=1 || RedAlivePlayers>countdownPlayers)
 	{
+		executed2=false;
 		return Plugin_Stop;
 	}
 
@@ -5194,6 +5202,14 @@ public Action:Timer_DrawGame(Handle:timer)
 
 	switch(time)
 	{
+		case 300:
+		{
+			EmitSoundToAll("vo/announcer_ends_5min.wav");
+		}
+		case 120:
+		{
+			EmitSoundToAll("vo/announcer_ends_2min.wav");
+		}
 		case 60:
 		{
 			EmitSoundToAll("vo/announcer_ends_60sec.wav");
@@ -7366,20 +7382,30 @@ public Action:HelpPanel2(client)
 	return Plugin_Continue;
 }
 
-public Action:HelpPanelBoss(index)
+public Action:HelpPanelBoss(client)
 {
-	decl String:s[512], String:lang[20];
-	GetLanguageInfo(GetClientLanguage(Boss[index]),lang,8,s,8);
-	Format(lang,20,"description_%s",lang);
-	KvRewind(BossKV[Special[index]]);
-	KvGetString(BossKV[Special[index]], lang, s, 512);
-	if(!s[0])
-		return Plugin_Continue;
-	ReplaceString(s,512,"\\n","\n");
+	decl String:text[512], String:language[20];
+	GetLanguageInfo(GetClientLanguage(Boss[client]), language, 8, text, 8);
+	Format(language, sizeof(language), "description_%s", language);
+
+	KvRewind(BossKV[Special[client]]);
+	//KvSetEscapeSequences(BossKV[Special[client]], true);  //Not working
+	KvGetString(BossKV[Special[client]], language, text, sizeof(text));
+	if(!text[0])
+	{
+		KvGetString(BossKV[Special[client]], "description_en", text, sizeof(text));  //Default to English if their language isn't available
+		if(!text[0])
+		{
+			return Plugin_Continue;
+		}
+	}
+	ReplaceString(text, sizeof(text), "\\n", "\n");
+	//KvSetEscapeSequences(BossKV[Special[client]], false);  //We don't want to interfere with the download paths
+
 	new Handle:panel=CreatePanel();
-	SetPanelTitle(panel,s);
+	SetPanelTitle(panel, text);
 	DrawPanelItem(panel,"Exit");
-	SendPanelToClient(panel, Boss[index], HintPanelH, 20);
+	SendPanelToClient(panel, Boss[client], HintPanelH, 20);
 	CloseHandle(panel);
 	return Plugin_Continue;
 }
@@ -7618,7 +7644,7 @@ public Handler_VoteCharset(Handle:menu, votes, clients, const clientInfo[][2], i
 
 	GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
 	strcopy(FF2CharSetString, 42, item[StrContains(item, " ")+1]);
-	CPrintToChatAll("%t", "{olive}[FF2]{default} nextmap_charset", nextmap, FF2CharSetString);  //display
+	CPrintToChatAll("{olive}[FF2]{default} %t", "nextmap_charset", nextmap, FF2CharSetString);  //display
 	isCharSetSelected=true;
 }
 
@@ -7685,7 +7711,7 @@ public Action:Command_Nextmap(client, args)
 	{
 		decl String:nextmap[42];
 		GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
-		CPrintToChat(client, "%t", "{olive}[FF2]{default} nextmap_charset", nextmap, FF2CharSetString);
+		CPrintToChat(client, "{olive}[FF2]{default} %t", "nextmap_charset", nextmap, FF2CharSetString);
 	}
 	return Plugin_Handled;
 }
