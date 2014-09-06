@@ -59,8 +59,8 @@ public OnPluginStart2()
 
 public OnMapStart()
 {
-	PrecacheSound("replay\\exitperformancemode.wav",true);
-	PrecacheSound("replay\\enterperformancemode.wav",true);
+	PrecacheSound("replay\\exitperformancemode.wav", true);
+	PrecacheSound("replay\\enterperformancemode.wav", true);
 }
 
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)

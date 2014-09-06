@@ -2640,7 +2640,7 @@ public Action:StartBossTimer(Handle:timer)
 		{
 			BossHealthMax[client]=CalcBossHealthMax(client);
 			SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
-			SetBossHealthFix(Boss[client], BossHealthMax[client]);
+			//SetBossHealthFix(Boss[client], BossHealthMax[client]);
 			BossLives[client]=BossLivesMax[client];
 			BossHealth[client]=BossHealthMax[client]*BossLivesMax[client];
 			BossHealthLast[client]=BossHealth[client];
@@ -3010,7 +3010,7 @@ public Action:MessageTimer(Handle:timer)
 		Format(textChat, sizeof(textChat), "{olive}[FF2]{default} %t!", "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
 		ReplaceString(textChat, sizeof(textChat), "\n", "");  //Get rid of newlines
 		CPrintToChatAll("%s", textChat);
-		
+
 	}
 
 	for(new client; client<=MaxClients; client++)
@@ -3055,17 +3055,15 @@ EquipBoss(client)
 			KvGetString(BossKV[Special[client]], "attributes", attributes, 128);
 			if(attributes[0]!='\0')
 			{
-				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; 259 ; 1.0 ; %s", attributes);
+				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; %s", attributes);
 					//68: +2 cap rate
 					//2: x3 damage
-					//259: Mantreads effect (broken)
 			}
 			else
 			{
-				attributes="68 ; 2.0 ; 2 ; 3 ; 259 ; 1.0";
+				attributes="68 ; 2.0 ; 2 ; 3";
 					//68: +2 cap rate
 					//2: x3 damage
-					//259: Mantreads effect (broken)
 			}
 
 			new BossWeapon=SpawnWeapon(Boss[client], weapon, KvGetNum(BossKV[Special[client]], "index"), 101, 5, attributes);
@@ -4106,6 +4104,7 @@ stock SetControlPoint(bool:enable)
 		}
 	}
 }
+
 stock SetArenaCapEnableTime(Float:time)
 {
 	new entity=-1;
@@ -4122,6 +4121,7 @@ public OnClientPutInServer(client)
 	FF2flags[client]=0;
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);
 	Damage[client]=0;
 	uberTarget[client]=-1;
 	if(!AreClientCookiesCached(client))
@@ -4504,7 +4504,7 @@ public Action:BossTimer(Handle:timer)
 		{
 			BossHealth[client]=1;
 		}
-		SetBossHealthFix(Boss[client], BossHealth[client]);
+		//SetBossHealthFix(Boss[client], BossHealth[client]);
 
 		if(!(FF2flags[Boss[client]] & FF2FLAG_HUDDISABLED))
 		{
@@ -5138,11 +5138,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			else
 			{
 				new i=GetRandomInt(1, 4);
-				if(!(i % 2))
-				{
-					i--;
-				}
-				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.wav", i);
+				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.wav", i % 2 ? i : i--);  //1 or 3
 				EmitSoundToAll(sound);
 			}
 		}
@@ -5849,24 +5845,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				{
 					damage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90)/3;
 					damagetype|=DMG_CRIT;
-					/*new Float:changedamage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90);
-					new iChangeDamage=RoundFloat(changedamage);
-					Damage[attacker]+=iChangeDamage;
-					if(BossHealth[boss]>iChangeDamage)
-					{
-						damage=0.0;
-					}
-					else
-					{
-						damage=changedamage;
-					}
-
-					BossHealth[boss]-=iChangeDamage;
-					BossCharge[boss][0]+=changedamage*100.0/BossRageDamage[Special[boss]];
-					if(BossCharge[boss][0]>100.0)
-					{
-						BossCharge[boss][0]=100.0;
-					}*/
 
 					EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 					EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
@@ -5909,17 +5887,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						PrintCenterText(client, "%t", "Backstabbed");
 					}
 
-					/*new Handle:stabevent=CreateEvent("player_hurt", true);
-					SetEventInt(stabevent, "userid", GetClientUserId(client));
-					SetEventInt(stabevent, "health", BossHealth[boss]);
-					SetEventInt(stabevent, "attacker", GetClientUserId(attacker));
-					SetEventInt(stabevent, "damageamount", iChangeDamage);
-					SetEventInt(stabevent, "custom", TF_CUSTOM_BACKSTAB);
-					SetEventBool(stabevent, "crit", true);
-					SetEventBool(stabevent, "minicrit", false);
-					SetEventBool(stabevent, "allseecrit", true);
-					SetEventInt(stabevent, "weaponid", TF_WEAPON_KNIFE);
-					FireEvent(stabevent);*/
 					if(index==225 || index==574)  //Your Eternal Reward, Wanga Prick
 					{
 						CreateTimer(0.3, Timer_DisguiseBackstab, GetClientUserId(attacker));
@@ -5955,32 +5922,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						Stabbed[boss]++;
 					}
-
-					/*new healers[MAXPLAYERS];  //player_hurt
-					new healerCount;
-					for(new healer; healer<=MaxClients; healer++)
-					{
-						if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
-						{
-							healers[healerCount]=healer;
-							healerCount++;
-						}
-					}
-
-					for(new healer; healer<healerCount; healer++)
-					{
-						if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
-						{
-							if(uberTarget[healers[healer]]==attacker)
-							{
-								Damage[healers[healer]]+=iChangeDamage;
-							}
-							else
-							{
-								Damage[healers[healer]]+=RoundFloat(changedamage/(healerCount+1));
-							}
-						}
-					}*/
 					return Plugin_Changed;
 				}
 			}
@@ -6121,6 +6062,21 @@ public Action:RTD_CanRollDice(client)
 {
 	if(Enabled && IsBoss(client) && !canBossRTD)
 	{
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
+
+public Action:OnGetMaxHealth(client, &maxHealth)
+{
+	if(CheckRoundState()==1 && IsValidClient(client) && IsBoss(client))
+	{
+		new boss=GetBossIndex(client);
+		if(GetEntProp(client, Prop_Data, "m_iHealth")>BossHealthMax[boss])
+		{
+			SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]);
+		}
+		maxHealth=BossHealthMax[boss];
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -7741,11 +7697,11 @@ stock FindEntityByClassname2(startEnt, const String:classname[])
 	return FindEntityByClassname(startEnt, classname);
 }
 
-stock SetBossHealthFix(client, oldHealth)  //Wat.  TODO: 2.0.0
+/*stock SetBossHealthFix(client, oldHealth)  //Wat.  TODO: 2.0.0
 {
 	new originalHealth=oldHealth;
 	SetEntProp(client, Prop_Send, "m_iHealth", originalHealth);
-}
+}*/
 
 UseAbility(const String:ability_name[], const String:plugin_name[], client, slot, buttonMode=0)
 {
