@@ -289,7 +289,7 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 2, 2014"	//1.10.3
+	"September 6, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -298,10 +298,12 @@ stock FindVersionData(Handle:panel, versionIndex)
 	{
 		case 49:  //1.10.3
 		{
-			DrawPanelText(panel, "1) Fixed a bug with respawning bosses (Wliu/Spyper)");
-			DrawPanelText(panel, "2) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu/Spyper)");
-			DrawPanelText(panel, "3) Fixed 'nextmap_charset' VFormat errors in console (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "1) Fixed a bug with respawning bosses (Wliu)");
+			DrawPanelText(panel, "2) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu)");
+			DrawPanelText(panel, "3) Fixed 'nextmap_charset' VFormat errors in console (Wliu)");
 			DrawPanelText(panel, "4) Fixed an issue with displaying boss info in chat (Wliu)");
+			DrawPanelText(panel, "5) Fixed boss health always displaying as overheal (War3Evo)");
+			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting these bugs!");
 		}
 		case 48:  //1.10.2
 		{
@@ -2640,7 +2642,6 @@ public Action:StartBossTimer(Handle:timer)
 		{
 			BossHealthMax[client]=CalcBossHealthMax(client);
 			SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
-			//SetBossHealthFix(Boss[client], BossHealthMax[client]);
 			BossLives[client]=BossLivesMax[client];
 			BossHealth[client]=BossHealthMax[client]*BossLivesMax[client];
 			BossHealthLast[client]=BossHealth[client];
@@ -4504,7 +4505,7 @@ public Action:BossTimer(Handle:timer)
 		{
 			BossHealth[client]=1;
 		}
-		//SetBossHealthFix(Boss[client], BossHealth[client]);
+		SetEntProp(Boss[client], Prop_Send, "m_iHealth", BossHealth[client]);
 
 		if(!(FF2flags[Boss[client]] & FF2FLAG_HUDDISABLED))
 		{
@@ -7696,12 +7697,6 @@ stock FindEntityByClassname2(startEnt, const String:classname[])
 	}
 	return FindEntityByClassname(startEnt, classname);
 }
-
-/*stock SetBossHealthFix(client, oldHealth)  //Wat.  TODO: 2.0.0
-{
-	new originalHealth=oldHealth;
-	SetEntProp(client, Prop_Send, "m_iHealth", originalHealth);
-}*/
 
 UseAbility(const String:ability_name[], const String:plugin_name[], client, slot, buttonMode=0)
 {
