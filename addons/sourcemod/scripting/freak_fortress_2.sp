@@ -1323,7 +1323,6 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	decl String:stringChances[MAXSPECIALS*2][8];
 	if(ChancesString[0])
 	{
-		Debug("FindCharacters: ChancesString was %s", ChancesString);
 		new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
 		if(amount % 2)
 		{
@@ -1345,14 +1344,11 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 					break;
 				}
 				chances[chancesIndex]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2];
-				Debug("FindCharacters: Chances for character %i was %s (total chances: %i)", chances[chancesIndex-1], stringChances[chancesIndex], chances[chancesIndex]);
 			}
 			else
 			{
 				chances[chancesIndex]=StringToInt(stringChances[chancesIndex]);
-				Debug("FindCharacters: Adding character %i to chances", chances[chancesIndex]);
 			}
-			Debug("FindCharacters: chancesIndex was %i", chancesIndex);
 		}
 	}
 
@@ -1900,7 +1896,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	{
 		DeleteFile("bNextMapToFF2");
 	}
-	DrawGameTimer=INVALID_HANDLE;
 
 	new bool:bBluBoss;
 	switch(GetConVarInt(cvarForceBossTeam))
@@ -2358,6 +2353,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		KillTimer(MusicTimer);
 		MusicTimer=INVALID_HANDLE;
 	}
+	DrawGameTimer=INVALID_HANDLE;
 
 	new bool:isBossAlive, boss;
 	for(new client; client<=MaxClients; client++)
@@ -4034,7 +4030,6 @@ public Action:Command_Charset(client, args)
 		StripQuotes(rawText[i]);
 	}
 	ImplodeStrings(rawText, amount, " ", charset, sizeof(charset));
-	Debug("Command_Charset: Processed command argument was %s", charset);
 
 	decl String:config[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
@@ -4044,7 +4039,6 @@ public Action:Command_Charset(client, args)
 	for(new i; ; i++)
 	{
 		KvGetSectionName(Kv, config, sizeof(config));
-		Debug("Command_Charset: Section name was %s", config);
 		if(StrContains(config, charset, false)>=0)
 		{
 			CReplyToCommand(client, "{olive}[FF2]{default} Charset for nextmap is %s", config);
@@ -4179,6 +4173,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(CheckRoundState()==1)
 	{
+		Debug("event_player_spawn: %N is ALIVE!", client);
 		CreateTimer(0.1, CheckAlivePlayers);
 	}
 
@@ -4749,7 +4744,6 @@ public Action:OnCallForMedic(client, const String:command[], args)
 	decl String:arg1[4], String:arg2[4];
 	GetCmdArg(1, arg1, sizeof(arg1));
 	GetCmdArg(2, arg2, sizeof(arg2));
-	Debug("OnCallForMedic: Detected args were %s and %s", arg1, arg2);
 	if(StringToInt(arg1) || StringToInt(arg2))  //We only want "voicemenu 0 0"-thanks friagram for pointing out edge cases
 	{
 		return Plugin_Continue;
@@ -5111,6 +5105,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			}
 		}
 	}
+	Debug("CheckAlivePlayers: Total of %i red players left", RedAlivePlayers);
 
 	if(!RedAlivePlayers)
 	{
@@ -5151,6 +5146,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 	{
 		if(FindEntityByClassname2(-1, "team_control_point")!=-1)
 		{
+			Debug("CheckAlivePlayers: Starting timer");
 			timeleft=countdownTime;
 			DrawGameTimer=CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
@@ -5163,6 +5159,7 @@ public Action:Timer_DrawGame(Handle:timer)
 {
 	if(BossHealth[0]<countdownHealth || CheckRoundState()!=1 || RedAlivePlayers>countdownPlayers)
 	{
+		Debug("Timer_DrawGame: Stopping timer");
 		executed2=false;
 		return Plugin_Stop;
 	}
@@ -5290,7 +5287,6 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 		{
 			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
 			Call_StartForward(OnLoseLife);
-			Debug("event_hurt: Starting forward");
 			Call_PushCell(boss);
 			Call_PushCellRef(bossLives);
 			Call_PushCell(BossLivesMax[boss]);
@@ -5306,7 +5302,6 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 					BossLivesMax[boss]=bossLives;
 				}
 				BossLives[boss]=bossLives;
-				Debug("event_hurt: BossLives[boss] was %i, BossLivesMax[boss] was %i", BossLives[boss], BossLivesMax[boss]);
 			}
 
 			decl String:ability[PLATFORM_MAX_PATH], String:lives[MAXRANDOMS][3];
@@ -5408,7 +5403,6 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 		{
 			static airStrikeDamage;
 			airStrikeDamage+=damage;
-			Debug("event_hurt: Damage was %i, airStrikeDamage is now %i", damage, airStrikeDamage);
 			if(airStrikeDamage>=200)
 			{
 				SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
@@ -5606,7 +5600,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 
 				new index=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
-				Debug("OnTakeDamage: Weapon was %i", index);
 				switch(index)
 				{
 					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Sydney Sleeper, Bazaar Bargain, Machina, Festive Sniper Rifle, Hitman's Heatmaker, Botkiller Sniper Rifles
@@ -5833,7 +5826,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						static Float:airStrikeDamage;
 						airStrikeDamage+=damage;
-						Debug("OnTakeDamage: Damage was %f, airStrikeDamage is now %f", damage, airStrikeDamage);
 						if(airStrikeDamage>=200.0)
 						{
 							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
@@ -6713,12 +6705,9 @@ public bool:PickCharacter(client, companion)
 			if(ChancesString[0])
 			{
 				new i=GetRandomInt(0, chances[chancesIndex-1]);
-				Debug("PickCharacter: Random number was %i; Specials was %i", i, Specials);
 				while(chancesIndex>=2 && i<chances[chancesIndex-1])
 				{
-					Debug("PickCharacter: chances[%i] was %i", chancesIndex, chances[chancesIndex-1]);
 					Special[client]=chances[chancesIndex-2]-1;
-					Debug("PickCharacter: Character was %i", Special[client]);
 					chancesIndex-=2;
 				}
 			}
@@ -6733,7 +6722,6 @@ public bool:PickCharacter(client, companion)
 				Special[client]=0;
 				continue;
 			}
-			Debug("PickCharacter: Final character was %i", Special[client]);
 			break;
 		}
 	}
@@ -7645,7 +7633,6 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 		charsets++;
 
 		KvGetSectionName(Kv, config, 64);
-		Debug("Timer_DisplayCharsetVote:  Found charset %s", config);
 		Format(charset, sizeof(charset), "%i %s", i, config);
 		AddMenuItem(menu, charset, config);
 		//AddMenuItem(menu, i, config);
