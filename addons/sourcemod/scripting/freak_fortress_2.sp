@@ -3252,6 +3252,19 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}*/
+		case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
+		{
+			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+				//10: +25% faster charge rate
+				//178: +25% faster weapon switch
+				//144: Quick-fix speed/jump effects
+				//11: +50% overheal bonus
+			if(hItemOverride!=INVALID_HANDLE)
+			{
+				hItem=hItemOverride;
+				return Plugin_Changed;
+			}
+		}
 		case 220:  //Shortstop
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "328 ; 1.0", true);
@@ -3632,8 +3645,26 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		new mediquality=(weapon>MaxClients && IsValidEdict(weapon) ? GetEntProp(weapon, Prop_Send, "m_iEntityQuality") : -1);
 		if(mediquality!=10)
 		{
-			TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-			weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");  //200 ; 1 for area of effect healing	//; 178 ; 0.75 ; 128 ; 1.0 Faster switch-to
+			index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+			switch(index)
+			{
+				case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
+				{
+					SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
+				}
+				default:
+				{
+					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+					weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+						//Switch to regular medigun
+						//10: +25% faster charge rate
+						//178: +25% faster weapon switch
+						//144: Quick-fix speed/jump effects
+						//11: +50% overheal bonus
+					SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
+				}
+			}
+
 			if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
 			{
 				SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
@@ -3884,13 +3915,14 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 			KvGetString(BossKV[Special[boss]], "name", name, 64, "=Failed name=");
 			if(BossLives[boss]>1)
 			{
-				Format(lives, 4, "x%i", BossLives[boss]);
+				Format(lives, sizeof(lives), "x%i", BossLives[boss]);
 			}
 			else
 			{
 				strcopy(lives, 2, "");
 			}
-			Format(health, 512, "%s\n%t", health, "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+			Format(health, sizeof(health), "%s\n%t", health, "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+			CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			BossHealthLast[boss]=BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1);
 		}
 
@@ -3902,12 +3934,11 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 				PrintCenterText(target, health);
 			}
 		}
-		CPrintToChatAll("{olive}[FF2]{default} %s", health);
 
 		if(GetGameTime()>=HPTime)
 		{
 			healthcheckused++;
-			HPTime=GetGameTime()+(healthcheckused<3 ? 20.0:80.0);
+			HPTime=GetGameTime()+(healthcheckused<3 ? 20.0 : 80.0);
 		}
 		return Plugin_Continue;
 	}
