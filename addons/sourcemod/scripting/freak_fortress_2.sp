@@ -1978,19 +1978,19 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		SetArenaCapEnableTime(60.0);
 		CreateTimer(71.0, Timer_EnableCap, _, TIMER_FLAG_NO_MAPCHANGE);
 		new bool:toRed;
-		new team;
-		for(new client=1; client<=MaxClients; client++)
+		new TFTeam:team;
+		for(new client; client<=MaxClients; client++)
 		{
-			if(IsValidClient(client) && (team=GetClientTeam(client))>1)
+			if(IsValidClient(client) && (team=TFTeam:GetClientTeam(client))>1)
 			{
 				SetEntProp(client, Prop_Send, "m_lifeState", 2);
-				if(toRed && team!=_:TFTeam_Red)
+				if(toRed && team!=TFTeam_Red)
 				{
-					ChangeClientTeam(client, _:TFTeam_Red);
+					ChangeClientTeam(client, TFTeam_Red);
 				}
-				else if(!toRed && team!=_:TFTeam_Blue)
+				else if(!toRed && team!=TFTeam_Blue)
 				{
-					ChangeClientTeam(client, _:TFTeam_Blue);
+					ChangeClientTeam(client, TFTeam_Blue);
 				}
 				SetEntProp(client, Prop_Send, "m_lifeState", 0);
 				TF2_RespawnPlayer(client);
@@ -2083,7 +2083,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		BossLivesMax[0]=1;
 	}
 
-	SetEntProp(Boss[0], Prop_Data, "m_iMaxHealth", 1337);
+	//SetEntProp(Boss[0], Prop_Data, "m_iMaxHealth", 1337);
 	if(LastClass[Boss[0]]==TFClass_Unknown)
 	{
 		LastClass[Boss[0]]=TF2_GetPlayerClass(Boss[0]);
@@ -2095,7 +2095,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		for(new client=1; client<=MaxClients; client++)
 		{
 			KvRewind(BossKV[Special[client-1]]);
-			KvGetString(BossKV[Special[client-1]], "companion", companionName, 64);
+			KvGetString(BossKV[Special[client-1]], "companion", companionName, sizeof(companionName));
 			if(StrEqual(companionName, ""))
 			{
 				break;
@@ -2124,7 +2124,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 					BossLivesMax[client]=1;
 				}
 
-				SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", 1337);  //Is this even needed?
+				//SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", 1337);  //Is this even needed?
 				if(LastClass[Boss[client]]==TFClass_Unknown)
 				{
 					LastClass[Boss[client]]=TF2_GetPlayerClass(Boss[client]);
@@ -2602,10 +2602,10 @@ public Action:StartResponseTimer(Handle:timer)
 public Action:StartBossTimer(Handle:timer)
 {
 	CreateTimer(0.1, Timer_Move);
-	new bool:isBossAlive=false;
+	new bool:isBossAlive;
 	for(new client; client<=MaxClients; client++)
 	{
-		if(Boss[client] && IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
+		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
 			isBossAlive=true;
 			SetEntityMoveType(Boss[client], MOVETYPE_NONE);
@@ -2632,15 +2632,15 @@ public Action:StartBossTimer(Handle:timer)
 		playing+=2;
 	}
 
-	for(new client; client<=MaxClients; client++)
+	for(new boss; boss<=MaxClients; boss++)
 	{
-		if(Boss[client] && IsValidEdict(Boss[client]) && IsPlayerAlive(Boss[client]))
+		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
-			BossHealthMax[client]=CalcBossHealthMax(client);
-			SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
-			BossLives[client]=BossLivesMax[client];
-			BossHealth[client]=BossHealthMax[client]*BossLivesMax[client];
-			BossHealthLast[client]=BossHealth[client];
+			BossHealthMax[boss]=CalcBossHealthMax(boss);
+			SetEntProp(Boss[boss], Prop_Data, "m_iMaxHealth", BossHealthMax[boss]);
+			BossLives[boss]=BossLivesMax[boss];
+			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
+			BossHealthLast[boss]=BossHealth[boss];
 		}
 	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -3184,7 +3184,7 @@ public Action:MakeBoss(Handle:timer, any:client)
 	EquipBoss(client);
 	KSpreeCount[client]=0;
 	BossCharge[client][0]=0.0;
-	SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
+	//SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
 	SetClientQueuePoints(Boss[client], 0);
 	return Plugin_Continue;
 }
