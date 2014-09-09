@@ -289,7 +289,7 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 2, 2014"	//1.10.3
+	"September 6, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -298,10 +298,12 @@ stock FindVersionData(Handle:panel, versionIndex)
 	{
 		case 49:  //1.10.3
 		{
-			DrawPanelText(panel, "1) Fixed a bug with respawning bosses (Wliu/Spyper)");
-			DrawPanelText(panel, "2) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu/Spyper)");
-			DrawPanelText(panel, "3) Fixed 'nextmap_charset' VFormat errors in console (Wliu/BBG_Theory)");
+			DrawPanelText(panel, "1) Fixed a bug with respawning bosses (Wliu)");
+			DrawPanelText(panel, "2) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu)");
+			DrawPanelText(panel, "3) Fixed 'nextmap_charset' VFormat errors in console (Wliu)");
 			DrawPanelText(panel, "4) Fixed an issue with displaying boss info in chat (Wliu)");
+			DrawPanelText(panel, "5) Fixed boss health always displaying as overheal (War3Evo)");
+			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting these bugs!");
 		}
 		case 48:  //1.10.2
 		{
@@ -1321,7 +1323,6 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	decl String:stringChances[MAXSPECIALS*2][8];
 	if(ChancesString[0])
 	{
-		Debug("FindCharacters: ChancesString was %s", ChancesString);
 		new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
 		if(amount % 2)
 		{
@@ -1343,14 +1344,11 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 					break;
 				}
 				chances[chancesIndex]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2];
-				Debug("FindCharacters: Chances for character %i was %s (total chances: %i)", chances[chancesIndex-1], stringChances[chancesIndex], chances[chancesIndex]);
 			}
 			else
 			{
 				chances[chancesIndex]=StringToInt(stringChances[chancesIndex]);
-				Debug("FindCharacters: Adding character %i to chances", chances[chancesIndex]);
 			}
-			Debug("FindCharacters: chancesIndex was %i", chancesIndex);
 		}
 	}
 
@@ -1898,7 +1896,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	{
 		DeleteFile("bNextMapToFF2");
 	}
-	DrawGameTimer=INVALID_HANDLE;
 
 	new bool:bBluBoss;
 	switch(GetConVarInt(cvarForceBossTeam))
@@ -1981,19 +1978,19 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		SetArenaCapEnableTime(60.0);
 		CreateTimer(71.0, Timer_EnableCap, _, TIMER_FLAG_NO_MAPCHANGE);
 		new bool:toRed;
-		new team;
-		for(new client=1; client<=MaxClients; client++)
+		new TFTeam:team;
+		for(new client; client<=MaxClients; client++)
 		{
-			if(IsValidClient(client) && (team=GetClientTeam(client))>1)
+			if(IsValidClient(client) && (team=TFTeam:GetClientTeam(client))>1)
 			{
 				SetEntProp(client, Prop_Send, "m_lifeState", 2);
-				if(toRed && team!=_:TFTeam_Red)
+				if(toRed && team!=TFTeam_Red)
 				{
-					ChangeClientTeam(client, _:TFTeam_Red);
+					ChangeClientTeam(client, TFTeam_Red);
 				}
-				else if(!toRed && team!=_:TFTeam_Blue)
+				else if(!toRed && team!=TFTeam_Blue)
 				{
-					ChangeClientTeam(client, _:TFTeam_Blue);
+					ChangeClientTeam(client, TFTeam_Blue);
 				}
 				SetEntProp(client, Prop_Send, "m_lifeState", 0);
 				TF2_RespawnPlayer(client);
@@ -2086,7 +2083,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		BossLivesMax[0]=1;
 	}
 
-	SetEntProp(Boss[0], Prop_Data, "m_iMaxHealth", 1337);
+	//SetEntProp(Boss[0], Prop_Data, "m_iMaxHealth", 1337);
 	if(LastClass[Boss[0]]==TFClass_Unknown)
 	{
 		LastClass[Boss[0]]=TF2_GetPlayerClass(Boss[0]);
@@ -2098,7 +2095,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		for(new client=1; client<=MaxClients; client++)
 		{
 			KvRewind(BossKV[Special[client-1]]);
-			KvGetString(BossKV[Special[client-1]], "companion", companionName, 64);
+			KvGetString(BossKV[Special[client-1]], "companion", companionName, sizeof(companionName));
 			if(StrEqual(companionName, ""))
 			{
 				break;
@@ -2127,7 +2124,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 					BossLivesMax[client]=1;
 				}
 
-				SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", 1337);  //Is this even needed?
+				//SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", 1337);  //Is this even needed?
 				if(LastClass[Boss[client]]==TFClass_Unknown)
 				{
 					LastClass[Boss[client]]=TF2_GetPlayerClass(Boss[client]);
@@ -2356,6 +2353,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		KillTimer(MusicTimer);
 		MusicTimer=INVALID_HANDLE;
 	}
+	DrawGameTimer=INVALID_HANDLE;
 
 	new bool:isBossAlive, boss;
 	for(new client; client<=MaxClients; client++)
@@ -2604,10 +2602,10 @@ public Action:StartResponseTimer(Handle:timer)
 public Action:StartBossTimer(Handle:timer)
 {
 	CreateTimer(0.1, Timer_Move);
-	new bool:isBossAlive=false;
+	new bool:isBossAlive;
 	for(new client; client<=MaxClients; client++)
 	{
-		if(Boss[client] && IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
+		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
 			isBossAlive=true;
 			SetEntityMoveType(Boss[client], MOVETYPE_NONE);
@@ -2634,16 +2632,15 @@ public Action:StartBossTimer(Handle:timer)
 		playing+=2;
 	}
 
-	for(new client; client<=MaxClients; client++)
+	for(new boss; boss<=MaxClients; boss++)
 	{
-		if(Boss[client] && IsValidEdict(Boss[client]) && IsPlayerAlive(Boss[client]))
+		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
-			BossHealthMax[client]=CalcBossHealthMax(client);
-			SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
-			SetBossHealthFix(Boss[client], BossHealthMax[client]);
-			BossLives[client]=BossLivesMax[client];
-			BossHealth[client]=BossHealthMax[client]*BossLivesMax[client];
-			BossHealthLast[client]=BossHealth[client];
+			BossHealthMax[boss]=CalcBossHealthMax(boss);
+			SetEntProp(Boss[boss], Prop_Data, "m_iMaxHealth", BossHealthMax[boss]);
+			BossLives[boss]=BossLivesMax[boss];
+			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
+			BossHealthLast[boss]=BossHealth[boss];
 		}
 	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -3010,7 +3007,7 @@ public Action:MessageTimer(Handle:timer)
 		Format(textChat, sizeof(textChat), "{olive}[FF2]{default} %t!", "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
 		ReplaceString(textChat, sizeof(textChat), "\n", "");  //Get rid of newlines
 		CPrintToChatAll("%s", textChat);
-		
+
 	}
 
 	for(new client; client<=MaxClients; client++)
@@ -3055,17 +3052,15 @@ EquipBoss(client)
 			KvGetString(BossKV[Special[client]], "attributes", attributes, 128);
 			if(attributes[0]!='\0')
 			{
-				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; 259 ; 1.0 ; %s", attributes);
+				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; %s", attributes);
 					//68: +2 cap rate
 					//2: x3 damage
-					//259: Mantreads effect (broken)
 			}
 			else
 			{
-				attributes="68 ; 2.0 ; 2 ; 3 ; 259 ; 1.0";
+				attributes="68 ; 2.0 ; 2 ; 3";
 					//68: +2 cap rate
 					//2: x3 damage
-					//259: Mantreads effect (broken)
 			}
 
 			new BossWeapon=SpawnWeapon(Boss[client], weapon, KvGetNum(BossKV[Special[client]], "index"), 101, 5, attributes);
@@ -3189,7 +3184,7 @@ public Action:MakeBoss(Handle:timer, any:client)
 	EquipBoss(client);
 	KSpreeCount[client]=0;
 	BossCharge[client][0]=0.0;
-	SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
+	//SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
 	SetClientQueuePoints(Boss[client], 0);
 	return Plugin_Continue;
 }
@@ -3257,6 +3252,19 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}*/
+		case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
+		{
+			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+				//10: +25% faster charge rate
+				//178: +25% faster weapon switch
+				//144: Quick-fix speed/jump effects
+				//11: +50% overheal bonus
+			if(hItemOverride!=INVALID_HANDLE)
+			{
+				hItem=hItemOverride;
+				return Plugin_Changed;
+			}
+		}
 		case 220:  //Shortstop
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "328 ; 1.0", true);
@@ -3637,8 +3645,26 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		new mediquality=(weapon>MaxClients && IsValidEdict(weapon) ? GetEntProp(weapon, Prop_Send, "m_iEntityQuality") : -1);
 		if(mediquality!=10)
 		{
-			TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-			weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");  //200 ; 1 for area of effect healing	//; 178 ; 0.75 ; 128 ; 1.0 Faster switch-to
+			index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+			switch(index)
+			{
+				case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
+				{
+					SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
+				}
+				default:
+				{
+					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+					weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+						//Switch to regular medigun
+						//10: +25% faster charge rate
+						//178: +25% faster weapon switch
+						//144: Quick-fix speed/jump effects
+						//11: +50% overheal bonus
+					SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
+				}
+			}
+
 			if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
 			{
 				SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
@@ -3889,13 +3915,14 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 			KvGetString(BossKV[Special[boss]], "name", name, 64, "=Failed name=");
 			if(BossLives[boss]>1)
 			{
-				Format(lives, 4, "x%i", BossLives[boss]);
+				Format(lives, sizeof(lives), "x%i", BossLives[boss]);
 			}
 			else
 			{
 				strcopy(lives, 2, "");
 			}
-			Format(health, 512, "%s\n%t", health, "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+			Format(health, sizeof(health), "%s\n%t", health, "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+			CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			BossHealthLast[boss]=BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1);
 		}
 
@@ -3907,12 +3934,11 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 				PrintCenterText(target, health);
 			}
 		}
-		CPrintToChatAll("{olive}[FF2]{default} %s", health);
 
 		if(GetGameTime()>=HPTime)
 		{
 			healthcheckused++;
-			HPTime=GetGameTime()+(healthcheckused<3 ? 20.0:80.0);
+			HPTime=GetGameTime()+(healthcheckused<3 ? 20.0 : 80.0);
 		}
 		return Plugin_Continue;
 	}
@@ -4035,7 +4061,6 @@ public Action:Command_Charset(client, args)
 		StripQuotes(rawText[i]);
 	}
 	ImplodeStrings(rawText, amount, " ", charset, sizeof(charset));
-	Debug("Command_Charset: Processed command argument was %s", charset);
 
 	decl String:config[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
@@ -4045,7 +4070,6 @@ public Action:Command_Charset(client, args)
 	for(new i; ; i++)
 	{
 		KvGetSectionName(Kv, config, sizeof(config));
-		Debug("Command_Charset: Section name was %s", config);
 		if(StrContains(config, charset, false)>=0)
 		{
 			CReplyToCommand(client, "{olive}[FF2]{default} Charset for nextmap is %s", config);
@@ -4106,6 +4130,7 @@ stock SetControlPoint(bool:enable)
 		}
 	}
 }
+
 stock SetArenaCapEnableTime(Float:time)
 {
 	new entity=-1;
@@ -4122,6 +4147,7 @@ public OnClientPutInServer(client)
 	FF2flags[client]=0;
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);
 	Damage[client]=0;
 	uberTarget[client]=-1;
 	if(!AreClientCookiesCached(client))
@@ -4178,6 +4204,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(CheckRoundState()==1)
 	{
+		Debug("event_player_spawn: %N is ALIVE!", client);
 		CreateTimer(0.1, CheckAlivePlayers);
 	}
 
@@ -4504,7 +4531,7 @@ public Action:BossTimer(Handle:timer)
 		{
 			BossHealth[client]=1;
 		}
-		SetBossHealthFix(Boss[client], BossHealth[client]);
+		SetEntProp(Boss[client], Prop_Send, "m_iHealth", BossHealth[client]);
 
 		if(!(FF2flags[Boss[client]] & FF2FLAG_HUDDISABLED))
 		{
@@ -4748,7 +4775,6 @@ public Action:OnCallForMedic(client, const String:command[], args)
 	decl String:arg1[4], String:arg2[4];
 	GetCmdArg(1, arg1, sizeof(arg1));
 	GetCmdArg(2, arg2, sizeof(arg2));
-	Debug("OnCallForMedic: Detected args were %s and %s", arg1, arg2);
 	if(StringToInt(arg1) || StringToInt(arg2))  //We only want "voicemenu 0 0"-thanks friagram for pointing out edge cases
 	{
 		return Plugin_Continue;
@@ -5110,6 +5136,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			}
 		}
 	}
+	Debug("CheckAlivePlayers: Total of %i red players left", RedAlivePlayers);
 
 	if(!RedAlivePlayers)
 	{
@@ -5138,11 +5165,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			else
 			{
 				new i=GetRandomInt(1, 4);
-				if(!(i % 2))
-				{
-					i--;
-				}
-				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.wav", i);
+				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.wav", i % 2 ? i : i--);  //1 or 3
 				EmitSoundToAll(sound);
 			}
 		}
@@ -5154,6 +5177,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 	{
 		if(FindEntityByClassname2(-1, "team_control_point")!=-1)
 		{
+			Debug("CheckAlivePlayers: Starting timer");
 			timeleft=countdownTime;
 			DrawGameTimer=CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
@@ -5166,6 +5190,7 @@ public Action:Timer_DrawGame(Handle:timer)
 {
 	if(BossHealth[0]<countdownHealth || CheckRoundState()!=1 || RedAlivePlayers>countdownPlayers)
 	{
+		Debug("Timer_DrawGame: Stopping timer");
 		executed2=false;
 		return Plugin_Stop;
 	}
@@ -5293,7 +5318,6 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 		{
 			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
 			Call_StartForward(OnLoseLife);
-			Debug("event_hurt: Starting forward");
 			Call_PushCell(boss);
 			Call_PushCellRef(bossLives);
 			Call_PushCell(BossLivesMax[boss]);
@@ -5309,7 +5333,6 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 					BossLivesMax[boss]=bossLives;
 				}
 				BossLives[boss]=bossLives;
-				Debug("event_hurt: BossLives[boss] was %i, BossLivesMax[boss] was %i", BossLives[boss], BossLivesMax[boss]);
 			}
 
 			decl String:ability[PLATFORM_MAX_PATH], String:lives[MAXRANDOMS][3];
@@ -5411,7 +5434,6 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 		{
 			static airStrikeDamage;
 			airStrikeDamage+=damage;
-			Debug("event_hurt: Damage was %i, airStrikeDamage is now %i", damage, airStrikeDamage);
 			if(airStrikeDamage>=200)
 			{
 				SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
@@ -5609,7 +5631,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 
 				new index=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
-				Debug("OnTakeDamage: Weapon was %i", index);
 				switch(index)
 				{
 					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Sydney Sleeper, Bazaar Bargain, Machina, Festive Sniper Rifle, Hitman's Heatmaker, Botkiller Sniper Rifles
@@ -5836,7 +5857,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						static Float:airStrikeDamage;
 						airStrikeDamage+=damage;
-						Debug("OnTakeDamage: Damage was %f, airStrikeDamage is now %f", damage, airStrikeDamage);
 						if(airStrikeDamage>=200.0)
 						{
 							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
@@ -5849,24 +5869,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				{
 					damage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90)/3;
 					damagetype|=DMG_CRIT;
-					/*new Float:changedamage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90);
-					new iChangeDamage=RoundFloat(changedamage);
-					Damage[attacker]+=iChangeDamage;
-					if(BossHealth[boss]>iChangeDamage)
-					{
-						damage=0.0;
-					}
-					else
-					{
-						damage=changedamage;
-					}
-
-					BossHealth[boss]-=iChangeDamage;
-					BossCharge[boss][0]+=changedamage*100.0/BossRageDamage[Special[boss]];
-					if(BossCharge[boss][0]>100.0)
-					{
-						BossCharge[boss][0]=100.0;
-					}*/
 
 					EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 					EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
@@ -5909,17 +5911,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						PrintCenterText(client, "%t", "Backstabbed");
 					}
 
-					/*new Handle:stabevent=CreateEvent("player_hurt", true);
-					SetEventInt(stabevent, "userid", GetClientUserId(client));
-					SetEventInt(stabevent, "health", BossHealth[boss]);
-					SetEventInt(stabevent, "attacker", GetClientUserId(attacker));
-					SetEventInt(stabevent, "damageamount", iChangeDamage);
-					SetEventInt(stabevent, "custom", TF_CUSTOM_BACKSTAB);
-					SetEventBool(stabevent, "crit", true);
-					SetEventBool(stabevent, "minicrit", false);
-					SetEventBool(stabevent, "allseecrit", true);
-					SetEventInt(stabevent, "weaponid", TF_WEAPON_KNIFE);
-					FireEvent(stabevent);*/
 					if(index==225 || index==574)  //Your Eternal Reward, Wanga Prick
 					{
 						CreateTimer(0.3, Timer_DisguiseBackstab, GetClientUserId(attacker));
@@ -5955,32 +5946,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						Stabbed[boss]++;
 					}
-
-					/*new healers[MAXPLAYERS];  //player_hurt
-					new healerCount;
-					for(new healer; healer<=MaxClients; healer++)
-					{
-						if(IsValidClient(healer) && IsPlayerAlive(healer) && (GetHealingTarget(healer, true)==attacker))
-						{
-							healers[healerCount]=healer;
-							healerCount++;
-						}
-					}
-
-					for(new healer; healer<healerCount; healer++)
-					{
-						if(IsValidClient(healers[healer]) && IsPlayerAlive(healers[healer]))
-						{
-							if(uberTarget[healers[healer]]==attacker)
-							{
-								Damage[healers[healer]]+=iChangeDamage;
-							}
-							else
-							{
-								Damage[healers[healer]]+=RoundFloat(changedamage/(healerCount+1));
-							}
-						}
-					}*/
 					return Plugin_Changed;
 				}
 			}
@@ -6121,6 +6086,21 @@ public Action:RTD_CanRollDice(client)
 {
 	if(Enabled && IsBoss(client) && !canBossRTD)
 	{
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
+
+public Action:OnGetMaxHealth(client, &maxHealth)
+{
+	if(CheckRoundState()==1 && IsValidClient(client) && IsBoss(client))
+	{
+		new boss=GetBossIndex(client);
+		if(GetEntProp(client, Prop_Data, "m_iHealth")>BossHealthMax[boss])
+		{
+			SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]);
+		}
+		maxHealth=BossHealthMax[boss];
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -6756,12 +6736,9 @@ public bool:PickCharacter(client, companion)
 			if(ChancesString[0])
 			{
 				new i=GetRandomInt(0, chances[chancesIndex-1]);
-				Debug("PickCharacter: Random number was %i; Specials was %i", i, Specials);
 				while(chancesIndex>=2 && i<chances[chancesIndex-1])
 				{
-					Debug("PickCharacter: chances[%i] was %i", chancesIndex, chances[chancesIndex-1]);
 					Special[client]=chances[chancesIndex-2]-1;
-					Debug("PickCharacter: Character was %i", Special[client]);
 					chancesIndex-=2;
 				}
 			}
@@ -6776,7 +6753,6 @@ public bool:PickCharacter(client, companion)
 				Special[client]=0;
 				continue;
 			}
-			Debug("PickCharacter: Final character was %i", Special[client]);
 			break;
 		}
 	}
@@ -7688,7 +7664,6 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 		charsets++;
 
 		KvGetSectionName(Kv, config, 64);
-		Debug("Timer_DisplayCharsetVote:  Found charset %s", config);
 		Format(charset, sizeof(charset), "%i %s", i, config);
 		AddMenuItem(menu, charset, config);
 		//AddMenuItem(menu, i, config);
@@ -7739,12 +7714,6 @@ stock FindEntityByClassname2(startEnt, const String:classname[])
 		startEnt--;
 	}
 	return FindEntityByClassname(startEnt, classname);
-}
-
-stock SetBossHealthFix(client, oldHealth)  //Wat.  TODO: 2.0.0
-{
-	new originalHealth=oldHealth;
-	SetEntProp(client, Prop_Send, "m_iHealth", originalHealth);
 }
 
 UseAbility(const String:ability_name[], const String:plugin_name[], client, slot, buttonMode=0)
