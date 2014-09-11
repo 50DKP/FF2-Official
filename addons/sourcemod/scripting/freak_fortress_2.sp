@@ -289,20 +289,26 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 11, 2014"//1.10.3
+	"September 11, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
+	"September 11, 2014"
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 49:  //1.10.3
+		case 50:  //1.10.3
 		{
 			DrawPanelText(panel, "1) Fixed a bug with respawning bosses (Wliu)");
 			DrawPanelText(panel, "2) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu)");
 			DrawPanelText(panel, "3) Fixed 'nextmap_charset' VFormat errors in console (Wliu)");
 			DrawPanelText(panel, "4) Fixed an issue with displaying boss info in chat (Wliu)");
-			DrawPanelText(panel, "5) Fixed boss health always displaying as overheal (War3Evo)");
+			DrawPanelText(panel, "5) Fixed boss health always displaying as overheal (War3Evo/Wliu)");
+			DrawPanelText(panel, "See next page (press 1)");
+		}
+		case 49:  //1.10.3
+		{
+			DrawPanelText(panel, "6) Fixed Bread Bite being replaced with the GRU (Wliu)");
 			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting these bugs!");
 		}
 		case 48:  //1.10.2
@@ -3221,9 +3227,13 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-		case 43, 239, 1084, 1100:  //KGB, GRU, Festive GRU, Bread Bite
+		case 239, 1084, 1100:  //GRU, Festive GRU, Bread Bite
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, 239, "107 ; 1.5 ; 1 ; 0.5 ; 128 ; 1 ; 191 ; -7", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7", true);
+				//1: -50% damage
+				//107: +50% move speed
+				//128: Only when weapon is active
+				//191: -7 health/second
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3604,10 +3614,19 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
 		{
+			case 43:  //KGB
+			{
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
+				weapon=SpawnWeapon(client, "tf_weapon_fists", 239, 1, 6, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7");  //GRU
+					//1: -50% damage
+					//107: +50% move speed
+					//128: Only when weapon is active
+					//191: -7 health/second
+			}
 			case 331:  //Fists of Steel
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-				weapon=SpawnWeapon(client, "tf_weapon_fists", 5, 1, 6, "");
+				weapon=SpawnWeapon(client, "tf_weapon_fists", 5, 1, 6, "");  //Fists
 			}
 			case 357:  //Half-Zatoichi
 			{
