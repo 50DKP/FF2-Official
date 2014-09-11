@@ -1987,16 +1987,16 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		new TFTeam:team;
 		for(new client; client<=MaxClients; client++)
 		{
-			if(IsValidClient(client) && (team=TFTeam:GetClientTeam(client))>1)
+			if(IsValidClient(client) && (team=TFTeam:GetClientTeam(client))>TFTeam_Spectator)
 			{
 				SetEntProp(client, Prop_Send, "m_lifeState", 2);
 				if(toRed && team!=TFTeam_Red)
 				{
-					ChangeClientTeam(client, TFTeam_Red);
+					ChangeClientTeam(client, _:TFTeam_Red);
 				}
 				else if(!toRed && team!=TFTeam_Blue)
 				{
-					ChangeClientTeam(client, TFTeam_Blue);
+					ChangeClientTeam(client, _:TFTeam_Blue);
 				}
 				SetEntProp(client, Prop_Send, "m_lifeState", 0);
 				TF2_RespawnPlayer(client);
@@ -3260,14 +3260,14 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}*/
 		case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
 				//10: +25% faster charge rate
 				//178: +25% faster weapon switch
 				//144: Quick-fix speed/jump effects
 				//11: +50% overheal bonus
-			if(hItemOverride!=INVALID_HANDLE)
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
