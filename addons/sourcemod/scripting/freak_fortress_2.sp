@@ -310,6 +310,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "6) Fixed Bread Bite being replaced with the GRU (Wliu)");
 			DrawPanelText(panel, "7) Fixed an edge case where player crits would not be applied (Wliu)");
+			DrawPanelText(panel, "8) Fixed not being able to use strange syringe guns or mediguns (Wliu)");
 			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting these bugs!");
 		}
 		case 48:  //1.10.2
@@ -3531,12 +3532,12 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
 		{
-			case 17, 204, 36, 412:  //Syringe Guns
+			case 17, 36, 204, 412:  //Syringe Gun, Blutsauger, Strange Syringe Gun, Overdose
 			{
 				if(GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)
 				{
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-					SpawnWeapon(client, "tf_weapon_syringegun_medic", 17, 1, 10, "17 ; 0.05 ; 144 ; 1");
+					SpawnWeapon(client, "tf_weapon_syringegun_medic", (index==204 ? 204 : 17), 1, 10, "17 ; 0.05 ; 144 ; 1");  //Strange if possible
 						//17: +5 uber/hit
 						//144:  NOOP
 				}
