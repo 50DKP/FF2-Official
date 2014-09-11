@@ -289,7 +289,7 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 6, 2014"	//1.10.3
+	"September 11, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -2083,7 +2083,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		BossLivesMax[0]=1;
 	}
 
-	//SetEntProp(Boss[0], Prop_Data, "m_iMaxHealth", 1337);
 	if(LastClass[Boss[0]]==TFClass_Unknown)
 	{
 		LastClass[Boss[0]]=TF2_GetPlayerClass(Boss[0]);
@@ -2124,7 +2123,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 					BossLivesMax[client]=1;
 				}
 
-				//SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", 1337);  //Is this even needed?
 				if(LastClass[Boss[client]]==TFClass_Unknown)
 				{
 					LastClass[Boss[client]]=TF2_GetPlayerClass(Boss[client]);
@@ -2637,7 +2635,6 @@ public Action:StartBossTimer(Handle:timer)
 		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
 			BossHealthMax[boss]=CalcBossHealthMax(boss);
-			SetEntProp(Boss[boss], Prop_Data, "m_iMaxHealth", BossHealthMax[boss]);
 			BossLives[boss]=BossLivesMax[boss];
 			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 			BossHealthLast[boss]=BossHealth[boss];
@@ -3184,7 +3181,6 @@ public Action:MakeBoss(Handle:timer, any:client)
 	EquipBoss(client);
 	KSpreeCount[client]=0;
 	BossCharge[client][0]=0.0;
-	//SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
 	SetClientQueuePoints(Boss[client], 0);
 	return Plugin_Continue;
 }
