@@ -290,7 +290,7 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
 	"September 11, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 11, 2014"
+	"September 11, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -309,6 +309,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 49:  //1.10.3
 		{
 			DrawPanelText(panel, "6) Fixed Bread Bite being replaced with the GRU (Wliu)");
+			DrawPanelText(panel, "7) Fixed an edge case where player crits would not be applied (Wliu)");
 			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting these bugs!");
 		}
 		case 48:  //1.10.2
@@ -4177,6 +4178,14 @@ public OnClientPutInServer(client)
 		SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
 	}
 	LastClass[client]=TFClass_Unknown;
+}
+
+public OnClientDisconnect(client)
+{
+	if(IsPlayerAlive(client) && CheckRoundState()==1)
+	{
+		CreateTimer(0.1, CheckAlivePlayers);
+	}
 }
 
 public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBroadcast)
