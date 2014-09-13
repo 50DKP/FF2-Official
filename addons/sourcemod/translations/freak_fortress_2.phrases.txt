@@ -36,10 +36,10 @@
 	{
 		"en"	"Ubercharge rate"
 	}
-	"health"
+	"Boss Lives Left"
 	{
 		"#format" "{1:i},{2:i}"
-		"en"	"Health: {1} out of {2}"
+		"en"	"{1} out of {2} lives left"
 	}
 	"do_rage"
 	{
