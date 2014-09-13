@@ -235,6 +235,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.1",
 	"1.10.1",
 	"1.10.2",
+	"1.10.3",
 	"1.10.3"
 };
 
@@ -289,8 +290,8 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 11, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 11, 2014"//1.10.3
+	"September 12, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
+	"September 12, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -311,6 +312,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "6) Fixed Bread Bite being replaced with the GRU (Wliu)");
 			DrawPanelText(panel, "7) Fixed an edge case where player crits would not be applied (Wliu)");
 			DrawPanelText(panel, "8) Fixed not being able to use strange syringe guns or mediguns (Wliu)");
+			DrawPanelText(panel, "9) Fixed not being able to suicide as boss after round end (Wliu)");
 			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting these bugs!");
 		}
 		case 48:  //1.10.2
@@ -4229,7 +4231,6 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(CheckRoundState()==1)
 	{
-		Debug("event_player_spawn: %N is ALIVE!", client);
 		CreateTimer(0.1, CheckAlivePlayers);
 	}
 
@@ -4556,7 +4557,6 @@ public Action:BossTimer(Handle:timer)
 		{
 			BossHealth[client]=1;
 		}
-		SetEntProp(Boss[client], Prop_Send, "m_iHealth", BossHealth[client]);
 
 		if(!(FF2flags[Boss[client]] & FF2FLAG_HUDDISABLED))
 		{
@@ -4793,7 +4793,6 @@ public Action:OnCallForMedic(client, const String:command[], args)
 	new boss=GetBossIndex(client);
 	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]))
 	{
-		Debug("OnCallForMedic: Returning because boss was invalid");
 		return Plugin_Continue;
 	}
 
@@ -4873,7 +4872,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 public Action:OnSuicide(client, const String:command[], args)
 {
 	new bool:canBossSuicide=GetConVarBool(cvarBossSuicide);
-	if(Enabled && IsBoss(client) && (canBossSuicide ? !CheckRoundState() : true))
+	if(Enabled && IsBoss(client) && (canBossSuicide ? !CheckRoundState() : true) && CheckRoundState()!=2)
 	{
 		CPrintToChat(client, "{olive}[FF2]{default} %t", canBossSuicide ? "Boss Suicide Pre-round" : "Boss Suicide Denied");
 		return Plugin_Handled;
@@ -5161,7 +5160,6 @@ public Action:CheckAlivePlayers(Handle:timer)
 			}
 		}
 	}
-	Debug("CheckAlivePlayers: Total of %i red players left", RedAlivePlayers);
 
 	if(!RedAlivePlayers)
 	{
@@ -5202,7 +5200,6 @@ public Action:CheckAlivePlayers(Handle:timer)
 	{
 		if(FindEntityByClassname2(-1, "team_control_point")!=-1)
 		{
-			Debug("CheckAlivePlayers: Starting timer");
 			timeleft=countdownTime;
 			DrawGameTimer=CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
@@ -5215,7 +5212,6 @@ public Action:Timer_DrawGame(Handle:timer)
 {
 	if(BossHealth[0]<countdownHealth || CheckRoundState()!=1 || RedAlivePlayers>countdownPlayers)
 	{
-		Debug("Timer_DrawGame: Stopping timer");
 		executed2=false;
 		return Plugin_Stop;
 	}
@@ -6121,10 +6117,7 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 	if(CheckRoundState()==1 && IsValidClient(client) && IsBoss(client))
 	{
 		new boss=GetBossIndex(client);
-		if(GetEntProp(client, Prop_Data, "m_iHealth")>BossHealthMax[boss])
-		{
-			SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]);
-		}
+		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]);
 		maxHealth=BossHealthMax[boss];
 		return Plugin_Handled;
 	}
