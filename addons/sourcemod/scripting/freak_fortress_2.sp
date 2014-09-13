@@ -6117,7 +6117,7 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 	if(CheckRoundState()==1 && IsValidClient(client) && IsBoss(client))
 	{
 		new boss=GetBossIndex(client);
-		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]);
+		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]/BossLives[boss]);
 		maxHealth=BossHealthMax[boss];
 		return Plugin_Handled;
 	}
