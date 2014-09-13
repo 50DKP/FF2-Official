@@ -128,7 +128,7 @@ new Handle:FF2Cookies;
 
 new Handle:jumpHUD;
 new Handle:rageHUD;
-new Handle:healthHUD;
+new Handle:livesHUD;
 new Handle:timeleftHUD;
 new Handle:abilitiesHUD;
 new Handle:infoHUD;
@@ -290,8 +290,8 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 12, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 12, 2014"//1.10.3
+	"September 13, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
+	"September 13, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -940,7 +940,7 @@ public OnPluginStart()
 
 	jumpHUD=CreateHudSynchronizer();
 	rageHUD=CreateHudSynchronizer();
-	healthHUD=CreateHudSynchronizer();
+	livesHUD=CreateHudSynchronizer();
 	abilitiesHUD=CreateHudSynchronizer();
 	timeleftHUD=CreateHudSynchronizer();
 	infoHUD=CreateHudSynchronizer();
@@ -4560,10 +4560,10 @@ public Action:BossTimer(Handle:timer)
 
 		if(!(FF2flags[Boss[client]] & FF2FLAG_HUDDISABLED))
 		{
-			if(!(GetClientButtons(Boss[client]) & IN_SCORE))
+			if(!(GetClientButtons(Boss[client]) & IN_SCORE) && BossLivesMax[client]>1)
 			{
 				SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
-				ShowSyncHudText(Boss[client], healthHUD, "%t", "health", BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client]);
+				ShowSyncHudText(Boss[client], livesHUD, "%t", "Boss Lives Left", BossLives[client], BossLivesMax[client]);
 			}
 
 			if(RoundFloat(BossCharge[client][0])==100.0)
