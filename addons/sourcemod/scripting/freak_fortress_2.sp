@@ -128,7 +128,7 @@ new Handle:FF2Cookies;
 
 new Handle:jumpHUD;
 new Handle:rageHUD;
-new Handle:healthHUD;
+new Handle:livesHUD;
 new Handle:timeleftHUD;
 new Handle:abilitiesHUD;
 new Handle:infoHUD;
@@ -235,6 +235,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.1",
 	"1.10.1",
 	"1.10.2",
+	"1.10.3",
 	"1.10.3"
 };
 
@@ -289,20 +290,29 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 6, 2014"	//1.10.3
+	"September 13, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
+	"September 13, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 49:  //1.10.3
+		case 50:  //1.10.3
 		{
 			DrawPanelText(panel, "1) Fixed a bug with respawning bosses (Wliu)");
 			DrawPanelText(panel, "2) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu)");
 			DrawPanelText(panel, "3) Fixed 'nextmap_charset' VFormat errors in console (Wliu)");
 			DrawPanelText(panel, "4) Fixed an issue with displaying boss info in chat (Wliu)");
-			DrawPanelText(panel, "5) Fixed boss health always displaying as overheal (War3Evo)");
+			DrawPanelText(panel, "5) Fixed boss health always displaying as overheal (War3Evo/Wliu)");
+			DrawPanelText(panel, "See next page (press 1)");
+		}
+		case 49:  //1.10.3
+		{
+			DrawPanelText(panel, "6) Fixed Bread Bite being replaced with the GRU (Wliu)");
+			DrawPanelText(panel, "7) Fixed an edge case where player crits would not be applied (Wliu)");
+			DrawPanelText(panel, "8) Fixed not being able to use strange syringe guns or mediguns (Wliu)");
+			DrawPanelText(panel, "9) Fixed not being able to suicide as boss after round end (Wliu)");
 			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting these bugs!");
 		}
 		case 48:  //1.10.2
@@ -930,7 +940,7 @@ public OnPluginStart()
 
 	jumpHUD=CreateHudSynchronizer();
 	rageHUD=CreateHudSynchronizer();
-	healthHUD=CreateHudSynchronizer();
+	livesHUD=CreateHudSynchronizer();
 	abilitiesHUD=CreateHudSynchronizer();
 	timeleftHUD=CreateHudSynchronizer();
 	infoHUD=CreateHudSynchronizer();
@@ -1981,16 +1991,16 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		new TFTeam:team;
 		for(new client; client<=MaxClients; client++)
 		{
-			if(IsValidClient(client) && (team=TFTeam:GetClientTeam(client))>1)
+			if(IsValidClient(client) && (team=TFTeam:GetClientTeam(client))>TFTeam_Spectator)
 			{
 				SetEntProp(client, Prop_Send, "m_lifeState", 2);
 				if(toRed && team!=TFTeam_Red)
 				{
-					ChangeClientTeam(client, TFTeam_Red);
+					ChangeClientTeam(client, _:TFTeam_Red);
 				}
 				else if(!toRed && team!=TFTeam_Blue)
 				{
-					ChangeClientTeam(client, TFTeam_Blue);
+					ChangeClientTeam(client, _:TFTeam_Blue);
 				}
 				SetEntProp(client, Prop_Send, "m_lifeState", 0);
 				TF2_RespawnPlayer(client);
@@ -2083,7 +2093,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		BossLivesMax[0]=1;
 	}
 
-	//SetEntProp(Boss[0], Prop_Data, "m_iMaxHealth", 1337);
 	if(LastClass[Boss[0]]==TFClass_Unknown)
 	{
 		LastClass[Boss[0]]=TF2_GetPlayerClass(Boss[0]);
@@ -2124,7 +2133,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 					BossLivesMax[client]=1;
 				}
 
-				//SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", 1337);  //Is this even needed?
 				if(LastClass[Boss[client]]==TFClass_Unknown)
 				{
 					LastClass[Boss[client]]=TF2_GetPlayerClass(Boss[client]);
@@ -2637,7 +2645,6 @@ public Action:StartBossTimer(Handle:timer)
 		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
 			BossHealthMax[boss]=CalcBossHealthMax(boss);
-			SetEntProp(Boss[boss], Prop_Data, "m_iMaxHealth", BossHealthMax[boss]);
 			BossLives[boss]=BossLivesMax[boss];
 			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 			BossHealthLast[boss]=BossHealth[boss];
@@ -3184,7 +3191,6 @@ public Action:MakeBoss(Handle:timer, any:client)
 	EquipBoss(client);
 	KSpreeCount[client]=0;
 	BossCharge[client][0]=0.0;
-	//SetEntProp(Boss[client], Prop_Data, "m_iMaxHealth", BossHealthMax[client]);
 	SetClientQueuePoints(Boss[client], 0);
 	return Plugin_Continue;
 }
@@ -3225,9 +3231,13 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-		case 43, 239, 1084, 1100:  //KGB, GRU, Festive GRU, Bread Bite
+		case 239, 1084, 1100:  //GRU, Festive GRU, Bread Bite
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, 239, "107 ; 1.5 ; 1 ; 0.5 ; 128 ; 1 ; 191 ; -7", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7", true);
+				//1: -50% damage
+				//107: +50% move speed
+				//128: Only when weapon is active
+				//191: -7 health/second
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3254,14 +3264,14 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}*/
 		case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
 		{
-			new Handle:hItemOverride=PrepareItemHandle(hItem, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
 				//10: +25% faster charge rate
 				//178: +25% faster weapon switch
 				//144: Quick-fix speed/jump effects
 				//11: +50% overheal bonus
-			if(hItemOverride!=INVALID_HANDLE)
+			if(itemOverride!=INVALID_HANDLE)
 			{
-				hItem=hItemOverride;
+				item=itemOverride;
 				return Plugin_Changed;
 			}
 		}
@@ -3524,12 +3534,12 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
 		{
-			case 17, 204, 36, 412:  //Syringe Guns
+			case 17, 36, 204, 412:  //Syringe Gun, Blutsauger, Strange Syringe Gun, Overdose
 			{
 				if(GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)
 				{
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-					SpawnWeapon(client, "tf_weapon_syringegun_medic", 17, 1, 10, "17 ; 0.05 ; 144 ; 1");
+					SpawnWeapon(client, "tf_weapon_syringegun_medic", (index==204 ? 204 : 17), 1, 10, "17 ; 0.05 ; 144 ; 1");  //Strange if possible
 						//17: +5 uber/hit
 						//144:  NOOP
 				}
@@ -3608,10 +3618,19 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
 		{
+			case 43:  //KGB
+			{
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
+				weapon=SpawnWeapon(client, "tf_weapon_fists", 239, 1, 6, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7");  //GRU
+					//1: -50% damage
+					//107: +50% move speed
+					//128: Only when weapon is active
+					//191: -7 health/second
+			}
 			case 331:  //Fists of Steel
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-				weapon=SpawnWeapon(client, "tf_weapon_fists", 5, 1, 6, "");
+				weapon=SpawnWeapon(client, "tf_weapon_fists", 5, 1, 6, "");  //Fists
 			}
 			case 357:  //Half-Zatoichi
 			{
@@ -4164,6 +4183,14 @@ public OnClientPutInServer(client)
 	LastClass[client]=TFClass_Unknown;
 }
 
+public OnClientDisconnect(client)
+{
+	if(IsPlayerAlive(client) && CheckRoundState()==1)
+	{
+		CreateTimer(0.1, CheckAlivePlayers);
+	}
+}
+
 public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled)
@@ -4204,7 +4231,6 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(CheckRoundState()==1)
 	{
-		Debug("event_player_spawn: %N is ALIVE!", client);
 		CreateTimer(0.1, CheckAlivePlayers);
 	}
 
@@ -4531,14 +4557,13 @@ public Action:BossTimer(Handle:timer)
 		{
 			BossHealth[client]=1;
 		}
-		SetEntProp(Boss[client], Prop_Send, "m_iHealth", BossHealth[client]);
 
 		if(!(FF2flags[Boss[client]] & FF2FLAG_HUDDISABLED))
 		{
-			if(!(GetClientButtons(Boss[client]) & IN_SCORE))
+			if(!(GetClientButtons(Boss[client]) & IN_SCORE) && BossLivesMax[client]>1)
 			{
 				SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
-				ShowSyncHudText(Boss[client], healthHUD, "%t", "health", BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client]);
+				ShowSyncHudText(Boss[client], livesHUD, "%t", "Boss Lives Left", BossLives[client], BossLivesMax[client]);
 			}
 
 			if(RoundFloat(BossCharge[client][0])==100.0)
@@ -4768,7 +4793,6 @@ public Action:OnCallForMedic(client, const String:command[], args)
 	new boss=GetBossIndex(client);
 	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]))
 	{
-		Debug("OnCallForMedic: Returning because boss was invalid");
 		return Plugin_Continue;
 	}
 
@@ -4848,7 +4872,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 public Action:OnSuicide(client, const String:command[], args)
 {
 	new bool:canBossSuicide=GetConVarBool(cvarBossSuicide);
-	if(Enabled && IsBoss(client) && (canBossSuicide ? !CheckRoundState() : true))
+	if(Enabled && IsBoss(client) && (canBossSuicide ? !CheckRoundState() : true) && CheckRoundState()!=2)
 	{
 		CPrintToChat(client, "{olive}[FF2]{default} %t", canBossSuicide ? "Boss Suicide Pre-round" : "Boss Suicide Denied");
 		return Plugin_Handled;
@@ -5136,7 +5160,6 @@ public Action:CheckAlivePlayers(Handle:timer)
 			}
 		}
 	}
-	Debug("CheckAlivePlayers: Total of %i red players left", RedAlivePlayers);
 
 	if(!RedAlivePlayers)
 	{
@@ -5177,7 +5200,6 @@ public Action:CheckAlivePlayers(Handle:timer)
 	{
 		if(FindEntityByClassname2(-1, "team_control_point")!=-1)
 		{
-			Debug("CheckAlivePlayers: Starting timer");
 			timeleft=countdownTime;
 			DrawGameTimer=CreateTimer(1.0, Timer_DrawGame, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
@@ -5190,7 +5212,6 @@ public Action:Timer_DrawGame(Handle:timer)
 {
 	if(BossHealth[0]<countdownHealth || CheckRoundState()!=1 || RedAlivePlayers>countdownPlayers)
 	{
-		Debug("Timer_DrawGame: Stopping timer");
 		executed2=false;
 		return Plugin_Stop;
 	}
@@ -6096,10 +6117,7 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 	if(CheckRoundState()==1 && IsValidClient(client) && IsBoss(client))
 	{
 		new boss=GetBossIndex(client);
-		if(GetEntProp(client, Prop_Data, "m_iHealth")>BossHealthMax[boss])
-		{
-			SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]);
-		}
+		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]/BossLives[boss]);
 		maxHealth=BossHealthMax[boss];
 		return Plugin_Handled;
 	}
