@@ -290,8 +290,8 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 13, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 13, 2014"//1.10.3
+	"September 14, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
+	"September 14, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -2998,7 +2998,6 @@ public Action:MessageTimer(Handle:timer)
 			continue;
 		}
 
-		CreateTimer(0.1, MakeBoss, client);
 		KvRewind(BossKV[Special[client]]);
 		KvGetString(BossKV[Special[client]], "name", name, 64, "=Failed name=");
 		if(BossLives[client]>1)
@@ -3030,18 +3029,18 @@ public Action:MessageTimer(Handle:timer)
 
 public Action:MakeModelTimer(Handle:timer, any:client)
 {
-	if(!Boss[client] || !IsValidEdict(Boss[client]) || !IsClientInGame(Boss[client]) || !IsPlayerAlive(Boss[client]) || CheckRoundState()==2)
+	if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]) && CheckRoundState()!=2)
 	{
-		return Plugin_Stop;
+		Debug("Giving boss model");
+		decl String:model[PLATFORM_MAX_PATH];
+		KvRewind(BossKV[Special[client]]);
+		KvGetString(BossKV[Special[client]], "model", model, PLATFORM_MAX_PATH);
+		SetVariantString(model);
+		AcceptEntityInput(Boss[client], "SetCustomModel");
+		SetEntProp(Boss[client], Prop_Send, "m_bUseClassAnimations", 1);
+		return Plugin_Continue;
 	}
-
-	decl String:model[PLATFORM_MAX_PATH];
-	KvRewind(BossKV[Special[client]]);
-	KvGetString(BossKV[Special[client]], "model", model, PLATFORM_MAX_PATH);
-	SetVariantString(model);
-	AcceptEntityInput(Boss[client], "SetCustomModel");
-	SetEntProp(Boss[client], Prop_Send, "m_bUseClassAnimations", 1);
-	return Plugin_Continue;
+	return Plugin_Stop;
 }
 
 EquipBoss(client)
@@ -3094,11 +3093,12 @@ EquipBoss(client)
 
 public Action:MakeBoss(Handle:timer, any:client)
 {
-	if(!Boss[client] || !IsValidEdict(Boss[client]) || !IsClientInGame(Boss[client]))
+	if(!IsValidClient(Boss[client]))
 	{
 		return Plugin_Continue;
 	}
 
+	Debug("Making boss");
 	KvRewind(BossKV[Special[client]]);
 	TF2_RemovePlayerDisguise(Boss[client]);
 	TF2_SetPlayerClass(Boss[client], TFClassType:KvGetNum(BossKV[Special[client]], "class", 1));
@@ -4166,7 +4166,7 @@ public OnClientPutInServer(client)
 	FF2flags[client]=0;
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
-	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);
+	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 	Damage[client]=0;
 	uberTarget[client]=-1;
 	if(!AreClientCookiesCached(client))
@@ -4204,8 +4204,8 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(IsBoss(client))// && !CheckRoundState())
 	{
-		TF2_RemoveAllWeapons(client);
-		CreateTimer(0.1, MakeBoss, GetClientUserId(client));
+		Debug("Boss just spawned");
+		CreateTimer(0.1, MakeBoss, GetBossIndex(client));
 	}
 
 	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
@@ -6117,8 +6117,8 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 	if(CheckRoundState()==1 && IsValidClient(client) && IsBoss(client))
 	{
 		new boss=GetBossIndex(client);
-		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]/BossLives[boss]);
-		maxHealth=BossHealthMax[boss];
+		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]/*-BossHealthMax[boss]*(BossLives[boss]-1)*/);
+		maxHealth=BossHealthMax[boss]*BossLives[boss];
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -6363,7 +6363,7 @@ stock CalcBossHealthMax(client)
 
 	KvRewind(BossKV[Special[client]]);
 	KvGetString(BossKV[Special[client]], "health_formula", formula, sizeof(formula), "((460+n)*n)^1.075");
-	ReplaceString(formula, sizeof(formula), " ", "");
+	ReplaceString(formula, sizeof(formula), " ", "");  //Get rid of spaces
 	new length=strlen(formula);
 	for(new i; i<=length; i++)
 	{
