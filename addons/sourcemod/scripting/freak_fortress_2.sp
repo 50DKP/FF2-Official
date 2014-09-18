@@ -2479,14 +2479,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			SetGlobalTransTarget(client);
 			if(IsBoss(client))
 			{
-				if(bossWin)
-				{
-					ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_win");
-				}
-				else
-				{
-					ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "boss_lose");
-				}
+				ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], bossWin ? "boss_win" : "boss_lose");
 			}
 			else
 			{
@@ -6108,7 +6101,7 @@ public Action:RTD_CanRollDice(client)
 
 public Action:OnGetMaxHealth(client, &maxHealth)
 {
-	if(CheckRoundState()==1 && IsValidClient(client) && IsBoss(client))
+	if(Enabled && IsBoss(client))
 	{
 		new boss=GetBossIndex(client);
 		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1));
