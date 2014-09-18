@@ -313,6 +313,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "7) Fixed an edge case where player crits would not be applied (Wliu)");
 			DrawPanelText(panel, "8) Fixed not being able to use strange syringe guns or mediguns (Wliu)");
 			DrawPanelText(panel, "9) Fixed not being able to suicide as boss after round end (Wliu)");
+			DrawPanelText(panel, "10) Updated Russian translations (wasder)");
 			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting many of these bugs!");
 		}
 		case 48:  //1.10.2
