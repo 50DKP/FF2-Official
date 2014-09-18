@@ -4943,7 +4943,7 @@ public Action:OnJoinTeam(client, const String:command[], args)
 
 public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBroadcast)
 {
-	if(CheckRoundState()!=1 || !Enabled || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+	if(CheckRoundState()!=1 || !Enabled)
 	{
 		return Plugin_Continue;
 	}
@@ -4954,7 +4954,11 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 	DoOverlay(client, "");
 	if(!IsBoss(client))
 	{
-		CreateTimer(1.0, Timer_Damage, GetClientUserId(client));
+		if(!(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+		{
+			CreateTimer(1.0, Timer_Damage, GetClientUserId(client));
+		}
+
 		if(IsBoss(attacker))
 		{
 			new boss=GetBossIndex(attacker);
@@ -5000,22 +5004,17 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 	else
 	{
 		new boss=GetBossIndex(client);
-		if(boss==-1)
+		if(boss==-1 || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
 			return Plugin_Continue;
 		}
 
-		BossHealth[boss]=0;
 		if(RandomSound("sound_death", sound, PLATFORM_MAX_PATH, boss))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
 		}
-
-		if(BossHealth[boss]<0)
-		{
-			BossHealth[boss]=0;
-		}
+		BossHealth[boss]=0;
 		UpdateHealthBar();
 
 		CreateTimer(0.5, Timer_RestoreLastClass, GetClientUserId(client));
