@@ -290,8 +290,8 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 14, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 14, 2014"//1.10.3
+	"September 18, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
+	"September 18, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -300,11 +300,11 @@ stock FindVersionData(Handle:panel, versionIndex)
 	{
 		case 50:  //1.10.3
 		{
-			DrawPanelText(panel, "1) Fixed a bug with respawning bosses (Wliu)");
-			DrawPanelText(panel, "2) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu)");
-			DrawPanelText(panel, "3) Fixed 'nextmap_charset' VFormat errors in console (Wliu)");
+			DrawPanelText(panel, "1) Fixed bosses appearing to be overhealed (War3Evo/Wliu)");
+			DrawPanelText(panel, "2) Fixed 'nextmap_charset' VFormat errors in console (Wliu)");
+			DrawPanelText(panel, "3) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu)");
 			DrawPanelText(panel, "4) Fixed an issue with displaying boss info in chat (Wliu)");
-			DrawPanelText(panel, "5) Fixed boss health always displaying as overheal (War3Evo/Wliu)");
+			DrawPanelText(panel, "5) Fixed a bug with respawning bosses (Wliu)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 49:  //1.10.3
@@ -313,7 +313,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "7) Fixed an edge case where player crits would not be applied (Wliu)");
 			DrawPanelText(panel, "8) Fixed not being able to use strange syringe guns or mediguns (Wliu)");
 			DrawPanelText(panel, "9) Fixed not being able to suicide as boss after round end (Wliu)");
-			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting these bugs!");
+			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting many of these bugs!");
 		}
 		case 48:  //1.10.2
 		{
@@ -4951,7 +4951,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 {
 	if(CheckRoundState()!=1 || !Enabled || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
-		return;
+		return Plugin_Continue;
 	}
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid")), attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
@@ -5008,7 +5008,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		new boss=GetBossIndex(client);
 		if(boss==-1)
 		{
-			return;
+			return Plugin_Continue;
 		}
 
 		BossHealth[boss]=0;
@@ -5028,7 +5028,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 		Stabbed[boss]=0.0;
 		Marketed[boss]=0.0;
-		return;
+		return Plugin_Continue;
 	}
 
 	if(TF2_GetPlayerClass(client)==TFClass_Engineer)
@@ -5054,7 +5054,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			}
 		}
 	}
-	return;
+	return Plugin_Continue;
 }
 
 public Action:Timer_RestoreLastClass(Handle:timer, any:userid)
@@ -5314,10 +5314,6 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		damage*=5;
 	}
-	/*else if(custom==TF_CUSTOM_BACKSTAB)
-	{
-		damage=RoundFloat(BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90));
-	}*/
 
 	if(GetEventBool(event, "minicrit") && GetEventBool(event, "allseecrit"))
 	{
@@ -5328,14 +5324,10 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		SetEventInt(event, "damageamount", damage);
 	}
-	else if(custom==16)
-	{
-		SetEventInt(event, "damageamount", 9001);
-	}
 
-	for(new i=1; i<BossLives[boss]; i++)
+	for(new lives=1; lives<BossLives[boss]; lives++)
 	{
-		if(BossHealth[boss]-damage<BossHealthMax[boss]*i)
+		if(BossHealth[boss]-damage<BossHealthMax[boss]*lives)
 		{
 			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
 			Call_StartForward(OnLoseLife);
@@ -5356,8 +5348,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 				BossLives[boss]=bossLives;
 			}
 
-			decl String:ability[PLATFORM_MAX_PATH], String:lives[MAXRANDOMS][3];
-			new count;
+			decl String:ability[PLATFORM_MAX_PATH];
 			for(new n=1; n<MAXRANDOMS; n++)
 			{
 				Format(ability, 10, "ability%i", n);
@@ -5379,10 +5370,11 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 					}
 					else
 					{
-						count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+						decl String:stringLives[MAXRANDOMS][3];
+						new count=ExplodeString(ability, " ", stringLives, MAXRANDOMS, 3);
 						for(new j; j<count; j++)
 						{
-							if(StringToInt(lives[j])==BossLives[boss])
+							if(StringToInt(stringLives[j])==BossLives[boss])
 							{
 								decl String:abilityName[64], String:pluginName[64];
 								KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
@@ -5395,6 +5387,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 				}
 			}
 			BossLives[boss]--;
+			SetEntProp(client, Prop_Data, "m_iHealth", (BossHealth[boss]-damage)-BossHealthMax[boss]*(BossLives[boss]-1));
 
 			decl String:bossName[64];
 			KvRewind(BossKV[Special[boss]]);
@@ -6117,8 +6110,8 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 	if(CheckRoundState()==1 && IsValidClient(client) && IsBoss(client))
 	{
 		new boss=GetBossIndex(client);
-		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]/*-BossHealthMax[boss]*(BossLives[boss]-1)*/);
-		maxHealth=BossHealthMax[boss]*BossLives[boss];
+		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1));
+		maxHealth=BossHealthMax[boss];
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
