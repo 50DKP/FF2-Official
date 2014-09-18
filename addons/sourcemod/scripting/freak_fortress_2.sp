@@ -134,7 +134,6 @@ new Handle:abilitiesHUD;
 new Handle:infoHUD;
 
 new bool:Enabled=true;
-new bool:Enabled2=true;
 new PointDelay=6;
 new Float:Announce=120.0;
 new AliveToEnable=5;
@@ -236,6 +235,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.1",
 	"1.10.2",
 	"1.10.3",
+	"1.10.3",
 	"1.10.3"
 };
 
@@ -291,14 +291,15 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
 	"September 18, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 18, 2014"//1.10.3
+	"September 18, 2014",//1.10.3
+	"September 18, 2014"
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 50:  //1.10.3
+		case 51:  //1.10.3
 		{
 			DrawPanelText(panel, "1) Fixed bosses appearing to be overhealed (War3Evo/Wliu)");
 			DrawPanelText(panel, "2) Fixed 'nextmap_charset' VFormat errors in console (Wliu)");
@@ -307,13 +308,18 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "5) Fixed a bug with respawning bosses (Wliu)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 49:  //1.10.3
+		case 50:  //1.10.3
 		{
 			DrawPanelText(panel, "6) Fixed Bread Bite being replaced with the GRU (Wliu)");
 			DrawPanelText(panel, "7) Fixed an edge case where player crits would not be applied (Wliu)");
 			DrawPanelText(panel, "8) Fixed not being able to use strange syringe guns or mediguns (Wliu)");
 			DrawPanelText(panel, "9) Fixed not being able to suicide as boss after round end (Wliu)");
 			DrawPanelText(panel, "10) Updated Russian translations (wasder)");
+			DrawPanelText(panel, "See next page (press 1)");
+		}
+		case 49:  //1.10.3
+		{
+			DrawPanelText(panel, "11) Fixed Dead Ringer deaths being too obvious (Wliu)");
 			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting many of these bugs!");
 		}
 		case 48:  //1.10.2
@@ -1100,7 +1106,7 @@ public OnMapStart()
 
 public OnMapEnd()
 {
-	if(Enabled2 || Enabled)
+	if(Enabled)
 	{
 		SetConVarInt(FindConVar("tf_arena_use_queue"), tf_arena_use_queue);
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
@@ -1137,7 +1143,6 @@ public OnPluginEnd()
 public EnableFF2()
 {
 	Enabled=true;
-	Enabled2=true;
 
 	SetConVarString(FindConVar("ff2_version"), PLUGIN_VERSION);
 	Announce=GetConVarFloat(cvarAnnounce);
@@ -1201,7 +1206,6 @@ public EnableFF2()
 public DisableFF2()
 {
 	Enabled=false;
-	Enabled2=false;
 
 	DisableSubPlugins();
 
@@ -1260,7 +1264,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	if(!FileExists(config))
 	{
 		LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
-		Enabled2=false;
+		Enabled=false;
 		return;
 	}
 
@@ -1661,40 +1665,12 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarUpdater)
 	{
 		#if defined _updater_included && !defined DEV_VERSION
-		if(GetConVarInt(cvarUpdater))
-		{
-			Updater_AddPlugin(UPDATE_URL);
-		}
-		else
-		{
-			Updater_RemovePlugin();
-		}
+		GetConVarInt(cvarUpdater) ? Updater_AddPlugin(UPDATE_URL) : Updater_RemovePlugin();
 		#endif
 	}
 	else if(convar==cvarEnabled)
 	{
-		if(StringToInt(newValue))
-		{
-			if(Enabled)
-			{
-				changeGamemode=0;
-			}
-			else
-			{
-				changeGamemode=1;
-			}
-		}
-		else
-		{
-			if(!Enabled)
-			{
-				changeGamemode=0;
-			}
-			else
-			{
-				changeGamemode=2;
-			}
-		}
+		StringToInt(newValue) ? (changeGamemode=Enabled ? 0 : 1) : (changeGamemode=!Enabled ? 0 : 2);
 	}
 }
 /* TODO: Re-enable in 2.0.0
@@ -1722,7 +1698,7 @@ public Action:Timer_Announce(Handle:timer)
 {
 	static announcecount=-1;
 	announcecount++;
-	if(Announce>1.0 && Enabled2)
+	if(Announce>1.0 && Enabled)
 	{
 		switch(announcecount)
 		{
@@ -1830,7 +1806,7 @@ stock bool:MapHasMusic(bool:forceRecalc=false)  //SAAAAAARGE
 
 stock bool:CheckToChangeMapDoors()
 {
-	if(!Enabled || !Enabled2)
+	if(!Enabled)
 	{
 		return;
 	}
@@ -1889,15 +1865,14 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	if(!GetConVarBool(cvarEnabled))
 	{
 		#if defined _steamtools_included
-		if(Enabled2 && steamtools)
+		if(steamtools)
 		{
 			Steam_SetGameDescription("Team Fortress");
 		}
 		#endif
-		Enabled2=false;
+		Enabled=false;
 	}
 
-	Enabled=Enabled2;
 	if(!Enabled)
 	{
 		return Plugin_Continue;
@@ -2185,7 +2160,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 public Action:Timer_EnableCap(Handle:timer)
 {
-	if(CheckRoundState()==-1 && (Enabled || Enabled2))
+	if(Enabled && CheckRoundState()==-1)
 	{
 		SetControlPoint(true);
 		if(checkDoors)
@@ -4005,7 +3980,7 @@ public Action:Command_SetNextBoss(client, args)
 
 public Action:Command_Points(client, args)
 {
-	if(!Enabled2)
+	if(!Enabled)
 	{
 		return Plugin_Continue;
 	}
@@ -4048,7 +4023,7 @@ public Action:Command_Points(client, args)
 
 public Action:Command_StopMusic(client, args)
 {
-	if(!Enabled2)
+	if(!Enabled)
 	{
 		return Plugin_Continue;
 	}
@@ -4943,7 +4918,7 @@ public Action:OnJoinTeam(client, const String:command[], args)
 
 public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBroadcast)
 {
-	if(CheckRoundState()!=1 || !Enabled)
+	if(!Enabled || CheckRoundState()!=1)
 	{
 		return Plugin_Continue;
 	}
@@ -4977,15 +4952,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				ResetPack(data);
 			}
 
-			if(GetGameTime()<=KSpreeTimer[boss])
-			{
-				KSpreeCount[boss]++;
-			}
-			else
-			{
-				KSpreeCount[boss]=1;
-			}
-
+			KSpreeCount[boss]=GetGameTime()<=KSpreeTimer[boss] ? KSpreeCount[boss]++ : 1;
 			if(KSpreeCount[boss]==3)
 			{
 				if(RandomSound("sound_kspree", sound, PLATFORM_MAX_PATH, boss))
@@ -5038,10 +5005,10 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 					SetVariantInt(GetEntPropEnt(entity, Prop_Send, "m_iMaxHealth")+1);
 					AcceptEntityInput(entity, "RemoveHealth");
 
-					new Handle:event2=CreateEvent("object_removed", true);
-					SetEventInt(event2, "userid", GetClientUserId(client));
-					SetEventInt(event2, "index", entity);
-					FireEvent(event2);
+					new Handle:eventRemoveObject=CreateEvent("object_removed", true);
+					SetEventInt(eventRemoveObject, "userid", GetClientUserId(client));
+					SetEventInt(eventRemoveObject, "index", entity);
+					FireEvent(eventRemoveObject);
 					AcceptEntityInput(entity, "kill");
 				}
 			}
@@ -6897,7 +6864,7 @@ public QueuePanelH(Handle:menu, MenuAction:action, client, selection)
 
 public Action:QueuePanelCmd(client, Args)
 {
-	if(!Enabled2)
+	if(!Enabled)
 		return Plugin_Continue;
 	new Handle:panel=CreatePanel();
 	SetGlobalTransTarget(client);
@@ -6948,7 +6915,7 @@ public Action:QueuePanelCmd(client, Args)
 
 public Action:ResetQueuePointsCmd(client, args)
 {
-	if(!Enabled2)
+	if(!Enabled)
 	{
 		return Plugin_Continue;
 	}
@@ -7012,7 +6979,7 @@ public TurnToZeroPanelH(Handle:menu, MenuAction:action, client, position)
 
 public Action:TurnToZeroPanel(caller, client)
 {
-	if(!Enabled2)
+	if(!Enabled)
 	{
 		return Plugin_Continue;
 	}
@@ -7150,7 +7117,7 @@ public FF2PanelH(Handle:menu, MenuAction:action, client, selection)
 
 public Action:FF2Panel(client, args)
 {
-	if(!Enabled2 || !IsValidClient(client, false))
+	if(!Enabled || !IsValidClient(client, false))
 		return Plugin_Continue;
 	SetEntPropFloat(client, Prop_Send, "m_flCloakMeter", 0.8);
 	new Handle:panel=CreatePanel();
@@ -7217,7 +7184,7 @@ public Action:NewPanelCmd(client, args)
 
 public Action:NewPanel(client, versionIndex)
 {
-	if(!Enabled2)
+	if(!Enabled)
 	{
 		return Plugin_Continue;
 	}
@@ -7270,7 +7237,7 @@ public Action:HelpPanel3Cmd(client, args)
 
 public Action:HelpPanel3(client)
 {
-	if(!Enabled2)
+	if(!Enabled)
 	{
 		return Plugin_Continue;
 	}
