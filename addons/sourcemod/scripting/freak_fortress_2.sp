@@ -7825,7 +7825,7 @@ public Native_IsEnabled(Handle:plugin, numParams)
 public Native_GetBoss(Handle:plugin, numParams)
 {
 	new client=GetNativeCell(1);
-	if(client>=0 && client<=MaxClients && IsValidClient(Boss[client]))
+	if(IsValidClient(Boss[client]))
 	{
 		return GetClientUserId(Boss[client]);
 	}
