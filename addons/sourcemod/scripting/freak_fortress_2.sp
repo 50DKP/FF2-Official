@@ -292,7 +292,7 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.2
 	"September 18, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
 	"September 18, 2014",//1.10.3
-	"September 18, 2014"
+	"September 18, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
