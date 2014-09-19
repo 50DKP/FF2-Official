@@ -302,25 +302,25 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 51:  //1.10.3
 		{
 			DrawPanelText(panel, "1) Fixed bosses appearing to be overhealed (War3Evo/Wliu)");
-			DrawPanelText(panel, "2) Fixed 'nextmap_charset' VFormat errors in console (Wliu)");
-			DrawPanelText(panel, "3) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu)");
+			DrawPanelText(panel, "2) Fixed 'nextmap_charset' VFormat errors in console (Wliu from BBG_Theory)");
+			DrawPanelText(panel, "3) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu from Spyper)");
 			DrawPanelText(panel, "4) Fixed an issue with displaying boss info in chat (Wliu)");
-			DrawPanelText(panel, "5) Fixed a bug with respawning bosses (Wliu)");
+			DrawPanelText(panel, "5) Fixed a bug with respawning bosses (Wliu from Spyper)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 50:  //1.10.3
 		{
-			DrawPanelText(panel, "6) Fixed Bread Bite being replaced with the GRU (Wliu)");
-			DrawPanelText(panel, "7) Fixed an edge case where player crits would not be applied (Wliu)");
-			DrawPanelText(panel, "8) Fixed not being able to use strange syringe guns or mediguns (Wliu)");
+			DrawPanelText(panel, "6) Fixed Bread Bite being replaced with the GRU (Wliu from Spyper)");
+			DrawPanelText(panel, "7) Fixed an edge case where player crits would not be applied (Wliu from Spyper)");
+			DrawPanelText(panel, "8) Fixed not being able to use strange syringe guns or mediguns (Chris from Spyper)");
 			DrawPanelText(panel, "9) Fixed not being able to suicide as boss after round end (Wliu)");
 			DrawPanelText(panel, "10) Updated Russian translations (wasder)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 49:  //1.10.3
 		{
-			DrawPanelText(panel, "11) Fixed Dead Ringer deaths being too obvious (Wliu)");
-			DrawPanelText(panel, "Thanks to Spyper and BBG_Theory for reporting many of these bugs!");
+			DrawPanelText(panel, "11) Fixed Dead Ringer deaths being too obvious (Wliu from AliceTaylor12)");
+			DrawPanelText(panel, "12) [Dev] Added \"sound_first_blood\" (Wliu from Mr-Bro)");
 		}
 		case 48:  //1.10.2
 		{
