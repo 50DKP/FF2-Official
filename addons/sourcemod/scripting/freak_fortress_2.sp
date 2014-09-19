@@ -134,6 +134,7 @@ new Handle:abilitiesHUD;
 new Handle:infoHUD;
 
 new bool:Enabled=true;
+new bool:Enabled2=true;
 new PointDelay=6;
 new Float:Announce=120.0;
 new AliveToEnable=5;
@@ -1106,7 +1107,7 @@ public OnMapStart()
 
 public OnMapEnd()
 {
-	if(Enabled)
+	if(Enabled || Enabled2)
 	{
 		SetConVarInt(FindConVar("tf_arena_use_queue"), tf_arena_use_queue);
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
@@ -1143,6 +1144,7 @@ public OnPluginEnd()
 public EnableFF2()
 {
 	Enabled=true;
+	Enabled2=true;
 
 	SetConVarString(FindConVar("ff2_version"), PLUGIN_VERSION);
 	Announce=GetConVarFloat(cvarAnnounce);
@@ -1206,6 +1208,7 @@ public EnableFF2()
 public DisableFF2()
 {
 	Enabled=false;
+	Enabled2=false;
 
 	DisableSubPlugins();
 
@@ -1264,7 +1267,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	if(!FileExists(config))
 	{
 		LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
-		Enabled=false;
+		Enabled2=false;
 		return;
 	}
 
@@ -1698,7 +1701,7 @@ public Action:Timer_Announce(Handle:timer)
 {
 	static announcecount=-1;
 	announcecount++;
-	if(Announce>1.0 && Enabled)
+	if(Announce>1.0 && Enabled2)
 	{
 		switch(announcecount)
 		{
@@ -1806,7 +1809,7 @@ stock bool:MapHasMusic(bool:forceRecalc=false)  //SAAAAAARGE
 
 stock bool:CheckToChangeMapDoors()
 {
-	if(!Enabled)
+	if(!Enabled || !Enabled2)
 	{
 		return;
 	}
@@ -1870,9 +1873,10 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			Steam_SetGameDescription("Team Fortress");
 		}
 		#endif
-		Enabled=false;
+		Enabled2=false;
 	}
 
+	Enabled=Enabled2;
 	if(!Enabled)
 	{
 		return Plugin_Continue;
@@ -2160,7 +2164,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 public Action:Timer_EnableCap(Handle:timer)
 {
-	if(Enabled && CheckRoundState()==-1)
+	if((Enabled || Enabled2) && CheckRoundState()==-1)
 	{
 		SetControlPoint(true);
 		if(checkDoors)
@@ -3980,7 +3984,7 @@ public Action:Command_SetNextBoss(client, args)
 
 public Action:Command_Points(client, args)
 {
-	if(!Enabled)
+	if(!Enabled2)
 	{
 		return Plugin_Continue;
 	}
@@ -4023,7 +4027,7 @@ public Action:Command_Points(client, args)
 
 public Action:Command_StopMusic(client, args)
 {
-	if(!Enabled)
+	if(!Enabled2)
 	{
 		return Plugin_Continue;
 	}
@@ -6882,7 +6886,7 @@ public QueuePanelH(Handle:menu, MenuAction:action, client, selection)
 
 public Action:QueuePanelCmd(client, Args)
 {
-	if(!Enabled)
+	if(!Enabled2)
 		return Plugin_Continue;
 	new Handle:panel=CreatePanel();
 	SetGlobalTransTarget(client);
@@ -6933,7 +6937,7 @@ public Action:QueuePanelCmd(client, Args)
 
 public Action:ResetQueuePointsCmd(client, args)
 {
-	if(!Enabled)
+	if(!Enabled2)
 	{
 		return Plugin_Continue;
 	}
@@ -6997,7 +7001,7 @@ public TurnToZeroPanelH(Handle:menu, MenuAction:action, client, position)
 
 public Action:TurnToZeroPanel(caller, client)
 {
-	if(!Enabled)
+	if(!Enabled2)
 	{
 		return Plugin_Continue;
 	}
@@ -7135,7 +7139,7 @@ public FF2PanelH(Handle:menu, MenuAction:action, client, selection)
 
 public Action:FF2Panel(client, args)
 {
-	if(!Enabled || !IsValidClient(client, false))
+	if(!Enabled2 || !IsValidClient(client, false))
 		return Plugin_Continue;
 	SetEntPropFloat(client, Prop_Send, "m_flCloakMeter", 0.8);
 	new Handle:panel=CreatePanel();
@@ -7202,7 +7206,7 @@ public Action:NewPanelCmd(client, args)
 
 public Action:NewPanel(client, versionIndex)
 {
-	if(!Enabled)
+	if(!Enabled2)
 	{
 		return Plugin_Continue;
 	}
@@ -7255,7 +7259,7 @@ public Action:HelpPanel3Cmd(client, args)
 
 public Action:HelpPanel3(client)
 {
-	if(!Enabled)
+	if(!Enabled2)
 	{
 		return Plugin_Continue;
 	}
