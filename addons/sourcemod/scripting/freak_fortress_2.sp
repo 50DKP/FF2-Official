@@ -4929,7 +4929,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 	DoOverlay(client, "");
 	if(!IsBoss(client))
 	{
-		if(!(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+		if(!(GetEventInt(event, "death_flags") | TF_DEATHFLAG_DEADRINGER))
 		{
 			CreateTimer(1.0, Timer_Damage, GetClientUserId(client));
 		}
@@ -4937,13 +4937,22 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		if(IsBoss(attacker))
 		{
 			new boss=GetBossIndex(attacker);
+			if(GetEventInt(event, "death_flags") | TF_DEATHFLAG_FIRSTBLOOD)
+			{
+				if(RandomSound("sound_first_blood", sound, PLATFORM_MAX_PATH, boss))
+				{
+					EmitSoundToAll(sound);
+					EmitSoundToAll(sound);
+				}
+			}
+
 			if(RandomSound("sound_hit", sound, PLATFORM_MAX_PATH, boss))
 			{
 				EmitSoundToAll(sound);
 				EmitSoundToAll(sound);
 			}
 
-			if(!GetRandomInt(0, 2))
+			if(!GetRandomInt(0, 2))  //1/3 chance for "sound_hit_<class>"
 			{
 				new Handle:data;
 				CreateDataTimer(0.1, PlaySoundKill, data);
@@ -4971,7 +4980,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 	else
 	{
 		new boss=GetBossIndex(client);
-		if(boss==-1 || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+		if(boss==-1 || (GetEventInt(event, "death_flags") | TF_DEATHFLAG_DEADRINGER))
 		{
 			return Plugin_Continue;
 		}
@@ -6607,31 +6616,40 @@ stock GetAbilityArgumentString(index,const String:plugin_name[],const String:abi
 	}
 }
 
-stock bool:RandomSound(const String: keyvalue[], String: str[],length,index=0)
+stock bool:RandomSound(const String:soundName[], String:soundFile[], length, boss=0)
 {
-	strcopy(str,1,"");
-	if(index<0 || Special[index]<0 || !BossKV[Special[index]])
-		return false;
-	KvRewind(BossKV[Special[index]]);
-	if(!KvJumpToKey(BossKV[Special[index]],keyvalue))
+	if(boss<0 || Special[boss]<0 || !BossKV[Special[boss]])
 	{
-		KvRewind(BossKV[Special[index]]);
 		return false;
 	}
-	decl String:s[4];
-	new i=1;
-	for(;;)
+
+	KvRewind(BossKV[Special[boss]]);
+	if(!KvJumpToKey(BossKV[Special[boss]], soundName))
 	{
-		IntToString(i,s,4);
-		KvGetString(BossKV[Special[index]], s, str, length);
-		if(!str[0])
+		KvRewind(BossKV[Special[boss]]);
+		return false;  //Requested soundName not implemented for this boss
+	}
+
+	decl String:key[4];
+	new sounds;
+	while(++sounds)  //Just keep looping until there's no keys left
+	{
+		IntToString(sounds, key, sizeof(key));
+		KvGetString(BossKV[Special[boss]], key, soundFile, length);
+		if(!soundFile[0])
+		{
+			sounds--;  //This sound wasn't valid, so don't include it
 			break;
-		i++;
+		}
 	}
-	if(i==1)
-		return false;
-	IntToString(GetRandomInt(1,i-1),s,4);
-	KvGetString(BossKV[Special[index]], s, str, length);
+
+	if(!sounds)
+	{
+		return false;  //Found soundName, but no sounds inside of it
+	}
+
+	IntToString(GetRandomInt(1, sounds), key, sizeof(key));
+	KvGetString(BossKV[Special[boss]], key, soundFile, length);  //Populate soundFile
 	return true;
 }
 
