@@ -291,9 +291,9 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 18, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 18, 2014",//1.10.3
-	"September 18, 2014"//1.10.3
+	"September 20, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
+	"September 20, 2014",//1.10.3
+	"September 20, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -2124,10 +2124,10 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			}
 		}
 	}
-	CreateTimer(0.2, Timer_GogoBoss);
-	CreateTimer(3.5, StartResponseTimer);
-	CreateTimer(9.1, StartBossTimer);
-	CreateTimer(9.6, MessageTimer);
+	CreateTimer(0.2, Timer_GogoBoss, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(3.5, StartResponseTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(9.1, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(9.6, MessageTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 
 	for(new entity=MaxClients+1; entity<MAXENTITIES; entity++)
 	{
@@ -4941,14 +4941,14 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		if(IsBoss(attacker))
 		{
 			new boss=GetBossIndex(attacker);
-			if(GetEventInt(event, "death_flags") | TF_DEATHFLAG_FIRSTBLOOD)
+			/*if(GetEventInt(event, "death_flags") | TF_DEATHFLAG_FIRSTBLOOD)
 			{
 				if(RandomSound("sound_first_blood", sound, PLATFORM_MAX_PATH, boss))
 				{
 					EmitSoundToAll(sound);
 					EmitSoundToAll(sound);
 				}
-			}
+			}*/
 
 			if(RandomSound("sound_hit", sound, PLATFORM_MAX_PATH, boss))
 			{
