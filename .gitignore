@@ -11,9 +11,7 @@ addons/sourcemod/translations/**
 !addons/sourcemod/translations/freak_fortress_2.phrases.txt
 addons/sourcemod/data/
 addons/sourcemod/extensions/
-addons/sourcemod/gamedata/**
-!addons/sourcemod/gamedata/equipwearable.txt
-!addons/sourcemod/gamedata/saxtonhale.txt
+addons/sourcemod/gamedata/
 addons/sourcemod/logs/
 addons/sourcemod/plugins/
 addons/sourcemod/GPLv2.txt
