@@ -2458,7 +2458,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			SetGlobalTransTarget(client);
 			if(IsBoss(client))
 			{
-				ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], bossWin ? "boss_win" : "boss_lose");
+				ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], (bossWin ? "boss_win" : "boss_lose"));
 			}
 			else
 			{
@@ -3004,7 +3004,6 @@ public Action:MakeModelTimer(Handle:timer, any:client)
 {
 	if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]) && CheckRoundState()!=2)
 	{
-		Debug("Giving boss model");
 		decl String:model[PLATFORM_MAX_PATH];
 		KvRewind(BossKV[Special[client]]);
 		KvGetString(BossKV[Special[client]], "model", model, PLATFORM_MAX_PATH);
@@ -3071,7 +3070,6 @@ public Action:MakeBoss(Handle:timer, any:client)
 		return Plugin_Continue;
 	}
 
-	Debug("Making boss");
 	KvRewind(BossKV[Special[client]]);
 	TF2_RemovePlayerDisguise(Boss[client]);
 	TF2_SetPlayerClass(Boss[client], TFClassType:KvGetNum(BossKV[Special[client]], "class", 1));
@@ -4177,7 +4175,6 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(IsBoss(client))// && !CheckRoundState())
 	{
-		Debug("Boss just spawned");
 		CreateTimer(0.1, MakeBoss, GetBossIndex(client));
 	}
 
