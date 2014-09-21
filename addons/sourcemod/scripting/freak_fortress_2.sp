@@ -291,9 +291,9 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 20, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 20, 2014",//1.10.3
-	"September 20, 2014"//1.10.3
+	"September 21, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
+	"September 21, 2014",//1.10.3
+	"September 21, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -303,7 +303,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 51:  //1.10.3
 		{
 			DrawPanelText(panel, "1) Fixed bosses appearing to be overhealed (War3Evo/Wliu)");
-			DrawPanelText(panel, "2) Fixed 'nextmap_charset' VFormat errors in console (Wliu from BBG_Theory)");
+			DrawPanelText(panel, "2) Prevent bosses from picking up ammo/health (Powerlord)");
 			DrawPanelText(panel, "3) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu from Spyper)");
 			DrawPanelText(panel, "4) Fixed an issue with displaying boss info in chat (Wliu)");
 			DrawPanelText(panel, "5) Fixed a bug with respawning bosses (Wliu from Spyper)");
@@ -321,7 +321,9 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 49:  //1.10.3
 		{
 			DrawPanelText(panel, "11) Fixed Dead Ringer deaths being too obvious (Wliu from AliceTaylor12)");
-			DrawPanelText(panel, "12) [Dev] Added \"sound_first_blood\" (Wliu from Mr-Bro)");
+			DrawPanelText(panel, "12) [Server] Fixed 'nextmap_charset' VFormat errors (Wliu from BBG_Theory)");
+			DrawPanelText(panel, "13) [Dev] Added \"sound_first_blood\" (Wliu from Mr-Bro)");
+			DrawPanelText(panel, "14) [Dev] Added FF2FLAG_ALLOW_{HEALTH|AMMO}_PICKUP (Powerlord)");
 		}
 		case 48:  //1.10.2
 		{
@@ -4138,6 +4140,7 @@ public OnClientPutInServer(client)
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
 	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
+	SDKHook(client, SDKHook_StartTouch, OnPickup);  //Used to prevent bosses from picking up ammo or health
 	Damage[client]=0;
 	uberTarget[client]=-1;
 	if(!AreClientCookiesCached(client))
@@ -6083,6 +6086,25 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1));
 		maxHealth=BossHealthMax[boss];
 		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
+
+public Action:OnPickup(client, entity)
+{
+	if(Enabled && IsBoss(client) && IsValidEntity(entity) && entity>MaxClients)
+	{
+		decl String:classname[64];
+		GetEntityClassname(entity, classname, sizeof(classname));
+
+		if((FF2flags[client] | FF2FLAG_ALLOW_AMMO_PICKUP) && (!StrContains(classname, "item_ammopack") || StrEqual(classname, "tf_ammo_pack")))
+		{
+			return Plugin_Stop;
+		}
+		else if((FF2flags[client] | FF2FLAG_ALLOW_HEALTH_PICKUP) && !StrContains(classname, "item_healthkit"))
+		{
+			return Plugin_Stop;
+		}
 	}
 	return Plugin_Continue;
 }
