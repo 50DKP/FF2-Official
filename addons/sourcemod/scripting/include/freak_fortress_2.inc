@@ -14,6 +14,8 @@
 #define FF2FLAG_CLASSHELPED				(1<<10)
 #define FF2FLAG_HASONGIVED				(1<<11)
 #define FF2FLAG_CHANGECVAR				(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages
+#define FF2FLAG_ALLOW_HEALTH_PICKUP		(1<<13)		//Used to prevent bosses from picking up health
+#define FF2FLAG_ALLOW_AMMO_PICKUP		(1<<14)		//Used to prevent bosses from picking up ammo
 #define FF2FLAGS_SPAWN					~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & ~FF2FLAG_CHANGECVAR & FF2FLAG_USEBOSSTIMER & FF2FLAG_USINGABILITY
 
 #if defined _FF2_included
