@@ -9,6 +9,7 @@ rage_new_weapon:	arg0 - slot (def.0)
 					arg4 - weapon's slot (0 - primary. 1 - secondary. 2 - melee. 3 - pda. 4 - spy's watches)
 					arg5 - weapon's ammo
 					arg6 - force switch to this weapon
+					arg7 - weapon's clip (use this for minigun, flamethrower, sniper rifles, etc.)
 */
 #pragma semicolon 1
 
