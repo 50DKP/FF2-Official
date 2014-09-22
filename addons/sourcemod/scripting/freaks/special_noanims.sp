@@ -18,7 +18,7 @@ rage_new_weapon:	arg0 - slot (def.0)
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-#define PLUGIN_VERSION "1.9.2"
+#define PLUGIN_VERSION "1.10.3"
 
 public Plugin:myinfo=
 {
@@ -85,7 +85,7 @@ Rage_New_Weapon(boss, const String:ability_name[])
 
 	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 5);
 	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7);
-	if(ammo>0)
+	if(ammo || clip)
 	{
 		SetAmmo(client, weapon, ammo, clip);
 	}

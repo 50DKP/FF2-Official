@@ -6092,17 +6092,21 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 
 public Action:OnPickup(client, entity)
 {
+	Debug("Entered OnPickup");
 	if(Enabled && IsBoss(client) && IsValidEntity(entity) && entity>MaxClients)
 	{
 		decl String:classname[64];
 		GetEntityClassname(entity, classname, sizeof(classname));
 
-		if((FF2flags[client] | FF2FLAG_ALLOW_AMMO_PICKUP) && (!StrContains(classname, "item_ammopack") || StrEqual(classname, "tf_ammo_pack")))
+		Debug("Classname was %s", classname);
+		if(!(FF2flags[client] | FF2FLAG_ALLOW_AMMO_PICKUP) && (!StrContains(classname, "item_ammopack") || StrEqual(classname, "tf_ammo_pack")))
 		{
+			Debug("NOOP (ammo)");
 			return Plugin_Stop;
 		}
-		else if((FF2flags[client] | FF2FLAG_ALLOW_HEALTH_PICKUP) && !StrContains(classname, "item_healthkit"))
+		else if(!(FF2flags[client] | FF2FLAG_ALLOW_HEALTH_PICKUP) && !StrContains(classname, "item_healthkit"))
 		{
+			Debug("NOOP (health)");
 			return Plugin_Stop;
 		}
 	}
