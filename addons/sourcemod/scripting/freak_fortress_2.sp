@@ -4140,7 +4140,6 @@ public OnClientPutInServer(client)
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
 	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
-	SDKHook(client, SDKHook_StartTouch, OnPickup);  //Used to prevent bosses from picking up ammo or health
 	Damage[client]=0;
 	uberTarget[client]=-1;
 	if(!AreClientCookiesCached(client))
@@ -6086,29 +6085,6 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1));
 		maxHealth=BossHealthMax[boss];
 		return Plugin_Handled;
-	}
-	return Plugin_Continue;
-}
-
-public Action:OnPickup(client, entity)
-{
-	Debug("Entered OnPickup");
-	if(Enabled && IsBoss(client) && IsValidEntity(entity) && entity>MaxClients)
-	{
-		decl String:classname[64];
-		GetEntityClassname(entity, classname, sizeof(classname));
-
-		Debug("Classname was %s", classname);
-		if(!(FF2flags[client] | FF2FLAG_ALLOW_AMMO_PICKUP) && (!StrContains(classname, "item_ammopack") || StrEqual(classname, "tf_ammo_pack")))
-		{
-			Debug("NOOP (ammo)");
-			return Plugin_Stop;
-		}
-		else if(!(FF2flags[client] | FF2FLAG_ALLOW_HEALTH_PICKUP) && !StrContains(classname, "item_healthkit"))
-		{
-			Debug("NOOP (health)");
-			return Plugin_Stop;
-		}
 	}
 	return Plugin_Continue;
 }
