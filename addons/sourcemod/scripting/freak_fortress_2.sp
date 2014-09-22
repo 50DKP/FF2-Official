@@ -2009,6 +2009,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	Enabled=true;
 	EnableSubPlugins();
 	CheckArena();
+	ModifyItemPacks();
 
 	new bool:isBoss[MAXPLAYERS+1];
 	Boss[0]=FindBosses(isBoss);
@@ -2147,16 +2148,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		else if(!strcmp(classname, "func_respawnroomvisualizer"))
 		{
 			AcceptEntityInput(entity, "Disable");
-		}
-		else if(!strcmp(classname, "item_ammopack_full") || !strcmp(classname, "item_ammopack_medium"))
-		{
-			decl Float:position[3];
-			new pack;
-			GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position);
-			AcceptEntityInput(entity, "Kill");
-			pack=CreateEntityByName("item_ammopack_small");
-			TeleportEntity(pack, position, NULL_VECTOR, NULL_VECTOR);
-			DispatchSpawn(pack);
 		}
 	}
 
@@ -2312,6 +2303,64 @@ public CheckArena()
 	{
 		SetArenaCapEnableTime(0.0);
 		SetControlPoint(false);
+	}
+}
+
+ModifyItemPacks()
+{
+	if(!Enabled)
+	{
+		return;
+	}
+
+	new entity=-1;
+	new Float:position[3];
+	while((entity=FindEntityByClassname2(entity, "item_ammopack_full"))!=-1)
+	{
+		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
+		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position);
+		AcceptEntityInput(entity, "Kill");
+		new smallAmmo=CreateEntityByName("item_ammopack_small");
+		TeleportEntity(smallAmmo, position, NULL_VECTOR, NULL_VECTOR);
+		DispatchSpawn(smallAmmo);
+		SetEntProp(smallAmmo, Prop_Send, "m_iTeamNum", OtherTeam, 4);
+		
+	}
+
+	entity=-1;
+	while((entity=FindEntityByClassname2(entity, "item_ammopack_medium"))!=-1)
+	{
+		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
+		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position);
+		AcceptEntityInput(entity, "Kill");
+		new smallAmmo=CreateEntityByName("item_ammopack_small");
+		TeleportEntity(smallAmmo, position, NULL_VECTOR, NULL_VECTOR);
+		DispatchSpawn(smallAmmo);
+		SetEntProp(smallAmmo, Prop_Send, "m_iTeamNum", OtherTeam, 4);
+	}
+
+	entity=-1;
+	while((entity=FindEntityByClassname2(entity, "Item_ammopack_small"))!=-1)
+	{
+		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
+	}
+
+	entity=-1;
+	while((entity=FindEntityByClassname2(entity, "item_healthkit_small"))!=-1)
+	{
+		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
+	}
+
+	entity=-1;
+	while((entity=FindEntityByClassname2(entity, "item_healthkit_medium"))!=-1)
+	{
+		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
+	}
+
+	entity=-1;
+	while((entity=FindEntityByClassname2(entity, "item_healthkit_large"))!=-1)
+	{
+		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
 	}
 }
 
