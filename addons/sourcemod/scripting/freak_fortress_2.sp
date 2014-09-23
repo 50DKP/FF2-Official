@@ -74,7 +74,7 @@ new MusicIndex;
 new Damage[MAXPLAYERS+1];
 new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
-new demoShield[MAXPLAYERS+1];
+new shield[MAXPLAYERS+1];
 new isClientRocketJumping[MAXPLAYERS+1];
 
 new FF2flags[MAXPLAYERS+1];
@@ -2407,7 +2407,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		else if(IsValidClient(client))
 		{
 			SetClientGlow(client, 0.0, 0.0);
-			demoShield[client]=0;
+			shield[client]=0;
 		}
 
 		for(new timer; timer<=1; timer++)
@@ -3262,7 +3262,9 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 56, 1005, 1092:  //Huntsman, Festive Huntsman, Fortified Compound
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.5");
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.5 ; 76 ; 2");
+				//2: +50% damage
+				//76: +100% ammo
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3320,7 +3322,21 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 305, 1079:  //Crusader's Crossbow, Festive Crusader's Crossbow
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.1 ; 2 ; 1.2"); //; 266 ; 1.0");
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.2 ; 17 ; 0.15");
+				//2: +20% damage
+				//17: +15% uber on hit
+			if(itemOverride!=INVALID_HANDLE)
+			{
+				item=itemOverride;
+				return Plugin_Changed;
+			}
+		}
+		case 331:  //Fists of Steel
+		{
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "177 ; 1.2 ; 205 ; 0.8 ; 206 ; 2.0", true);
+				//177: +20% slower weapon switch
+				//205: -80% damage from ranged while active
+				//206: +100% damage from melee while active
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3348,6 +3364,26 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 648:  //Wrap Assassin
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "279 ; 2.0");
+			if(itemOverride!=INVALID_HANDLE)
+			{
+				item=itemOverride;
+				return Plugin_Changed;
+			}
+		}
+		case 656:  //Holiday Punch
+		{
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "178 ; 0", true);
+				//178:  +100% faster weapon switch
+			if(itemOverride!=INVALID_HANDLE)
+			{
+				item=itemOverride;
+				return Plugin_Changed;
+			}
+		}
+		case 1103:  //Back Scatter
+		{
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "179 ; 1");
+				//179: Crit instead of mini-critting
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3529,7 +3565,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 	}
 
 	SetEntityRenderColor(client, 255, 255, 255, 255);
-	demoShield[client]=0;
+	shield[client]=0;
 	new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	new index=-1;
 	new civilianCheck[MAXPLAYERS+1];
@@ -3590,7 +3626,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
 		{
-			case 57, 231:  //Razorback, Darwin's Danger Shield
+			case 231:  //Darwin's Danger Shield
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 0, "");
@@ -3608,13 +3644,8 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		civilianCheck[client]++;
 	}
 
-	if(IsValidEntity(FindPlayerBack(client, {57}, 2)))  //Razorback
-	{
-		RemovePlayerBack(client, {57}, 2);
-		weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 0, "");
-	}
-
-	if(IsValidEntity(FindPlayerBack(client, {642}, 1)))  //Cozy Camper
+	shield[client]=FindPlayerBack(client, 57);  //Razorback
+	if(IsValidEntity(FindPlayerBack(client, 642)))  //Cozy Camper
 	{
 		weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
 	}
@@ -3624,7 +3655,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 	{
 		if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 		{
-			demoShield[client]=entity;
+			shield[client]=entity;
 		}
 	}
 
@@ -3642,11 +3673,6 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 					//107: +50% move speed
 					//128: Only when weapon is active
 					//191: -7 health/second
-			}
-			case 331:  //Fists of Steel
-			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-				weapon=SpawnWeapon(client, "tf_weapon_fists", 5, 1, 6, "");  //Fists
 			}
 			case 357:  //Half-Zatoichi
 			{
@@ -3725,7 +3751,7 @@ stock RemovePlayerTarge(client)
 	while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
 	{
 		new index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
-		if((index==131 || index==406) && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))  //The Chargin' Targe, Splendid Screen
+		if((index==131 || index==406) && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))  //Chargin' Targe, Splendid Screen
 		{
 			TF2_RemoveWearable(client, entity);
 		}
@@ -3758,75 +3784,20 @@ stock RemovePlayerBack(client, indices[], length)
 			}
 		}
 	}
-
-	entity=MaxClients+1;
-	while((entity=FindEntityByClassname2(entity, "tf_powerup_bottle"))!=-1)
-	{
-		decl String:netclass[32];
-		if(GetEntityNetClass(entity, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle"))
-		{
-			new index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
-			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
-			{
-				for(new i; i<length; i++)
-				{
-					if(index==indices[i])
-					{
-						AcceptEntityInput(entity, "Kill");
-					}
-				}
-			}
-		}
-	}
 }
 
-stock FindPlayerBack(client, indices[], length)
+stock FindPlayerBack(client, index)
 {
-	if(length<=0)
-	{
-		return -1;
-	}
-
 	new entity=MaxClients+1;
 	while((entity=FindEntityByClassname2(entity, "tf_wearable"))!=-1)
 	{
 		decl String:netclass[32];
-		if(GetEntityNetClass(entity, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable"))
+		if(GetEntityNetClass(entity, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable") && GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex")==index && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 		{
-			new index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
-			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
-			{
-				for(new i; i<length; i++)
-				{
-					if(index==indices[i])
-					{
-						return entity;
-					}
-				}
-			}
+			return entity;
 		}
 	}
-
-	entity=MaxClients+1;
-	while((entity=FindEntityByClassname2(entity, "tf_powerup_bottle"))!=-1)
-	{
-		decl String:netclass[32];
-		if(GetEntityNetClass(entity, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFPowerupBottle"))
-		{
-			new index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
-			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
-			{
-				for(new i; i<length; i++)
-				{
-					if(index==indices[i])
-					{
-						return entity;
-					}
-				}
-			}
-		}
-	}
-	return -1;
+	return 0;
 }
 
 public Action:event_destroy(Handle:event, const String:name[], bool:dontBroadcast)
@@ -4417,14 +4388,9 @@ public Action:ClientTimer(Handle:timer)
 						cond=TFCond_Buffed;
 					}
 				}
-				case 656:  //Holiday Punch
-				{
-					addthecrit=true;
-					cond=TFCond_Buffed;
-				}
 			}
 
-			if(index==16 && addthecrit && IsValidEntity(FindPlayerBack(client, {642}, 1)))  //SMG
+			if(index==16 && IsValidEntity(FindPlayerBack(client, 642)))  //SMG, Cozy Camper
 			{
 				addthecrit=false;
 			}
@@ -5509,15 +5475,15 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				return Plugin_Changed;
 			}
 
-			if(demoShield[client])
+			if(shield[client])
 			{
-				TF2_RemoveWearable(client, demoShield[client]);
+				TF2_RemoveWearable(client, shield[client]);
 				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 				TF2_AddCondition(client, TFCond_Bonked, 0.1);
-				demoShield[client]=0;
+				shield[client]=0;
 				return Plugin_Continue;
 			}
 
@@ -5845,14 +5811,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							damage/=2.0;
 						}
 					}
-					case 656:  //Holiday Punch
-					{
-						CreateTimer(0.1, Timer_StopTickle, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-						if(TF2_IsPlayerInCondition(attacker, TFCond_Dazed))
-						{
-							TF2_RemoveCondition(attacker, TFCond_Dazed);
-						}
-					}
 					case 1099:  //Tide Turner
 					{
 						SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", 100.0);
@@ -6054,18 +6012,18 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 
 	if(IsBoss(attacker))
 	{
-		if(demoShield[victim])
+		if(shield[victim])
 		{
 			new Float:position[3];
 			GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
 
-			TF2_RemoveWearable(victim, demoShield[victim]);
+			TF2_RemoveWearable(victim, shield[victim]);
 			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
 			TF2_AddCondition(victim, TFCond_Bonked, 0.1);
-			demoShield[victim]=0;
+			shield[victim]=0;
 			return Plugin_Handled;
 		}
 		damageMultiplier=900.0;
