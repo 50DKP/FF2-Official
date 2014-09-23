@@ -17,7 +17,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include <sourcemod>
 #include <freak_fortress_2>
 #include <sdktools>
-#include <sdktools_gamerules>
 #include <sdkhooks>
 #include <tf2_stocks>
 #include <morecolors>
@@ -2204,7 +2203,7 @@ public Action:BossInfoTimer_Begin(Handle:timer, any:client)
 
 public Action:BossInfoTimer_ShowInfo(Handle:timer, any:client)
 {
-	if((FF2flags[Boss[client]] & FF2FLAG_USINGABILITY) || (FF2flags[Boss[client]] & FF2FLAG_HUDDISABLED))
+	if((FF2flags[Boss[client]] & FF2FLAG_USINGABILITY))
 	{
 		BossInfoTimer[client][1]=INVALID_HANDLE;
 		return Plugin_Stop;
@@ -2242,26 +2241,20 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:client)
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[client]);
-		if(!(GetClientButtons(Boss[client]) & IN_SCORE))
+		if(need_info_bout_rmb)
 		{
-			if(need_info_bout_rmb)
-			{
-				ShowSyncHudText(Boss[client], abilitiesHUD, "%t\n%t", "ff2_buttons_reload", "ff2_buttons_rmb");
-			}
-			else
-			{
-				ShowSyncHudText(Boss[client], abilitiesHUD, "%t", "ff2_buttons_reload");
-			}
+			FF2_ShowSyncHudText(Boss[client], abilitiesHUD, "%t\n%t", "ff2_buttons_reload", "ff2_buttons_rmb");
+		}
+		else
+		{
+			FF2_ShowSyncHudText(Boss[client], abilitiesHUD, "%t", "ff2_buttons_reload");
 		}
 	}
 	else if(need_info_bout_rmb)
 	{
-		if(!(GetClientButtons(Boss[client]) & IN_SCORE))
-		{
-			SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
-			SetGlobalTransTarget(Boss[client]);
-			ShowSyncHudText(Boss[client], abilitiesHUD, "%t", "ff2_buttons_rmb");
-		}
+		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
+		SetGlobalTransTarget(Boss[client]);
+		FF2_ShowSyncHudText(Boss[client], abilitiesHUD, "%t", "ff2_buttons_rmb");
 	}
 	else
 	{
@@ -2324,7 +2317,7 @@ ModifyItemPacks()
 		TeleportEntity(smallAmmo, position, NULL_VECTOR, NULL_VECTOR);
 		DispatchSpawn(smallAmmo);
 		SetEntProp(smallAmmo, Prop_Send, "m_iTeamNum", OtherTeam, 4);
-		
+
 	}
 
 	entity=-1;
@@ -2502,18 +2495,19 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	PrintCenterTextAll("");
-	for(new client=1; client<=MaxClients; client++)
+	for(new client; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && !(FF2flags[client] & FF2FLAG_HUDDISABLED))
+		if(IsValidClient(client))
 		{
 			SetGlobalTransTarget(client);
+			//TODO:  Clear HUD text here
 			if(IsBoss(client))
 			{
-				ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], (bossWin ? "boss_win" : "boss_lose"));
+				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], (bossWin ? "boss_win" : "boss_lose"));
 			}
 			else
 			{
-				ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
+				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
 			}
 		}
 	}
@@ -3042,10 +3036,10 @@ public Action:MessageTimer(Handle:timer)
 
 	for(new client; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && !(FF2flags[client] & FF2FLAG_HUDDISABLED))
+		if(IsValidClient(client))
 		{
 			SetGlobalTransTarget(client);
-			ShowSyncHudText(client, infoHUD, text);
+			FF2_ShowSyncHudText(client, infoHUD, text);
 		}
 	}
 	return Plugin_Continue;
@@ -4282,34 +4276,21 @@ public Action:ClientTimer(Handle:timer)
 	{
 		if(IsValidClient(client) && !IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
 		{
-			if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
+			SetHudTextParams(-1.0, 0.88, 0.35, 90, 255, 90, 255, 0, 0.35, 0.0, 0.1);
+			if(!IsPlayerAlive(client))
 			{
-				SetHudTextParams(-1.0, 0.88, 0.35, 90, 255, 90, 255, 0, 0.35, 0.0, 0.1);
-				if(!IsPlayerAlive(client))
+				new observer=GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
+				if(IsValidClient(observer) && !IsBoss(observer) && observer!=client)
 				{
-					new observer=GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
-					if(IsValidClient(observer) && !IsBoss(observer) && observer!=client)
-					{
-						if(!(GetClientButtons(client) & IN_SCORE))
-						{
-							ShowSyncHudText(client, rageHUD, "Damage: %d-%N's Damage: %d", Damage[client], observer, Damage[observer]);
-						}
-					}
-					else
-					{
-						if(!(GetClientButtons(client) & IN_SCORE))
-						{
-							ShowSyncHudText(client, rageHUD, "Damage: %d", Damage[client]);
-						}
-					}
-					continue;
+					FF2_ShowSyncHudText(client, rageHUD, "Damage: %d-%N's Damage: %d", Damage[client], observer, Damage[observer]);
 				}
-
-				if(!(GetClientButtons(client) & IN_SCORE))
+				else
 				{
-					ShowSyncHudText(client, rageHUD, "Damage: %d", Damage[client]);
+					FF2_ShowSyncHudText(client, rageHUD, "Damage: %d", Damage[client]);
 				}
+				continue;
 			}
+			FF2_ShowSyncHudText(client, rageHUD, "Damage: %d", Damage[client]);
 
 			new TFClassType:class=TF2_GetPlayerClass(client);
 			new weapon=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
@@ -4344,11 +4325,8 @@ public Action:ClientTimer(Handle:timer)
 					if(IsValidEdict(medigun) && GetEdictClassname(medigun, mediclassname, sizeof(mediclassname)) && !strcmp(mediclassname, "tf_weapon_medigun", false))
 					{
 						new charge=RoundToFloor(GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")*100);
-						if(!(FF2flags[client] & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
-						{
-							SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
-							ShowSyncHudText(client, jumpHUD, "%T: %i", "uber-charge", client, charge);
-						}
+						SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
+						FF2_ShowSyncHudText(client, jumpHUD, "%T: %i", "uber-charge", client, charge);
 
 						if(charge==100 && !(FF2flags[client] & FF2FLAG_UBERREADY))
 						{
@@ -4462,7 +4440,7 @@ public Action:ClientTimer(Handle:timer)
 						{
 							SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
 							new charge=RoundToFloor(GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")*100);
-							ShowHudText(client, -1, "%T: %i", "uber-charge", client, charge);
+							FF2_ShowHudText(client, -1, "%T: %i", "uber-charge", client, charge);
 							if(charge==100 && !(FF2flags[client] & FF2FLAG_UBERREADY))
 							{
 								FakeClientCommand(client,"voicemenu 1 7");
@@ -4579,57 +4557,48 @@ public Action:BossTimer(Handle:timer)
 			BossHealth[client]=1;
 		}
 
-		if(!(FF2flags[Boss[client]] & FF2FLAG_HUDDISABLED))
+		SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
+		FF2_ShowSyncHudText(Boss[client], livesHUD, "%t", "Boss Lives Left", BossLives[client], BossLivesMax[client]);
+
+		if(RoundFloat(BossCharge[client][0])==100.0)
 		{
-			if(!(GetClientButtons(Boss[client]) & IN_SCORE) && BossLivesMax[client]>1)
+			if(IsFakeClient(Boss[client]) && !(FF2flags[Boss[client]] & FF2FLAG_BOTRAGE))
 			{
-				SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
-				ShowSyncHudText(Boss[client], livesHUD, "%t", "Boss Lives Left", BossLives[client], BossLivesMax[client]);
+				CreateTimer(1.0, Timer_BotRage, client, TIMER_FLAG_NO_MAPCHANGE);
+				FF2flags[Boss[client]]|=FF2FLAG_BOTRAGE;
 			}
-
-			if(RoundFloat(BossCharge[client][0])==100.0)
+			else
 			{
-				if(IsFakeClient(Boss[client]) && !(FF2flags[Boss[client]] & FF2FLAG_BOTRAGE))
+				SetHudTextParams(-1.0, 0.83, 0.15, 255, 64, 64, 255);
+				FF2_ShowSyncHudText(Boss[client], rageHUD, "%t", "do_rage");
+
+				decl String:sound[PLATFORM_MAX_PATH];
+				if(RandomSound("sound_full_rage", sound, PLATFORM_MAX_PATH, client) && emitRageSound[client])
 				{
-					CreateTimer(1.0, Timer_BotRage, client, TIMER_FLAG_NO_MAPCHANGE);
-					FF2flags[Boss[client]]|=FF2FLAG_BOTRAGE;
-				}
-				else
-				{
-					if(!(GetClientButtons(Boss[client]) & IN_SCORE))
+					new Float:position[3];
+					GetEntPropVector(Boss[client], Prop_Send, "m_vecOrigin", position);
+
+					FF2flags[Boss[client]]|=FF2FLAG_TALKING;
+					EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
+					EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
+
+					for(new target=1; target<=MaxClients; target++)
 					{
-						SetHudTextParams(-1.0, 0.83, 0.15, 255, 64, 64, 255);
-						ShowSyncHudText(Boss[client], rageHUD, "%t", "do_rage");
-					}
-
-					decl String:sound[PLATFORM_MAX_PATH];
-					if(RandomSound("sound_full_rage", sound, PLATFORM_MAX_PATH, client) && emitRageSound[client])
-					{
-						new Float:position[3];
-						GetEntPropVector(Boss[client], Prop_Send, "m_vecOrigin", position);
-
-						FF2flags[Boss[client]]|=FF2FLAG_TALKING;
-						EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
-						EmitSoundToAll(sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
-
-						for(new target=1; target<=MaxClients; target++)
+						if(IsClientInGame(target) && target!=Boss[client])
 						{
-							if(IsClientInGame(target) && target!=Boss[client])
-							{
-								EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
-								EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
-							}
+							EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
+							EmitSoundToClient(target, sound, Boss[client], _, SNDLEVEL_TRAFFIC, _, _, 100, Boss[client], position);
 						}
-						FF2flags[Boss[client]]&=~FF2FLAG_TALKING;
-						emitRageSound[client]=false;
 					}
+					FF2flags[Boss[client]]&=~FF2FLAG_TALKING;
+					emitRageSound[client]=false;
 				}
 			}
-			else if(!(GetClientButtons(Boss[client]) & IN_SCORE))
-			{
-				SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255);
-				ShowSyncHudText(Boss[client], rageHUD, "%t", "rage_meter", RoundFloat(BossCharge[client][0]));
-			}
+		}
+		else
+		{
+			SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255);
+			FF2_ShowSyncHudText(Boss[client], rageHUD, "%t", "rage_meter", RoundFloat(BossCharge[client][0]));
 		}
 		SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 
@@ -5259,11 +5228,11 @@ public Action:Timer_DrawGame(Handle:timer)
 	}
 
 	SetHudTextParams(-1.0, 0.17, 1.1, 255, 255, 255, 255);
-	for(new client=1; client<=MaxClients; client++)
+	for(new client; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && IsClientConnected(client) && !(FF2flags[client] & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
+		if(IsValidClient(client))
 		{
-			ShowSyncHudText(client, timeleftHUD, timeDisplay);
+			FF2_ShowSyncHudText(client, timeleftHUD, timeDisplay);
 		}
 	}
 
@@ -7557,9 +7526,9 @@ stock SetAmmo(client, slot, ammo)
 	new weapon=GetPlayerWeaponSlot(client, slot);
 	if(IsValidEntity(weapon))
 	{
-		new iOffset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
-		new iAmmoTable=FindSendPropInfo("CTFPlayer", "m_iAmmo");
-		SetEntData(client, iAmmoTable+iOffset, ammo, 4, true);
+		new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
+		new ammoTable=FindSendPropInfo("CTFPlayer", "m_iAmmo");
+		SetEntData(client, ammoTable+offset, ammo, 4, true);
 	}
 }
 
@@ -7578,23 +7547,29 @@ stock GetAmmo(client, slot)
 	return 0;
 }
 
-stock GetHealingTarget(client,bool:checkgun=false)
+stock GetHealingTarget(client, bool:checkgun=false)
 {
-	decl String:s[64];
 	new medigun=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 	if(!checkgun)
 	{
 		if(GetEntProp(medigun, Prop_Send, "m_bHealing"))
+		{
 			return GetEntPropEnt(medigun, Prop_Send, "m_hHealingTarget");
+		}
 		return -1;
 	}
-	if(!IsValidEdict(medigun))
-		return -1;
-	GetEdictClassname(medigun, s, sizeof(s));
-	if(!strcmp(s, "tf_weapon_medigun", false))
+
+	if(IsValidEdict(medigun))
 	{
-		if(GetEntProp(medigun, Prop_Send, "m_bHealing"))
-			return GetEntPropEnt(medigun, Prop_Send, "m_hHealingTarget");
+		decl String:classname[64];
+		GetEdictClassname(medigun, classname, sizeof(classname));
+		if(!strcmp(classname, "tf_weapon_medigun", false))
+		{
+			if(GetEntProp(medigun, Prop_Send, "m_bHealing"))
+			{
+				return GetEntPropEnt(medigun, Prop_Send, "m_hHealingTarget");
+			}
+		}
 	}
 	return -1;
 }

@@ -14,8 +14,6 @@
 #define FF2FLAG_CLASSHELPED				(1<<10)
 #define FF2FLAG_HASONGIVED				(1<<11)
 #define FF2FLAG_CHANGECVAR				(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages
-#define FF2FLAG_ALLOW_HEALTH_PICKUP		(1<<13)		//Used to prevent bosses from picking up health
-#define FF2FLAG_ALLOW_AMMO_PICKUP		(1<<14)		//Used to prevent bosses from picking up ammo
 #define FF2FLAGS_SPAWN					~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & ~FF2FLAG_CHANGECVAR & FF2FLAG_USEBOSSTIMER & FF2FLAG_USINGABILITY
 
 #if defined _FF2_included
@@ -342,7 +340,7 @@ native FF2_GetAlivePlayers();
 /**
  * Retrieves the number of boss players left (including minions)
  *
- * @return          Number of boss players left alive
+ * @return			Number of boss players left alive
  */
 native FF2_GetBossPlayers();
 
@@ -435,6 +433,38 @@ forward Action:FF2_OnLoadCharacterSet(&charSetNum, String:charSetName[]);
 forward Action:FF2_OnLoseLife(client, &lives, maxLives);
 
 /**
+ * Sends a synced HUD message according to FF2's rules
+ * Will only send if the client hasn't disabled their HUD and isn't checking the scoreboard
+ *
+ * Uses the same params and return values as ShowSyncHudText
+ */
+stock FF2_ShowSyncHudText(client, Handle:sync, const String:buffer[], any:...)
+{
+	if(!(FF2_GetFF2flags(client) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
+	{
+		decl String:message[256];
+		VFormat(message, sizeof(message), buffer, 4);
+		ShowSyncHudText(client, sync, message);
+	}
+}
+
+/**
+ * Sends a HUD message according to FF2's rules
+ * Will only send if the client hasn't disabled their HUD and isn't checking the scoreboard
+ *
+ * Uses the same params and return values as ShowHudText
+ */
+stock FF2_ShowHudText(client, channel, const String:buffer[], any:...)
+{
+	if(!(FF2_GetFF2flags(client) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
+	{
+		decl String:message[256];
+		VFormat(message, sizeof(message), buffer, 4);
+		ShowHudText(client, channel, message);
+	}
+}
+
+/**
  * Used to consolidate debug messages
  *
  * @param buffer	Debug string to display
@@ -512,9 +542,9 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetFF2flags");
 	MarkNativeAsOptional("FF2_SetFF2flags");
 	MarkNativeAsOptional("FF2_DoAbility");
-    MarkNativeAsOptional("FF2_GetClientGlow");
-    MarkNativeAsOptional("FF2_SetClientGlow");
-    MarkNativeAsOptional("FF2_GetAlivePlayers");
-    MarkNativeAsOptional("FF2_GetBossPlayers");
+	MarkNativeAsOptional("FF2_GetClientGlow");
+	MarkNativeAsOptional("FF2_SetClientGlow");
+	MarkNativeAsOptional("FF2_GetAlivePlayers");
+	MarkNativeAsOptional("FF2_GetBossPlayers");
 }
 #endif
