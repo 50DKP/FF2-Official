@@ -76,6 +76,7 @@ new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
 new isClientRocketJumping[MAXPLAYERS+1];
+new detonations[MAXPLAYERS+1];
 
 new FF2flags[MAXPLAYERS+1];
 
@@ -117,6 +118,7 @@ new Handle:cvarLastPlayerGlow;
 new Handle:cvarBossTeleporter;
 new Handle:cvarBossSuicide;
 new Handle:cvarShieldCrits;
+new Handle:cvarCaberDetonations;
 new Handle:cvarGoombaDamage;
 new Handle:cvarGoombaRebound;
 new Handle:cvarBossRTD;
@@ -143,13 +145,13 @@ new Float:circuitStun;
 new countdownPlayers=1;
 new countdownTime=120;
 new countdownHealth=2000;
-new bool:SpecForceBoss=false;
+new bool:SpecForceBoss;
 new bool:lastPlayerGlow=true;
 new bool:bossTeleportation=true;
 new shieldCrits;
 new Float:GoombaDamage=0.05;
 new Float:reboundPower=300.0;
-new bool:canBossRTD=false;
+new bool:canBossRTD;
 
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -290,9 +292,9 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 21, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 21, 2014",//1.10.3
-	"September 21, 2014"//1.10.3
+	"September 23, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
+	"September 23, 2014",//1.10.3
+	"September 23, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -302,8 +304,8 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 51:  //1.10.3
 		{
 			DrawPanelText(panel, "1) Fixed bosses appearing to be overhealed (War3Evo/Wliu)");
-			DrawPanelText(panel, "2) Prevent bosses from picking up ammo/health (Powerlord)");
-			DrawPanelText(panel, "3) Fixed the countdown timer not disappearing if the alive player count went above 'cvar_countdown_players' (Wliu from Spyper)");
+			DrawPanelText(panel, "2) Prevent bosses from picking up ammo/health (Chdata)");
+			DrawPanelText(panel, "3) Rebalanced many weapons based on misc. feedback (Wliu/various)");
 			DrawPanelText(panel, "4) Fixed an issue with displaying boss info in chat (Wliu)");
 			DrawPanelText(panel, "5) Fixed a bug with respawning bosses (Wliu from Spyper)");
 			DrawPanelText(panel, "See next page (press 1)");
@@ -320,9 +322,10 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 49:  //1.10.3
 		{
 			DrawPanelText(panel, "11) Fixed Dead Ringer deaths being too obvious (Wliu from AliceTaylor12)");
-			DrawPanelText(panel, "12) [Server] Fixed 'nextmap_charset' VFormat errors (Wliu from BBG_Theory)");
-			DrawPanelText(panel, "13) [Dev] Added \"sound_first_blood\" (Wliu from Mr-Bro)");
-			DrawPanelText(panel, "14) [Dev] Added FF2FLAG_ALLOW_{HEALTH|AMMO}_PICKUP (Powerlord)");
+			DrawPanelText(panel, "12) [Server] Added new cvar 'ff2_caber_detonations' (Wliu)");
+			DrawPanelText(panel, "13) [Server] Fixed 'nextmap_charset' VFormat errors (Wliu from BBG_Theory)");
+			DrawPanelText(panel, "14) [Server] Fixed a bug related to 'cvar_countdown_players' and the countdown timer (Wliu from Spyper)");
+			DrawPanelText(panel, "15) [Dev] Added \"sound_first_blood\" (Wliu from Mr-Bro)");
 		}
 		case 48:  //1.10.2
 		{
@@ -839,6 +842,7 @@ public OnPluginStart()
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
 	cvarBossSuicide=CreateConVar("ff2_boss_suicide", "0", "Allow the boss to suicide after the round starts?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarCaberDetonations=CreateConVar("ff2_caber_detonations", "5", "Amount of times somebody can detonate the Ullapool Caber", FCVAR_PLUGIN);
 	cvarShieldCrits=CreateConVar("ff2_shield_crits", "0", "0 to disable grenade launcher crits when equipping a shield, 1 for minicrits, 2 for crits", FCVAR_PLUGIN, true, 0.0, true, 2.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
 	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How high players should rebound after goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.0);
@@ -2408,6 +2412,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		{
 			SetClientGlow(client, 0.0, 0.0);
 			shield[client]=0;
+			detonations[client]=0;
 		}
 
 		for(new timer; timer<=1; timer++)
@@ -5684,6 +5689,17 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						if(TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
 						{
 							TF2_RemoveCondition(attacker, TFCond_OnFire);
+						}
+					}
+					case 307:  //Ullapool Caber
+					{
+						new allowedDetonations=GetConVarInt(cvarCaberDetonations);
+						if(detonations[attacker]<allowedDetonations)
+						{
+							detonations[attacker]++;
+							SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
+							SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
+							CPrintToChat(client, "{olive}[FF2]{default} You have %i detonations left!", allowedDetonations-detonations[attacker]);
 						}
 					}
 					case 317:  //Candycane
