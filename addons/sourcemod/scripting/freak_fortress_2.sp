@@ -3252,6 +3252,17 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
+		case 224:  //L'etranger
+		{
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "85 ; 0.5 ; 253 ; 1.0");
+				//85: +50% time needed to regen cloak
+				//253: +1 second needed to fully cloak
+			if(itemOverride!=INVALID_HANDLE)
+			{
+				item=itemOverride;
+				return Plugin_Changed;
+			}
+		}
 		case 239, 1084, 1100:  //GRU, Festive GRU, Bread Bite
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7", true);
