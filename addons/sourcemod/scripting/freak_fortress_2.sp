@@ -4205,7 +4205,7 @@ public OnClientPutInServer(client)
 
 public OnClientDisconnect(client)
 {
-	if(IsPlayerAlive(client) && CheckRoundState()==1)
+	if(IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==1)
 	{
 		CreateTimer(0.1, CheckAlivePlayers);
 	}
@@ -5511,7 +5511,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				return Plugin_Changed;
 			}
 
-			if(shield[client])
+			if(shield[client] && damage)
 			{
 				TF2_RemoveWearable(client, shield[client]);
 				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.7, 100, _, position, _, false);
@@ -5620,18 +5620,18 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						Damage[teleowner]+=9001*3/5;
 						if(!(FF2flags[teleowner] & FF2FLAG_HUDDISABLED))
 						{
-							PrintCenterText(teleowner, "TELEFRAG ASSIST!  Nice job setting it up!");
+							PrintHintText(teleowner, "TELEFRAG ASSIST!  Nice job setting it up!");
 						}
 					}
 
 					if(!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
 					{
-						PrintCenterText(attacker, "TELEFRAG! You are a pro!");
+						PrintHintText(attacker, "TELEFRAG! You are a pro!");
 					}
 
 					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
 					{
-						PrintCenterText(client, "TELEFRAG! Be careful around quantum tunneling devices!");
+						PrintHintText(client, "TELEFRAG! Be careful around quantum tunneling devices!");
 					}
 					return Plugin_Changed;
 				}
@@ -5730,7 +5730,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							detonations[attacker]++;
 							SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
 							SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
-							CPrintToChat(client, "{olive}[FF2]{default} You have %i detonations left!", allowedDetonations-detonations[attacker]);
+							PrintHintText(client, "You have %i detonations left!", allowedDetonations-detonations[attacker]);
 						}
 					}
 					case 317:  //Candycane
@@ -5785,8 +5785,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 								Marketed[Boss[boss]]++;
 							}
 
-							PrintCenterText(attacker, "%t", "Market Gardener");
-							PrintCenterText(client, "%t", "Market Gardened");
+							PrintHintText(attacker, "%t", "Market Gardener");
+							PrintHintText(client, "%t", "Market Gardened");
 
 							EmitSoundToClient(client, "player/doubledonk.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.6, 100, _, position, _, false);
 							EmitSoundToClient(attacker, "player/doubledonk.wav", _, _, SNDLEVEL_TRAFFIC, _, 0.6, 100, _, position, _, false);
@@ -5912,12 +5912,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 					if(!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
 					{
-						PrintCenterText(attacker, "%t", "Backstab");
+						PrintHintText(attacker, "%t", "Backstab");
 					}
 
 					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
 					{
-						PrintCenterText(client, "%t", "Backstabbed");
+						PrintHintText(client, "%t", "Backstabbed");
 					}
 
 					if(index==225 || index==574)  //Your Eternal Reward, Wanga Prick
@@ -6075,16 +6075,16 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 		}
 		damageMultiplier=900.0;
 		JumpPower=0.0;
-		PrintCenterText(victim, "Ouch!  Watch your head!");
-		PrintCenterText(attacker, "You just goomba stomped somebody!");
+		PrintHintText(victim, "Ouch!  Watch your head!");
+		PrintHintText(attacker, "You just goomba stomped somebody!");
 		return Plugin_Changed;
 	}
 	else if(IsBoss(victim))
 	{
 		damageMultiplier=GoombaDamage;
 		JumpPower=reboundPower;
-		PrintCenterText(victim, "You were just goomba stomped!");
-		PrintCenterText(attacker, "You just goomba stomped the boss!");
+		PrintHintText(victim, "You were just goomba stomped!");
+		PrintHintText(attacker, "You just goomba stomped the boss!");
 		UpdateHealthBar();
 		return Plugin_Changed;
 	}
