@@ -76,7 +76,7 @@
 	}
 	"help_scout"
 	{
-		"en"	"The Crit-a-Cola grants crits instead of minicrits.\nThe Fan O' War removes 5%% rage on hit.\nPistols gain minicrits.\nThe Candy Cane drops a health pack on hit."
+		"en"	"The Crit-a-Cola grants crits instead of minicrits.\nThe Fan O' War removes 5%% rage on hit.\nPistols gain minicrits.\nThe Candy Cane drops a health pack on hit.\nThe BFB heals 10HP on hit, -3HP/second."
 	}
 	"help_soldier"
 	{
@@ -84,15 +84,15 @@
 	}
 	"help_pyro"
 	{
-		"en"	"Postal Pummeler and skins uses stats of Fire Axe.\nThe Flare Gun is replaced by the Mega Detonator.\nAirblasting the boss builds rage and lengthens the Vagineer's uber."
+		"en"	"Postal Pummeler and skins uses stats of Fire Axe.\nThe Flare Gun is replaced by the Mega Detonator.\nAirblasting the boss builds rage and lengthens the boss's uber."
 	}
 	"help_demo"
 	{
-		"en"	"The shields block one hit from the Boss.\nUsing the shields grants criticals.\nEyelander/reskins gain heads on hit.\nThe Half-Zatoichi heals 35HP on hit and can overheal to +25. Honorbound is removed on hit."
+		"en"	"The shields block one hit from the Boss.\nEyelander/reskins gain heads on hit.\nThe Half-Zatoichi heals 35HP on hit and can overheal to +25.  Honorbound is removed on hit."
 	}
 	"help_heavy"
 	{
-		"en"	"Natascha, the KGB, and the Fists of Steel are replaced with the\nMinigun, Gloves of Running, and Fists, respectively.\nThe Gloves of Running are quite quick but cause you to lose more health.\nThe Holiday Punch will remove any stun on you if you hit Boss while stunned."
+		"en"	"Natascha and the KGB are replaced with the\nMinigun and Fists, respectively.\nThe Gloves of Running are quite quick but cause you to lose more health.\nThe Holiday Punch gives you instant weapon switch."
 	}
 	"help_eggineer"
 	{
@@ -104,11 +104,11 @@
 	}
 	"help_sniper"
 	{
-		"en"	"All your weapons have critical hits.\nJarate removes 8%% rage.\nBack-equipped weapons are replaced with SMG.\nDefault Sniper Rifle causes Boss to glow. Glow time scales with charge."
+		"en"	"All your weapons have critical hits.\nJarate removes 8%% rage.\nDarwin's Danger Shield gives you +50HP.  Razorback blocks a hit from the boss.\nCozy Camper gives you a modified SMG.\nDefault Sniper Rifle causes Boss to glow. Glow time scales with charge."
 	}
 	"help_spie"
 	{
-		"en"	"Backstab does about 10 percent of Boss's max health.\nCloak and Dagger replaced with normal watch.\nAll revolvers minicrit.\nYour Eternal Reward/Wanga Prick backstabs will disguise you instantly.\nKunai backstabs will give you a health bonus."
+		"en"	"Backstab does about 10 percent of Boss's max health.\nCloak and Dagger replaced with normal watch.\nAll revolvers minicrit.\nYour Eternal Reward/Wanga Prick backstabs disguise you instantly.\nKunai backstabs will give you a health bonus.\nBig Earner gives you full cloak on backstab."
 	}
 	"help_melee"
 	{
