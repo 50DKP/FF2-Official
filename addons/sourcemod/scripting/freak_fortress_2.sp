@@ -292,9 +292,9 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 23, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 23, 2014",//1.10.3
-	"September 23, 2014"//1.10.3
+	"September 24, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
+	"September 24, 2014",//1.10.3
+	"September 24, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -3665,7 +3665,8 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		civilianCheck[client]++;
 	}
 
-	shield[client]=FindPlayerBack(client, 57);  //Razorback
+	new playerBack=FindPlayerBack(client, 57);  //Razorback
+	shield[client]=playerBack!=-1 ? playerBack : 0;
 	if(IsValidEntity(FindPlayerBack(client, 642)))  //Cozy Camper
 	{
 		weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
@@ -3818,7 +3819,7 @@ stock FindPlayerBack(client, index)
 			return entity;
 		}
 	}
-	return 0;
+	return -1;
 }
 
 public Action:event_destroy(Handle:event, const String:name[], bool:dontBroadcast)
@@ -4544,8 +4545,11 @@ public Action:BossTimer(Handle:timer)
 			BossHealth[client]=1;
 		}
 
-		SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
-		FF2_ShowSyncHudText(Boss[client], livesHUD, "%t", "Boss Lives Left", BossLives[client], BossLivesMax[client]);
+		if(BossLivesMax[client]>1)
+		{
+			SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
+			FF2_ShowSyncHudText(Boss[client], livesHUD, "%t", "Boss Lives Left", BossLives[client], BossLivesMax[client]);
+		}
 
 		if(RoundFloat(BossCharge[client][0])==100.0)
 		{
