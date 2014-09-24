@@ -3385,6 +3385,22 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
+		case 772:  //Baby Face's Blaster
+		{
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.25 ; 16 ; 10 ; 26 ; 15 ; 109 ; 0.25 ; 128 ; 1 ; 191 ; -3 ; 418 ; 1", true);
+				//2: +25% damage bonus
+				//16: +10 health on hit
+				//26: +15 max health
+				//109: -75% health from packs on wearer
+				//128: Only when weapon is active
+				//191: -3 health drained per second
+				//418: Build hype for faster speed
+			if(itemOverride!=INVALID_HANDLE)
+			{
+				item=itemOverride;
+				return Plugin_Changed;
+			}
+		}
 		case 1103:  //Back Scatter
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "179 ; 1");
