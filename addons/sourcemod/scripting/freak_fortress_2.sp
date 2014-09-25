@@ -5725,12 +5725,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					case 307:  //Ullapool Caber
 					{
 						new allowedDetonations=GetConVarInt(cvarCaberDetonations);
-						if(detonations[attacker]<allowedDetonations)
+						if(detonations[attacker]<=allowedDetonations)
 						{
 							detonations[attacker]++;
 							SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
 							SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
-							PrintHintText(client, "You have %i detonations left!", allowedDetonations-detonations[attacker]);
+							PrintHintText(attacker, "You have %i detonations left!", allowedDetonations-detonations[attacker]);
 						}
 					}
 					case 317:  //Candycane
