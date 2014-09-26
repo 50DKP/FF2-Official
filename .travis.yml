@@ -1,12 +1,8 @@
 env:
     - SMVERSION=1.6
-#    - SMVERSION=1.7
-matrix:
-  fast_finish: true
-  allow_failures:
-    - env: SMVERSION=1.7
+    - SMVERSION=1.7
 before_install:
-    - sudo apt-get -qq update && sudo apt-get install gcc-multilib lynx
+    - sudo apt-get -qq update && sudo apt-get install gcc-multilib lynx lib32stdc++6
 install:
     - SMPATTERN="http:.*sourcemod-.*-git.*-linux.*"
     - SMURL="http://www.sourcemod.net/smdrop/$SMVERSION/"
@@ -43,7 +39,7 @@ before_deploy:
     - mv ../../materials freak_fortress_2/
     - mv ../../models freak_fortress_2/
     - mv ../../sound freak_fortress_2/
-    - zip -rqdgds 1m freak_fortress_2 freak_fortress_2
+    - zip -rqdgs 1m freak_fortress_2 freak_fortress_2
     - tar -cf freak_fortress_2.tar freak_fortress_2
     - gzip freak_fortress_2.tar
 deploy:

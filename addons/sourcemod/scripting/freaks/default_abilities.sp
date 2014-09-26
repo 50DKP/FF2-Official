@@ -8,7 +8,7 @@
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-#define PLUGIN_VERSION "1.10.0"
+#define PLUGIN_VERSION "1.10.3"
 
 public Plugin:myinfo=
 {
@@ -265,26 +265,20 @@ Charge_BraveJump(const String:ability_name[], client, slot, status)
 	{
 		case 1:
 		{
-			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(boss) & IN_SCORE))
-			{
-				SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-				ShowSyncHudText(boss, jumpHUD, "%t", "jump_status_2", -RoundFloat(charge));
-			}
+			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
+			FF2_ShowSyncHudText(boss, jumpHUD, "%t", "jump_status_2", -RoundFloat(charge));
 		}
 		case 2:
 		{
-			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(boss) & IN_SCORE))
+			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
+			if(enableSuperDuperJump[client])
 			{
-				SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-				if(enableSuperDuperJump[client])
-				{
-					SetHudTextParams(-1.0, 0.88, 0.15, 255, 64, 64, 255);
-					ShowSyncHudText(boss, jumpHUD, "%t", "super_duper_jump");
-				}
-				else
-				{
-					ShowSyncHudText(boss, jumpHUD, "%t", "jump_status", RoundFloat(charge));
-				}
+				SetHudTextParams(-1.0, 0.88, 0.15, 255, 64, 64, 255);
+				FF2_ShowSyncHudText(boss, jumpHUD, "%t", "super_duper_jump");
+			}
+			else
+			{
+				FF2_ShowSyncHudText(boss, jumpHUD, "%t", "jump_status", RoundFloat(charge));
 			}
 		}
 		case 3:
@@ -369,19 +363,13 @@ Charge_Teleport(const String:ability_name[], client, slot, status)
 	{
 		case 1:
 		{
-			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(boss) & IN_SCORE))
-			{
-				SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-				ShowSyncHudText(boss, jumpHUD, "%t", "teleport_status_2", -RoundFloat(charge));
-			}
+			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
+			FF2_ShowSyncHudText(boss, jumpHUD, "%t", "teleport_status_2", -RoundFloat(charge));
 		}
 		case 2:
 		{
-			if(!(FF2_GetFF2flags(boss) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(boss) & IN_SCORE))
-			{
-				SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-				ShowSyncHudText(boss, jumpHUD, "%t", "teleport_status", RoundFloat(charge));
-			}
+			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
+			FF2_ShowSyncHudText(boss, jumpHUD, "%t", "teleport_status", RoundFloat(charge));
 		}
 		case 3:
 		{

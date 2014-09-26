@@ -9,6 +9,7 @@ rage_new_weapon:	arg0 - slot (def.0)
 					arg4 - weapon's slot (0 - primary. 1 - secondary. 2 - melee. 3 - pda. 4 - spy's watches)
 					arg5 - weapon's ammo
 					arg6 - force switch to this weapon
+					arg7 - weapon's clip (use this for minigun, flamethrower, sniper rifles, etc.)
 */
 #pragma semicolon 1
 
@@ -18,7 +19,7 @@ rage_new_weapon:	arg0 - slot (def.0)
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-#define PLUGIN_VERSION "1.9.2"
+#define PLUGIN_VERSION "1.10.3"
 
 public Plugin:myinfo=
 {
@@ -85,7 +86,7 @@ Rage_New_Weapon(boss, const String:ability_name[])
 
 	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 5);
 	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7);
-	if(ammo>0)
+	if(ammo || clip)
 	{
 		SetAmmo(client, weapon, ammo, clip);
 	}
