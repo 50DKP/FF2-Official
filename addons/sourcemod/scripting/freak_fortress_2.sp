@@ -149,6 +149,7 @@ new bool:SpecForceBoss;
 new bool:lastPlayerGlow=true;
 new bool:bossTeleportation=true;
 new shieldCrits;
+new allowedDetonations;
 new Float:GoombaDamage=0.05;
 new Float:reboundPower=300.0;
 new bool:canBossRTD;
@@ -292,9 +293,9 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 24, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 24, 2014",//1.10.3
-	"September 24, 2014"//1.10.3
+	"September 29, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
+	"September 29, 2014",//1.10.3
+	"September 29, 2014"//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -884,12 +885,13 @@ public OnPluginStart()
 	HookConVarChange(cvarCountdownHealth, CvarChange);
 	HookConVarChange(cvarLastPlayerGlow, CvarChange);
 	HookConVarChange(cvarSpecForceBoss, CvarChange);
+	HookConVarChange(cvarBossTeleporter, CvarChange);
 	HookConVarChange(cvarShieldCrits, CvarChange);
+	HookConVarChange(cvarCaberDetonations, CvarChange);
 	HookConVarChange(cvarGoombaDamage, CvarChange);
 	HookConVarChange(cvarGoombaRebound, CvarChange);
 	HookConVarChange(cvarBossRTD, CvarChange);
 	HookConVarChange(cvarUpdater, CvarChange);
-	HookConVarChange(cvarBossTeleporter, CvarChange);
 	HookConVarChange(cvarNextmap=FindConVar("sm_nextmap"), CvarChangeNextmap);
 
 	RegConsoleCmd("ff2", FF2Panel);
@@ -1151,6 +1153,7 @@ public EnableFF2()
 	Enabled=true;
 	Enabled2=true;
 
+	//Cache cvars
 	SetConVarString(FindConVar("ff2_version"), PLUGIN_VERSION);
 	Announce=GetConVarFloat(cvarAnnounce);
 	PointType=GetConVarInt(cvarPointType);
@@ -1171,7 +1174,9 @@ public EnableFF2()
 	lastPlayerGlow=GetConVarBool(cvarLastPlayerGlow);
 	bossTeleportation=GetConVarBool(cvarBossTeleporter);
 	shieldCrits=GetConVarInt(cvarShieldCrits);
+	allowedDetonations=GetConVarInt(cvarCaberDetonations);
 
+	//Set some Valve cvars to what we want them to be
 	SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
 	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
 	SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
@@ -1646,6 +1651,10 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		lastPlayerGlow=bool:StringToInt(newValue);
 	}
+	else if(convar==cvarSpecForceBoss)
+	{
+		SpecForceBoss=bool:StringToInt(newValue);
+	}
 	else if(convar==cvarBossTeleporter)
 	{
 		bossTeleportation=bool:StringToInt(newValue);
@@ -1653,6 +1662,10 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarShieldCrits)
 	{
 		shieldCrits=StringToInt(newValue);
+	}
+	else if(convar==cvarCaberDetonations)
+	{
+		allowedDetonations=StringToInt(newValue);
 	}
 	else if(convar==cvarGoombaDamage)
 	{
@@ -1665,10 +1678,6 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarBossRTD)
 	{
 		canBossRTD=bool:StringToInt(newValue);
-	}
-	else if(convar==cvarSpecForceBoss)
-	{
-		SpecForceBoss=bool:StringToInt(newValue);
 	}
 	else if(convar==cvarUpdater)
 	{
@@ -5724,13 +5733,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 307:  //Ullapool Caber
 					{
-						new allowedDetonations=GetConVarInt(cvarCaberDetonations);
-						if(detonations[attacker]<=allowedDetonations)
+						if(detonations[attacker]<allowedDetonations)
 						{
 							detonations[attacker]++;
 							SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
 							SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
-							PrintHintText(attacker, "You have %i detonations left!", allowedDetonations-detonations[attacker]);
+							PrintHintText(attacker, "%t", "Detonations Left", allowedDetonations-detonations[attacker]);
 						}
 					}
 					case 317:  //Candycane
