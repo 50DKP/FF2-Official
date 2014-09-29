@@ -345,4 +345,9 @@
 	{
 		"en"	"You just got market-gardened!"
 	}
+	"Detonations Left"
+	{
+		"#format"	"{1:i}"
+		"en"		"You have {1} detonations left!"
+	}
 }
