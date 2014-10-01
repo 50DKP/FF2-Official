@@ -246,6 +246,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.2",
 	"1.10.3",
 	"1.10.3",
+	"1.10.3",
 	"1.10.3"
 };
 
@@ -302,6 +303,7 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.2
 	"October 1, 2014",	//1.10.3
 	"October 1, 2014",	//1.10.3
+	"October 1, 2014",	//1.10.3
 	"October 1, 2014"	//1.10.3
 };
 
@@ -309,7 +311,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 51:  //1.10.3
+		case 52:  //1.10.3
 		{
 			DrawPanelText(panel, "1) Fixed bosses appearing to be overhealed (War3Evo/Wliu)");
 			DrawPanelText(panel, "2) Prevent bosses from picking up ammo/health (Chdata)");
@@ -318,7 +320,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "5) Fixed a bug with respawning bosses (Wliu from Spyper)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 50:  //1.10.3
+		case 51:  //1.10.3
 		{
 			DrawPanelText(panel, "6) Fixed Bread Bite being replaced with the GRU (Wliu from Spyper)");
 			DrawPanelText(panel, "7) Fixed an edge case where player crits would not be applied (Wliu from Spyper)");
@@ -327,13 +329,20 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "10) Updated Russian translations (wasder)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 49:  //1.10.3
+		case 50:  //1.10.3
 		{
 			DrawPanelText(panel, "11) Fixed Dead Ringer deaths being too obvious (Wliu from AliceTaylor12)");
 			DrawPanelText(panel, "12) [Server] Added new cvar 'ff2_caber_detonations' (Wliu)");
 			DrawPanelText(panel, "13) [Server] Fixed 'nextmap_charset' VFormat errors (Wliu from BBG_Theory)");
 			DrawPanelText(panel, "14) [Server] Fixed a bug related to 'cvar_countdown_players' and the countdown timer (Wliu from Spyper)");
 			DrawPanelText(panel, "15) [Dev] Added \"sound_first_blood\" (Wliu from Mr-Bro)");
+			DrawPanelText(panel, "See next page (press 1)");
+		}
+		case 49:  //1.10.3
+		{
+			DrawPanelText(panel, "16) [Dev] Added FF2_GetFF2Version (Wliu)");
+			DrawPanelText(panel, "17) [Dev] Added FF2_ShowSync{Hud}Text wrappers (Wliu)");
+			DrawPanelText(panel, "18) [Dev] Fixed special_noanims not setting ammo correctly for clipless weapons (Wliu/various)");
 		}
 		case 48:  //1.10.2
 		{
