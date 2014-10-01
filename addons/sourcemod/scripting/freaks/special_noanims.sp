@@ -92,21 +92,20 @@ Rage_New_Weapon(boss, const String:ability_name[])
 	}
 }
 
-stock SetAmmo(client, weapon, ammo, clip=0)
+stock SetAmmo(client, weapon, ammo=0, clip=0)
 {
 	if(IsValidEntity(weapon))
 	{
-		SetEntProp(weapon, Prop_Send, "m_iClip1", clip);
+		SetEntData(weapon, FindSendPropInfo("CTFWeaponBase", "m_iClip1"), clip, 4, true);
 		new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1);
 		if(offset!=-1)
 		{
-			SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
+			SetEntData(client, FindSendPropInfo("CTFPlayer", "m_iAmmo")+offset*4, ammo, 4, true);
 		}
 		else if(ammo)  //Only complain if we're actually trying to set ammo
 		{
-			new String:classname[64];
+			decl String:classname[64], String:bossName[32];
 			GetEdictClassname(weapon, classname, sizeof(classname));
-			new String:bossName[32];
 			FF2_GetBossSpecial(FF2_GetBossIndex(client), bossName, sizeof(bossName));
 			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
 		}
