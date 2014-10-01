@@ -32,8 +32,15 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "1.10.3 Beta"
-#define DEV_VERSION
+#define MAJOR_REVISION "1"
+#define MINOR_REVISION "10"
+#define STABLE_REVISION "3"
+#define DEV_REVISION "Beta"
+#if !defined DEV_REVISION
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.3
+#else
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
+#endif
 
 #define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
 
@@ -293,9 +300,9 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"September 29, 2014",//1.10.3  SO UGLY MUST WAIT UNTIL OCTOBER TO RELEASE
-	"September 29, 2014",//1.10.3
-	"September 29, 2014"//1.10.3
+	"October 1, 2014",	//1.10.3
+	"October 1, 2014",	//1.10.3
+	"October 1, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -767,6 +774,7 @@ public Plugin:myinfo=
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
 	CreateNative("FF2_IsFF2Enabled", Native_IsEnabled);
+	CreateNative("FF2_GetFF2Version", Native_FF2Version);
 	CreateNative("FF2_GetBossUserId", Native_GetBoss);
 	CreateNative("FF2_GetBossIndex", Native_GetIndex);
 	CreateNative("FF2_GetBossTeam", Native_GetTeam);
@@ -1026,7 +1034,7 @@ public OnLibraryAdded(const String:name[])
 		smac=true;
 	}
 
-	#if defined _updater_included && !defined DEV_VERSION
+	#if defined _updater_included && !defined DEV_REVISION
 	if(StrEqual(name, "updater") && GetConVarBool(cvarUpdater))
 	{
 		Updater_AddPlugin(UPDATE_URL);
@@ -1080,7 +1088,7 @@ public OnConfigsExecuted()
 		DisableFF2();
 	}
 
-	#if defined _updater_included && !defined DEV_VERSION
+	#if defined _updater_included && !defined DEV_REVISION
 	if(LibraryExists("updater") && GetConVarBool(cvarUpdater))
 	{
 		Updater_AddPlugin(UPDATE_URL);
@@ -1681,7 +1689,7 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	}
 	else if(convar==cvarUpdater)
 	{
-		#if defined _updater_included && !defined DEV_VERSION
+		#if defined _updater_included && !defined DEV_REVISION
 		GetConVarInt(cvarUpdater) ? Updater_AddPlugin(UPDATE_URL) : Updater_RemovePlugin();
 		#endif
 	}
@@ -7878,6 +7886,20 @@ public Action:Timer_UseBossCharge(Handle:timer, Handle:data)
 public Native_IsEnabled(Handle:plugin, numParams)
 {
 	return Enabled;
+}
+
+public Native_FF2Version(Handle:plugin, numParams)
+{
+	new version[3];  //Blame the compiler for this mess -.-
+	version[0]=StringToInt(MAJOR_REVISION);
+	version[1]=StringToInt(MINOR_REVISION);
+	version[2]=StringToInt(STABLE_REVISION);
+	SetNativeArray(1, version, sizeof(version));
+	#if !defined DEV_REVISION
+		return false;
+	#else
+		return true;
+	#endif
 }
 
 public Native_GetBoss(Handle:plugin, numParams)

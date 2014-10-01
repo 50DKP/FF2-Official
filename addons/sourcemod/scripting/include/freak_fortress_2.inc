@@ -13,7 +13,7 @@
 #define FF2FLAG_USINGABILITY			(1<<9)		//Used to prevent Boss's hints about abilities buttons
 #define FF2FLAG_CLASSHELPED				(1<<10)
 #define FF2FLAG_HASONGIVED				(1<<11)
-#define FF2FLAG_CHANGECVAR				(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages
+#define FF2FLAG_CHANGECVAR				(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages (NYI)
 #define FF2FLAGS_SPAWN					~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & ~FF2FLAG_CHANGECVAR & FF2FLAG_USEBOSSTIMER & FF2FLAG_USINGABILITY
 
 #if defined _FF2_included
@@ -28,6 +28,14 @@
  *			True if FF2 is enabled
  */
 native bool:FF2_IsFF2Enabled();
+
+/**
+ * Gets the version of FF2 running on the server
+ *
+ * @param version   An array of size 3 that will contain the major, minor, and stable version numbers respectively
+ * @return          True if the server is running a dev version of FF2, false otherwise
+ */
+native FF2_GetFF2Version(version[]=0);
 
 /**
  * Gets current round state
@@ -513,6 +521,7 @@ public SharedPlugin:__pl_FF2=
 public __pl_FF2_SetNTVOptional()
 {
 	MarkNativeAsOptional("FF2_IsFF2Enabled");
+	MarkNativeAsOptional("FF2_GetFF2Version");
 	MarkNativeAsOptional("FF2_GetBossUserId");
 	MarkNativeAsOptional("FF2_GetBossIndex");
 	MarkNativeAsOptional("FF2_GetBossTeam");
