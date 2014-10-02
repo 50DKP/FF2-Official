@@ -301,10 +301,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 1, 2014",	//1.10.3
-	"October 1, 2014",	//1.10.3
-	"October 1, 2014",	//1.10.3
-	"October 1, 2014"	//1.10.3
+	"October 2, 2014",	//1.10.3
+	"October 2, 2014",	//1.10.3
+	"October 2, 2014",	//1.10.3
+	"October 2, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -5201,14 +5201,12 @@ public Action:CheckAlivePlayers(Handle:timer)
 			if(GetRandomInt(0, 1))
 			{
 				Format(sound, sizeof(sound), "vo/announcer_am_capenabled0%i.wav", GetRandomInt(1, 4));
-				EmitSoundToAll(sound);
 			}
 			else
 			{
-				new i=GetRandomInt(1, 4);
-				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.wav", i % 2 ? i : i--);  //1 or 3
-				EmitSoundToAll(sound);
+				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.wav", GetRandomInt(0, 1) ? 1 : 3);
 			}
+			EmitSoundToAll(sound);
 		}
 		SetControlPoint(true);
 		executed=true;
