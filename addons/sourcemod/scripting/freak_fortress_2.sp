@@ -3665,7 +3665,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 				weapon=SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "265 ; 99999.0");
 					//265: Mini-crits airborne targets for 99999 seconds
-				SetAmmo(client, 0, 20);
+				FF2_SetAmmo(client, 237, 20);
 			}
 			case 402:  //Bazaar Bargain
 			{
@@ -3694,7 +3694,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				weapon=SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
-				SetAmmo(client, 1, 24);
+				FF2_SetAmmo(client, 265, 24);
 			}
 		}
 	}
@@ -7553,17 +7553,6 @@ public Action:HookSound(clients[64], &numClients, String:sample[PLATFORM_MAX_PAT
 		}
 	}
 	return Plugin_Continue;
-}
-
-stock SetAmmo(client, slot, ammo)
-{
-	new weapon=GetPlayerWeaponSlot(client, slot);
-	if(IsValidEntity(weapon))
-	{
-		new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
-		new ammoTable=FindSendPropInfo("CTFPlayer", "m_iAmmo");
-		SetEntData(client, ammoTable+offset, ammo, 4, true);
-	}
 }
 
 stock GetAmmo(client, slot)
