@@ -3414,8 +3414,9 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 656:  //Holiday Punch
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "178 ; 0", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "178 ; 0 ; 358 ; 0 ; 362 ; 0 ; 363 ; 0 ; 369 ; 0", true);
 				//178:  +100% faster weapon switch
+				//Other attributes:  Because TF2Items doesn't feel like stripping the Holiday Punch's attributes for some reason
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -6020,8 +6021,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 				if(attacker==client)
 				{
-					new weapon=GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee);
-					if(IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==307)  //Ullapool Caber
+					new caber=GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee);
+					if(IsValidEntity(caber) && GetEntProp(caber, Prop_Send, "m_iItemDefinitionIndex")==307)  //Ullapool Caber
 					{
 						if(detonations[attacker]<allowedDetonations)
 						{
