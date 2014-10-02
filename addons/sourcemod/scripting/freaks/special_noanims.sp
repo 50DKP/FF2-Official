@@ -31,6 +31,13 @@ public Plugin:myinfo=
 
 public OnPluginStart2()
 {
+	new version[3];
+	FF2_GetFF2Version(version);
+	if(version[0]==1 && (version[1]<10 || (version[1]==10 && version[2]<3)))
+	{
+		SetFailState("This plugin depends on at least FF2 v1.10.3");
+	}
+
 	HookEvent("teamplay_round_start", event_round_start);
 }
 
