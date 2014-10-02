@@ -5746,16 +5746,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							TF2_RemoveCondition(attacker, TFCond_OnFire);
 						}
 					}
-					case 307:  //Ullapool Caber
-					{
-						if(detonations[attacker]<allowedDetonations)
-						{
-							detonations[attacker]++;
-							SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
-							SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
-							PrintHintText(attacker, "%t", "Detonations Left", allowedDetonations-detonations[attacker]);
-						}
-					}
 					case 317:  //Candycane
 					{
 						SpawnSmallHealthPackAt(client, GetClientTeam(attacker));
@@ -5885,7 +5875,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", 100.0);
 					}
-					/*case 1104:  //Air Strike-moved to event_player_hurt for now since OTD doesn't display the actual damage :/
+					/*case 1104:  //Air Strike-moved to event_hurt for now since OTD doesn't display the actual damage :/
 					{
 						static Float:airStrikeDamage;
 						airStrikeDamage+=damage;
@@ -6025,6 +6015,21 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					else
 					{
 						return action;
+					}
+				}
+
+				if(attacker==client)
+				{
+					new weapon=GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee);
+					if(IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==307)  //Ullapool Caber
+					{
+						if(detonations[attacker]<allowedDetonations)
+						{
+							detonations[attacker]++;
+							SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
+							SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
+							PrintHintText(attacker, "%t", "Detonations Left", allowedDetonations-detonations[attacker]);
+						}
 					}
 				}
 			}
