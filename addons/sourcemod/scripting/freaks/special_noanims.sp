@@ -72,20 +72,20 @@ Rage_New_Weapon(boss, const String:ability_name[])
 		return;
 	}
 
-	decl String:classname[64];
-	decl String:attributes[64];
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 1, classname, 64);
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, attributes, 64);
+	decl String:classname[64], String:attributes[64];
+	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 1, classname, sizeof(classname));
+	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, attributes, sizeof(attributes));
+
 	new slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 4);
 	TF2_RemoveWeaponSlot(client, slot);
-	new weapon=SpawnWeapon(client, classname, FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2, 56), 100, 5, attributes);
+	new weapon=SpawnWeapon(client, classname, FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2), 101, 5, attributes);
 	if(FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 6))
 	{
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 	}
 
-	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 5);
-	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7);
+	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 5, 0);
+	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7, 0);
 	if(ammo || clip)
 	{
 		SetAmmo(client, weapon, ammo, clip);
@@ -133,7 +133,7 @@ stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute
 		for(new i=0; i<count; i+=2)
 		{
 			new attrib=StringToInt(attributes[i]);
-			if(attrib==0)
+			if(!attrib)
 			{
 				LogError("Bad weapon attribute passed: %s ; %s", attributes[i], attributes[i+1]);
 				return -1;
