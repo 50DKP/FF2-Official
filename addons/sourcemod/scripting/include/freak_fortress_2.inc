@@ -454,18 +454,11 @@ stock FF2_SetAmmo(client, weapon, ammo=0, clip=0)
 {
 	if(IsValidEntity(weapon))
 	{
-		SetEntData(weapon, FindSendPropInfo("CTFWeaponBase", "m_iClip1"), clip, 4, true);
-		new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1);
-		if(offset!=-1 && ammo)
+		SetEntProp(weapon, Prop_Data, "m_iClip1", clip>0 ? clip : 0);
+		new ammoType=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType");
+		if(ammoType!=-1 && ammo>0)
 		{
-			SetEntData(client, FindSendPropInfo("CTFPlayer", "m_iAmmo")+offset*4, ammo, 4, true);
-		}
-		else if(ammo)  //Only complain if we're actually trying to set ammo
-		{
-			decl String:classname[64], String:bossName[32];
-			GetEdictClassname(weapon, classname, sizeof(classname));
-			FF2_GetBossSpecial(FF2_GetBossIndex(client), bossName, sizeof(bossName));
-			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
+			SetEntProp(client, Prop_Data, "m_iAmmo", ammo, _, ammoType);
 		}
 	}
 }
