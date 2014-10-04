@@ -1191,7 +1191,7 @@ public EnableFF2()
 	lastPlayerGlow=GetConVarBool(cvarLastPlayerGlow);
 	bossTeleportation=GetConVarBool(cvarBossTeleporter);
 	shieldCrits=GetConVarInt(cvarShieldCrits);
-	allowedDetonations=GetConVarInt(cvarCaberDetonations);
+	allowedDetonations=GetConVarInt(cvarCaberDetonations)*2;  //Caber is detonated twice for whatever reason
 
 	//Set some Valve cvars to what we want them to be
 	SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
@@ -1682,7 +1682,7 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	}
 	else if(convar==cvarCaberDetonations)
 	{
-		allowedDetonations=StringToInt(newValue);
+		allowedDetonations=StringToInt(newValue)*2;  //Caber is detonated twice for whatever reason
 	}
 	else if(convar==cvarGoombaDamage)
 	{
@@ -5754,7 +5754,10 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							detonations[attacker]++;
 							SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
 							SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
-							PrintHintText(attacker, "%t", "Detonations Left", allowedDetonations-detonations[attacker]);
+							if(!(detonations[attacker] % 2))  //This gets called twice, so only show the hint text when the message is accurate
+							{
+								PrintHintText(attacker, "%t", "Detonations Left", (allowedDetonations-detonations[attacker])/2);
+							}
 						}
 					}
 					case 317:  //Candycane
