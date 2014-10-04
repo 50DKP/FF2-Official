@@ -467,7 +467,6 @@ stock FF2_SetAmmo(client, weapon, ammo=0, clip=0)
 			FF2_GetBossSpecial(FF2_GetBossIndex(client), bossName, sizeof(bossName));
 			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
 		}
-		
 	}
 }
 
