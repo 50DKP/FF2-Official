@@ -5747,6 +5747,16 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							TF2_RemoveCondition(attacker, TFCond_OnFire);
 						}
 					}
+					case 307:  //Ullapool Caber
+					{
+						if(detonations[attacker]<allowedDetonations)
+						{
+							detonations[attacker]++;
+							SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
+							SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
+							PrintHintText(attacker, "%t", "Detonations Left", allowedDetonations-detonations[attacker]);
+						}
+					}
 					case 317:  //Candycane
 					{
 						SpawnSmallHealthPackAt(client, GetClientTeam(attacker));
@@ -6016,21 +6026,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					else
 					{
 						return action;
-					}
-				}
-
-				if(attacker==client)
-				{
-					new caber=GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee);
-					if(IsValidEntity(caber) && GetEntProp(caber, Prop_Send, "m_iItemDefinitionIndex")==307)  //Ullapool Caber
-					{
-						if(detonations[attacker]<allowedDetonations)
-						{
-							detonations[attacker]++;
-							SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
-							SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
-							PrintHintText(attacker, "%t", "Detonations Left", allowedDetonations-detonations[attacker]);
-						}
 					}
 				}
 			}
