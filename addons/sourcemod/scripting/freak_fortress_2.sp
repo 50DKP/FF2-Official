@@ -3122,7 +3122,7 @@ EquipBoss(client)
 			{
 				SetEntProp(BossWeapon, Prop_Send, "m_iWorldModelIndex", -1);
 				SetEntProp(BossWeapon, Prop_Send, "m_nModelIndexOverrides", -1, _, 0);
-				SetEntPropFloat(entity, Prop_Send, "m_flModelScale", 0.001);
+				SetEntPropFloat(BossWeapon, Prop_Send, "m_flModelScale", 0.001);
 			}
 			SetEntPropEnt(Boss[client], Prop_Send, "m_hActiveWeapon", BossWeapon);
 
