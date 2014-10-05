@@ -450,17 +450,21 @@ forward Action:FF2_OnLoseLife(client, &lives, maxLives);
  * @param clip      Clip (do NOT use for clipless weapons)
  * @noreturn
  */
-stock FF2_SetAmmo(client, weapon, ammo=0, clip=0)
+stock FF2_SetAmmo(client, weapon, ammo=-1, clip=-1)
 {
 	if(IsValidEntity(weapon))
 	{
-		SetEntProp(weapon, Prop_Data, "m_iClip1", clip>0 ? clip : 0);
-		new ammoType=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType");
-		if(ammoType!=-1 && ammo>-1)
+		if(clip>-1)
+		{
+			SetEntProp(weapon, Prop_Data, "m_iClip1", clip);
+		}
+
+		new ammoType=(ammo>-1 ? GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType") : -1);
+		if(ammoType!=-1)
 		{
 			SetEntProp(client, Prop_Data, "m_iAmmo", ammo, _, ammoType);
 		}
-		else if(ammo)  //Only complain if we're trying to set ammo
+		else if(ammo>-1)  //Only complain if we're trying to set ammo
 		{
 			decl String:classname[64], String:bossName[32];
 			GetEdictClassname(weapon, classname, sizeof(classname));
