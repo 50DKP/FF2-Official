@@ -301,10 +301,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 3, 2014",	//1.10.3
-	"October 3, 2014",	//1.10.3
-	"October 3, 2014",	//1.10.3
-	"October 3, 2014"	//1.10.3
+	"October 5, 2014",	//1.10.3
+	"October 5, 2014",	//1.10.3
+	"October 5, 2014",	//1.10.3
+	"October 5, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -343,6 +343,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "16) [Dev] Added FF2_GetFF2Version (Wliu)");
 			DrawPanelText(panel, "17) [Dev] Added FF2_ShowSync{Hud}Text wrappers (Wliu)");
 			DrawPanelText(panel, "18) [Dev] Added FF2_SetAmmo and fixed setting clip (Wliu/friagram for fixing clip)");
+			DrawPanelText(panel, "19) [Dev] Fixed weapons not being hidden when asked to (friagram)");
 		}
 		case 48:  //1.10.2
 		{
