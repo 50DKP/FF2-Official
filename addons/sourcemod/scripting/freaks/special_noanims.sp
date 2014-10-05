@@ -7,9 +7,9 @@ rage_new_weapon:	arg0 - slot (def.0)
 					arg2 - weapon's index
 					arg3 - weapon's attributes
 					arg4 - weapon's slot (0 - primary. 1 - secondary. 2 - melee. 3 - pda. 4 - spy's watches)
-					arg5 - weapon's ammo
+					arg5 - weapon's ammo (do NOT use for clipless weapons)
 					arg6 - force switch to this weapon
-					arg7 - weapon's clip (use this for minigun, flamethrower, sniper rifles, etc.)
+					arg7 - weapon's clip
 */
 #pragma semicolon 1
 
@@ -24,7 +24,7 @@ rage_new_weapon:	arg0 - slot (def.0)
 public Plugin:myinfo=
 {
 	name="Freak Fortress 2: special_noanims",
-	author="RainBolt Dash",
+	author="RainBolt Dash, Wliu",
 	description="FF2: New Weapon and No Animations abilities",
 	version=PLUGIN_VERSION
 };
@@ -60,7 +60,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 public Action:Timer_Disable_Anims(Handle:timer)
 {
 	new client;
-	for(new boss=0; (client=GetClientOfUserId(FF2_GetBossUserId(boss)))>0; boss++)
+	for(new boss; (client=GetClientOfUserId(FF2_GetBossUserId(boss)))>0; boss++)
 	{
 		if(FF2_HasAbility(boss, this_plugin_name, "special_noanims"))
 		{
