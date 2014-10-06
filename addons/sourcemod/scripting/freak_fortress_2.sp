@@ -301,10 +301,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 5, 2014",	//1.10.3
-	"October 5, 2014",	//1.10.3
-	"October 5, 2014",	//1.10.3
-	"October 5, 2014"	//1.10.3
+	"October 6, 2014",	//1.10.3
+	"October 6, 2014",	//1.10.3
+	"October 6, 2014",	//1.10.3
+	"October 6, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -1192,7 +1192,7 @@ public EnableFF2()
 	lastPlayerGlow=GetConVarBool(cvarLastPlayerGlow);
 	bossTeleportation=GetConVarBool(cvarBossTeleporter);
 	shieldCrits=GetConVarInt(cvarShieldCrits);
-	allowedDetonations=GetConVarInt(cvarCaberDetonations)*2;  //Caber is detonated twice for whatever reason
+	allowedDetonations=GetConVarInt(cvarCaberDetonations);
 
 	//Set some Valve cvars to what we want them to be
 	SetConVarInt(FindConVar("tf_arena_use_queue"), 0);
@@ -1683,7 +1683,7 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	}
 	else if(convar==cvarCaberDetonations)
 	{
-		allowedDetonations=StringToInt(newValue)*2;  //Caber is detonated twice for whatever reason
+		allowedDetonations=StringToInt(newValue);
 	}
 	else if(convar==cvarGoombaDamage)
 	{
@@ -3282,9 +3282,9 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 224:  //L'etranger
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "85 ; 0.5 ; 204 ; 1 ; 253 ; 1.0");
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "85 ; 0.5 ; 157 ; 1.0 ; 253 ; 1.0");
 				//85: +50% time needed to regen cloak
-				//204: Hit self on miss
+				//157: +1 second needed to fully disguise
 				//253: +1 second needed to fully cloak
 			if(itemOverride!=INVALID_HANDLE)
 			{
@@ -3668,7 +3668,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 				weapon=SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "265 ; 99999.0");
 					//265: Mini-crits airborne targets for 99999 seconds
-				FF2_SetAmmo(client, 237, 20);
+				FF2_SetAmmo(client, weapon, 20);
 			}
 			case 402:  //Bazaar Bargain
 			{
@@ -3697,7 +3697,7 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				weapon=SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
-				FF2_SetAmmo(client, 265, 24);
+				FF2_SetAmmo(client, weapon, 24);
 			}
 		}
 	}
@@ -5750,19 +5750,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							TF2_RemoveCondition(attacker, TFCond_OnFire);
 						}
 					}
-					case 307:  //Ullapool Caber
-					{
-						if(detonations[attacker]<allowedDetonations)
-						{
-							detonations[attacker]++;
-							SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
-							SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
-							if(!(detonations[attacker] % 2))  //This gets called twice, so only show the hint text when the message is accurate
-							{
-								PrintHintText(attacker, "%t", "Detonations Left", (allowedDetonations-detonations[attacker])/2);
-							}
-						}
-					}
 					case 317:  //Candycane
 					{
 						SpawnSmallHealthPackAt(client, GetClientTeam(attacker));
@@ -6041,9 +6028,24 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				BossCharge[boss][0]=100.0;
 			}
 		}
-		else  //TODO: LOOK AT THIS
+		else
 		{
-			if(IsValidClient(client, false) && TF2_GetPlayerClass(client)==TFClass_Soldier)
+			new index=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+			if(index==307)  //Ullapool Caber
+			{
+				if(detonations[attacker]<allowedDetonations)
+				{
+					detonations[attacker]++;
+					PrintHintText(attacker, "%t", "Detonations Left", allowedDetonations-detonations[attacker]);
+					if(allowedDetonations-detonations[attacker])  //Don't reset their caber if they have 0 detonations left
+					{
+						SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
+						SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
+					}
+				}
+			}
+
+			if(IsValidClient(client, false) && TF2_GetPlayerClass(client)==TFClass_Soldier)  //TODO: LOOK AT THIS
 			{
 				if(damagetype & DMG_FALL)
 				{
