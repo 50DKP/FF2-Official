@@ -42,7 +42,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
 
-#define UPDATE_URL "http://198.27.69.149/updater/ff2-official/update.txt"
+#define UPDATE_URL "http://ff2.50dkp.com/updater/ff2-official/update.txt"
 
 #define MAXENTITIES 2048
 #define MAXSPECIALS 64
