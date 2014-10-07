@@ -172,6 +172,7 @@ new Float:HPTime;
 new String:currentmap[99];
 new bool:checkDoors=false;
 new bool:bMedieval;
+new bool:firstBlood;
 
 new tf_arena_use_queue;
 new mp_teams_unbalance_limit;
@@ -2182,6 +2183,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	}
 
 	healthcheckused=0;
+	firstBlood=true;
 	return Plugin_Continue;
 }
 
@@ -4990,14 +4992,15 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		if(IsBoss(attacker))
 		{
 			new boss=GetBossIndex(attacker);
-			/*if(GetEventInt(event, "death_flags") | TF_DEATHFLAG_FIRSTBLOOD)
+			if(firstBlood)  //TF_DEATHFLAG_FIRSTBLOOD is broken
 			{
 				if(RandomSound("sound_first_blood", sound, PLATFORM_MAX_PATH, boss))
 				{
 					EmitSoundToAll(sound);
 					EmitSoundToAll(sound);
 				}
-			}*/
+				firstBlood=false;
+			}
 
 			if(RandomSound("sound_hit", sound, PLATFORM_MAX_PATH, boss))
 			{
