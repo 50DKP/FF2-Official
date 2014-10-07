@@ -315,7 +315,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 52:  //1.10.3
 		{
 			DrawPanelText(panel, "1) Fixed bosses appearing to be overhealed (War3Evo/Wliu)");
-			DrawPanelText(panel, "2) Prevent bosses from picking up ammo/health (Chdata)");
+			DrawPanelText(panel, "2) Prevented bosses from picking up ammo/health (Chdata)");
 			DrawPanelText(panel, "3) Rebalanced many weapons based on misc. feedback (Wliu/various)");
 			DrawPanelText(panel, "4) Fixed an issue with displaying boss info in chat (Wliu)");
 			DrawPanelText(panel, "5) Fixed a bug with respawning bosses (Wliu from Spyper)");
@@ -335,16 +335,17 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "11) Fixed Dead Ringer deaths being too obvious (Wliu from AliceTaylor12)");
 			DrawPanelText(panel, "12) [Server] Added new cvar 'ff2_caber_detonations' (Wliu)");
 			DrawPanelText(panel, "13) [Server] Fixed 'nextmap_charset' VFormat errors (Wliu from BBG_Theory)");
-			DrawPanelText(panel, "14) [Server] Fixed a bug related to 'cvar_countdown_players' and the countdown timer (Wliu from Spyper)");
-			DrawPanelText(panel, "15) [Dev] Added \"sound_first_blood\" (Wliu from Mr-Bro)");
-			DrawPanelText(panel, "See next page (press 1)");
+			DrawPanelText(panel, "14) [Server] Fixed errors when Monoculus was attacking (Wliu from ClassicGuzzi)");
+			DrawPanelText(panel, "15) [Server] Fixed a bug related to 'cvar_countdown_players' and the countdown timer (Wliu from Spyper)");
+			DrawPanelText(panel, "See next page for dev changelog (press 1)");
 		}
 		case 49:  //1.10.3
 		{
-			DrawPanelText(panel, "16) [Dev] Added FF2_GetFF2Version (Wliu)");
-			DrawPanelText(panel, "17) [Dev] Added FF2_ShowSync{Hud}Text wrappers (Wliu)");
-			DrawPanelText(panel, "18) [Dev] Added FF2_SetAmmo and fixed setting clip (Wliu/friagram for fixing clip)");
-			DrawPanelText(panel, "19) [Dev] Fixed weapons not being hidden when asked to (friagram)");
+			DrawPanelText(panel, "16) [Dev] Added \"sound_first_blood\" (Wliu from Mr-Bro)");
+			DrawPanelText(panel, "17) [Dev] Added FF2_GetFF2Version (Wliu)");
+			DrawPanelText(panel, "18) [Dev] Added FF2_ShowSync{Hud}Text wrappers (Wliu)");
+			DrawPanelText(panel, "19) [Dev] Added FF2_SetAmmo and fixed setting clip (Wliu/friagram for fixing clip)");
+			DrawPanelText(panel, "20) [Dev] Fixed weapons not being hidden when asked to (friagram)");
 		}
 		case 48:  //1.10.2
 		{
