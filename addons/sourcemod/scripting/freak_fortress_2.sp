@@ -118,6 +118,7 @@ new Handle:cvarSpecForceBoss;
 new Handle:cvarCountdownPlayers;
 new Handle:cvarCountdownTime;
 new Handle:cvarCountdownHealth;
+new Handle:cvarCountdownResult;
 new Handle:cvarEnableEurekaEffect;
 new Handle:cvarForceBossTeam;
 new Handle:cvarHealthBar;
@@ -323,20 +324,20 @@ stock FindVersionData(Handle:panel, versionIndex)
 		}
 		case 51:  //1.10.3
 		{
-			DrawPanelText(panel, "6) Fixed Bread Bite being replaced with the GRU (Wliu from Spyper)");
-			DrawPanelText(panel, "7) Fixed an edge case where player crits would not be applied (Wliu from Spyper)");
-			DrawPanelText(panel, "8) Fixed not being able to use strange syringe guns or mediguns (Chris from Spyper)");
-			DrawPanelText(panel, "9) Fixed not being able to suicide as boss after round end (Wliu)");
-			DrawPanelText(panel, "10) Updated Russian translations (wasder)");
-			DrawPanelText(panel, "See next page (press 1)");
+			DrawPanelText(panel, "6) Fixed an edge case where player crits would not be applied (Wliu from Spyper)");
+			DrawPanelText(panel, "7) Fixed not being able to use strange syringe guns or mediguns (Chris from Spyper)");
+			DrawPanelText(panel, "8) Fixed not being able to suicide as boss after round end (Wliu)");
+			DrawPanelText(panel, "9) Updated Russian translations (wasder)");
+			DrawPanelText(panel, "10) Fixed Dead Ringer deaths being too obvious (Wliu from AliceTaylor12)");
+			DrawPanelText(panel, "See next page for server and dev changelogs (press 1)");
 		}
 		case 50:  //1.10.3
 		{
-			DrawPanelText(panel, "11) Fixed Dead Ringer deaths being too obvious (Wliu from AliceTaylor12)");
+			DrawPanelText(panel, "11) [Server] Added new cvar 'ff2_countdown_result' (Wliu from Shadow)");
 			DrawPanelText(panel, "12) [Server] Added new cvar 'ff2_caber_detonations' (Wliu)");
-			DrawPanelText(panel, "13) [Server] Fixed 'nextmap_charset' VFormat errors (Wliu from BBG_Theory)");
-			DrawPanelText(panel, "14) [Server] Fixed errors when Monoculus was attacking (Wliu from ClassicGuzzi)");
-			DrawPanelText(panel, "15) [Server] Fixed a bug related to 'cvar_countdown_players' and the countdown timer (Wliu from Spyper)");
+			DrawPanelText(panel, "13) [Server] Fixed a bug related to 'cvar_countdown_players' and the countdown timer (Wliu from Spyper)");
+			DrawPanelText(panel, "14) [Server] Fixed 'nextmap_charset' VFormat errors (Wliu from BBG_Theory)");
+			DrawPanelText(panel, "15) [Server] Fixed errors when Monoculus was attacking (Wliu from ClassicGuzzi)");
 			DrawPanelText(panel, "See next page for dev changelog (press 1)");
 		}
 		case 49:  //1.10.3
@@ -856,6 +857,7 @@ public OnPluginStart()
 	cvarCountdownPlayers=CreateConVar("ff2_countdown_players", "1", "Amount of players until the countdown timer starts (0 to disable)", FCVAR_PLUGIN, true, 0.0);
 	cvarCountdownTime=CreateConVar("ff2_countdown", "120", "Amount of seconds until the round ends in a stalemate", FCVAR_PLUGIN);
 	cvarCountdownHealth=CreateConVar("ff2_countdown_health", "2000", "Amount of health the Boss has remaining until the countdown stops", FCVAR_PLUGIN, true, 0.0);
+	cvarCountdownResult=CreateConVar("ff2_countdown_result", "0", "0-Kill players when the countdown ends, 1-End the round in a stalemate", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarSpecForceBoss=CreateConVar("ff2_spec_force_boss", "0", "0-Spectators are excluded from the queue system, 1-Spectators are counted in the queue system", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarEnableEurekaEffect=CreateConVar("ff2_enable_eureka", "0", "0-Disable the Eureka Effect, 1-Enable the Eureka Effect", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
@@ -5298,14 +5300,21 @@ public Action:Timer_DrawGame(Handle:timer)
 			Format(sound, PLATFORM_MAX_PATH, "vo/announcer_ends_%isec.wav", time);
 			EmitSoundToAll(sound);
 		}
-		case 0:  //Thx MasterOfTheXP
+		case 0:
 		{
-			for(new client=1; client<=MaxClients; client++)
+			if(!GetConVarBool(cvarCountdownResult))
 			{
-				if(IsClientInGame(client) && IsPlayerAlive(client))
+				for(new client=1; client<=MaxClients; client++)  //Thx MasterOfTheXP
 				{
-					ForcePlayerSuicide(client);
+					if(IsClientInGame(client) && IsPlayerAlive(client))
+					{
+						ForcePlayerSuicide(client);
+					}
 				}
+			}
+			else
+			{
+				ForceTeamWin(0);  //Stalemate
 			}
 			return Plugin_Stop;
 		}
