@@ -303,10 +303,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 6, 2014",	//1.10.3
-	"October 6, 2014",	//1.10.3
-	"October 6, 2014",	//1.10.3
-	"October 6, 2014"	//1.10.3
+	"October 7, 2014",	//1.10.3
+	"October 7, 2014",	//1.10.3
+	"October 7, 2014",	//1.10.3
+	"October 7, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -5362,6 +5362,8 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		if(BossHealth[boss]-damage<BossHealthMax[boss]*lives)
 		{
+			SetEntProp(client, Prop_Data, "m_iHealth", (BossHealth[boss]-damage)-BossHealthMax[boss]*(BossLives[boss]-2));  //Set the health early to avoid the boss dying from fire, etc.
+
 			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
 			Call_StartForward(OnLoseLife);
 			Call_PushCell(boss);
@@ -5420,7 +5422,6 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 				}
 			}
 			BossLives[boss]--;
-			SetEntProp(client, Prop_Data, "m_iHealth", (BossHealth[boss]-damage)-BossHealthMax[boss]*(BossLives[boss]-1));
 
 			decl String:bossName[64];
 			KvRewind(BossKV[Special[boss]]);
@@ -7204,35 +7205,38 @@ public FF2PanelH(Handle:menu, MenuAction:action, client, selection)
 	}
 }
 
-public Action:FF2Panel(client, args)
+public Action:FF2Panel(client, args)  //._.
 {
-	if(!Enabled2 || !IsValidClient(client, false))
-		return Plugin_Continue;
-	SetEntPropFloat(client, Prop_Send, "m_flCloakMeter", 0.8);
-	new Handle:panel=CreatePanel();
-	decl String:s[256];
-	SetGlobalTransTarget(client);
-	Format(s,256,"%t","menu_1");
-	SetPanelTitle(panel, s);
-	Format(s,256,"%t","menu_3");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","menu_7");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","menu_4");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","menu_5");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","menu_8");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","menu_9");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","menu_9a");
-	DrawPanelItem(panel, s);
-	Format(s,256,"%t","menu_6");
-	DrawPanelItem(panel, s);
-	SendPanelToClient(panel, client, FF2PanelH, 9001);
-	CloseHandle(panel);
-	return Plugin_Handled;
+	if(Enabled2 && IsValidClient(client, false))
+	{
+		new Handle:panel=CreatePanel();
+		decl String:text[256];
+		SetGlobalTransTarget(client);
+		Format(text, sizeof(text), "%t", "menu_1");
+		SetPanelTitle(panel, text);
+		Format(text, sizeof(text), "%t", "menu_2");
+		DrawPanelItem(panel, text);
+		Format(text, sizeof(text), "%t", "menu_3");
+		DrawPanelItem(panel, text);
+		Format(text, sizeof(text), "%t", "menu_7");
+		DrawPanelItem(panel, text);
+		Format(text, sizeof(text), "%t", "menu_4");
+		DrawPanelItem(panel, text);
+		Format(text, sizeof(text), "%t", "menu_5");
+		DrawPanelItem(panel, text);
+		Format(text, sizeof(text), "%t", "menu_8");
+		DrawPanelItem(panel, text);
+		Format(text, sizeof(text), "%t", "menu_9");
+		DrawPanelItem(panel, text);
+		Format(text, sizeof(text), "%t", "menu_9a");
+		DrawPanelItem(panel, text);
+		Format(text, sizeof(text), "%t", "menu_6");
+		DrawPanelItem(panel, text);
+		SendPanelToClient(panel, client, FF2PanelH, MENU_TIME_FOREVER);
+		CloseHandle(panel);
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
 }
 
 public NewPanelH(Handle:menu, MenuAction:action, param1, param2)
@@ -8364,12 +8368,9 @@ public Action:VSH_OnGetRoundState(&result)
 
 public OnTakeDamagePost(client, attacker, inflictor, Float:damage, damagetype)
 {
-	if(IsBoss(client) && Enabled)
+	if(Enabled && IsBoss(client))
 	{
-		if(GetBossIndex(client)!=-1)
-		{
-			UpdateHealthBar();
-		}
+		UpdateHealthBar();
 	}
 }
 
@@ -8460,18 +8461,18 @@ UpdateHealthBar()
 		return;
 	}
 
-	new healthAmount, maxHealthAmount, count, healthPercent;
+	new healthAmount, maxHealthAmount, bosses, healthPercent;
 	for(new client; client<=MaxClients; client++)
 	{
 		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
-			count++;
+			bosses++;
 			healthAmount+=BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1);
 			maxHealthAmount+=BossHealthMax[client];
 		}
 	}
 
-	if(count>0)
+	if(bosses)
 	{
 		healthPercent=RoundToCeil(float(healthAmount)/float(maxHealthAmount)*float(HEALTHBAR_MAX));
 		if(healthPercent>HEALTHBAR_MAX)
