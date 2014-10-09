@@ -6635,7 +6635,7 @@ stock bool:RandomSound(const String:sound[], String:file[], length, boss=0)
 	{
 		IntToString(sounds, key, sizeof(key));
 		KvGetString(BossKV[Special[boss]], key, file, length);
-		if(!soundFile[0])
+		if(!file[0])
 		{
 			sounds--;  //This sound wasn't valid, so don't include it
 			break;  //Assume that there's no more sounds
@@ -6671,9 +6671,9 @@ stock bool:RandomSoundAbility(const String:sound[], String:file[], length, boss=
 	{
 		IntToString(sounds, key, 4);
 		KvGetString(BossKV[Special[boss]], key, file, length);
-		if(!buffer[0])
+		if(!file[0])
 		{
-			sounds--;  //This sound wasn't valid
+			sounds--;  //This sound wasn't valid, so don't include it
 			break;  //Assume that there's no more sounds
 		}
 
