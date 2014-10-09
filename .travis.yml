@@ -51,7 +51,6 @@ deploy:
         - freak_fotress_2.tar.gz
     on:
         repo: 50DKP/FF2-Official
-        branch: master
         tags: true
 
 #Notifications
