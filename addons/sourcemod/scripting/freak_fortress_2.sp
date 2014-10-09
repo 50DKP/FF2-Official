@@ -8356,7 +8356,7 @@ public OnItemSpawned(entity)
 
 public Action:OnPickup(entity, client)  //Thanks friagram!
 {
-	if(IsValidClient(client) && IsBoss(client))
+	if(IsBoss(client))
 	{
 		decl String:classname[32];
 		GetEntityClassname(entity, classname, sizeof(classname));
