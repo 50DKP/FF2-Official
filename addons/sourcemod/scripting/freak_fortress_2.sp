@@ -6172,21 +6172,6 @@ stock IncrementHeadCount(client)
 	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
 }
 
-stock SwitchToOtherWeapon(client)
-{
-	new ammo=GetAmmo(client, 0);
-	new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
-	new clip=(IsValidEntity(weapon) ? GetEntProp(weapon, Prop_Send, "m_iClip1") : -1);
-	if(!(!ammo && clip<=0))
-	{
-		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
-	}
-	else
-	{
-		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary));
-	}
-}
-
 stock FindTeleOwner(client)
 {
 	if(!IsValidClient(client) || !IsPlayerAlive(client))
@@ -7495,40 +7480,34 @@ public VoiceTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 	}
 }
 
-public Action:HookSound(clients[64], &numClients, String:sample[PLATFORM_MAX_PATH], &ent, &channel, &Float:volume, &level, &pitch, &flags)
+public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH], &client, &channel, &Float:volume, &level, &pitch, &flags)
 {
-	if(!Enabled || ent<1 || ent>MaxClients || channel<1)
-		return Plugin_Continue;
-	new index=GetBossIndex(ent);
-	if(index==-1)
-		return Plugin_Continue;
-	if(!StrContains(sample,"vo") && !(FF2flags[Boss[index]] & FF2FLAG_TALKING))
+	if(!Enabled || !IsValidClient(client) || channel<1)
 	{
-		if(bBlockVoice[Special[index]])
-			return Plugin_Stop;
-		decl String:sample2[PLATFORM_MAX_PATH];
-		if(RandomSound("catch_phrase",sample2,PLATFORM_MAX_PATH,index))
+		return Plugin_Continue;
+	}
+
+	new boss=GetBossIndex(client);
+	if(boss==-1)
+	{
+		return Plugin_Continue;
+	}
+
+	if(!StrContains(sound, "vo") && !(FF2flags[Boss[boss]] & FF2FLAG_TALKING))
+	{
+		decl String:newSound[PLATFORM_MAX_PATH];
+		if(RandomSound("catch_phrase", newSound, PLATFORM_MAX_PATH, boss))
 		{
-			strcopy(sample,PLATFORM_MAX_PATH,sample2);
+			strcopy(sound, PLATFORM_MAX_PATH, newSound);
 			return Plugin_Changed;
+		}
+
+		if(bBlockVoice[Special[boss]])
+		{
+			return Plugin_Stop;
 		}
 	}
 	return Plugin_Continue;
-}
-
-stock GetAmmo(client, slot)
-{
-	if(IsValidClient(client))
-	{
-		new weapon=GetPlayerWeaponSlot(client, slot);
-		if(IsValidEntity(weapon))
-		{
-			new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1)*4;
-			new ammoTable=FindSendPropInfo("CTFPlayer", "m_iAmmo");
-			return GetEntData(client, ammoTable+offset);
-		}
-	}
-	return 0;
 }
 
 stock GetHealingTarget(client, bool:checkgun=false)
