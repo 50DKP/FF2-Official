@@ -6615,7 +6615,7 @@ stock GetAbilityArgumentString(index,const String:plugin_name[],const String:abi
 	}
 }
 
-stock bool:RandomSound(const String:soundName[], String:soundFile[], length, boss=0)
+stock bool:RandomSound(const String:sound[], String:file[], length, boss=0)
 {
 	if(boss<0 || Special[boss]<0 || !BossKV[Special[boss]])
 	{
@@ -6623,10 +6623,10 @@ stock bool:RandomSound(const String:soundName[], String:soundFile[], length, bos
 	}
 
 	KvRewind(BossKV[Special[boss]]);
-	if(!KvJumpToKey(BossKV[Special[boss]], soundName))
+	if(!KvJumpToKey(BossKV[Special[boss]], sound))
 	{
 		KvRewind(BossKV[Special[boss]]);
-		return false;  //Requested soundName not implemented for this boss
+		return false;  //Requested sound not implemented for this boss
 	}
 
 	decl String:key[4];
@@ -6634,63 +6634,64 @@ stock bool:RandomSound(const String:soundName[], String:soundFile[], length, bos
 	while(++sounds)  //Just keep looping until there's no keys left
 	{
 		IntToString(sounds, key, sizeof(key));
-		KvGetString(BossKV[Special[boss]], key, soundFile, length);
+		KvGetString(BossKV[Special[boss]], key, file, length);
 		if(!soundFile[0])
 		{
 			sounds--;  //This sound wasn't valid, so don't include it
-			break;
+			break;  //Assume that there's no more sounds
 		}
 	}
 
 	if(!sounds)
 	{
-		return false;  //Found soundName, but no sounds inside of it
+		return false;  //Found sound, but no sounds inside of it
 	}
 
 	IntToString(GetRandomInt(1, sounds), key, sizeof(key));
-	KvGetString(BossKV[Special[boss]], key, soundFile, length);  //Populate soundFile
+	KvGetString(BossKV[Special[boss]], key, file, length);  //Populate file
 	return true;
 }
 
-stock bool:RandomSoundAbility(const String:keyvalue[], String:buffer[], length, client=0, slot=0)
+stock bool:RandomSoundAbility(const String:sound[], String:file[], length, boss=0, slot=0)
 {
-	if(client==-1 || Special[client]==-1 || !BossKV[Special[client]])
+	if(boss==-1 || Special[boss]==-1 || !BossKV[Special[boss]])
 	{
 		return false;
 	}
 
-	KvRewind(BossKV[Special[client]]);
-	if(!KvJumpToKey(BossKV[Special[client]], keyvalue))
+	KvRewind(BossKV[Special[boss]]);
+	if(!KvJumpToKey(BossKV[Special[boss]], sound))
 	{
-		return false;
+		return false;  //Sound doesn't exist
 	}
 
-	decl String:sound[10];
-	new i=1, matches, match[MAXRANDOMS];
-	for(;;)
+	decl String:key[10];
+	new sounds, matches, match[MAXRANDOMS];
+	while(++sounds)
 	{
-		IntToString(i, sound, 4);
-		KvGetString(BossKV[Special[client]], sound, buffer, length);
+		IntToString(sounds, key, 4);
+		KvGetString(BossKV[Special[boss]], key, file, length);
 		if(!buffer[0])
 		{
-			break;
+			sounds--;  //This sound wasn't valid
+			break;  //Assume that there's no more sounds
 		}
 
-		Format(sound, 10, "slot%i", i);
-		if(KvGetNum(BossKV[Special[client]], sound, 0)==slot)
+		Format(key, sizeof(key), "slot%i", sounds);
+		if(KvGetNum(BossKV[Special[boss]], key, 0)==slot)
 		{
-			match[matches]=i;
+			match[matches]=sounds;  //Found a match: let's store it in the array
 			matches++;
 		}
-		i++;
 	}
 
 	if(!matches)
 	{
-		return false;
+		return false;  //Found sound, but no sounds inside of it
 	}
-	IntToString(match[GetRandomInt(0, matches-1)], sound, 4);
-	KvGetString(BossKV[Special[client]], sound, buffer, length);
+
+	IntToString(match[GetRandomInt(0, matches-1)], key, 4);
+	KvGetString(BossKV[Special[boss]], sound, file, length);  //Populate file
 	return true;
 }
 
