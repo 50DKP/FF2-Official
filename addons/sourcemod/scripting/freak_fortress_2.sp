@@ -303,10 +303,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 7, 2014",	//1.10.3
-	"October 7, 2014",	//1.10.3
-	"October 7, 2014",	//1.10.3
-	"October 7, 2014"	//1.10.3
+	"October 9, 2014",	//1.10.3
+	"October 9, 2014",	//1.10.3
+	"October 9, 2014",	//1.10.3
+	"October 9, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -2043,7 +2043,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	Enabled=true;
 	EnableSubPlugins();
 	CheckArena();
-	//ModifyItemPacks();
 
 	new bool:isBoss[MAXPLAYERS+1];
 	Boss[0]=FindBosses(isBoss);
@@ -2332,64 +2331,6 @@ public CheckArena()
 	{
 		SetArenaCapEnableTime(0.0);
 		SetControlPoint(false);
-	}
-}
-
-stock ModifyItemPacks()
-{
-	if(!Enabled)
-	{
-		return;
-	}
-
-	new entity=-1;
-	new Float:position[3];
-	while((entity=FindEntityByClassname2(entity, "item_ammopack_full"))!=-1)
-	{
-		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
-		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position);
-		AcceptEntityInput(entity, "Kill");
-		new smallAmmo=CreateEntityByName("item_ammopack_small");
-		TeleportEntity(smallAmmo, position, NULL_VECTOR, NULL_VECTOR);
-		DispatchSpawn(smallAmmo);
-		SetEntProp(smallAmmo, Prop_Send, "m_iTeamNum", OtherTeam, 4);
-
-	}
-
-	entity=-1;
-	while((entity=FindEntityByClassname2(entity, "item_ammopack_medium"))!=-1)
-	{
-		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
-		GetEntPropVector(entity, Prop_Send, "m_vecOrigin", position);
-		AcceptEntityInput(entity, "Kill");
-		new smallAmmo=CreateEntityByName("item_ammopack_small");
-		TeleportEntity(smallAmmo, position, NULL_VECTOR, NULL_VECTOR);
-		DispatchSpawn(smallAmmo);
-		SetEntProp(smallAmmo, Prop_Send, "m_iTeamNum", OtherTeam, 4);
-	}
-
-	entity=-1;
-	while((entity=FindEntityByClassname2(entity, "Item_ammopack_small"))!=-1)
-	{
-		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
-	}
-
-	entity=-1;
-	while((entity=FindEntityByClassname2(entity, "item_healthkit_small"))!=-1)
-	{
-		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
-	}
-
-	entity=-1;
-	while((entity=FindEntityByClassname2(entity, "item_healthkit_medium"))!=-1)
-	{
-		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
-	}
-
-	entity=-1;
-	while((entity=FindEntityByClassname2(entity, "item_healthkit_large"))!=-1)
-	{
-		SetEntProp(entity, Prop_Send, "m_iTeamNum", OtherTeam, 4);
 	}
 }
 
@@ -8413,11 +8354,20 @@ public OnItemSpawned(entity)
 	SDKHook(entity, SDKHook_Touch, OnPickup);
 }
 
-public Action:OnPickup(entity, client)
+public Action:OnPickup(entity, client)  //Thanks friagram!
 {
 	if(IsValidClient(client) && IsBoss(client))
 	{
-		return Plugin_Handled;
+		decl String:classname[32];
+		GetEntityClassname(entity, classname, sizeof(classname));
+		if(StrContains(classname, "item_healthkit")!=-1 && !(FF2flags[client] & FF2FLAG_ALLOW_HEALTH_PICKUPS))
+		{
+			return Plugin_Handled;
+		}
+		else if(StrContains(classname, "item_ammopack")!=-1 || StrEqual(classname, "tf_ammo_pack") && !(FF2flags[client] & FF2FLAG_ALLOW_AMMO_PICKUPS))
+		{
+			return Plugin_Handled;
+		}
 	}
 	return Plugin_Continue;
 }
