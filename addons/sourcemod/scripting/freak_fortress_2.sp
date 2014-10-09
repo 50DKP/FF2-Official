@@ -632,11 +632,11 @@ stock FindVersionData(Handle:panel, versionIndex)
 		}
 		case 14:  //1.06h
 		{
-		    DrawPanelText(panel, "1) [Players] Remove MvM powerup_bottle on Bosses. (RavensBro)");
+			DrawPanelText(panel, "1) [Players] Remove MvM powerup_bottle on Bosses. (RavensBro)");
 		}
 		case 13:  //1.06g
 		{
-		    DrawPanelText(panel, "1) [Players] Fixed vote for charset. (RavensBro)");
+			DrawPanelText(panel, "1) [Players] Fixed vote for charset. (RavensBro)");
 		}
 		case 12:  //1.06f
 		{
@@ -2043,7 +2043,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	Enabled=true;
 	EnableSubPlugins();
 	CheckArena();
-	ModifyItemPacks();
+	//ModifyItemPacks();
 
 	new bool:isBoss[MAXPLAYERS+1];
 	Boss[0]=FindBosses(isBoss);
@@ -2335,7 +2335,7 @@ public CheckArena()
 	}
 }
 
-ModifyItemPacks()
+stock ModifyItemPacks()
 {
 	if(!Enabled)
 	{
@@ -8376,29 +8376,27 @@ public OnTakeDamagePost(client, attacker, inflictor, Float:damage, damagetype)
 
 public OnEntityCreated(entity, const String:classname[])
 {
-	if(!GetConVarBool(cvarHealthBar))
+	if(GetConVarBool(cvarHealthBar))
 	{
-		return;
+		if(StrEqual(classname, HEALTHBAR_CLASS))
+		{
+			healthBar=entity;
+		}
+
+		if(g_Monoculus==-1 && StrEqual(classname, MONOCULUS))
+		{
+			g_Monoculus=entity;
+		}
 	}
 
-	if(StrEqual(classname, HEALTHBAR_CLASS))
+	if(StrContains(classname, "item_healthkit")!=-1 || StrContains(classname, "item_ammopack")!=-1 || StrEqual(classname, "tf_ammo_pack"))
 	{
-		healthBar=entity;
-	}
-
-	if(g_Monoculus==-1 && StrEqual(classname, MONOCULUS))
-	{
-		g_Monoculus=entity;
+		SDKHook(entity, SDKHook_Spawn, OnItemSpawned);
 	}
 }
 
 public OnEntityDestroyed(entity)
 {
-	if(entity==-1)
-	{
-		return;
-	}
-
 	if(entity==g_Monoculus)
 	{
 		g_Monoculus=FindEntityByClassname(-1, MONOCULUS);
@@ -8407,6 +8405,21 @@ public OnEntityDestroyed(entity)
 			g_Monoculus=FindEntityByClassname(entity, MONOCULUS);
 		}
 	}
+}
+
+public OnItemSpawned(entity)
+{
+	SDKHook(entity, SDKHook_StartTouch, OnPickup);
+	SDKHook(entity, SDKHook_Touch, OnPickup);
+}
+
+public Action:OnPickup(entity, client)
+{
+	if(IsValidClient(client) && IsBoss(client))
+	{
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
 }
 
 public CheckRoundState()
