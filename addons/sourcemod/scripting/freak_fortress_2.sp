@@ -303,10 +303,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 9, 2014",	//1.10.3
-	"October 9, 2014",	//1.10.3
-	"October 9, 2014",	//1.10.3
-	"October 9, 2014"	//1.10.3
+	"October 10, 2014",	//1.10.3
+	"October 10, 2014",	//1.10.3
+	"October 10, 2014",	//1.10.3
+	"October 10, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -4953,7 +4953,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				EmitSoundToAll(sound);
 			}
 
-			if(!GetRandomInt(0, 2))  //1/3 chance for "sound_hit_<class>"
+			if(!GetRandomInt(0, 2))  //1/3 chance for "sound_kill_<class>"
 			{
 				new Handle:data;
 				CreateDataTimer(0.1, PlaySoundKill, data);
@@ -6673,7 +6673,6 @@ stock bool:RandomSoundAbility(const String:sound[], String:file[], length, boss=
 		KvGetString(BossKV[Special[boss]], key, file, length);
 		if(!file[0])
 		{
-			sounds--;  //This sound wasn't valid, so don't include it
 			break;  //Assume that there's no more sounds
 		}
 
@@ -6691,7 +6690,7 @@ stock bool:RandomSoundAbility(const String:sound[], String:file[], length, boss=
 	}
 
 	IntToString(match[GetRandomInt(0, matches-1)], key, 4);
-	KvGetString(BossKV[Special[boss]], sound, file, length);  //Populate file
+	KvGetString(BossKV[Special[boss]], key, file, length);  //Populate file
 	return true;
 }
 
