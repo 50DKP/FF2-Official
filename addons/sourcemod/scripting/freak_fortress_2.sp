@@ -4182,7 +4182,7 @@ public OnClientPutInServer(client)
 
 public OnClientDisconnect(client)
 {
-	if(IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==1)
+	if(Enabled && IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==1)
 	{
 		CreateTimer(0.1, CheckAlivePlayers);
 	}
