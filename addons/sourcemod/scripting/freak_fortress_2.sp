@@ -303,10 +303,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 10, 2014",	//1.10.3
-	"October 10, 2014",	//1.10.3
-	"October 10, 2014",	//1.10.3
-	"October 10, 2014"	//1.10.3
+	"October 11, 2014",	//1.10.3
+	"October 11, 2014",	//1.10.3
+	"October 11, 2014",	//1.10.3
+	"October 11, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -3446,9 +3446,9 @@ public Action:Timer_NoHonorBound(Handle:timer, any:userid)
 	}
 }
 
-stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const String:att[]="", bool:dontpreserve=false)
+stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const String:att[]="", bool:dontPreserve=false)
 {
-	static Handle:hWeapon;
+	//static Handle:weapon;
 	new addattribs;
 
 	new String:weaponAttribsArray[32][32];
@@ -3460,10 +3460,13 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 	}
 
 	new flags=OVERRIDE_ATTRIBUTES;
-	if(!dontpreserve) flags|=PRESERVE_ATTRIBUTES;
-	if(hWeapon==INVALID_HANDLE) hWeapon=TF2Items_CreateItem(flags);
-	else TF2Items_SetFlags(hWeapon, flags);
-//	new Handle:hWeapon=TF2Items_CreateItem(flags);  //INVALID_HANDLE;
+	if(!dontPreserve)
+	{
+		flags|=PRESERVE_ATTRIBUTES;
+	}
+	//if(weapon==INVALID_HANDLE) weapon=TF2Items_CreateItem(flags);
+	//else TF2Items_SetFlags(weapon, flags);  //Somehow complains about an invalid handle here.
+	new Handle:weapon=TF2Items_CreateItem(flags);  //INVALID_HANDLE;  Going to uncomment this since this is what Randomizer does
 	if(item!=INVALID_HANDLE)
 	{
 		addattribs=TF2Items_GetNumAttributes(item);
@@ -3481,6 +3484,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 						break;
 					}
 				}
+
 				if(!dontAdd)
 				{
 					IntToString(attribIndex, weaponAttribsArray[i+attribCount], 32);
@@ -3489,24 +3493,24 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 			}
 			attribCount+=2*addattribs;
 		}
-		CloseHandle(item);  //probably returns false but whatever
+		//CloseHandle(item);  //probably returns false but whatever (rswallen-apparently not)
 	}
 
 	if(name[0]!='\0')
 	{
 		flags|=OVERRIDE_CLASSNAME;
-		TF2Items_SetClassname(hWeapon, name);
+		TF2Items_SetClassname(weapon, name);
 	}
 
 	if(index!=-1)
 	{
 		flags|=OVERRIDE_ITEM_DEF;
-		TF2Items_SetItemIndex(hWeapon, index);
+		TF2Items_SetItemIndex(weapon, index);
 	}
 
 	if(attribCount>0)
 	{
-		TF2Items_SetNumAttributes(hWeapon, (attribCount/2));
+		TF2Items_SetNumAttributes(weapon, attribCount/2);
 		new i2;
 		for(new i; i<attribCount && i2<16; i+=2)
 		{
@@ -3514,20 +3518,20 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 			if(!attrib)
 			{
 				LogError("Bad weapon attribute passed: %s ; %s", weaponAttribsArray[i], weaponAttribsArray[i+1]);
-				CloseHandle(hWeapon);
+				CloseHandle(weapon);
 				return INVALID_HANDLE;
 			}
 
-			TF2Items_SetAttribute(hWeapon, i2, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
+			TF2Items_SetAttribute(weapon, i2, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
 			i2++;
 		}
 	}
 	else
 	{
-		TF2Items_SetNumAttributes(hWeapon, 0);
+		TF2Items_SetNumAttributes(weapon, 0);
 	}
-	TF2Items_SetFlags(hWeapon, flags);
-	return hWeapon;
+	TF2Items_SetFlags(weapon, flags);
+	return weapon;
 }
 
 public Action:MakeNotBoss(Handle:timer, any:userid)
@@ -4196,6 +4200,11 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	}
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
+	if(!IsValidClient(client))  //I...what.  Apparently this is needed though?
+	{
+		return Plugin_Continue;
+	}
+
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
 
@@ -4230,7 +4239,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 		CreateTimer(0.1, CheckAlivePlayers);
 	}
 
-	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR);
+	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS);
 	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
 }
@@ -7349,32 +7358,36 @@ public Action:HelpPanel2(client)
 	return Plugin_Continue;
 }
 
-public Action:HelpPanelBoss(client)
+HelpPanelBoss(boss)
 {
+	if(!IsValidClient(Boss[boss]))
+	{
+		return;
+	}
+
 	decl String:text[512], String:language[20];
-	GetLanguageInfo(GetClientLanguage(Boss[client]), language, 8, text, 8);
+	GetLanguageInfo(GetClientLanguage(Boss[boss]), language, 8, text, 8);
 	Format(language, sizeof(language), "description_%s", language);
 
-	KvRewind(BossKV[Special[client]]);
-	//KvSetEscapeSequences(BossKV[Special[client]], true);  //Not working
-	KvGetString(BossKV[Special[client]], language, text, sizeof(text));
+	KvRewind(BossKV[Special[boss]]);
+	//KvSetEscapeSequences(BossKV[Special[boss]], true);  //Not working
+	KvGetString(BossKV[Special[boss]], language, text, sizeof(text));
 	if(!text[0])
 	{
-		KvGetString(BossKV[Special[client]], "description_en", text, sizeof(text));  //Default to English if their language isn't available
+		KvGetString(BossKV[Special[boss]], "description_en", text, sizeof(text));  //Default to English if their language isn't available
 		if(!text[0])
 		{
-			return Plugin_Continue;
+			return;
 		}
 	}
 	ReplaceString(text, sizeof(text), "\\n", "\n");
-	//KvSetEscapeSequences(BossKV[Special[client]], false);  //We don't want to interfere with the download paths
+	//KvSetEscapeSequences(BossKV[Special[boss]], false);  //We don't want to interfere with the download paths
 
 	new Handle:panel=CreatePanel();
 	SetPanelTitle(panel, text);
-	DrawPanelItem(panel,"Exit");
-	SendPanelToClient(panel, Boss[client], HintPanelH, 20);
+	DrawPanelItem(panel, "Exit");
+	SendPanelToClient(panel, Boss[boss], HintPanelH, 20);
 	CloseHandle(panel);
-	return Plugin_Continue;
 }
 
 public Action:MusicTogglePanelCmd(client, args)
