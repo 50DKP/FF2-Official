@@ -79,7 +79,7 @@ Rage_New_Weapon(boss, const String:ability_name[])
 		return;
 	}
 
-	decl String:classname[64], String:attributes[64];
+	decl String:classname[64], String:attributes[256];
 	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 1, classname, sizeof(classname));
 	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, attributes, sizeof(attributes));
 

@@ -303,10 +303,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 11, 2014",	//1.10.3
-	"October 11, 2014",	//1.10.3
-	"October 11, 2014",	//1.10.3
-	"October 11, 2014"	//1.10.3
+	"October 14, 2014",	//1.10.3
+	"October 14, 2014",	//1.10.3
+	"October 14, 2014",	//1.10.3
+	"October 14, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -3043,15 +3043,15 @@ EquipBoss(client)
 {
 	DoOverlay(Boss[client], "");
 	TF2_RemoveAllWeapons(Boss[client]);
-	decl String:weapon[64], String:attributes[128];
+	decl String:weapon[64], String:attributes[256];
 	for(new i=1; ; i++)
 	{
 		KvRewind(BossKV[Special[client]]);
 		Format(weapon, 10, "weapon%i", i);
 		if(KvJumpToKey(BossKV[Special[client]], weapon))
 		{
-			KvGetString(BossKV[Special[client]], "name", weapon, 64);
-			KvGetString(BossKV[Special[client]], "attributes", attributes, 128);
+			KvGetString(BossKV[Special[client]], "name", weapon, sizeof(weapon));
+			KvGetString(BossKV[Special[client]], "attributes", attributes, sizeof(attributes));
 			if(attributes[0]!='\0')
 			{
 				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; %s", attributes);
@@ -3464,7 +3464,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 	{
 		flags|=PRESERVE_ATTRIBUTES;
 	}
-	
+
 	if(weapon==INVALID_HANDLE)
 	{
 		weapon=TF2Items_CreateItem(flags);
