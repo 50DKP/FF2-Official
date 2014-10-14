@@ -3448,7 +3448,7 @@ public Action:Timer_NoHonorBound(Handle:timer, any:userid)
 
 stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const String:att[]="", bool:dontPreserve=false)
 {
-	//static Handle:weapon;
+	static Handle:weapon;
 	new addattribs;
 
 	new String:weaponAttribsArray[32][32];
@@ -3464,9 +3464,17 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 	{
 		flags|=PRESERVE_ATTRIBUTES;
 	}
-	//if(weapon==INVALID_HANDLE) weapon=TF2Items_CreateItem(flags);
-	//else TF2Items_SetFlags(weapon, flags);  //Somehow complains about an invalid handle here.
-	new Handle:weapon=TF2Items_CreateItem(flags);  //INVALID_HANDLE;  Going to uncomment this since this is what Randomizer does
+	
+	if(weapon==INVALID_HANDLE)
+	{
+		weapon=TF2Items_CreateItem(flags);
+	}
+	else
+	{
+		TF2Items_SetFlags(weapon, flags);
+	}
+	//new Handle:weapon=TF2Items_CreateItem(flags);  //INVALID_HANDLE;  Going to uncomment this since this is what Randomizer does
+
 	if(item!=INVALID_HANDLE)
 	{
 		addattribs=TF2Items_GetNumAttributes(item);
@@ -3493,7 +3501,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 			}
 			attribCount+=2*addattribs;
 		}
-		//CloseHandle(item);  //probably returns false but whatever (rswallen-apparently not)
+		CloseHandle(item);  //probably returns false but whatever (rswallen-apparently not)
 	}
 
 	if(name[0]!='\0')
@@ -4874,7 +4882,7 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		return Plugin_Continue;
 	}
 
-	new team=_:TFTeam_Unassigned, oldTeam=_:TFTeam_Unassigned, String:teamString[10];
+	new team=_:TFTeam_Unassigned, oldTeam=GetClientTeam(client), String:teamString[10];
 	GetCmdArg(1, teamString, sizeof(teamString));
 
 	if(StrEqual(teamString, "red", false))
@@ -5311,7 +5319,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 
 	for(new lives=1; lives<BossLives[boss]; lives++)
 	{
-		if(BossHealth[boss]-damage<BossHealthMax[boss]*lives)
+		if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
 		{
 			SetEntProp(client, Prop_Data, "m_iHealth", (BossHealth[boss]-damage)-BossHealthMax[boss]*(BossLives[boss]-2));  //Set the health early to avoid the boss dying from fire, etc.
 
