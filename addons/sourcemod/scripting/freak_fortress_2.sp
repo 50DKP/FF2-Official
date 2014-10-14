@@ -4946,7 +4946,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 	DoOverlay(client, "");
 	if(!IsBoss(client))
 	{
-		if(!(GetEventInt(event, "death_flags") | TF_DEATHFLAG_DEADRINGER))
+		if(!(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
 			CreateTimer(1.0, Timer_Damage, GetClientUserId(client));
 		}
@@ -4998,7 +4998,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 	else
 	{
 		new boss=GetBossIndex(client);
-		if(boss==-1 || (GetEventInt(event, "death_flags") | TF_DEATHFLAG_DEADRINGER))
+		if(boss==-1 || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
 			return Plugin_Continue;
 		}
