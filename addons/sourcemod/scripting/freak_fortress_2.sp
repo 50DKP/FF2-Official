@@ -3501,7 +3501,11 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 			}
 			attribCount+=2*addattribs;
 		}
-		CloseHandle(item);  //probably returns false but whatever (rswallen-apparently not)
+
+		if(weapon!=item)  //FlaminSarge: Item might be equal to weapon, so closing item's handle would also close weapon's
+		{
+			CloseHandle(item);  //probably returns false but whatever (rswallen-apparently not)
+		}
 	}
 
 	if(name[0]!='\0')
