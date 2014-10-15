@@ -751,11 +751,6 @@ public Action:Timer_SlomoChange(Handle:timer, any:client)
 
 public Action:event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
-	{
-		return Plugin_Continue;
-	}
-
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new bossAttacker=FF2_GetBossIndex(attacker);
@@ -820,6 +815,11 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 
 	if(bossClient!=-1)
 	{
+		if(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
+		{
+			return Plugin_Continue;
+		}
+
 		if(FF2_HasAbility(bossClient, this_plugin_name, "rage_cloneattack"))
 		{
 			for(new target=1; target<=MaxClients; target++)
