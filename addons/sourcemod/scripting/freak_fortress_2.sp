@@ -30,6 +30,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #tryinclude <updater>
 #tryinclude <goomba>
 #tryinclude <rtd>
+#tryinclude <tf2attributes>
 #define REQUIRE_PLUGIN
 
 #define MAJOR_REVISION "1"
@@ -59,6 +60,10 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #if defined _steamtools_included
 new bool:steamtools=false;
+#endif
+
+#if defined _tf2attributes_included
+new bool:tf2attributes=false;
 #endif
 
 #if defined _goomba_included
@@ -303,10 +308,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 14, 2014",	//1.10.3
-	"October 14, 2014",	//1.10.3
-	"October 14, 2014",	//1.10.3
-	"October 14, 2014"	//1.10.3
+	"October 15, 2014",	//1.10.3
+	"October 15, 2014",	//1.10.3
+	"October 15, 2014",	//1.10.3
+	"October 15, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -839,6 +844,10 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	#if defined _steamtools_included
 	MarkNativeAsOptional("Steam_SetGameDescription");
 	#endif
+
+	#if defined _tf2attributes_included
+	MarkNativeAsOptional("TF2Attrib_SetByDefIndex");
+	#endif
 	return APLRes_Success;
 }
 
@@ -1037,6 +1046,13 @@ public OnLibraryAdded(const String:name[])
 	}
 	#endif
 
+	#if defined _tf2attributes_included
+	if(!strcmp(name, "tf2attributes", false))
+	{
+		tf2attributes=true;
+	}
+	#endif
+
 	#if defined _goomba_included
 	if(!strcmp(name, "goomba", false))
 	{
@@ -1063,6 +1079,13 @@ public OnLibraryRemoved(const String:name[])
 	if(!strcmp(name, "SteamTools", false))
 	{
 		steamtools=false;
+	}
+	#endif
+
+	#if defined _tf2attributes_included
+	else if(!strcmp(name, "tf2attributes", false))
+	{
+		tf2attributes=false;
 	}
 	#endif
 
@@ -3073,19 +3096,26 @@ EquipBoss(client)
 				SetEntPropFloat(BossWeapon, Prop_Send, "m_flModelScale", 0.001);
 			}
 			SetEntPropEnt(Boss[client], Prop_Send, "m_hActiveWeapon", BossWeapon);
-
-			KvGoBack(BossKV[Special[client]]);
-			new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[client]], "class", 1);
-			if(TF2_GetPlayerClass(Boss[client])!=class)
-			{
-				TF2_SetPlayerClass(Boss[client], class);
-			}
 		}
 		else
 		{
 			break;
 		}
 	}
+
+	KvGoBack(BossKV[Special[client]]);
+	new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[client]], "class", 1);
+	if(TF2_GetPlayerClass(Boss[client])!=class)
+	{
+		TF2_SetPlayerClass(Boss[client], class);
+	}
+
+	#if defined _tf2attributes_included
+	if(tf2attributes)
+	{
+		TF2Attrib_SetByDefIndex(client, 259, Float:1);
+	}
+	#endif
 }
 
 public Action:MakeBoss(Handle:timer, any:client)
@@ -3346,12 +3376,19 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 444:  //Mantreads
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "58 ; 1.5");
+			/*new Handle:itemOverride=PrepareItemHandle(item, _, _, "58 ; 1.5");
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
 				return Plugin_Changed;
+			}*/
+
+			#if defined _tf2attributes_included
+			if(tf2attributes)
+			{
+				TF2Attrib_SetByDefIndex(client, 58, 1.5);
 			}
+			#endif
 		}
 		case 648:  //Wrap Assassin
 		{
