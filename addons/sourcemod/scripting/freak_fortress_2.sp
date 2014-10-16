@@ -308,10 +308,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 15, 2014",	//1.10.3
-	"October 15, 2014",	//1.10.3
-	"October 15, 2014",	//1.10.3
-	"October 15, 2014"	//1.10.3
+	"October 16, 2014",	//1.10.3
+	"October 16, 2014",	//1.10.3
+	"October 16, 2014",	//1.10.3
+	"October 16, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -3615,6 +3615,13 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		TF2_RespawnPlayer(client);
 	}
 
+	#if defined _tf2attributes_included
+	if(tf2attributes)
+	{
+		TF2Attrib_RemoveByDefIndex(client, 259);
+	}
+	#endif
+
 	CreateTimer(0.1, CheckItems, client);
 	return Plugin_Continue;
 }
@@ -3712,6 +3719,17 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 	{
 		weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
 	}
+
+	#if defined _tf2attributes_included
+	if(IsValidEntity(FindPlayerBack(client, 444)))  //Mantreads
+	{
+		TF2Attrib_SetByDefIndex(client, 58, 1.5);  //+50% increased push force
+	}
+	else
+	{
+		TF2Attrib_RemoveByDefIndex(client, 58);
+	}
+	#endif
 
 	new entity=-1;
 	while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)  //Demoshields

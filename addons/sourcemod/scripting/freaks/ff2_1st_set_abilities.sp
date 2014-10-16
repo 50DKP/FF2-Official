@@ -748,7 +748,6 @@ public Action:Timer_SlomoChange(Handle:timer, any:client)
 }
 */
 
-
 public Action:event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
