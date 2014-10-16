@@ -754,6 +754,12 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new bossAttacker=FF2_GetBossIndex(attacker);
 	new bossClient=FF2_GetBossIndex(client);
+
+	if(!attacker || !client || attacker==client)
+	{
+		return Plugin_Continue;
+	}
+
 	if(bossAttacker!=-1)
 	{
 		if(FF2_HasAbility(bossAttacker, this_plugin_name, "special_dropprop"))
