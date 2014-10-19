@@ -308,10 +308,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 16, 2014",	//1.10.3
-	"October 16, 2014",	//1.10.3
-	"October 16, 2014",	//1.10.3
-	"October 16, 2014"	//1.10.3
+	"October 19, 2014",	//1.10.3
+	"October 19, 2014",	//1.10.3
+	"October 19, 2014",	//1.10.3
+	"October 19, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -5038,7 +5038,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				ResetPack(data);
 			}
 
-			KSpreeCount[boss]=GetGameTime()<=KSpreeTimer[boss] ? KSpreeCount[boss]++ : 1;
+			GetGameTime()<=KSpreeTimer[boss] ? KSpreeCount[boss]++ : KSpreeCount[boss]=1;
 			if(KSpreeCount[boss]==3)
 			{
 				if(RandomSound("sound_kspree", sound, PLATFORM_MAX_PATH, boss))
