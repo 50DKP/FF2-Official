@@ -138,6 +138,7 @@ stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute
 	{
 		return -1;
 	}
+
 	new entity=TF2Items_GiveNamedItem(client, weapon);
 	CloseHandle(weapon);
 	EquipPlayerWeapon(client, entity);
