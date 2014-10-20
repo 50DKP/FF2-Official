@@ -5038,7 +5038,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				ResetPack(data);
 			}
 
-			GetGameTime()<=KSpreeTimer[boss] ? KSpreeCount[boss]++ : KSpreeCount[boss]=1;
+			GetGameTime()<=KSpreeTimer[boss] ? (KSpreeCount[boss]+=1) : (KSpreeCount[boss]=1);  //Breaks if you do ++ or remove the parentheses...
 			if(KSpreeCount[boss]==3)
 			{
 				if(RandomSound("sound_kspree", sound, PLATFORM_MAX_PATH, boss))
