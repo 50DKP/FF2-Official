@@ -446,10 +446,10 @@ forward Action:FF2_OnLoseLife(client, &lives, maxLives);
  *
  * Gives ammo to a weapon
  *
- * @param client    Client's index
- * @param weapon    Weapon
- * @param ammo      Ammo (do NOT use for clipless weapons)
- * @param clip      Clip
+ * @param client	Client's index
+ * @param weapon	Weapon
+ * @param ammo		Ammo (do NOT use for clipless weapons)
+ * @param clip		Clip
  * @noreturn
  */
 stock FF2_SetAmmo(client, weapon, ammo=-1, clip=-1)
