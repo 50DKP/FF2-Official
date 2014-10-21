@@ -308,10 +308,10 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 19, 2014",	//1.10.3
-	"October 19, 2014",	//1.10.3
-	"October 19, 2014",	//1.10.3
-	"October 19, 2014"	//1.10.3
+	"October 21, 2014",	//1.10.3
+	"October 21, 2014",	//1.10.3
+	"October 21, 2014",	//1.10.3
+	"October 21, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -847,6 +847,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 	#if defined _tf2attributes_included
 	MarkNativeAsOptional("TF2Attrib_SetByDefIndex");
+	MarkNativeAsOptional("TF2Attrib_RemoveByDefIndex");
 	#endif
 	return APLRes_Success;
 }
@@ -3109,13 +3110,6 @@ EquipBoss(client)
 	{
 		TF2_SetPlayerClass(Boss[client], class);
 	}
-
-	#if defined _tf2attributes_included
-	if(tf2attributes)
-	{
-		TF2Attrib_SetByDefIndex(client, 259, Float:1);
-	}
-	#endif
 }
 
 public Action:MakeBoss(Handle:timer, any:client)
@@ -3614,13 +3608,6 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
 		TF2_RespawnPlayer(client);
 	}
-
-	#if defined _tf2attributes_included
-	if(tf2attributes)
-	{
-		TF2Attrib_RemoveByDefIndex(client, 259);
-	}
-	#endif
 
 	CreateTimer(0.1, CheckItems, client);
 	return Plugin_Continue;
