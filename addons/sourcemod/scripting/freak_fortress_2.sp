@@ -254,6 +254,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.3",
 	"1.10.3",
 	"1.10.3",
+	"1.10.3",
 	"1.10.3"
 };
 
@@ -308,51 +309,61 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 21, 2014",	//1.10.3
-	"October 21, 2014",	//1.10.3
-	"October 21, 2014",	//1.10.3
-	"October 21, 2014"	//1.10.3
+	"October 22, 2014",	//1.10.3
+	"October 22, 2014",	//1.10.3
+	"October 22, 2014",	//1.10.3
+	"October 22, 2014",	//1.10.3
+	"October 22, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 52:  //1.10.3
+		case 53:  //1.10.3
 		{
 			DrawPanelText(panel, "1) Fixed bosses appearing to be overhealed (War3Evo/Wliu)");
-			DrawPanelText(panel, "2) Prevented bosses from picking up ammo/health by default (friagram)");
-			DrawPanelText(panel, "3) Rebalanced many weapons based on misc. feedback (Wliu/various)");
-			DrawPanelText(panel, "4) Fixed a bug with respawning bosses (Wliu from Spyper)");
-			DrawPanelText(panel, "5) Fixed an edge case where player crits would not be applied (Wliu from Spyper)");
+			DrawPanelText(panel, "2) Rebalanced many weapons based on misc. feedback (Wliu/various)");
+			DrawPanelText(panel, "3) Fixed not being able to use strange syringe guns or mediguns (Chris from Spyper)");
+			DrawPanelText(panel, "4) Fixed the Bread Bite being replaced by the GRU (Wliu from Spyper)");
+			DrawPanelText(panel, "5) Fixed Mantreads not giving extra rocket jump height (Chdata");
 			DrawPanelText(panel, "See next page (press 1)");
+		}
+		case 52:  //1.10.3
+		{
+			DrawPanelText(panel, "6) Prevented bosses from picking up ammo/health by default (friagram)");
+			DrawPanelText(panel, "7) Fixed a bug with respawning bosses (Wliu from Spyper)");
+			DrawPanelText(panel, "8) Fixed an issue with displaying boss health in chat (Wliu)");
+			DrawPanelText(panel, "9) Fixed an edge case where player crits would not be applied (Wliu from Spyper)");
+			DrawPanelText(panel, "10) Fixed not being able to suicide as boss after round end (Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 51:  //1.10.3
 		{
-			DrawPanelText(panel, "6) Fixed not being able to use strange syringe guns or mediguns (Chris from Spyper)");
-			DrawPanelText(panel, "7) Fixed not being able to suicide as boss after round end (Wliu)");
-			DrawPanelText(panel, "8) Updated Russian translations (wasder)");
-			DrawPanelText(panel, "9) Fixed Dead Ringer deaths being too obvious (Wliu from AliceTaylor12)");
-			DrawPanelText(panel, "10) Fixed many bosses not voicing their catch phrases (Wliu)");
-			DrawPanelText(panel, "See next page for server and dev changelogs (press 1)");
+			DrawPanelText(panel, "11) Updated Russian translations (wasder) and added German translations (CooliMC)");
+			DrawPanelText(panel, "12) Fixed Dead Ringer deaths being too obvious (Wliu from AliceTaylor12)");
+			DrawPanelText(panel, "13) Fixed many bosses not voicing their catch phrases (Wliu)");
+			DrawPanelText(panel, "14) Updated Gentlespy, Easter Bunny, Demopan, and CBS (Wliu, configs need to be updated)");
+			DrawPanelText(panel, "15) [Server] Added new cvar 'ff2_countdown_result' (Wliu from Shadow)");
+			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 50:  //1.10.3
 		{
-			DrawPanelText(panel, "12) [Server] Added new cvar 'ff2_countdown_result' (Wliu from Shadow)");
-			DrawPanelText(panel, "13) [Server] Added new cvar 'ff2_caber_detonations' (Wliu)");
-			DrawPanelText(panel, "14) [Server] Fixed a bug related to 'cvar_countdown_players' and the countdown timer (Wliu from Spyper)");
-			DrawPanelText(panel, "15) [Server] Fixed 'nextmap_charset' VFormat errors (Wliu from BBG_Theory)");
-			DrawPanelText(panel, "16) [Server] Fixed errors when Monoculus was attacking (Wliu from ClassicGuzzi)");
-			DrawPanelText(panel, "See next page for dev changelog (press 1)");
+			DrawPanelText(panel, "16) [Server] Added new cvar 'ff2_caber_detonations' (Wliu)");
+			DrawPanelText(panel, "17) [Server] Fixed a bug related to 'cvar_countdown_players' and the countdown timer (Wliu from Spyper)");
+			DrawPanelText(panel, "18) [Server] Fixed 'nextmap_charset' VFormat errors (Wliu from BBG_Theory)");
+			DrawPanelText(panel, "19) [Server] Fixed errors when Monoculus was attacking (Wliu from ClassicGuzzi)");
+			DrawPanelText(panel, "20) [Dev] Added \"sound_first_blood\" (Wliu from Mr-Bro)");
+			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 49:  //1.10.3
 		{
-			DrawPanelText(panel, "16) [Dev] Added \"sound_first_blood\" (Wliu from Mr-Bro)");
-			DrawPanelText(panel, "17) [Dev] Added FF2FLAG_ALLOW_{HEALTH|AMMO}_PICKUPS (Powerlord)");
-			DrawPanelText(panel, "18) [Dev] Added FF2_GetFF2Version (Wliu)");
-			DrawPanelText(panel, "19) [Dev] Added FF2_ShowSync{Hud}Text wrappers (Wliu)");
-			DrawPanelText(panel, "20) [Dev] Added FF2_SetAmmo and fixed setting clip (Wliu/friagram for fixing clip)");
-			DrawPanelText(panel, "21) [Dev] Fixed weapons not being hidden when asked to (friagram)");
+			DrawPanelText(panel, "21) [Dev] Added FF2FLAG_ALLOW_{HEALTH|AMMO}_PICKUPS (Powerlord)");
+			DrawPanelText(panel, "22) [Dev] Added FF2_GetFF2Version (Wliu)");
+			DrawPanelText(panel, "23) [Dev] Added FF2_ShowSync{Hud}Text wrappers (Wliu)");
+			DrawPanelText(panel, "24) [Dev] Added FF2_SetAmmo and fixed setting clip (Wliu/friagram for fixing clip)");
+			DrawPanelText(panel, "25) [Dev] Fixed weapons not being hidden when asked to (friagram)");
+			DrawPanelText(panel, "26) [Dev] Fixed not being able to set constant health values for bosses (Wliu from braak0405)");
 		}
 		case 48:  //1.10.2
 		{
