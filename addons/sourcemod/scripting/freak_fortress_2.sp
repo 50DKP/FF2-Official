@@ -6535,6 +6535,11 @@ stock CalcBossHealthMax(client)
 	}
 
 	new health=RoundFloat(sum[0]);
+	if(!health && value[0]!='\0')  //Check to see if we're dealing with a constant health value
+	{
+		health=StringToInt(value);
+	}
+
 	if(parentheses || health<=0)
 	{
 		LogError("[FF2] Malformed boss health formula, using default!");
