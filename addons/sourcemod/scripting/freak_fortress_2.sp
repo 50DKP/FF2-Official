@@ -6573,7 +6573,10 @@ stock CalcBossHealthMax(client)
 
 	if(parentheses || health<=0)
 	{
-		LogError("[FF2] Malformed boss health formula, using default!");
+		decl String:bossName[32];
+		KvRewind(BossKV[Special[client]]);
+		KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName));
+		LogError("[FF2] %s has a malformed boss health formula, using default!", bossName);
 		health=RoundFloat(Pow(((460.0+playing)*playing), 1.075));
 	}
 
