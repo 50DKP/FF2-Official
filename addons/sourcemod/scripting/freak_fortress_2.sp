@@ -358,12 +358,13 @@ stock FindVersionData(Handle:panel, versionIndex)
 		}
 		case 49:  //1.10.3
 		{
-			DrawPanelText(panel, "21) [Dev] Added FF2FLAG_ALLOW_{HEALTH|AMMO}_PICKUPS (Powerlord)");
-			DrawPanelText(panel, "22) [Dev] Added FF2_GetFF2Version (Wliu)");
-			DrawPanelText(panel, "23) [Dev] Added FF2_ShowSync{Hud}Text wrappers (Wliu)");
-			DrawPanelText(panel, "24) [Dev] Added FF2_SetAmmo and fixed setting clip (Wliu/friagram for fixing clip)");
-			DrawPanelText(panel, "25) [Dev] Fixed weapons not being hidden when asked to (friagram)");
-			DrawPanelText(panel, "26) [Dev] Fixed not being able to set constant health values for bosses (Wliu from braak0405)");
+			DrawPanelText(panel, "21) [Dev] Added \"pickups\" to set what the boss can pick up (Wliu)");
+			DrawPanelText(panel, "22) [Dev] Added FF2FLAG_ALLOW_{HEALTH|AMMO}_PICKUPS (Powerlord)");
+			DrawPanelText(panel, "23) [Dev] Added FF2_GetFF2Version (Wliu)");
+			DrawPanelText(panel, "24) [Dev] Added FF2_ShowSync{Hud}Text wrappers (Wliu)");
+			DrawPanelText(panel, "25) [Dev] Added FF2_SetAmmo and fixed setting clip (Wliu/friagram for fixing clip)");
+			DrawPanelText(panel, "26) [Dev] Fixed weapons not being hidden when asked to (friagram)");
+			DrawPanelText(panel, "27) [Dev] Fixed not being able to set constant health values for bosses (Wliu from braak0405)");
 		}
 		case 48:  //1.10.2
 		{
@@ -3123,30 +3124,31 @@ EquipBoss(client)
 	}
 }
 
-public Action:MakeBoss(Handle:timer, any:client)
+public Action:MakeBoss(Handle:timer, any:boss)
 {
-	if(!IsValidClient(Boss[client]))
+	new client=Boss[boss];
+	if(!IsValidClient(client))
 	{
 		return Plugin_Continue;
 	}
 
-	KvRewind(BossKV[Special[client]]);
-	TF2_RemovePlayerDisguise(Boss[client]);
-	TF2_SetPlayerClass(Boss[client], TFClassType:KvGetNum(BossKV[Special[client]], "class", 1));
+	KvRewind(BossKV[Special[boss]]);
+	TF2_RemovePlayerDisguise(client);
+	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1));
 
-	if(GetClientTeam(Boss[client])!=BossTeam)
+	if(GetClientTeam(client)!=BossTeam)
 	{
-		SetEntProp(Boss[client], Prop_Send, "m_lifeState", 2);
-		ChangeClientTeam(Boss[client], BossTeam);
-		SetEntProp(Boss[client], Prop_Send, "m_lifeState", 0);
-		TF2_RespawnPlayer(Boss[client]);
+		SetEntProp(client, Prop_Send, "m_lifeState", 2);
+		ChangeClientTeam(client, BossTeam);
+		SetEntProp(client, Prop_Send, "m_lifeState", 0);
+		TF2_RespawnPlayer(client);
 	}
 
-	if(!IsPlayerAlive(Boss[client]))
+	if(!IsPlayerAlive(client))
 	{
 		if(!CheckRoundState())
 		{
-			TF2_RespawnPlayer(Boss[client]);
+			TF2_RespawnPlayer(client);
 		}
 		else
 		{
@@ -3154,13 +3156,29 @@ public Action:MakeBoss(Handle:timer, any:client)
 		}
 	}
 
-	CreateTimer(0.2, MakeModelTimer, client);
-	if(!IsVoteInProgress() && GetClientClassinfoCookie(Boss[client]))
+	switch(KvGetNum(BossKV[Special[boss]], "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
 	{
-		HelpPanelBoss(client);
+		case 1:
+		{
+			FF2flags[client]|=FF2FLAG_ALLOW_HEALTH_PICKUPS;
+		}
+		case 2:
+		{
+			FF2flags[client]|=FF2FLAG_ALLOW_AMMO_PICKUPS;
+		}
+		case 3:
+		{
+			FF2flags[client]|=FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS;
+		}
 	}
 
-	if(!IsPlayerAlive(Boss[client]))
+	CreateTimer(0.2, MakeModelTimer, boss);
+	if(!IsVoteInProgress() && GetClientClassinfoCookie(client))
+	{
+		HelpPanelBoss(boss);
+	}
+
+	if(!IsPlayerAlive(client))
 	{
 		return Plugin_Continue;
 	}
@@ -3174,10 +3192,11 @@ public Action:MakeBoss(Handle:timer, any:client)
 			{
 				case 438, 463, 167, 477, 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 1015, 5607:  //Action slot items
 				{
+					//NOOP
 				}
 				default:
 				{
-					TF2_RemoveWearable(Boss[client], entity);
+					TF2_RemoveWearable(client, entity);
 				}
 			}
 		}
@@ -3188,7 +3207,7 @@ public Action:MakeBoss(Handle:timer, any:client)
 	{
 		if(IsBoss(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")))
 		{
-			TF2_RemoveWearable(Boss[client], entity);
+			TF2_RemoveWearable(client, entity);
 		}
 	}
 
@@ -3197,7 +3216,7 @@ public Action:MakeBoss(Handle:timer, any:client)
 	{
 		if(IsBoss(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")))
 		{
-			TF2_RemoveWearable(Boss[client], entity);
+			TF2_RemoveWearable(client, entity);
 		}
 	}
 
@@ -3210,19 +3229,20 @@ public Action:MakeBoss(Handle:timer, any:client)
 			{
 				case 438, 463, 167, 477, 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542:  //Action slot items
 				{
+					//NOOP
 				}
 				default:
 				{
-					TF2_RemoveWearable(Boss[client], entity);
+					TF2_RemoveWearable(client, entity);
 				}
 			}
 		}
 	}
 
-	EquipBoss(client);
-	KSpreeCount[client]=0;
-	BossCharge[client][0]=0.0;
-	SetClientQueuePoints(Boss[client], 0);
+	EquipBoss(boss);
+	KSpreeCount[boss]=0;
+	BossCharge[boss][0]=0.0;
+	SetClientQueuePoints(client, 0);
 	return Plugin_Continue;
 }
 
