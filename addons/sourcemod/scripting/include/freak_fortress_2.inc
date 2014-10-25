@@ -464,6 +464,7 @@ stock FF2_SetAmmo(client, weapon, ammo=-1, clip=0)
 		{
 			SetEntProp(client, Prop_Data, "m_iAmmo", ammo, _, ammoType);
 			Debug("Set %i ammo", ammo);
+			Debug("Got %i ammo", GetEntProp(client, Prop_Data, "m_iAmmo"));
 		}
 		else if(ammo>-1)  //Only complain if we're trying to set ammo
 		{
