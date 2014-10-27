@@ -448,23 +448,23 @@ forward Action:FF2_OnLoseLife(client, &lives, maxLives);
  *
  * @param client	Client's index
  * @param weapon	Weapon
- * @param ammo		Ammo
- * @param clip		Clip (do NOT use for clipless weapons)
+ * @param ammo		Ammo (set to 1 for clipless weapons, then set the actual ammo using clip)
+ * @param clip		Clip
  * @noreturn
  */
-stock FF2_SetAmmo(client, weapon, ammo=-1, clip=0)
+stock FF2_SetAmmo(client, weapon, ammo=-1, clip=-1)
 {
 	if(IsValidEntity(weapon))
 	{
-		SetEntProp(weapon, Prop_Data, "m_iClip1", clip>-1 ? clip : 0);  //Clip MUST be set for clipless weapons...
-		Debug("Set %i clip", clip);
+		if(clip>-1)
+		{
+			SetEntProp(weapon, Prop_Data, "m_iClip1", clip);
+		}
 
 		new ammoType=(ammo>-1 ? GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType") : -1);
 		if(ammoType!=-1)
 		{
 			SetEntProp(client, Prop_Data, "m_iAmmo", ammo, _, ammoType);
-			Debug("Set %i ammo", ammo);
-			Debug("Got %i ammo", GetEntProp(client, Prop_Data, "m_iAmmo"));
 		}
 		else if(ammo>-1)  //Only complain if we're trying to set ammo
 		{
