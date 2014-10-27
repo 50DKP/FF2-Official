@@ -7,7 +7,7 @@ rage_new_weapon:	arg0 - slot (def.0)
 					arg2 - weapon's index
 					arg3 - weapon's attributes
 					arg4 - weapon's slot (0 - primary. 1 - secondary. 2 - melee. 3 - pda. 4 - spy's watches)
-					arg5 - weapon's ammo (do NOT use for clipless weapons)
+					arg5 - weapon's ammo (set to 1 for clipless weapons, then set the actual ammo using clip)
 					arg6 - force switch to this weapon
 					arg7 - weapon's clip
 */
