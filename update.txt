@@ -4,11 +4,15 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.10.2"
-			"Previous"	"1.10.1"
+			"Latest"	"1.10.3"
+			"Previous"	"1.10.2"
 		}
 
-		"Notes"	"Critical bugfix for 1.10.1"
+		"Notes"	"More bugfixes"
+		"Notes"	"It is HIGHLY RECOMMENDED that you update configs for CBS, Demopan, Easter Bunny, and Gentlespy"
+		"Notes"	"No more overhealed bosses"
+		"Notes"	"New developer flags, natives, and stocks added"
+		"Notes"	"See Github, the official thread, or the in-game changelog for the specifics"
 	}
 
 	"Files"
@@ -16,7 +20,20 @@
 		"Patch"
 		{
 			"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
+			"Plugin"	"Path_SM/plugins/freaks/default_abilities.ff2"
+			"Plugin"	"Path_SM/plugins/freaks/easter_abilities.ff2"
+			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
+			"Plugin"	"Path_SM/plugins/freaks/default_abilities.ff2"
+			"Plugin"	"Path_SM/plugins/freaks/special_noanims.ff2"
+			"Plugin"	"Path_SM/translations/freak_fortress_2.phrases.txt"
+			"Plugin"	"Path_SM/translations/de/freak_fortress_2.phrases.txt"
+			"Plugin"	"Path_SM/translations/ru/freak_fortress_2.phrases.txt"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
+			"Source"	"Path_SM/scripting/freaks/default_abilities.sp"
+			"Source"	"Path_SM/scripting/freaks/easter_abilities.sp"
+			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
+			"Source"	"Path_SM/scripting/freaks/special_noanims.sp"
+			"Source"	"Path_SM/scripting/include/freak_fortress_2.inc"
 		}
 
 		"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
@@ -312,6 +329,7 @@
 		"Plugin"	"Path_SM/translations/ff2_1st_set.phrases.txt"
 		"Plugin"	"Path_SM/translations/ff2_boss_selection.txt"
 		"Plugin"	"Path_SM/translations/freak_fortress_2.phrases.txt"
-		"Plugin"	"Path_SM/translations/ru/freak_fortress_2.phrases.txt"
+		"Plugin"	"Path_SM/translations/de/freak_fortress_2.phrases.txt"
+		"Plugin"	"Path_SM/translatoins/ru/freak_fortress_2.phrases.txt"
 	}
 }
