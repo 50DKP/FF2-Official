@@ -8540,8 +8540,10 @@ UpdateHealthBar()
 
 SetClientGlow(client, Float:time1, Float:time2=-1.0)
 {
+	Debug("Entered SCG");
 	if(!IsValidClient(client) && !IsValidClient(Boss[client]))
 	{
+		Debug("SCG: NOOP");
 		return;
 	}
 
@@ -8550,15 +8552,18 @@ SetClientGlow(client, Float:time1, Float:time2=-1.0)
 	{
 		GlowTimer[client]=time2;
 	}
+	Debug("GlowTimer for %N is now %f", client, GlowTimer[client]);
 
 	if(GlowTimer[client]<=0.0)
 	{
 		GlowTimer[client]=0.0;
 		SetEntProp((IsValidClient(Boss[client]) ? Boss[client] : client), Prop_Send, "m_bGlowEnabled", 0);
+		Debug("The following should be 0: %i", GetEntProp((IsValidClient(Boss[client]) ? Boss[client] : client), Prop_Send, "m_bGlowEnabled"));
 	}
 	else
 	{
 		SetEntProp((IsValidClient(Boss[client]) ? Boss[client] : client), Prop_Send, "m_bGlowEnabled", 1);
+		Debug("The following should be 1: %i", GetEntProp((IsValidClient(Boss[client]) ? Boss[client] : client), Prop_Send, "m_bGlowEnabled"));
 	}
 }
 
