@@ -309,11 +309,11 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 27, 2014",	//1.10.3
-	"October 27, 2014",	//1.10.3
-	"October 27, 2014",	//1.10.3
-	"October 27, 2014",	//1.10.3
-	"October 27, 2014"	//1.10.3
+	"October 31, 2014",	//1.10.3
+	"October 31, 2014",	//1.10.3
+	"October 31, 2014",	//1.10.3
+	"October 31, 2014",	//1.10.3
+	"October 31, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -3739,13 +3739,16 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 	}
 
 	#if defined _tf2attributes_included
-	if(IsValidEntity(FindPlayerBack(client, 444)))  //Mantreads
+	if(tf2attributes)
 	{
-		TF2Attrib_SetByDefIndex(client, 58, 1.5);  //+50% increased push force
-	}
-	else
-	{
-		TF2Attrib_RemoveByDefIndex(client, 58);
+		if(IsValidEntity(FindPlayerBack(client, 444)))  //Mantreads
+		{
+			TF2Attrib_SetByDefIndex(client, 58, 1.5);  //+50% increased push force
+		}
+		else
+		{
+			TF2Attrib_RemoveByDefIndex(client, 58);
+		}
 	}
 	#endif
 
