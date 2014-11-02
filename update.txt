@@ -9,7 +9,9 @@
 		}
 
 		"Notes"	"More bugfixes"
+		"Notes"	"It is IMPERATIVE that you update HHH's config due to removed startup music"
 		"Notes"	"It is HIGHLY RECOMMENDED that you update configs for CBS, Demopan, Easter Bunny, and Gentlespy"
+		"Notes"	"It is SUGGESTED that you update configs for all other bosses"
 		"Notes"	"No more overhealed bosses"
 		"Notes"	"New developer flags, natives, and stocks added"
 		"Notes"	"See Github, the official thread, or the in-game changelog for the specifics"
@@ -25,6 +27,7 @@
 			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
 			"Plugin"	"Path_SM/plugins/freaks/default_abilities.ff2"
 			"Plugin"	"Path_SM/plugins/freaks/special_noanims.ff2"
+			"Plugin"	"Path_Mod/sound/freak_fortress_2/hhh/hhh_bgm.mp3"
 			"Plugin"	"Path_SM/translations/freak_fortress_2.phrases.txt"
 			"Plugin"	"Path_SM/translations/de/freak_fortress_2.phrases.txt"
 			"Plugin"	"Path_SM/translations/ru/freak_fortress_2.phrases.txt"
@@ -225,6 +228,7 @@
 		"Plugin"	"Path_Mod/sound/freak_fortress_2/demopan/demopan_kspree.wav"
 		"Plugin"	"Path_Mod/sound/freak_fortress_2/demopan/demopan_win.wav"
 		"Plugin"	"Path_Mod/sound/freak_fortress_2/gentlespy/gentle_music.mp3"
+		"Plugin"	"Path_Mod/sound/freak_fortress_2/hhh/hhh_bgm.mp3"
 		"Plugin"	"Path_Mod/sound/freak_fortress_2/ninjaspy/fakedeath_1.wav"
 		"Plugin"	"Path_Mod/sound/freak_fortress_2/ninjaspy/fakedeath_2.wav"
 		"Plugin"	"Path_Mod/sound/freak_fortress_2/ninjaspy/fakedeath_3.wav"
