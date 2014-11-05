@@ -16,7 +16,7 @@ install:
     - unzip $(basename "$TF2ITEMSPACKAGE")
 before_script:
     - cd addons/sourcemod/scripting/
-    - wget "https://www.doctormckay.com/download/scripting/include/morecolors.inc"
+    - wget "http://www.doctormckay.com/download/scripting/include/morecolors.inc"
     - mv morecolors.inc include/
     - chmod +x spcomp
     - mkdir compiled compiled/freaks
@@ -51,7 +51,6 @@ deploy:
         - freak_fotress_2.tar.gz
     on:
         repo: 50DKP/FF2-Official
-        branch: master
         tags: true
 
 #Notifications

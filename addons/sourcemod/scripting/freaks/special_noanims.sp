@@ -7,9 +7,9 @@ rage_new_weapon:	arg0 - slot (def.0)
 					arg2 - weapon's index
 					arg3 - weapon's attributes
 					arg4 - weapon's slot (0 - primary. 1 - secondary. 2 - melee. 3 - pda. 4 - spy's watches)
-					arg5 - weapon's ammo
+					arg5 - weapon's ammo (set to 1 for clipless weapons, then set the actual ammo using clip)
 					arg6 - force switch to this weapon
-					arg7 - weapon's clip (use this for minigun, flamethrower, sniper rifles, etc.)
+					arg7 - weapon's clip
 */
 #pragma semicolon 1
 
@@ -24,13 +24,20 @@ rage_new_weapon:	arg0 - slot (def.0)
 public Plugin:myinfo=
 {
 	name="Freak Fortress 2: special_noanims",
-	author="RainBolt Dash",
+	author="RainBolt Dash, Wliu",
 	description="FF2: New Weapon and No Animations abilities",
 	version=PLUGIN_VERSION
 };
 
 public OnPluginStart2()
 {
+	new version[3];
+	FF2_GetFF2Version(version);
+	if(version[0]==1 && (version[1]<10 || (version[1]==10 && version[2]<3)))
+	{
+		SetFailState("This plugin depends on at least FF2 v1.10.3");
+	}
+
 	HookEvent("teamplay_round_start", event_round_start);
 }
 
@@ -53,7 +60,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 public Action:Timer_Disable_Anims(Handle:timer)
 {
 	new client;
-	for(new boss=0; (client=GetClientOfUserId(FF2_GetBossUserId(boss)))>0; boss++)
+	for(new boss; (client=GetClientOfUserId(FF2_GetBossUserId(boss)))>0; boss++)
 	{
 		if(FF2_HasAbility(boss, this_plugin_name, "special_noanims"))
 		{
@@ -72,44 +79,23 @@ Rage_New_Weapon(boss, const String:ability_name[])
 		return;
 	}
 
-	decl String:classname[64];
-	decl String:attributes[64];
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 1, classname, 64);
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, attributes, 64);
+	decl String:classname[64], String:attributes[256];
+	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 1, classname, sizeof(classname));
+	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, attributes, sizeof(attributes));
+
 	new slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 4);
 	TF2_RemoveWeaponSlot(client, slot);
-	new weapon=SpawnWeapon(client, classname, FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2, 56), 100, 5, attributes);
+	new weapon=SpawnWeapon(client, classname, FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2), 101, 5, attributes);
 	if(FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 6))
 	{
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 	}
 
-	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 5);
-	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7);
+	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 5, 0);
+	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7, 0);
 	if(ammo || clip)
 	{
-		SetAmmo(client, weapon, ammo, clip);
-	}
-}
-
-stock SetAmmo(client, weapon, ammo, clip=0)
-{
-	if(IsValidEntity(weapon))
-	{
-		SetEntProp(weapon, Prop_Send, "m_iClip1", clip);
-		new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1);
-		if(offset!=-1)
-		{
-			SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
-		}
-		else if(ammo)  //Only complain if we're actually trying to set ammo
-		{
-			new String:classname[64];
-			GetEdictClassname(weapon, classname, sizeof(classname));
-			new String:bossName[32];
-			FF2_GetBossSpecial(FF2_GetBossIndex(client), bossName, sizeof(bossName));
-			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
-		}
+		FF2_SetAmmo(client, weapon, ammo, clip);
 	}
 }
 
@@ -134,7 +120,7 @@ stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute
 		for(new i=0; i<count; i+=2)
 		{
 			new attrib=StringToInt(attributes[i]);
-			if(attrib==0)
+			if(!attrib)
 			{
 				LogError("Bad weapon attribute passed: %s ; %s", attributes[i], attributes[i+1]);
 				return -1;
@@ -152,6 +138,7 @@ stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute
 	{
 		return -1;
 	}
+
 	new entity=TF2Items_GiveNamedItem(client, weapon);
 	CloseHandle(weapon);
 	EquipPlayerWeapon(client, entity);

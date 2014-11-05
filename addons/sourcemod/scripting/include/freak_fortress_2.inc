@@ -13,7 +13,9 @@
 #define FF2FLAG_USINGABILITY			(1<<9)		//Used to prevent Boss's hints about abilities buttons
 #define FF2FLAG_CLASSHELPED				(1<<10)
 #define FF2FLAG_HASONGIVED				(1<<11)
-#define FF2FLAG_CHANGECVAR				(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages
+#define FF2FLAG_CHANGECVAR				(1<<12)		//Used to prevent SMAC from kicking bosses who are using certain rages (NYI)
+#define FF2FLAG_ALLOW_HEALTH_PICKUPS	(1<<13)		//Used to prevent bosses from picking up health
+#define FF2FLAG_ALLOW_AMMO_PICKUPS		(1<<14)		//Used to prevent bosses from picking up ammo
 #define FF2FLAGS_SPAWN					~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_TALKING & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & ~FF2FLAG_CHANGECVAR & FF2FLAG_USEBOSSTIMER & FF2FLAG_USINGABILITY
 
 #if defined _FF2_included
@@ -28,6 +30,14 @@
  *			True if FF2 is enabled
  */
 native bool:FF2_IsFF2Enabled();
+
+/**
+ * Gets the version of FF2 running on the server
+ *
+ * @param version   An array of size 3 that will contain the major, minor, and stable version numbers respectively
+ * @return          True if the server is running a dev version of FF2, false otherwise
+ */
+native FF2_GetFF2Version(version[]=0);
 
 /**
  * Gets current round state
@@ -433,6 +443,40 @@ forward Action:FF2_OnLoadCharacterSet(&charSetNum, String:charSetName[]);
 forward Action:FF2_OnLoseLife(client, &lives, maxLives);
 
 /**
+ *
+ * Gives ammo to a weapon
+ *
+ * @param client	Client's index
+ * @param weapon	Weapon
+ * @param ammo		Ammo (set to 1 for clipless weapons, then set the actual ammo using clip)
+ * @param clip		Clip
+ * @noreturn
+ */
+stock FF2_SetAmmo(client, weapon, ammo=-1, clip=-1)
+{
+	if(IsValidEntity(weapon))
+	{
+		if(clip>-1)
+		{
+			SetEntProp(weapon, Prop_Data, "m_iClip1", clip);
+		}
+
+		new ammoType=(ammo>-1 ? GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType") : -1);
+		if(ammoType!=-1)
+		{
+			SetEntProp(client, Prop_Data, "m_iAmmo", ammo, _, ammoType);
+		}
+		else if(ammo>-1)  //Only complain if we're trying to set ammo
+		{
+			decl String:classname[64], String:bossName[32];
+			GetEdictClassname(weapon, classname, sizeof(classname));
+			FF2_GetBossSpecial(FF2_GetBossIndex(client), bossName, sizeof(bossName));
+			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
+		}
+	}
+}
+
+/**
  * Sends a synced HUD message according to FF2's rules
  * Will only send if the client hasn't disabled their HUD and isn't checking the scoreboard
  *
@@ -513,6 +557,7 @@ public SharedPlugin:__pl_FF2=
 public __pl_FF2_SetNTVOptional()
 {
 	MarkNativeAsOptional("FF2_IsFF2Enabled");
+	MarkNativeAsOptional("FF2_GetFF2Version");
 	MarkNativeAsOptional("FF2_GetBossUserId");
 	MarkNativeAsOptional("FF2_GetBossIndex");
 	MarkNativeAsOptional("FF2_GetBossTeam");

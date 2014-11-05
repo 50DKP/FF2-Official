@@ -11,7 +11,7 @@
 
 #define CBS_MAX_ARROWS 9
 
-#define PLUGIN_VERSION "1.10.0"
+#define PLUGIN_VERSION "1.10.3"
 
 public Plugin:myinfo=
 {
@@ -47,6 +47,13 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart2()
 {
+	new version[3];
+	FF2_GetFF2Version(version);
+	if(version[0]==1 && (version[1]<10 || (version[1]==10 && version[2]<3)))
+	{
+		SetFailState("This plugin depends on at least FF2 v1.10.3");
+	}
+
 	HookEvent("teamplay_round_start", event_round_start);
 	HookEvent("teamplay_round_win", event_round_end);
 	HookEvent("player_death", event_player_death);
@@ -280,7 +287,7 @@ Rage_Clone(const String:ability_name[], client)
 					SetEntProp(weapon, Prop_Send, "m_iWorldModelIndex", -1);
 				}
 
-				SetAmmo(clone, weapon, ammo, clip);
+				FF2_SetAmmo(clone, weapon, ammo, clip);
 			}
 		}
 
@@ -446,15 +453,15 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)
 	return Plugin_Continue;
 }
 
-Rage_Bow(client)
+Rage_Bow(boss)
 {
-	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
-	TF2_RemoveWeaponSlot(boss, TFWeaponSlot_Primary);
-	new weapon=SpawnWeapon(boss, "tf_weapon_compound_bow", 1005, 100, 5, "6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19");
-	SetEntPropEnt(boss, Prop_Send, "m_hActiveWeapon", weapon);
+	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
+	TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
+	new weapon=SpawnWeapon(client, "tf_weapon_compound_bow", 1005, 100, 5, "6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19");
+	SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 	new TFTeam:team=(FF2_GetBossTeam()==_:TFTeam_Blue ? TFTeam_Red:TFTeam_Blue);
 
-	new otherTeamAlivePlayers=0;
+	new otherTeamAlivePlayers;
 	for(new target=1; target<=MaxClients; target++)
 	{
 		if(IsClientInGame(target) && TFTeam:GetClientTeam(target)==team && IsPlayerAlive(target))
@@ -463,7 +470,7 @@ Rage_Bow(client)
 		}
 	}
 
-	SetAmmo(boss, weapon, ((otherTeamAlivePlayers>=CBS_MAX_ARROWS) ? CBS_MAX_ARROWS:otherTeamAlivePlayers));
+	FF2_SetAmmo(client, weapon, ((otherTeamAlivePlayers>=CBS_MAX_ARROWS) ? CBS_MAX_ARROWS : otherTeamAlivePlayers)-1, 1);  //Put one arrow in the clip
 }
 
 public Action:Timer_Prepare_Explosion_Rage(Handle:timer, Handle:data)
@@ -741,18 +748,18 @@ public Action:Timer_SlomoChange(Handle:timer, any:client)
 }
 */
 
-
 public Action:event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
-	{
-		return Plugin_Continue;
-	}
-
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new bossAttacker=FF2_GetBossIndex(attacker);
 	new bossClient=FF2_GetBossIndex(client);
+
+	if(!attacker || !client || attacker==client)
+	{
+		return Plugin_Continue;
+	}
+
 	if(bossAttacker!=-1)
 	{
 		if(FF2_HasAbility(bossAttacker, this_plugin_name, "special_dropprop"))
@@ -813,6 +820,11 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 
 	if(bossClient!=-1)
 	{
+		if(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
+		{
+			return Plugin_Continue;
+		}
+
 		if(FF2_HasAbility(bossClient, this_plugin_name, "rage_cloneattack"))
 		{
 			for(new target=1; target<=MaxClients; target++)
@@ -900,27 +912,6 @@ stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute
 	CloseHandle(weapon);
 	EquipPlayerWeapon(client, entity);
 	return entity;
-}
-
-stock SetAmmo(client, weapon, ammo, clip=0)
-{
-	if(IsValidEntity(weapon))
-	{
-		SetEntProp(weapon, Prop_Send, "m_iClip1", clip);
-		new offset=GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType", 1);
-		if(offset!=-1)
-		{
-			SetEntProp(client, Prop_Send, "m_iAmmo", ammo, 4, offset);
-		}
-		else if(ammo)
-		{
-			new String:classname[64];
-			GetEdictClassname(weapon, classname, sizeof(classname));
-			new String:bossName[32];
-			FF2_GetBossSpecial(FF2_GetBossIndex(client), bossName, sizeof(bossName));
-			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
-		}
-	}
 }
 
 public Action:Timer_RemoveEntity(Handle:timer, any:entid)

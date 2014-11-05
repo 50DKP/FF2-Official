@@ -1,0 +1,348 @@
+﻿"Phrases"
+{
+	"needmoreplayers"
+	{
+		"de"	"Freak Fortress 2 ist zurzeit deaktiviert. Mehr Spieler sind erforderich."
+	}
+	"type_ff2_to_open_menu"
+	{
+		"de"	"Gib {olive}/ff2{default} ein umd das Menü zu öffnen"
+	}
+	"nextmap_ff2"
+	{
+		"#format" "{1:s}"
+		"de"	"Der Spielmodus wird {olive}Freak Fortress 2{default} sein {olive}{1}{default}"
+	}
+	"wait_hp"
+	{
+		"#format" "{1:i},{2:s}"
+		"de"  "Du kannst das Bossleben leider nicht abrufen. Warte {1} Sekunde. Zuletzt bekanntes Leben war {2}"
+	}
+	"damage"
+	{
+		"#format" "{1:i}"
+		"de"	"Schaden der von dir verursacht wurde - {1}"
+	}
+	"point_enable"
+	{
+		"#format" "{1:i}"
+		"de"  "Nurnoch {1} Spieler übrig, der Kontrollpunkt wurde aktiviert!"
+	}
+	"top_3"
+	{
+		"de"	"Der meiste Schaden wurde von dir verursacht"
+	}
+	"uber-charge"
+	{
+		"de"	"Überladungsrate"
+	}
+	"Boss Lives Left"
+	{
+		"#format" "{1:i},{2:i}"
+		"de"	"{1} von {2} Leben übrig"
+	}
+	"do_rage"
+	{
+		"de"	"Rufe einen Medic (E) um dein \"RAGE\" zu aktivieren!"
+	}
+	"rage_meter"
+	{
+		"#format" "{1:i}"
+		"de"	"Rage ist zu {1} Prozent aufgeladen"
+	}
+	"super_duper_jump"
+	{
+		"de"	"Super Duper jump ist bereit!"
+	}
+	"teleport_status"
+	{
+		"#format" "{1:i}"
+		"de"	"Teleportation ist zu {1} Prozent aufgeladen. Wenn sie 100 Prozent erreicht duck dich, schau nach oben und steh auf."
+	}
+	"jump_status"
+	{
+		"#format" "{1:i}"
+		"de"	"Sprungaufladung beträgt {1} Prozent. Duck dich, schau nach oben und steh auf um zu springen"
+	}
+	"teleport_status_2"
+	{
+		"#format" "{1:i}"
+		"de"	"Teleportation ist in {1} Sekunden bereit."
+	}
+	"jump_status_2"
+	{
+		"#format" "{1:i}"
+		"de"	"Super Jump ist in {1} Sekunden bereit."
+	}
+	"help_scout"
+	{
+		"de"	"Die Crit-a-Cola gibt Krits statt Minicrits.\nDer Kriegsfächer raubt dem Hale 5% Rage pro Treffer.\nPistolen verursachen Minicrits.\nDie Zuckerstange dropped ein Healthpack pro Treffer."
+	}
+	"help_soldier"
+	{
+		"de"	"Der Battalion's Beistand füllt sich bei Treffern. Schaden an naheligenden Spielern ist stark reduziert.\nDer Halb-Zatoichi heilt 35 Leben pro Treffer, überheilt bis zu +25, und Aufladung wird pro Treffer entfernt.\nAlles Schuher reduzieren Fallschaden und erlauben höhere Racketensprünge.\nAlle Waffen verursachen Minicrits beim Boss in der Luft (beim Direktschlag Krits), und der Reserveschießer erlaubt einen schnelleren Waffenwechsel."
+	}
+	"help_pyro"
+	{
+		"de"	"Der Postprügler hat den selben Effekt wie die Feueraxt.\nDie Signalpistole wird durch den Detonierer ersetzt.\nAirblasting füllt das Rage und verlängert beim Vagineer die Überladung."
+	}
+	"help_demo"
+	{
+		"de"	"Jedes Schild blockt einen Treffer.\nBenutzen des Schildes garantiert Minicrits.\nEyelander und andere Skins geben Köpfe pro Treffer.\nDer Halb-Zatoichi heilt 35HP pro Treffer und überheilt bis +25. Aufladung wird pro Treffer entfernt."
+	}
+	"help_heavy"
+	{
+		"de"	"Die Natascha, die KilligGloves of Boxing , und die Stahlfäuste werden durch die\nMinigun, die Handschuhe der Schneller Flucht, und die Fäuste ersezt.\nDie Handschuhe der Schnellen Flucht sind sehr sehr schnell haben aber einen höheren Lebensverlust.\nDer Weihnachtsgruß entfernt jede Betäubung von dir when du den Boss triffst."
+	}
+	"help_eggineer"
+	{
+		"de"	"Jeder Map besitzt nur ein kleine Munitionspackete.\nDie Selbstjustiz verursacht nur Crits wenn deine Sentry den Boss anvisiert."
+	}
+	"help_medic"
+	{
+		"de"	"Aufladung: Kritzkrieg und Medigun. Überladung startet bei 40 Prozent.\nAufladung beinhaltet 150 Prozent nach der aktivierung.\nSpritzen-MG: pro Treffer: +5%% Überladung, schießt so schnell wie Überdosis.\nKreutzritters Armbrust: Immer Krits, +150%% Schaden, +10%% Überladung pro Treffer."
+	}
+	"help_sniper"
+	{
+		"de"	"Alle Waffen verursachen Krits.\nJarate entfernt 8%% Rage.\nRucksäcke werden durch das SMG ersetzt.\nDas Snipergewehr markiert den Boss. Markierungszeit hängt von der Aufladung ab.\nSchlage mit dem Buschwaka gegen eine Wand um an ihr hochzuklettern. Verursacht aber Eigenschaden."
+	}
+	"help_spie"
+	{
+		"de"	"Backstabs rauben dem Boss ca 10% von seinem Leben.\nStanduhr wird durch normale Uhr ersetzt.\nAlle Revolver verursachen Minicrits.\nDie Lezte Belohnung/Wanga Nadel verkleidet dich sofort.\nDer Kunai gibt dir zusätzliches Leben."
+	}
+	"help_melee"
+	{
+		"de"	"Alle Nahkampfwaffen (außer dem Spymesser) verursachen Krits.\nBenutze das /ff2 Menü um diese Benachrichtigung zu deaktivieren."
+	}
+	"thequeue"
+	{
+		"de"	"Boss Warteschlange"
+	}
+	"menu_1"
+	{
+		"de"	"Was gibt's neues?"
+	}
+	"menu_2"
+	{
+		"de"	"Wie viel Leben hat der Boss noch (/ff2hp)"
+	}
+	"menu_3"
+	{
+		"de"	"Hilfe in FF2 (/ff2help)."
+	}
+	"menu_4"
+	{
+		"de"	"Was ist neu? (/ff2new)."
+	}
+	"menu_5"
+	{
+		"de"	"Warteschlangenpunkte"
+	}
+	"menu_6"
+	{
+		"de"	"Schließen/Beenden"
+	}
+	"whatsnew"
+	{
+		"#format" "{1:s},{2:s}"
+		"de"	"Was is neu in v{1} im Gegensatz zu {2}"
+	}
+	"help_mode"
+	{
+		"de"	"===Freak Fortress 2===\nEin (oder mehrere) Spieler werden einer der Bosse.\nWährend der andere ihn besiegen muss."
+	}
+	"older"
+	{
+		"de"	"Ältere anzeigen"
+	}
+	"noolder"
+	{
+		"de"	"Keine ältere Version verfügbar"
+	}
+	"newer"
+	{
+		"de"	"Neuere anzeigen"
+	}
+	"nonewer"
+	{
+		"de"	"Keine neuere Version verfügbar"
+	}
+	"menu_7"
+	{
+		"de"	"Änderungen an meiner Klasse in FF2 (/ff2classinfo)"
+	}
+	"damage_fx"
+	{
+		"#format" "{1:i}"
+		"de"	"Du hast diese Runde {1} Schaden verursacht"
+	}
+	"scores"
+	{
+		"#format" "{1:i}"
+		"de"	"Du hast diese Runde {1} Punkte verdient"
+	}
+	"boss_win"
+	{
+		"de"	"Herzlichen Glückwunsch! Sie haben gewonnen!"
+	}
+	"boss_lose"
+	{
+		"de"	"Oh nein, sie haben verloren! Sei nicht traurig, es gibt noch ein ander mal"
+	}
+	"ff2_start"
+	{
+		"#format" "{1:N},{2:s},{3:i},{4:s}"
+		"de"	"{1} wird\n {2}\n mit {3}{4} Leben"
+	}
+	"ff2_hp"
+	{
+		"#format" "{1:s},{2:i},{3:i},{4:s}"
+		"de"	"{1} hat zurzeit {2} von {3}{4} Leben"
+	}
+	"ff2_alive"
+	{
+		"#format" "{1:s},{2:i},{3:i},{4:s}"
+		"de"	"Noch {1} übrig mit {2} von {3}{4} Leben."
+	}
+	"select_charset"
+	{
+		"de"	"Bitte wählen sie eine Bosskonfiguration für die nächste Map."
+	}
+	"your_points"
+	{
+		"#format" "{1:i}"
+		"de"	"Du hast {1} Warteschlangenpunkte."
+	}
+	"add_points"
+	{
+		"#format" "{1:i}"
+		"de"	"Du hast {1} Warteschlangenpunkte verdient."
+	}
+	"to0"
+	{
+		"de"	"auf 0 gesetzt"
+	}
+	"to0_title"
+	{
+		"de"	"Willst du wirklich deine Warteschlangenpunkte auf 0 zurücksetzten?"
+	}
+	"to0_title_admin"
+	{
+		"#format" "{1:N}"
+		"de"	"Willst du wirklich {1}'s Warteschlangenpunkte auf 0 setzen?"
+	}
+	"to0_done"
+	{
+		"de"	"Jetzt hast du {olive}0{default} Warteschlangenpunkte."
+	}
+	"to0_done_admin"
+	{
+		"#format" "{1:N}"
+		"de"	"Jetzt hat {olive}{1}{default} {olive}0{default} Warteschlangenpunkte"
+	}
+	"to0_done_by_admin"
+	{
+		"#format" "{1:N}"
+		"de"	"{olive}{1}{default} hat deíne Warteschlangenpunkte auf {olive}0{default} gesezt"
+	}
+	"to0_near"
+	{
+		"de"	"Du wirst bals der Boss sein. Gib {olive}/ff2next{default} ein um Sicherzugehen."
+	}
+	"first_round"
+	{
+		"de"	"Warte darauf das einige Spieler fertiggeladen haben. Der Spielmodus für diese Runde ist Arena"
+	}
+	"used_weighdown"  //Deprecated-translation removed in default_abilities.sp
+	{
+		"de"	"Du hast deinen Schwerkraftbonus benuzt!"
+	}
+	"ff2_music"
+	{
+		"#format" "{1:s}"
+		"de"	"Freak Fortress 2 Boss' Musik ist jetzt {1}"
+	}
+	"ff2_voice"
+	{
+		"#format" "{1:s}"
+		"de"	"FF2 monologues: {1}."
+	}
+	"ff2_voice2"
+	{
+		"de"	"Andere Msuik wir abgespielt, aber sehr leise."
+	}
+	"menu_8"
+	{
+		"de"	"Musikeinstellungen (/ff2msuic)"
+	}
+	"menu_9"
+	{
+		"de"	"Stimmeneinstellung (/ff2voice)"
+	}
+	"menu_9a"
+	{
+		"de"	"Einstellungen zur Ausgabe der Änderungen in FF2"
+	}
+	"ff2_classinfo"
+	{
+		"#format" "{1:s}"
+		"de"	"Informationen über die Veränderungen meiner Klasse in FF2: {1}"
+	}
+	"ff2_last_update"
+	{
+		"#format" "{1:s},{2:s}"
+		"de"	"Was ist neu in v{olive}{1}{default} ({olive}{2}{default})? Gib {olive}/ff2new{default} ein um es herauszufinden."
+	}
+	"charge_status"
+	{
+		"#format" "{1:i}"
+		"de"	"Aufladung bei {1} Prozent. Bei 100 Prozent lass die Taste los um diese zu aktivieren."
+	}
+	"nextmap_charset"
+	{
+		"#format" "{1:s},{2:s}"
+		"de"	"Die  Bosskonfiguration für {1} wird {2} sein."
+	}
+	"ff2_buttons_reload"
+	{
+		"de"	"Drückte den Nachladeknopf (R) um diese Fähigkeit zu aktivieren!"
+	}
+	"ff2_buttons_rmb"
+	{
+		"de"	"Drücke Rechte Maustaste um diese Fähigkeit zu nutzen!"
+	}
+	"ff2_lives_left"
+	{
+		"#format" "{1:s},{2:i}"
+		"de"	"{1} hat 1 Leben verloren! {2} verbleiben noch!"
+	}
+	"ff2_life_left"
+	{
+		"#format" "{1:s},{2:i}"
+		"de"	{1} hat 1 Leben verloren! Jetzt hat er noch 1!"
+	}
+	"Boss Suicide Denied"
+	{
+		"de"	"Es ist nicht erlaubt als Boss Selbstmord zu begehen!"
+	}
+	"Boss Suicide Pre-round"
+	{
+		"de"	"Es ist nicht erlaubt vorm Rundenbeginn Selbstmord zu begehen!"
+	}
+	"Backstab"
+	{
+		"de"	"Du hast den Boss gebackstabbed!"
+	}
+	"Backstabbed"
+	{
+		"de"	"Du wurdest grad gebackstabbed!"
+	}
+	"Market Gardener"
+	{
+		"de"	"Du hast den Boss grad gegärtnernt!"
+	}
+	"Market Gardened"
+	{
+		"de"	"Du wurdest gegärtnert!"
+	}
+}
