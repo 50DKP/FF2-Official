@@ -1096,7 +1096,7 @@ public OnLibraryRemoved(const String:name[])
 	#endif
 
 	#if defined _tf2attributes_included
-	else if(!strcmp(name, "tf2attributes", false))
+	if(!strcmp(name, "tf2attributes", false))
 	{
 		tf2attributes=false;
 	}
