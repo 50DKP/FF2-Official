@@ -12,6 +12,7 @@
 		"Notes"	"It is IMPERATIVE that you update HHH's config due to removed startup music"
 		"Notes"	"It is HIGHLY RECOMMENDED that you update configs for CBS, Demopan, Easter Bunny, and Gentlespy"
 		"Notes"	"It is SUGGESTED that you update configs for all other bosses"
+		"Notes"	"Install TF2Attributes to fix Mantreads not boosting rocket jump height"
 		"Notes"	"No more overhealed bosses"
 		"Notes"	"New developer flags, natives, and stocks added"
 		"Notes"	"See Github, the official thread, or the in-game changelog for the specifics"
