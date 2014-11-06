@@ -309,11 +309,11 @@ static const String:ff2versiondates[][]=
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.1
 	"August 28, 2014",	//1.10.2
-	"October 31, 2014",	//1.10.3
-	"October 31, 2014",	//1.10.3
-	"October 31, 2014",	//1.10.3
-	"October 31, 2014",	//1.10.3
-	"October 31, 2014"	//1.10.3
+	"November 6, 2014",	//1.10.3
+	"November 6, 2014",	//1.10.3
+	"November 6, 2014",	//1.10.3
+	"November 6, 2014",	//1.10.3
+	"November 6, 2014"	//1.10.3
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
