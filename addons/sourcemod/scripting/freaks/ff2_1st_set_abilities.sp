@@ -174,30 +174,29 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 	return Plugin_Continue;
 }
 
-Rage_Clone(const String:ability_name[], client)
+Rage_Clone(const String:ability_name[], boss)
 {
-	new boss=GetClientOfUserId(FF2_GetBossUserId(client));
 	new Handle:bossKV[8];
 	decl String:bossName[32];
-	new bool:changeModel=bool:FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 1);
-	new weaponMode=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 2);
+	new bool:changeModel=bool:FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 1);
+	new weaponMode=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2);
 	decl String:model[PLATFORM_MAX_PATH];
-	FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 3, model, sizeof(model));
-	new class=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 4);
-	new Float:ratio=FF2_GetAbilityArgumentFloat(client, this_plugin_name, ability_name, 5, 0.0);
+	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, model, sizeof(model));
+	new class=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 4);
+	new Float:ratio=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 5, 0.0);
 	new String:classname[64]="tf_weapon_bottle";
-	FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 6, classname, sizeof(classname));
-	new index=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 7, 191);
+	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 6, classname, sizeof(classname));
+	new index=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7, 191);
 	new String:attributes[64]="68 ; -1";
-	FF2_GetAbilityArgumentString(client, this_plugin_name, ability_name, 8, attributes, sizeof(attributes));
-	new ammo=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 9, 0);
-	new clip=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 10, 0);
-	new health=FF2_GetAbilityArgument(client, this_plugin_name, ability_name, 11, 0);
-	new Float:position[3];
-	new Float:velocity[3];
+	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 8, attributes, sizeof(attributes));
+	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 9, 0);
+	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 10, 0);
+	new health=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 11, 0);
 
-	GetEntPropVector(boss, Prop_Data, "m_vecOrigin", position);
-	FF2_GetBossSpecial(client, bossName, 32);
+	new Float:position[3], Float:velocity[3];
+	GetEntPropVector(GetClientOfUserId(FF2_GetBossUserId(boss)), Prop_Data, "m_vecOrigin", position);
+
+	FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
 
 	new maxKV;
 	for(maxKV=0; maxKV<8; maxKV++)
@@ -208,15 +207,14 @@ Rage_Clone(const String:ability_name[], client)
 		}
 	}
 
-	new alive=0;
-	new dead=0;
+	new alive, dead;
 	new Handle:players=CreateArray();
 	for(new target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target))
+		if(IsbossInGame(target))
 		{
 			new team=GetClientTeam(target);
-			if(team>_:TFTeam_Spectator && team!=BossTeam)
+			if(team==OtherTeam)
 			{
 				if(IsPlayerAlive(target))
 				{
@@ -231,7 +229,7 @@ Rage_Clone(const String:ability_name[], client)
 		}
 	}
 
-	new totalMinions=(ratio ? RoundToCeil(alive*ratio) : MaxClients);
+	new totalMinions=(ratio ? RoundToCeil(alive*ratio) : MaxClients);  //If ratio is 0, use MaxClients instead
 	new config=GetRandomInt(0, maxKV-1);
 	new clone, temp;
 	for(new i=1; i<=dead && i<=totalMinions; i++)
@@ -247,7 +245,7 @@ Rage_Clone(const String:ability_name[], client)
 		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM);
 		ChangeClientTeam(clone, BossTeam);
 		TF2_RespawnPlayer(clone);
-		CloneOwnerIndex[clone]=client;
+		CloneOwnerIndex[clone]=boss;
 		TF2_SetPlayerClass(clone, (class ? (TFClassType:class) : (TFClassType:KvGetNum(bossKV[config], "class", 0))));
 
 		if(changeModel)
@@ -802,15 +800,15 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 				{
 					case 0:
 					{
-						weapon=SpawnWeapon(attacker,"tf_weapon_club", 171, 101, 5, "68 ; 2 ; 2 ; 3.0");
+						weapon=SpawnWeapon(attacker, "tf_weapon_club", 171, 101, 5, "68 ; 2 ; 2 ; 3.0");
 					}
 					case 1:
 					{
-						weapon=SpawnWeapon(attacker,"tf_weapon_club", 193, 101, 5, "68 ; 2 ; 2 ; 3.0");
+						weapon=SpawnWeapon(attacker, "tf_weapon_club", 193, 101, 5, "68 ; 2 ; 2 ; 3.0");
 					}
 					case 2:
 					{
-						weapon=SpawnWeapon(attacker,"tf_weapon_club", 232, 101, 5, "68 ; 2 ; 2 ; 3.0");
+						weapon=SpawnWeapon(attacker, "tf_weapon_club", 232, 101, 5, "68 ; 2 ; 2 ; 3.0");
 					}
 				}
 				SetEntPropEnt(attacker, Prop_Data, "m_hActiveWeapon", weapon);
@@ -829,7 +827,7 @@ public Action:event_player_death(Handle:event, const String:name[], bool:dontBro
 		{
 			for(new target=1; target<=MaxClients; target++)
 			{
-				if(CloneOwnerIndex[target]==bossClient && IsValidEdict(target) && IsClientConnected(target) && IsPlayerAlive(target) && GetClientTeam(target)==BossTeam)
+				if(CloneOwnerIndex[target]==bossClient && IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)==BossTeam)
 				{
 					CreateTimer(0.5, Timer_RestoreLastClass, GetClientUserId(target));
 				}
