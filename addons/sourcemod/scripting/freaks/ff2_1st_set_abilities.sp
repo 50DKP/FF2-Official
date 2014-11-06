@@ -211,10 +211,10 @@ Rage_Clone(const String:ability_name[], boss)
 	new Handle:players=CreateArray();
 	for(new target=1; target<=MaxClients; target++)
 	{
-		if(IsbossInGame(target))
+		if(IsClientInGame(target))
 		{
-			new team=GetClientTeam(target);
-			if(team==OtherTeam)
+			new TFTeam:team=TFTeam:GetClientTeam(target);
+			if(team>TFTeam_Spectator && team!=TFTeam_Blue)
 			{
 				if(IsPlayerAlive(target))
 				{
