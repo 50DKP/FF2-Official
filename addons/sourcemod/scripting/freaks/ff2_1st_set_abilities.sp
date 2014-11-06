@@ -66,8 +66,9 @@ public OnPluginStart2()
 
 public OnMapStart()
 {
-	PrecacheSound("replay\\exitperformancemode.wav", true);
-	PrecacheSound("replay\\enterperformancemode.wav", true);
+	PrecacheSound("replay/enterperformancemode.wav", true);  //Used when Ninja Spy enters slow mo
+	PrecacheSound("replay/exitperformancemode.wav", true);  //Used when Ninja Spy exits slow mo
+	PrecacheSound("ui/notification_alert.wav", true);  //Used when Demopan rages
 }
 
 public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
@@ -189,8 +190,8 @@ Rage_Clone(const String:ability_name[], boss)
 	new index=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7, 191);
 	new String:attributes[64]="68 ; -1";
 	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 8, attributes, sizeof(attributes));
-	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 9, 0);
-	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 10, 0);
+	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 9, -1);
+	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 10, -1);
 	new health=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 11, 0);
 
 	new Float:position[3], Float:velocity[3];
@@ -278,6 +279,7 @@ Rage_Clone(const String:ability_name[], boss)
 				{
 					attributes="68 ; -1";
 				}
+
 				weapon=SpawnWeapon(clone, classname, index, 101, 0, attributes);
 				if(IsValidEdict(weapon))
 				{
@@ -428,7 +430,7 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)
 	{
 		decl String:overlay[128];
 		Format(overlay, 128, "r_screenoverlay \"freak_fortress_2/demopan/trade_%i\"", count);
-		EmitSoundToAll("ui\\notification_alert.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);
+		EmitSoundToAll("ui/notification_alert.wav", _, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, _, _, NULL_VECTOR, false, 0.0);
 		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 		for(new client=1; client<=MaxClients; client++)
 		{
