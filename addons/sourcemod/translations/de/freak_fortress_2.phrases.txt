@@ -318,8 +318,8 @@
 	}
 	"ff2_life_left"
 	{
-		"#format" "{1:s},{2:i}"
-		"de"	{1} hat 1 Leben verloren! Jetzt hat er noch 1!"
+		"#format" "{1:s}"
+		"de"	"{1} hat 1 Leben verloren! Jetzt hat er noch 1!"
 	}
 	"Boss Suicide Denied"
 	{
