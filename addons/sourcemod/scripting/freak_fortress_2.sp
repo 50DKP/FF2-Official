@@ -2174,7 +2174,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			if(PickCharacter(client, client-1))
 			{
 				KvRewind(BossKV[Special[client]]);
-				for(new tries; Boss[client]==Boss[client-1] && tries<100; tries++)
+				for(new tries; Boss[client]==Boss[client-1] && tries<100; tries++)  //TODO: What is the purpose of this?
 				{
 					Boss[client]=FindBosses(isBoss);
 				}
@@ -3047,7 +3047,6 @@ public Action:MessageTimer(Handle:timer)
 		Format(textChat, sizeof(textChat), "{olive}[FF2]{default} %t!", "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
 		ReplaceString(textChat, sizeof(textChat), "\n", "");  //Get rid of newlines
 		CPrintToChatAll("%s", textChat);
-
 	}
 
 	for(new client; client<=MaxClients; client++)
@@ -3645,7 +3644,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	return Plugin_Continue;
 }
 
-public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
+public Action:CheckItems(Handle:timer, any:client)
 {
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
@@ -3714,11 +3713,6 @@ public Action:CheckItems(Handle:timer, any:client)  //Weapon balance 2
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
 		{
-			case 231:  //Darwin's Danger Shield
-			{
-				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 0, "");
-			}
 			case 265:  //Stickybomb Jumper
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
