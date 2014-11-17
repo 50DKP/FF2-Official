@@ -35,10 +35,10 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "3"
-//#define DEV_REVISION "Beta"
+#define STABLE_REVISION "4"
+#define DEV_REVISION "Beta"
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.3
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.4
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
@@ -2170,6 +2170,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				break;
 			}
 			Boss[client]=companion;
+			Debug("Client is %i, Boss[client] and companion are %i", client, Boss[client]);
 
 			if(PickCharacter(client, client-1))
 			{
@@ -2177,6 +2178,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				for(new tries; Boss[client]==Boss[client-1] && tries<100; tries++)  //TODO: What is the purpose of this?
 				{
 					Boss[client]=FindBosses(isBoss);
+					Debug("Boss[client] is now %i (try %i)", Boss[client], tries);
 				}
 				isBoss[Boss[client]]=true;
 
@@ -3135,6 +3137,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	KvRewind(BossKV[Special[boss]]);
 	TF2_RemovePlayerDisguise(client);
 	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1));
+	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	if(GetClientTeam(client)!=BossTeam)
 	{
@@ -3631,6 +3634,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
+	SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	if(GetClientTeam(client)!=OtherTeam)
 	{
@@ -4250,7 +4254,6 @@ public OnClientPutInServer(client)
 	FF2flags[client]=0;
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
-	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 	Damage[client]=0;
 	uberTarget[client]=-1;
 	if(!AreClientCookiesCached(client))
