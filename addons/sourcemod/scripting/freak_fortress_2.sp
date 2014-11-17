@@ -171,6 +171,7 @@ new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
 new Handle:DrawGameTimer;
 new Handle:doorCheckTimer;
+new Handle:AlivePlayersTimer;
 
 new RoundCounter;
 new botqueuepoints;
@@ -2687,7 +2688,7 @@ public Action:StartBossTimer(Handle:timer)
 		}
 	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(0.2, CheckAlivePlayers);
+	AlivePlayersTimer=CreateTimer(0.2, CheckAlivePlayers);  //If we in fact don't need a timer for CAP, move to StartRound()
 	CreateTimer(0.2, StartRound);
 	CreateTimer(0.2, ClientTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(2.0, Timer_MusicPlay, 0, TIMER_FLAG_NO_MAPCHANGE);
@@ -4270,11 +4271,12 @@ public OnClientPutInServer(client)
 	LastClass[client]=TFClass_Unknown;
 }
 
-public OnClientDisconnect(client)
+public OnClientDisconnect_Post(client)
 {
-	if(Enabled && IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==1)
+	if(Enabled && CheckRoundState()==1)
 	{
-		CreateTimer(0.1, CheckAlivePlayers);
+		//CreateTimer(0.1, CheckAlivePlayers);
+		TriggerTimer(AlivePlayersTimer);
 	}
 }
 
@@ -4322,7 +4324,8 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(CheckRoundState()==1)
 	{
-		CreateTimer(0.1, CheckAlivePlayers);
+		//CreateTimer(0.1, CheckAlivePlayers);
+		TriggerTimer(AlivePlayersTimer);
 	}
 
 	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS);
@@ -5020,7 +5023,8 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid")), attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	decl String:sound[PLATFORM_MAX_PATH];
-	CreateTimer(0.1, CheckAlivePlayers);
+	//CreateTimer(0.1, CheckAlivePlayers);
+	TriggerTimer(AlivePlayersTimer);
 	DoOverlay(client, "");
 	if(!IsBoss(client))
 	{
@@ -5225,6 +5229,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			}
 		}
 	}
+	Debug("%i red players left, %i blue players left", RedAlivePlayers, BlueAlivePlayers);
 
 	if(!RedAlivePlayers)
 	{
