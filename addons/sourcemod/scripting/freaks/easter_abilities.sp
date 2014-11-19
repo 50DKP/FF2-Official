@@ -11,7 +11,7 @@
 #define OBJECTS			"spawn_many_objects_on_kill"
 #define OBJECTS_DEATH	"spawn_many_objects_on_death"
 
-#define PLUGIN_VERSION "1.10.3"
+#define PLUGIN_VERSION "1.10.4"
 
 public Plugin:myinfo=
 {
@@ -23,20 +23,15 @@ public Plugin:myinfo=
 
 public OnPluginStart2()
 {
-	HookEvent("player_death", event_player_death);
+	HookEvent("player_death", OnPlayerDeath);
 	PrecacheSound("items/pumpkin_pickup.wav");
 }
 
-public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
+public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(!FF2_IsFF2Enabled())
-	{
-		return;
-	}
-
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
-	if(!IsValidClient(client) || !IsValidClient(attacker))
+	if(!client || !attacker || !IsClientInGame(client) || !IsClientInGame(attacker))
 	{
 		return;
 	}
@@ -44,8 +39,7 @@ public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 	new boss=FF2_GetBossIndex(attacker);
 	if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, OBJECTS))
 	{
-		decl String:classname[PLATFORM_MAX_PATH];
-		decl String:model[PLATFORM_MAX_PATH];
+		decl String:classname[PLATFORM_MAX_PATH], String:model[PLATFORM_MAX_PATH];
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 1, classname, sizeof(classname));
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 2, model, sizeof(model));
 		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, 3);
@@ -58,8 +52,7 @@ public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 	boss=FF2_GetBossIndex(client);
 	if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
 	{
-		decl String:classname[PLATFORM_MAX_PATH];
-		decl String:model[PLATFORM_MAX_PATH];
+		decl String:classname[PLATFORM_MAX_PATH], String:model[PLATFORM_MAX_PATH];
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 1, classname, sizeof(classname));
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 2, model, sizeof(model));
 		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS_DEATH, 3);
@@ -72,7 +65,7 @@ public event_player_death(Handle:event, const String:name[], bool:dontBroadcast)
 
 public OnEntityCreated(entity, const String:classname[])
 {
-	if(FF2_IsFF2Enabled() && IsValidEdict(entity) && StrContains(classname, "tf_projectile")>=0)
+	if(IsValidEdict(entity) && StrContains(classname, "tf_projectile")>=0)
 	{
 		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
 	}
@@ -80,10 +73,10 @@ public OnEntityCreated(entity, const String:classname[])
 
 public OnProjectileSpawned(entity)
 {
-	new owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-	if(IsValidClient(owner))
+	new client=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+	if(client && IsClientInGame(client))
 	{
-		new boss=FF2_GetBossIndex(owner);
+		new boss=FF2_GetBossIndex(client);
 		if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, PROJECTILE))
 		{
 			decl String:projectile[PLATFORM_MAX_PATH];
@@ -103,16 +96,16 @@ public OnProjectileSpawned(entity)
 
 SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, Float:distance=30.0)
 {
-	if(!IsValidClient(client))
+	if(!client || !IsClientInGame(client))
 	{
 		return;
 	}
 
-	decl Float:position[3], Float:velocity[3];
+	new Float:position[3], Float:velocity[3];
 	new Float:angle[]={90.0, 0.0, 0.0};
 	GetClientAbsOrigin(client, position);
 	position[2]+=distance;
-	for(new i=0; i<amount; i++)
+	for(new i; i<amount; i++)
 	{
 		velocity[0]=GetRandomFloat(-400.0, 400.0);
 		velocity[1]=GetRandomFloat(-400.0, 400.0);
@@ -142,33 +135,6 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, 
 		new offs=GetEntSendPropOffs(entity, "m_vecInitialVelocity", true);
 		SetEntData(entity, offs-4, 1, _, true);
 	}
-}
-
-stock bool:IsValidClient(client, bool:replaycheck=true)
-{
-	if(client<=0 || client>MaxClients)
-	{
-		return false;
-	}
-
-	if(!IsClientInGame(client))
-	{
-		return false;
-	}
-
-	if(GetEntProp(client, Prop_Send, "m_bIsCoaching"))
-	{
-		return false;
-	}
-
-	if(replaycheck)
-	{
-		if(IsClientSourceTV(client) || IsClientReplay(client))
-		{
-			return false;
-		}
-	}
-	return true;
 }
 
 public Action:FF2_OnAbility2(index, const String:plugin_name[], const String:ability_name[], action)
