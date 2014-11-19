@@ -35,10 +35,10 @@ public OnPluginStart2()
 	FF2_GetFF2Version(version);
 	if(version[0]==1 && (version[1]<10 || (version[1]==10 && version[2]<3)))
 	{
-		SetFailState("This plugin depends on at least FF2 v1.10.3");
+		SetFailState("This subplugin depends on at least FF2 v1.10.3");
 	}
 
-	HookEvent("teamplay_round_start", event_round_start);
+	HookEvent("teamplay_round_start", OnRoundStart);
 }
 
 public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ability_name[], status)
@@ -50,7 +50,7 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 	return Plugin_Continue;
 }
 
-public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	CreateTimer(0.41, Timer_Disable_Anims);
 	CreateTimer(9.31, Timer_Disable_Anims);
@@ -74,7 +74,7 @@ public Action:Timer_Disable_Anims(Handle:timer)
 Rage_New_Weapon(boss, const String:ability_name[])
 {
 	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
-	if(client<0)
+	if(!client || !IsClientInGame(client) || !IsPlayerAlive(client))
 	{
 		return;
 	}
