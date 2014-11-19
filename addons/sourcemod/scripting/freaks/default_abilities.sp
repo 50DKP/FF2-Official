@@ -227,7 +227,8 @@ Rage_StunSentry(const String:ability_name[], boss)
 	new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 7.0);
 	new Float:distance=FF2_GetRageDist(boss, this_plugin_name, ability_name);
 
-	while((new sentry=FindEntityByClassname(sentry, "obj_sentrygun"))!=-1)
+	new sentry;
+	while((sentry=FindEntityByClassname(sentry, "obj_sentrygun"))!=-1)
 	{
 		GetEntPropVector(sentry, Prop_Send, "m_vecOrigin", sentryPosition);
 		if(GetVectorDistance(bossPosition, sentryPosition)<=distance)
@@ -430,7 +431,8 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 				SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime() + (enableSuperDuperJump ? 4.0:2.0));
 				if(GetEntProp(target, Prop_Send, "m_bDucked"))
 				{
-					SetEntPropVector(client, Prop_Send, "m_vecMaxs", {24.0, 24.0, 62.0});
+					new Float:temp[3]={24.0, 24.0, 62.0};  //Compiler won't accept directly putting it into SEPV -.-
+					SetEntPropVector(client, Prop_Send, "m_vecMaxs", temp);
 					SetEntProp(client, Prop_Send, "m_bDucked", 1);
 					SetEntityFlags(client, GetEntityFlags(boss)|FL_DUCKING);
 					CreateTimer(0.2, Timer_StunBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
@@ -563,7 +565,7 @@ public Action:Timer_DissolveRagdoll(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
 	new ragdoll=-1;
-	if(client && IsClientInGame(victim))
+	if(client && IsClientInGame(client))
 	{
 		ragdoll=GetEntPropEnt(client, Prop_Send, "m_hRagdoll");
 	}
