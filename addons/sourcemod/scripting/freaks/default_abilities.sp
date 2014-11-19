@@ -334,15 +334,15 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 			decl String:sound[PLATFORM_MAX_PATH];
 			if(FF2_RandomSound("sound_ability", sound, PLATFORM_MAX_PATH, boss, slot))
 			{
-				EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-				EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
+				EmitSoundToAll(sound, client, _, _, _, _, _, boss, position);
+				EmitSoundToAll(sound, client, _, _, _, _, _, boss, position);
 
 				for(new target=1; target<=MaxClients; target++)
 				{
 					if(IsClientInGame(target) && target!=boss)
 					{
-						EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-						EmitSoundToClient(target, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
+						EmitSoundToClient(target, sound, client, _, _, _, _, _, boss, position);
+						EmitSoundToClient(target, sound, client, _, _, _, _, _, boss, position);
 					}
 				}
 			}
@@ -453,15 +453,15 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 			decl String:sound[PLATFORM_MAX_PATH];
 			if(FF2_RandomSound("sound_ability", sound, PLATFORM_MAX_PATH, client, slot))
 			{
-				EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
-				EmitSoundToAll(sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 
 				for(new enemy=1; enemy<=MaxClients; enemy++)
 				{
 					if(IsClientInGame(enemy) && enemy!=boss)
 					{
-						EmitSoundToClient(enemy, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
-						EmitSoundToClient(enemy, sound, client, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, client, position, NULL_VECTOR, true, 0.0);
+						EmitSoundToClient(enemy, sound, client, _, _, _, _, _, client, position);
+						EmitSoundToClient(enemy, sound, client, _, _, _, _, _, client, position);
 					}
 				}
 			}
