@@ -2687,7 +2687,7 @@ public Action:StartBossTimer(Handle:timer)
 		}
 	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	//CreateTimer(0.2, CheckAlivePlayers);  //Moved to StartRound
+	CreateTimer(0.2, CheckAlivePlayers);
 	CreateTimer(0.2, StartRound);
 	CreateTimer(0.2, ClientTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(2.0, Timer_MusicPlay, 0, TIMER_FLAG_NO_MAPCHANGE);
@@ -2978,7 +2978,6 @@ public Action:Timer_Move(Handle:timer)
 public Action:StartRound(Handle:timer)
 {
 	CreateTimer(10.0, Timer_NextBossPanel);
-	CheckAlivePlayers();
 	UpdateHealthBar();
 	return Plugin_Handled;
 }
@@ -4271,12 +4270,11 @@ public OnClientPutInServer(client)
 	LastClass[client]=TFClass_Unknown;
 }
 
-public OnClientDisconnect_Post(client)
+public OnClientDisconnect(client)
 {
-	if(Enabled && CheckRoundState()==1)
+	if(Enabled && IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==1)
 	{
-		//CreateTimer(0.1, CheckAlivePlayers);
-		CheckAlivePlayers();
+		CreateTimer(0.1, CheckAlivePlayers);
 	}
 }
 
@@ -4324,8 +4322,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(CheckRoundState()==1)
 	{
-		//CreateTimer(0.1, CheckAlivePlayers);
-		CheckAlivePlayers();
+		CreateTimer(0.1, CheckAlivePlayers);
 	}
 
 	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS);
@@ -5023,8 +5020,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid")), attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	decl String:sound[PLATFORM_MAX_PATH];
-	//CreateTimer(0.1, CheckAlivePlayers);
-	CheckAlivePlayers();
+	CreateTimer(0.1, CheckAlivePlayers);
 	DoOverlay(client, "");
 	if(!IsBoss(client))
 	{
@@ -5206,13 +5202,11 @@ public Action:OnRocketJump(Handle:event, const String:name[], bool:dontBroadcast
 	isClientRocketJumping[GetClientOfUserId(GetEventInt(event, "userid"))]=StrEqual(name, "rocket_jump", false);
 }
 
-//public Action:CheckAlivePlayers(Handle:timer)
-stock CheckAlivePlayers()
+public Action:CheckAlivePlayers(Handle:timer)
 {
 	if(CheckRoundState()==2)
 	{
-		//return Plugin_Continue;
-		return;
+		return Plugin_Continue;
 	}
 
 	RedAlivePlayers=0;
@@ -5275,8 +5269,7 @@ stock CheckAlivePlayers()
 		}
 		executed2=true;
 	}
-	//return Plugin_Continue;
-	return;
+	return Plugin_Continue;
 }
 
 public Action:Timer_DrawGame(Handle:timer)
