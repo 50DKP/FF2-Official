@@ -74,17 +74,17 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	}
 
 	CreateTimer(0.3, Timer_GetBossTeam, _, TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(9.11, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);  //FIXME: Investigate.
+	CreateTimer(9.11, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);  //TODO: Investigate.
 	return Plugin_Continue;
 }
 
-public Action:StartBossTimer(Handle:timer)  //FIXME: What.
+public Action:StartBossTimer(Handle:timer)  //TODO: What.
 {
-	for(new client; FF2_GetBossUserId(client)!=-1; client++)
+	for(new boss; FF2_GetBossUserId(boss)!=-1; boss++)
 	{
-		if(FF2_HasAbility(client, this_plugin_name, "charge_teleport"))
+		if(FF2_HasAbility(boss, this_plugin_name, "charge_teleport"))
 		{
-			FF2_SetBossCharge(client, FF2_GetAbilityArgument(client, this_plugin_name, "charge_teleport", 0, 1), -1.0*FF2_GetAbilityArgumentFloat(client, this_plugin_name, "charge_teleport", 2, 5.0));
+			FF2_SetBossCharge(boss, FF2_GetAbilityArgument(boss, this_plugin_name, "charge_teleport", 0, 1), -1.0*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "charge_teleport", 2, 5.0));
 		}
 	}
 }
