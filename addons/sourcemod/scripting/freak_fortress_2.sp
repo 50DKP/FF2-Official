@@ -785,6 +785,7 @@ new Handle:OnSpecialSelected;
 new Handle:OnAddQueuePoints;
 new Handle:OnLoadCharacterSet;
 new Handle:OnLoseLife;
+new Handle:OnAlivePlayersChanged;
 
 new bool:bBlockVoice[MAXSPECIALS];
 new Float:BossSpeed[MAXSPECIALS];
@@ -837,8 +838,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_SetQueuePoints", Native_SetQueuePoints);
 	CreateNative("FF2_GetClientGlow", Native_GetClientGlow);
 	CreateNative("FF2_SetClientGlow", Native_SetClientGlow);
-	CreateNative("FF2_GetAlivePlayers", Native_GetAlivePlayers);
-	CreateNative("FF2_GetBossPlayers", Native_GetBossPlayers);
+	CreateNative("FF2_GetAlivePlayers", Native_GetAlivePlayers);  //TODO: Deprecated, remove in 2.0.0
+	CreateNative("FF2_GetBossPlayers", Native_GetBossPlayers);  //TODO: Deprecated, remove in 2.0.0
 	CreateNative("FF2_Debug", Native_Debug);
 
 	PreAbility=CreateGlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);
@@ -848,7 +849,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	OnSpecialSelected=CreateGlobalForward("FF2_OnSpecialSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String);
 	OnAddQueuePoints=CreateGlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
 	OnLoadCharacterSet=CreateGlobalForward("FF2_OnLoadCharacterSet", ET_Hook, Param_CellByRef, Param_String);
-	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell);  //Client, lives left, max lives
+	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell);  //Boss, lives left, max lives
+	OnAlivePlayersChanged=CreateGlobalForward("FF2_OnAlivePlayersChanged", ET_Hook, Param_Cell, Param_Cell);  //Players, bosses
 
 	RegPluginLibrary("freak_fortress_2");
 
@@ -5225,7 +5227,11 @@ public Action:CheckAlivePlayers(Handle:timer)
 			}
 		}
 	}
-	Debug("%i red players left, %i blue players left", RedAlivePlayers, BlueAlivePlayers);
+
+	Call_StartForward(OnAlivePlayersChanged);  //Let subplugins know that the number of alive players just changed
+	Call_PushCell(RedAlivePlayers);
+	Call_PushCell(BlueAlivePlayers);
+	Call_Finish();
 
 	if(!RedAlivePlayers)
 	{
