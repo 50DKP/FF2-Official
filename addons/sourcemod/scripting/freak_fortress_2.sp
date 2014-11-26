@@ -2145,9 +2145,9 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	BossLivesMax[0]=KvGetNum(BossKV[Special[0]], "lives", 1);
 	if(BossLivesMax[0]<=0)
 	{
-		decl String:name[64];
-		KvGetString(BossKV[Special[0]], "name", name, sizeof(name));
-		PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", name);
+		decl String:bossName[64];
+		KvGetString(BossKV[Special[0]], "name", bossName, sizeof(bossName));
+		PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", bossName);
 		BossLivesMax[0]=1;
 	}
 
@@ -2161,25 +2161,23 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		decl String:companionName[64];
 		KvRewind(BossKV[Special[0]]);
 		KvGetString(BossKV[Special[0]], "companion", companionName, sizeof(companionName));
-		if(StrEqual(companionName, ""))  //Boss doesn't have a companion.  TODO: Can this be strlen() instead?
+		if(companionName[0])  //Only continue if the boss has a companion.  TODO: Can this be strlen() instead?
 		{
-			break;
-		}
-
-		new companion=FindBosses(isBoss);
-		Boss[companion]=companion;  //Woo boss indexes!
-		if(PickCharacter(companion, 0))
-		{
-			BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
-			if(BossLivesMax[companion]<=0)
+			new companion=FindBosses(isBoss);
+			Boss[companion]=companion;  //Woo boss indexes!
+			if(PickCharacter(companion, 0))
 			{
-				PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
-				BossLivesMax[companion]=1;
-			}
+				BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
+				if(BossLivesMax[companion]<=0)
+				{
+					PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
+					BossLivesMax[companion]=1;
+				}
 
-			if(LastClass[Boss[companion]]==TFClass_Unknown)
-			{
-				LastClass[Boss[companion]]=TF2_GetPlayerClass(Boss[companion]);
+				if(LastClass[companion]==TFClass_Unknown)  //Boss[companion] and companion are equal in this case
+				{
+					LastClass[companion]=TF2_GetPlayerClass(companion);
+				}
 			}
 		}
 
