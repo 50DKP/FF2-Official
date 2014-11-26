@@ -2145,7 +2145,9 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	BossLivesMax[0]=KvGetNum(BossKV[Special[0]], "lives", 1);
 	if(BossLivesMax[0]<=0)
 	{
-		PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", Special[0]);
+		decl String:name[64];
+		KvGetString(BossKV[Special[0]], "name", name, sizeof(name));
+		PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", name);
 		BossLivesMax[0]=1;
 	}
 
@@ -2154,9 +2156,34 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		LastClass[Boss[0]]=TF2_GetPlayerClass(Boss[0]);
 	}
 
-	if(playing>2)
+	if(playing>=3)  //Need at least 3 players to have a companion boss (2 bosses, 1 player)
 	{
 		decl String:companionName[64];
+		KvRewind(BossKV[Special[0]]);
+		KvGetString(BossKV[Special[0]], "companion", companionName, sizeof(companionName));
+		if(StrEqual(companionName, ""))  //Boss doesn't have a companion.  TODO: Can this be strlen() instead?
+		{
+			break;
+		}
+
+		new companion=FindBosses(isBoss);
+		Boss[companion]=companion;  //Woo boss indexes!
+		if(PickCharacter(companion, 0))
+		{
+			BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
+			if(BossLivesMax[companion]<=0)
+			{
+				PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
+				BossLivesMax[companion]=1;
+			}
+
+			if(LastClass[Boss[companion]]==TFClass_Unknown)
+			{
+				LastClass[Boss[companion]]=TF2_GetPlayerClass(Boss[companion]);
+			}
+		}
+
+		/*decl String:companionName[64];
 		for(new client=1; client<=MaxClients; client++)
 		{
 			KvRewind(BossKV[Special[client-1]]);
@@ -2200,7 +2227,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			{
 				Boss[client]=0;
 			}
-		}
+		}*/
 	}
 	CreateTimer(0.2, Timer_GogoBoss, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(3.5, StartResponseTimer, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -6375,16 +6402,13 @@ stock FindBosses(bool:isBoss[])
 	new boss;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(SpecForceBoss)
+		if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
 		{
-			if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
+			if(SpecForceBoss)
 			{
 				boss=client;
 			}
-		}
-		else
-		{
-			if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
+			else if(GetClientTeam(client)>_:TFTeam_Spectator)
 			{
 				boss=client;
 			}
@@ -6830,7 +6854,7 @@ public bool:PickCharacter(client, companion)
 		KvRewind(BossKV[Special[companion]]);
 		KvGetString(BossKV[Special[companion]], "companion", companionName, sizeof(companionName), "=Failed companion name=");
 
-		while(character<Specials)
+		while(character<Specials)  //Loop through all the bosses to find the companion we're looking for
 		{
 			KvRewind(BossKV[character]);
 			KvGetString(BossKV[character], "name", bossName, sizeof(bossName), "=Failed name=");
@@ -6849,7 +6873,7 @@ public bool:PickCharacter(client, companion)
 			character++;
 		}
 
-		if(character==Specials)
+		if(character==Specials)  //Companion not found
 		{
 			return false;
 		}
