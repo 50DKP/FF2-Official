@@ -2161,12 +2161,15 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		decl String:companionName[64];
 		KvRewind(BossKV[Special[0]]);
 		KvGetString(BossKV[Special[0]], "companion", companionName, sizeof(companionName));
+		Debug("Companion name: %s, size using strlen: %i", companionName, strlen(companionName));
 		if(companionName[0])  //Only continue if the boss has a companion.  TODO: Can this be strlen() instead?
 		{
 			new companion=FindBosses(isBoss);
+			Debug("Companion client is %N (%i)", companion, companion);
 			Boss[companion]=companion;  //Woo boss indexes!
-			if(PickCharacter(companion, 0))
+			if(PickCharacter(companion, 0))  //TODO: This is pretty ugly
 			{
+				Debug("Boop");
 				BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
 				if(BossLivesMax[companion]<=0)
 				{
@@ -6851,6 +6854,7 @@ public bool:PickCharacter(client, companion)
 		new character;
 		KvRewind(BossKV[Special[companion]]);
 		KvGetString(BossKV[Special[companion]], "companion", companionName, sizeof(companionName), "=Failed companion name=");
+		Debug("Companion name: %s", companionName);
 
 		while(character<Specials)  //Loop through all the bosses to find the companion we're looking for
 		{
