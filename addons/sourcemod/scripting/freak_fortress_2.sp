@@ -7009,21 +7009,27 @@ public Action:QueuePanelCmd(client, args)
 	}
 
 	DrawPanelText(panel, "---");
-	new loops;
 	do
 	{
 		new target=FindBosses(added);  //Get whoever has the highest queue points out of those who haven't been listed yet
-		Format(text, sizeof(text), "%N-%i", target, GetClientQueuePoints(target));
-		DrawPanelText(panel, text);
-
-		if(client!=target)  //TODO: Somewhat confusing
+		if(!IsValidClient(client))
 		{
+			break;
+		}
+
+		Format(text, sizeof(text), "%N-%i", target, GetClientQueuePoints(target));
+		if(client!=target)
+		{
+			DrawPanelItem(panel, text);
 			items++;
 		}
+		else
+		{
+			DrawPanelText(panel, text);
+		}
 		added[target]=true;
-		loops++;
 	}
-	while(items<9 && loops<100);
+	while(items<9);
 
 	for(; items<9; items++)  //This allows us to get to the last line in order to print the calling client's queue points
 	{
