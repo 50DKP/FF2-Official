@@ -2161,11 +2161,11 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		decl String:companionName[64];
 		KvRewind(BossKV[Special[0]]);
 		KvGetString(BossKV[Special[0]], "companion", companionName, sizeof(companionName));
-		Debug("Companion name: %s, size using strlen: %i", companionName, strlen(companionName));
-		if(companionName[0])  //Only continue if the boss has a companion.  TODO: Can this be strlen() instead?
+		if(strlen(companionName))  //Only continue if the boss has a companion
 		{
+			Debug("Companion name: %s", companionName);
 			new companion=FindBosses(isBoss);
-			Debug("Companion client is %N (%i)", companion, companion);
+			Debug("Companion client is %N (index %i)", companion, companion);
 			Boss[companion]=companion;  //Woo boss indexes!
 			if(PickCharacter(companion, 0))  //TODO: This is pretty ugly
 			{
@@ -6403,7 +6403,7 @@ stock FindBosses(bool:isBoss[])
 	new boss;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
+		if(GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
 		{
 			if(SpecForceBoss)
 			{
@@ -6984,53 +6984,55 @@ public QueuePanelH(Handle:menu, MenuAction:action, client, selection)
 }
 
 
-public Action:QueuePanelCmd(client, Args)
+public Action:QueuePanelCmd(client, args)
 {
 	if(!Enabled2)
+	{
 		return Plugin_Continue;
+	}
+
 	new Handle:panel=CreatePanel();
 	SetGlobalTransTarget(client);
-	decl String:s[512];
-	Format(s,512,"%t","thequeue");
-	new i,tBoss,bool:added[MAXPLAYERS+1];
-	SetPanelTitle(panel, s);
-	for(new j; j<=MaxClients; j++)
-		if((tBoss=Boss[i]) && IsValidEdict(tBoss) && IsClientInGame(tBoss))
+	decl String:text[64];
+	Format(text, sizeof(text), "%t", "thequeue");  //"Boss Queue"
+	new items, bool:added[MaxClients+1];
+	SetPanelTitle(panel, text);
+	for(new boss; boss<=MaxClients; boss++)  //Add the current bosses to the top of the list
+	{
+		if(IsBoss(boss))
 		{
-			added[tBoss]=true;
-			Format(s,64,"%N-%i",tBoss,GetClientQueuePoints(tBoss));
-			DrawPanelItem(panel,s);
-			i++;
+			added[boss]=true;  //Don't want the bosses to show up again in the actual queue list
+			Format(text, sizeof(text), "%N-%i", boss, GetClientQueuePoints(boss));
+			DrawPanelItem(panel, text);
+			items++;
 		}
-	DrawPanelText(panel,"---");
-	new pingas;
+	}
+
+	DrawPanelText(panel, "---");
+	new loops;
 	do
 	{
-		tBoss=FindBosses(added);
-		if(tBoss && IsValidEdict(tBoss) && IsClientInGame(tBoss))
+		new target=FindBosses(added);  //Get whoever has the highest queue points out of those who haven't been listed yet
+		Format(text, sizeof(text), "%N-%i", target, GetClientQueuePoints(target));
+		DrawPanelText(panel, text);
+
+		if(client!=target)  //TODO: Somewhat confusing
 		{
-			if(client==tBoss)
-			{
-				Format(s,64,"%N-%i",tBoss,GetClientQueuePoints(tBoss));
-				DrawPanelText(panel,s);
-				i--;
-			}
-			else
-			{
-				Format(s,64,"%N-%i",tBoss,GetClientQueuePoints(tBoss));
-				DrawPanelItem(panel,s);
-			}
-			added[tBoss]=true;
-			i++;
+			items++;
 		}
-		pingas++;
+		added[target]=true;
+		loops++;
 	}
-	while(i<9 && pingas<100);
-	for(; i<9; i++)
-		DrawPanelItem(panel,"");
-	Format(s,64,"%t (%t)","your_points",GetClientQueuePoints(client),"to0");
-	DrawPanelItem(panel,s);
-	SendPanelToClient(panel, client, QueuePanelH, 9001);
+	while(items<9 && loops<100);
+
+	for(; items<9; items++)  //This allows us to get to the last line in order to print the calling client's queue points
+	{
+		DrawPanelItem(panel, "");
+	}
+
+	Format(text, sizeof(text), "%t (%t)", "your_points", GetClientQueuePoints(client), "to0");  //"Your queue point(s) is {1}.", "set to 0"
+	DrawPanelItem(panel, text);
+	SendPanelToClient(panel, client, QueuePanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Handled;
 }
