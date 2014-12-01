@@ -7014,9 +7014,10 @@ public Action:QueuePanelCmd(client, args)
 	do
 	{
 		new target=FindBosses(added);  //Get whoever has the highest queue points out of those who haven't been listed yet
-		if(!IsValidClient(target))  //Only happens when there's no more players left on the server, so exit the loop when this happens
+		if(!IsValidClient(target))  //When there's no players left, fill up the rest of the list with blank lines
 		{
-			break;
+			DrawPanelItem(panel, "");
+			continue;
 		}
 
 		Format(text, sizeof(text), "%N-%i", target, GetClientQueuePoints(target));
@@ -7033,13 +7034,9 @@ public Action:QueuePanelCmd(client, args)
 	}
 	while(items<9);
 
-	for(; items<9; items++)  //This allows us to get to the last line in order to print the calling client's queue points
-	{
-		DrawPanelItem(panel, "");
-	}
-
 	Format(text, sizeof(text), "%t (%t)", "your_points", GetClientQueuePoints(client), "to0");  //"Your queue point(s) is {1} (set to 0)"
 	DrawPanelItem(panel, text);
+
 	SendPanelToClient(panel, client, QueuePanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Handled;
