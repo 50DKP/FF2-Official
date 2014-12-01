@@ -6403,7 +6403,7 @@ stock FindBosses(bool:isBoss[])
 	new boss;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
+		if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
 		{
 			if(SpecForceBoss)
 			{
