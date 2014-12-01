@@ -7012,7 +7012,7 @@ public Action:QueuePanelCmd(client, args)
 	do
 	{
 		new target=FindBosses(added);  //Get whoever has the highest queue points out of those who haven't been listed yet
-		if(!IsValidClient(client))
+		if(!IsValidClient(target))  //Only happens when there's no more players left on the server, so exit the loop when this happens
 		{
 			break;
 		}
