@@ -6991,11 +6991,13 @@ public Action:QueuePanelCmd(client, args)
 		return Plugin_Continue;
 	}
 
+	decl String:text[64];
+	new items;
+	new bool:added[MaxClients+1];
+
 	new Handle:panel=CreatePanel();
 	SetGlobalTransTarget(client);
-	decl String:text[64];
 	Format(text, sizeof(text), "%t", "thequeue");  //"Boss Queue"
-	new items, bool:added[MaxClients+1];
 	SetPanelTitle(panel, text);
 	for(new boss; boss<=MaxClients; boss++)  //Add the current bosses to the top of the list
 	{
@@ -7025,7 +7027,7 @@ public Action:QueuePanelCmd(client, args)
 		}
 		else
 		{
-			DrawPanelText(panel, text);
+			DrawPanelText(panel, text);  //DrawPanelText() is white, which allows the client's points to stand out
 		}
 		added[target]=true;
 	}
@@ -7036,7 +7038,7 @@ public Action:QueuePanelCmd(client, args)
 		DrawPanelItem(panel, "");
 	}
 
-	Format(text, sizeof(text), "%t (%t)", "your_points", GetClientQueuePoints(client), "to0");  //"Your queue point(s) is {1}.", "set to 0"
+	Format(text, sizeof(text), "%t (%t)", "your_points", GetClientQueuePoints(client), "to0");  //"Your queue point(s) is {1} (set to 0)"
 	DrawPanelItem(panel, text);
 	SendPanelToClient(panel, client, QueuePanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
