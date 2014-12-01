@@ -445,7 +445,7 @@ forward Action:FF2_OnLoadCharacterSet(&charSetNum, String:charSetName[]);
 forward Action:FF2_OnLoseLife(boss, &lives, maxLives);
 
 /**
- * Called when the number of alive players changes
+ * Called when the number of alive players changes.  Note that this will never be 0 as FF2 does not re-calculate the number of players once the round ends.
  *
  * @param players	Number of alive players left on the non-boss team
  * @param bosses	Number of alive players left on the boss team
