@@ -2085,7 +2085,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	CheckArena();
 
 	new bool:isBoss[MAXPLAYERS+1];
-	Boss[0]=FindBosses(isBoss);
+	Boss[0]=FindBosses();
 	isBoss[Boss[0]]=true;
 
 	new bool:teamHasPlayers[2];
@@ -3014,20 +3014,23 @@ public Action:StartRound(Handle:timer)
 
 public Action:Timer_NextBossPanel(Handle:timer)
 {
-	new i, clients, chosen[MaxClients+1];
-	do
+	new clients;
+	new bool:added[MaxClients+1];
+	while(clients<3)  //TODO: Make this configurable?
 	{
-		new bool:temp[MaxClients+1];
-		new client=FindBosses(temp);
-		if(IsValidClient(client) && chosen[client]!=client && !IsBoss(client))
+		new client=FindBosses(added);
+		if(!IsValidClient(client))  //No more players left on the server
 		{
-			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_near");
-			chosen[client]=client;
-			i++;
+			break;
 		}
-		clients++;
+
+		if(!IsBoss(client))
+		{
+			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_near");  //"You will become the Boss soon. Type {olive}/ff2next{default} to make sure."
+			clients++;
+		}
+		added[client]=true;
 	}
-	while(i<3 && clients<=MaxClients);  //TODO: Make this configurable?
 }
 
 public Action:MessageTimer(Handle:timer)
@@ -6398,12 +6401,12 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 	return Plugin_Continue;
 }
 
-stock FindBosses(bool:isBoss[])
+stock FindBosses(bool:omit[]=false)
 {
 	new boss;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !isBoss[client])
+		if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !omit[client])
 		{
 			if(SpecForceBoss)
 			{
