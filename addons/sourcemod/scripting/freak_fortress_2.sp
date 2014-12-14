@@ -87,7 +87,6 @@ new Damage[MAXPLAYERS+1];
 new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
-new isClientRocketJumping[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
 
 new FF2flags[MAXPLAYERS+1];
@@ -2020,7 +2019,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	{
 		Damage[client]=0;
 		uberTarget[client]=-1;
-		isClientRocketJumping[client]=false;
 		emitRageSound[client]=true;
 		if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator)
 		{
@@ -2084,9 +2082,9 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	EnableSubPlugins();
 	CheckArena();
 
-	new bool:isBoss[MAXPLAYERS+1];
-	Boss[0]=FindBosses();
-	isBoss[Boss[0]]=true;
+	new bool:omit[MaxClients+1];
+	Boss[0]=GetClientWithMostQueuePoints();
+	omit[Boss[0]]=true;
 
 	new bool:teamHasPlayers[2];
 	for(new client=1; client<=MaxClients; client++)
@@ -2156,80 +2154,8 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		LastClass[Boss[0]]=TF2_GetPlayerClass(Boss[0]);
 	}
 
-	if(playing>=3)  //Need at least 3 players to have a companion boss (2 bosses, 1 player)
-	{
-		decl String:companionName[64];
-		KvRewind(BossKV[Special[0]]);
-		KvGetString(BossKV[Special[0]], "companion", companionName, sizeof(companionName));
-		if(strlen(companionName))  //Only continue if the boss has a companion
-		{
-			Debug("Companion name: %s", companionName);
-			new companion=FindBosses(isBoss);
-			Debug("Companion client is %N (index %i)", companion, companion);
-			Boss[companion]=companion;  //Woo boss indexes!
-			if(PickCharacter(companion, 0))  //TODO: This is pretty ugly
-			{
-				Debug("Boop");
-				BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
-				if(BossLivesMax[companion]<=0)
-				{
-					PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
-					BossLivesMax[companion]=1;
-				}
+	FindCompanion(0, playing, omit);  //Find companions for the boss!
 
-				if(LastClass[companion]==TFClass_Unknown)  //Boss[companion] and companion are equal in this case
-				{
-					LastClass[companion]=TF2_GetPlayerClass(companion);
-				}
-			}
-		}
-
-		/*decl String:companionName[64];
-		for(new client=1; client<=MaxClients; client++)
-		{
-			KvRewind(BossKV[Special[client-1]]);
-			KvGetString(BossKV[Special[client-1]], "companion", companionName, sizeof(companionName));
-			if(StrEqual(companionName, ""))
-			{
-				break;
-			}
-
-			new companion=FindBosses(isBoss);
-			if(!IsValidClient(companion))
-			{
-				break;
-			}
-			Boss[client]=companion;
-			Debug("Client is %i, Boss[client] and companion are %i", client, Boss[client]);
-
-			if(PickCharacter(client, client-1))
-			{
-				KvRewind(BossKV[Special[client]]);
-				for(new tries; Boss[client]==Boss[client-1] && tries<100; tries++)  //TODO: What is the purpose of this?
-				{
-					Boss[client]=FindBosses(isBoss);
-					Debug("Boss[client] is now %i (try %i)", Boss[client], tries);
-				}
-				isBoss[Boss[client]]=true;
-
-				BossLivesMax[client]=KvGetNum(BossKV[Special[client]], "lives", 1);
-				if(BossLivesMax[client]<=0)
-				{
-					PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", Special[client]);
-					BossLivesMax[client]=1;
-				}
-
-				if(LastClass[Boss[client]]==TFClass_Unknown)
-				{
-					LastClass[Boss[client]]=TF2_GetPlayerClass(Boss[client]);
-				}
-			}
-			else
-			{
-				Boss[client]=0;
-			}
-		}*/
-	}
 	CreateTimer(0.2, Timer_GogoBoss, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(3.5, StartResponseTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(9.1, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -3018,7 +2944,7 @@ public Action:Timer_NextBossPanel(Handle:timer)
 	new bool:added[MaxClients+1];
 	while(clients<3)  //TODO: Make this configurable?
 	{
-		new client=FindBosses(added);
+		new client=GetClientWithMostQueuePoints(added);
 		if(!IsValidClient(client))  //No more players left on the server
 		{
 			break;
@@ -4358,7 +4284,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 		CreateTimer(0.1, CheckAlivePlayers);
 	}
 
-	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS);
+	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
 	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
 }
@@ -5232,7 +5158,8 @@ public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadca
 
 public Action:OnRocketJump(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	isClientRocketJumping[GetClientOfUserId(GetEventInt(event, "userid"))]=StrEqual(name, "rocket_jump", false);
+	FF2flags[GetClientOfUserId(GetEventInt(event, "userid"))]|=FF2FLAG_ROCKET_JUMPING;
+	return Plugin_Continue;
 }
 
 public Action:CheckAlivePlayers(Handle:timer)
@@ -5882,7 +5809,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 416:  //Market Gardener (courtesy of Chdata)
 					{
-						if(isClientRocketJumping[attacker])
+						if(FF2flags[attacker]|FF2FLAG_ROCKET_JUMPING)
 						{
 							damage=(Pow(float(BossHealthMax[boss]), (0.74074))+512.0-(Marketed[Boss[boss]]/128*float(BossHealthMax[boss])))/3.0;
 							damagetype|=DMG_CRIT;
@@ -6401,24 +6328,21 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 	return Plugin_Continue;
 }
 
-stock FindBosses(bool:omit[]=false)
+stock GetClientWithMostQueuePoints(bool:omit[]=false)
 {
-	new boss;
+	new winner;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(boss) && !omit[client])
+		if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(winner) && !omit[client])
 		{
-			if(SpecForceBoss)
+			if(SpecForceBoss || GetClientTeam(client)>_:TFTeam_Spectator)
 			{
-				boss=client;
-			}
-			else if(GetClientTeam(client)>_:TFTeam_Spectator)
-			{
-				boss=client;
+				Debug("%N (index %i) %i >= %N (index %i) %i", client, client, GetClientQueuePoints(client), winner, winner, GetClientQueuePoints(winner));
+				winner=client;
 			}
 		}
 	}
-	return boss;
+	return winner;
 }
 
 stock LastBossIndex()
@@ -6857,7 +6781,6 @@ public bool:PickCharacter(client, companion)
 		new character;
 		KvRewind(BossKV[Special[companion]]);
 		KvGetString(BossKV[Special[companion]], "companion", companionName, sizeof(companionName), "=Failed companion name=");
-		Debug("Companion name: %s", companionName);
 
 		while(character<Specials)  //Loop through all the bosses to find the companion we're looking for
 		{
@@ -6917,6 +6840,39 @@ public bool:PickCharacter(client, companion)
 	}
 	PrecacheCharacter(Special[client]);
 	return true;
+}
+
+FindCompanion(boss, players, bool:omit[])
+{
+	static playersNeeded=3;
+	Debug("Players needed: %i", playersNeeded);
+	decl String:companionName[64];
+	KvRewind(BossKV[Special[boss]]);
+	KvGetString(BossKV[Special[boss]], "companion", companionName, sizeof(companionName));
+	if(playersNeeded<players && strlen(companionName))  //Only continue if we have enough players and if the boss has a companion
+	{
+		new companion=GetClientWithMostQueuePoints(omit);
+		Boss[companion]=companion;  //Woo boss indexes!
+		omit[companion]=true;
+		if(PickCharacter(companion, boss))  //TODO: This is a bit misleading
+		{
+			BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
+			if(BossLivesMax[companion]<=0)
+			{
+				PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
+				BossLivesMax[companion]=1;
+			}
+
+			if(LastClass[companion]==TFClass_Unknown)
+			{
+				LastClass[companion]=TF2_GetPlayerClass(companion);
+			}
+
+			playersNeeded++;
+			FindCompanion(companion, players, omit);  //Make sure this companion doesn't have a companion of their own
+		}
+	}
+	playersNeeded=0;
 }
 
 stock SpawnWeapon(client, String:name[], index, level, qual, String:att[])
@@ -7016,7 +6972,7 @@ public Action:QueuePanelCmd(client, args)
 	DrawPanelText(panel, "---");
 	do
 	{
-		new target=FindBosses(added);  //Get whoever has the highest queue points out of those who haven't been listed yet
+		new target=GetClientWithMostQueuePoints(added);  //Get whoever has the highest queue points out of those who haven't been listed yet
 		if(!IsValidClient(target))  //When there's no players left, fill up the rest of the list with blank lines
 		{
 			DrawPanelItem(panel, "");
