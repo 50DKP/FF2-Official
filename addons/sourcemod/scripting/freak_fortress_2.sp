@@ -6872,7 +6872,7 @@ FindCompanion(boss, players, bool:omit[])
 			FindCompanion(companion, players, omit);  //Make sure this companion doesn't have a companion of their own
 		}
 	}
-	playersNeeded=0;
+	playersNeeded=3;  //Reset the amount of players needed back to 3 after we're done
 }
 
 stock SpawnWeapon(client, String:name[], index, level, qual, String:att[])
