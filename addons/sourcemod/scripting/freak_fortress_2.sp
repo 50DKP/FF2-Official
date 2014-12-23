@@ -2083,7 +2083,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	CheckArena();
 
 	new bool:omit[MaxClients+1];
-	Boss[0]=GetClientWithMostQueuePoints();
+	Boss[0]=GetClientWithMostQueuePoints(omit);
 	omit[Boss[0]]=true;
 
 	new bool:teamHasPlayers[2];
@@ -6328,7 +6328,7 @@ public Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &boo
 	return Plugin_Continue;
 }
 
-stock GetClientWithMostQueuePoints(bool:omit[]=false)
+stock GetClientWithMostQueuePoints(bool:omit[])
 {
 	new winner;
 	for(new client=1; client<=MaxClients; client++)
@@ -6976,6 +6976,7 @@ public Action:QueuePanelCmd(client, args)
 		if(!IsValidClient(target))  //When there's no players left, fill up the rest of the list with blank lines
 		{
 			DrawPanelItem(panel, "");
+			items++;
 			continue;
 		}
 
