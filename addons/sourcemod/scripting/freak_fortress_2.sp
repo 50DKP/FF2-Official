@@ -116,7 +116,7 @@ new Handle:cvarEnabled;
 new Handle:cvarAliveToEnable;
 new Handle:cvarPointType;
 new Handle:cvarCrits;
-new Handle:cvarFirstRound;
+new Handle:cvarArenaRounds;
 new Handle:cvarCircuitStun;
 new Handle:cvarSpecForceBoss;
 new Handle:cvarCountdownPlayers;
@@ -876,7 +876,7 @@ public OnPluginStart()
 	cvarAnnounce=CreateConVar("ff2_announce", "120", "Amount of seconds to wait until FF2 info is displayed again.  0 to disable", FCVAR_PLUGIN, true, 0.0);
 	cvarEnabled=CreateConVar("ff2_enabled", "1", "0-Disable FF2 (WHY?), 1-Enable FF2", FCVAR_PLUGIN|FCVAR_DONTRECORD, true, 0.0, true, 1.0);
 	cvarCrits=CreateConVar("ff2_crits", "1", "Can Boss get crits?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarFirstRound=CreateConVar("ff2_first_round", "0", "0-Make the first round arena so that more people can join, 1-Make all rounds FF2", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarArenaRounds=CreateConVar("ff2_first_round", "0", "Number of rounds to make arena before switching to FF2 (helps for slow-loading players)", FCVAR_PLUGIN, true, 0.0);
 	cvarCircuitStun=CreateConVar("ff2_circuit_stun", "2", "Amount of seconds the Short Circuit stuns the boss for.  0 to disable", FCVAR_PLUGIN, true, 0.0);
 	cvarCountdownPlayers=CreateConVar("ff2_countdown_players", "1", "Amount of players until the countdown timer starts (0 to disable)", FCVAR_PLUGIN, true, 0.0);
 	cvarCountdownTime=CreateConVar("ff2_countdown", "120", "Amount of seconds until the round ends in a stalemate", FCVAR_PLUGIN);
@@ -2034,9 +2034,9 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		SetControlPoint(true);
 		return Plugin_Continue;
 	}
-	else if(!RoundCount && !GetConVarBool(cvarFirstRound))
+	else if(RoundCount<GetConVarInt(cvarArenaRounds))
 	{
-		CPrintToChatAll("{olive}[FF2]{default} %t", "first_round");
+		CPrintToChatAll("{olive}[FF2]{default} %t", "arena_round", GetConVarInt(cvarArenaRounds)-RoundCount);
 		Enabled=false;
 		DisableSubPlugins();
 		SetArenaCapEnableTime(60.0);
@@ -4914,7 +4914,7 @@ public Action:OnChangeClass(client, const String:command[], args)
 
 public Action:OnJoinTeam(client, const String:command[], args)
 {
-	if(!Enabled || !args || (!RoundCount && !GetConVarBool(cvarFirstRound)))
+	if(!Enabled || !args || RoundCount<GetConVarInt(cvarArenaRounds))
 	{
 		return Plugin_Continue;
 	}

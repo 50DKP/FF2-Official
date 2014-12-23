@@ -249,9 +249,10 @@
 	{
 		"en"	"You will become the Boss soon. Type {olive}/ff2next{default} to make sure."
 	}
-	"first_round"
+	"arena_round"
 	{
-		"en"	"Waiting for players to finish loading. Gamemode will be arena for this round"  //Waiting for players to load and playing common arena for the first round
+		"#format"	"{1:i}"
+		"en"		"Waiting for players to finish loading.  FF2 will start in {1} more rounds"
 	}
 	"used_weighdown"  //Deprecated-translation removed in default_abilities.sp
 	{
