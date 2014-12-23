@@ -5158,7 +5158,17 @@ public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadca
 
 public Action:OnRocketJump(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	FF2flags[GetClientOfUserId(GetEventInt(event, "userid"))]|=FF2FLAG_ROCKET_JUMPING;
+	if(Enabled)
+	{
+		if(StrEqual(name, "rocket_jump", false))
+		{
+			FF2flags[GetClientOfUserId(GetEventInt(event, "userid"))]|=FF2FLAG_ROCKET_JUMPING;
+		}
+		else
+		{
+			FF2flags[GetClientOfUserId(GetEventInt(event, "userid"))]&=~FF2FLAG_ROCKET_JUMPING;
+		}
+	}
 	return Plugin_Continue;
 }
 
@@ -5809,7 +5819,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 416:  //Market Gardener (courtesy of Chdata)
 					{
-						if(FF2flags[attacker]|FF2FLAG_ROCKET_JUMPING)
+						if(FF2flags[attacker] & FF2FLAG_ROCKET_JUMPING)
 						{
 							damage=(Pow(float(BossHealthMax[boss]), (0.74074))+512.0-(Marketed[Boss[boss]]/128*float(BossHealthMax[boss])))/3.0;
 							damagetype|=DMG_CRIT;
@@ -5819,13 +5829,11 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 								Marketed[Boss[boss]]++;
 							}
 
-							PrintHintText(attacker, "%t", "Market Gardener");
-							PrintHintText(client, "%t", "Market Gardened");
+							PrintHintText(attacker, "%t", "Market Gardener");  //You just market-gardened the boss!
+							PrintHintText(client, "%t", "Market Gardened");  //You just got market-gardened!
 
-							EmitSoundToClient(client, "player/doubledonk.wav", _, _, _, _, 0.6, _, _, position, _, false);
 							EmitSoundToClient(attacker, "player/doubledonk.wav", _, _, _, _, 0.6, _, _, position, _, false);
-
-							return Plugin_Changed;
+							EmitSoundToClient(client, "player/doubledonk.wav", _, _, _, _, 0.6, _, _, position, _, false);
 						}
 					}
 					case 525, 595:  //Diamondback, Manmelter
