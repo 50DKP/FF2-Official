@@ -1,7 +1,6 @@
-##Welcome to the official FF2 repository!
-**LATEST VERSION**: [1.10.2](https://forums.alliedmods.net/showthread.php?p=2054933#post2054933)
+##Welcome to the official FF2 repository! [![Build Status](https://travis-ci.org/50DKP/FF2-Official.svg)](https://travis-ci.org/50DKP/FF2-Official) [![Issue Stats](http://issuestats.com/github/50DKP/FF2-Official/badge/pr?style=flat)](http://issuestats.com/github/50DKP/FF2-Official) [![Issue Stats](http://issuestats.com/github/50DKP/FF2-Official/badge/issue?style=flat)](http://issuestats.com/github/50DKP/FF2-Official)
 
-[![Build Status](https://travis-ci.org/50DKP/FF2-Official.svg)](https://travis-ci.org/50DKP/FF2-Official) [![Issue Stats](http://issuestats.com/github/50DKP/FF2-Official/badge/pr?style=flat)](http://issuestats.com/github/50DKP/FF2-Official) [![Issue Stats](http://issuestats.com/github/50DKP/FF2-Official/badge/issue?style=flat)](http://issuestats.com/github/50DKP/FF2-Official)
+Download the latest version from the [Releases](https://github.com/50DKP/FF2-Official/releases) page or check out the [forums](https://forums.alliedmods.net/forumdisplay.php?f=154) to learn more.  Brought to you by [50DKP](http://www.50dkp.com).
 
 ###Include File Changes
 ***
