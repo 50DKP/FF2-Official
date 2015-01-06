@@ -128,7 +128,7 @@
 	}
 	"menu_3"
 	{
-		"en"	"Help about FF2 (/ff2help)."
+		"en"	"Help about FF2 (/ff2help)."  //ff2help doesn't exist in the code, so...
 	}
 	"menu_4"
 	{

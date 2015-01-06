@@ -945,8 +945,8 @@ public OnPluginStart()
 	RegConsoleCmd("ff2hp", Command_GetHPCmd);
 	RegConsoleCmd("ff2_next", QueuePanelCmd);
 	RegConsoleCmd("ff2next", QueuePanelCmd);
-	RegConsoleCmd("ff2_classinfo", HelpPanel2Cmd);
-	RegConsoleCmd("ff2classinfo", HelpPanel2Cmd);
+	RegConsoleCmd("ff2_classinfo", Command_HelpPanelClass);
+	RegConsoleCmd("ff2classinfo", Command_HelpPanelClass);
 	RegConsoleCmd("ff2_new", NewPanelCmd);
 	RegConsoleCmd("ff2new", NewPanelCmd);
 	RegConsoleCmd("ff2music", MusicTogglePanelCmd);
@@ -961,8 +961,8 @@ public OnPluginStart()
 	RegConsoleCmd("halehp", Command_GetHPCmd);
 	RegConsoleCmd("hale_next", QueuePanelCmd);
 	RegConsoleCmd("halenext", QueuePanelCmd);
-	RegConsoleCmd("hale_classinfo", HelpPanel2Cmd);
-	RegConsoleCmd("haleclassinfo", HelpPanel2Cmd);
+	RegConsoleCmd("hale_classinfo", Command_HelpPanelClass);
+	RegConsoleCmd("haleclassinfo", Command_HelpPanelClass);
 	RegConsoleCmd("hale_new", NewPanelCmd);
 	RegConsoleCmd("halenew", NewPanelCmd);
 	RegConsoleCmd("halemusic", MusicTogglePanelCmd);
@@ -3589,7 +3589,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 
 	if(!IsVoteInProgress() && GetClientClassinfoCookie(client) && !(FF2flags[client] & FF2FLAG_CLASSHELPED))
 	{
-		HelpPanel2(client);
+		HelpPanelClass(client);
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
@@ -7182,7 +7182,7 @@ public FF2PanelH(Handle:menu, MenuAction:action, client, selection)
 			}
 			case 2:
 			{
-				HelpPanel2(client);
+				HelpPanelClass(client);
 			}
 			case 3:
 			{
@@ -7219,25 +7219,25 @@ public Action:FF2Panel(client, args)  //._.
 		new Handle:panel=CreatePanel();
 		decl String:text[256];
 		SetGlobalTransTarget(client);
-		Format(text, sizeof(text), "%t", "menu_1");
+		Format(text, sizeof(text), "%t", "menu_1");  //What's up?
 		SetPanelTitle(panel, text);
-		Format(text, sizeof(text), "%t", "menu_2");
+		Format(text, sizeof(text), "%t", "menu_2");  //Investigate the boss's current health level (/ff2hp)
 		DrawPanelItem(panel, text);
-		Format(text, sizeof(text), "%t", "menu_3");
+		//Format(text, sizeof(text), "%t", "menu_3");  //Help about FF2 (/ff2help).
+		//DrawPanelItem(panel, text);
+		Format(text, sizeof(text), "%t", "menu_7");  //Changes to my class in FF2 (/ff2classinfo)
 		DrawPanelItem(panel, text);
-		Format(text, sizeof(text), "%t", "menu_7");
+		Format(text, sizeof(text), "%t", "menu_4");  //What's new? (/ff2new).
 		DrawPanelItem(panel, text);
-		Format(text, sizeof(text), "%t", "menu_4");
+		Format(text, sizeof(text), "%t", "menu_5");  //Queue points
 		DrawPanelItem(panel, text);
-		Format(text, sizeof(text), "%t", "menu_5");
+		Format(text, sizeof(text), "%t", "menu_8");  //Toggle music (/ff2music)
 		DrawPanelItem(panel, text);
-		Format(text, sizeof(text), "%t", "menu_8");
+		Format(text, sizeof(text), "%t", "menu_9");  //Toggle monologues (/ff2voice)
 		DrawPanelItem(panel, text);
-		Format(text, sizeof(text), "%t", "menu_9");
+		Format(text, sizeof(text), "%t", "menu_9a");  //Toggle info about changes of classes in FF2
 		DrawPanelItem(panel, text);
-		Format(text, sizeof(text), "%t", "menu_9a");
-		DrawPanelItem(panel, text);
-		Format(text, sizeof(text), "%t", "menu_6");
+		Format(text, sizeof(text), "%t", "menu_6");  //Exit
 		DrawPanelItem(panel, text);
 		SendPanelToClient(panel, client, FF2PanelH, MENU_TIME_FOREVER);
 		CloseHandle(panel);
@@ -7372,58 +7372,86 @@ public ClassinfoTogglePanelH(Handle:menu, MenuAction:action, param1, param2)
 	}
 }
 
-public Action:HelpPanel2Cmd(client, args)
+public Action:Command_HelpPanelClass(client, args)
 {
 	if(!IsValidClient(client))
 	{
 		return Plugin_Continue;
 	}
 
-	HelpPanel2(client);
+	HelpPanelClass(client);
 	return Plugin_Handled;
 }
 
-public Action:HelpPanel2(client)
+public Action:HelpPanelClass(client)
 {
 	if(!Enabled)
-		return Plugin_Continue;
-	new index=GetBossIndex(client);
-	if(index!=-1)
 	{
-		HelpPanelBoss(index);
 		return Plugin_Continue;
 	}
-	decl String:s[512];
+
+	new boss=GetBossIndex(client);
+	if(boss!=-1)
+	{
+		HelpPanelBoss(boss);
+		return Plugin_Continue;
+	}
+
+	decl String:text[512];
 	new TFClassType:class=TF2_GetPlayerClass(client);
 	SetGlobalTransTarget(client);
 	switch(class)
 	{
 		case TFClass_Scout:
-			Format(s,512,"%t","help_scout");
+		{
+			Format(text, sizeof(text), "%t", "help_scout");
+		}
 		case TFClass_Soldier:
-			Format(s,512,"%t","help_soldier");
+		{
+			Format(text, sizeof(text), "%t", "help_soldier");
+		}
 		case TFClass_Pyro:
-			Format(s,512,"%t","help_pyro");
+		{
+			Format(text, sizeof(text), "%t", "help_pyro");
+		}
 		case TFClass_DemoMan:
-			Format(s,512,"%t","help_demo");
+		{
+			Format(text, sizeof(text), "%t", "help_demo");
+		}
 		case TFClass_Heavy:
-			Format(s,512,"%t","help_heavy");
+		{
+			Format(text, sizeof(text), "%t", "help_heavy");
+		}
 		case TFClass_Engineer:
-			Format(s,512,"%t","help_eggineer");
+		{
+			Format(text, sizeof(text), "%t", "help_eggineer");
+		}
 		case TFClass_Medic:
-			Format(s,512,"%t","help_medic");
+		{
+			Format(text, sizeof(text), "%t", "help_medic");
+		}
 		case TFClass_Sniper:
-			Format(s,512,"%t","help_sniper");
+		{
+			Format(text, sizeof(text), "%t", "help_sniper");
+		}
 		case TFClass_Spy:
-			Format(s,512,"%t","help_spie");
+		{
+			Format(text, sizeof(text), "%t", "help_spie");
+		}
 		default:
-			Format(s, 512, "");
+		{
+			Format(text, sizeof(text), "");
+		}
 	}
-	new Handle:panel=CreatePanel();
+
 	if(class!=TFClass_Sniper)
-		Format(s,512,"%t\n%s","help_melee",s);
-	SetPanelTitle(panel,s);
-	DrawPanelItem(panel,"Exit");
+	{
+		Format(text, sizeof(text), "%t\n%s", "help_melee", text);
+	}
+
+	new Handle:panel=CreatePanel();
+	SetPanelTitle(panel, text);
+	DrawPanelItem(panel, "Exit");
 	SendPanelToClient(panel, client, HintPanelH, 20);
 	CloseHandle(panel);
 	return Plugin_Continue;

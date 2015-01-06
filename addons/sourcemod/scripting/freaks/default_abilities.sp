@@ -434,7 +434,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 					new Float:temp[3]={24.0, 24.0, 62.0};  //Compiler won't accept directly putting it into SEPV -.-
 					SetEntPropVector(client, Prop_Send, "m_vecMaxs", temp);
 					SetEntProp(client, Prop_Send, "m_bDucked", 1);
-					SetEntityFlags(client, GetEntityFlags(boss)|FL_DUCKING);
+					SetEntityFlags(client, GetEntityFlags(client)|FL_DUCKING);
 					CreateTimer(0.2, Timer_StunBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
 				}
 				else
