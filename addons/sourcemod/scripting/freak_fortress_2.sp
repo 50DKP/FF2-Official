@@ -804,6 +804,15 @@ public Plugin:myinfo=
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
+	decl String:plugin[PLATFORM_MAX_PATH];
+	GetPluginFilename(myself, plugin, sizeof(plugin));
+	Debug("FF2's own filename is: %s", plugin);
+	if(StrContains(plugin, "freaks/"))  //Prevent plugins/freaks/freak_fortress_2.ff2 from loading if it exists -.-
+	{
+		strcopy(error, err_max, "There is a duplicate copy of Freak Fortress 2 inside the /plugins/freaks folder.  Please remove it.");
+		return APLRes_Failure;
+	}
+
 	CreateNative("FF2_IsFF2Enabled", Native_IsEnabled);
 	CreateNative("FF2_GetFF2Version", Native_FF2Version);
 	CreateNative("FF2_GetBossUserId", Native_GetBoss);
@@ -4337,7 +4346,7 @@ public Action:ClientTimer(Handle:timer)
 
 			if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 			{
-				if(GetClientCloakIndex(client)==59)
+				if(GetClientCloakIndex(client)==59)  //Dead Ringer
 				{
 					if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 					{
