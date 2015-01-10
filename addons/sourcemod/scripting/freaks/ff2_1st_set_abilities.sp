@@ -959,7 +959,7 @@ stock AttachParticle(entity, String:particleType[], Float:offset=0.0, bool:attac
 
 stock UpdateClientCheatValue(client, value)
 {
-	if(IsClientInGame(client) && IsPlayerAlive(client) && !IsFakeClient(client))
+	if(client && client<=MaxClients && IsClientInGame(client) && IsPlayerAlive(client) && !IsFakeClient(client))
 	{
 		decl String:cheatValue[2];
 		IntToString(value, cheatValue, sizeof(cheatValue));

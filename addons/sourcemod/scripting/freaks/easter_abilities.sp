@@ -74,7 +74,7 @@ public OnEntityCreated(entity, const String:classname[])
 public OnProjectileSpawned(entity)
 {
 	new client=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-	if(client && IsClientInGame(client))
+	if(client && client<=MaxClients && IsClientInGame(client))
 	{
 		new boss=FF2_GetBossIndex(client);
 		if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, PROJECTILE))
