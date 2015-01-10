@@ -2413,7 +2413,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			KvGetString(BossKV[Special[client]], "name", bossName, 64, "=Failed name=");
 			if(BossLives[client]>1)
 			{
-				Format(lives, 4, "x%client", BossLives[client]);
+				Format(lives, 4, "x%s", BossLives[client]);
 			}
 			else
 			{
@@ -2422,6 +2422,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			Format(sound, PLATFORM_MAX_PATH, "%s\n%t", sound, "ff2_alive", bossName, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client], lives);
 		}
 
+		strcopy(sound, 2, "");
 		if(RandomSound("sound_fail", sound, PLATFORM_MAX_PATH, boss))
 		{
 			EmitSoundToAll(sound);
@@ -5223,7 +5224,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			EmitSoundToAll(sound);
 		}
 	}
-	else if(!PointType && RedAlivePlayers<=(AliveToEnable=GetConVarInt(cvarAliveToEnable)) && !executed)
+	else if(!PointType && RedAlivePlayers<=AliveToEnable && !executed)
 	{
 		PrintHintTextToAll("%t", "point_enable", AliveToEnable);
 		if(RedAlivePlayers==AliveToEnable)
