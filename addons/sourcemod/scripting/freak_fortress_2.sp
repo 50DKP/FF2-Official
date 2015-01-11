@@ -1714,7 +1714,7 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	}
 	else if(convar==cvarFirstRound)  //DEPRECATED
 	{
-		if(StringtoInt(newValue)!=-1)
+		if(StringToInt(newValue)!=-1)
 		{
 			arenaRounds=StringToInt(newValue) ? 0 : 1;
 		}
