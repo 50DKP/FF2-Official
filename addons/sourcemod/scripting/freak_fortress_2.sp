@@ -116,6 +116,7 @@ new Handle:cvarEnabled;
 new Handle:cvarAliveToEnable;
 new Handle:cvarPointType;
 new Handle:cvarCrits;
+new Handle:cvarFirstRound;  //DEPRECATED
 new Handle:cvarArenaRounds;
 new Handle:cvarCircuitStun;
 new Handle:cvarSpecForceBoss;
@@ -153,6 +154,7 @@ new Float:Announce=120.0;
 new AliveToEnable=5;
 new PointType;
 new bool:BossCrits=true;
+new arenaRounds;
 new Float:circuitStun;
 new countdownPlayers=1;
 new countdownTime=120;
@@ -807,7 +809,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	decl String:plugin[PLATFORM_MAX_PATH];
 	GetPluginFilename(myself, plugin, sizeof(plugin));
 	PrintToServer("FF2's own filename is: %s", plugin);
-	if(StrContains(plugin, "freaks/"))  //Prevent plugins/freaks/freak_fortress_2.ff2 from loading if it exists -.-
+	if(!StrContains(plugin, "freaks/"))  //Prevent plugins/freaks/freak_fortress_2.ff2 from loading if it exists -.-
 	{
 		strcopy(error, err_max, "There is a duplicate copy of Freak Fortress 2 inside the /plugins/freaks folder.  Please remove it.");
 		return APLRes_Failure;
@@ -885,7 +887,8 @@ public OnPluginStart()
 	cvarAnnounce=CreateConVar("ff2_announce", "120", "Amount of seconds to wait until FF2 info is displayed again.  0 to disable", FCVAR_PLUGIN, true, 0.0);
 	cvarEnabled=CreateConVar("ff2_enabled", "1", "0-Disable FF2 (WHY?), 1-Enable FF2", FCVAR_PLUGIN|FCVAR_DONTRECORD, true, 0.0, true, 1.0);
 	cvarCrits=CreateConVar("ff2_crits", "1", "Can Boss get crits?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarArenaRounds=CreateConVar("ff2_first_round", "0", "Number of rounds to make arena before switching to FF2 (helps for slow-loading players)", FCVAR_PLUGIN, true, 0.0);
+	cvarFirstRound=CreateConVar("ff2_first_round", "-1", "This cvar is deprecated.  Please use 'ff2_arena_rounds' instead by setting this cvar to -1", FCVAR_PLUGIN, true, -1.0, true, 1.0);  //DEPRECATED
+	cvarArenaRounds=CreateConVar("ff2_arena_rounds", "1", "Number of rounds to make arena before switching to FF2 (helps for slow-loading players)", FCVAR_PLUGIN, true, 0.0);
 	cvarCircuitStun=CreateConVar("ff2_circuit_stun", "2", "Amount of seconds the Short Circuit stuns the boss for.  0 to disable", FCVAR_PLUGIN, true, 0.0);
 	cvarCountdownPlayers=CreateConVar("ff2_countdown_players", "1", "Amount of players until the countdown timer starts (0 to disable)", FCVAR_PLUGIN, true, 0.0);
 	cvarCountdownTime=CreateConVar("ff2_countdown", "120", "Amount of seconds until the round ends in a stalemate", FCVAR_PLUGIN);
@@ -1236,6 +1239,14 @@ public EnableFF2()
 	canBossRTD=GetConVarBool(cvarBossRTD);
 	AliveToEnable=GetConVarInt(cvarAliveToEnable);
 	BossCrits=GetConVarBool(cvarCrits);
+	if(GetConVarInt(cvarFirstRound)!=-1)
+	{
+		arenaRounds=GetConVarInt(cvarFirstRound) ? 0 : 1;
+	}
+	else
+	{
+		arenaRounds=GetConVarInt(cvarArenaRounds);
+	}
 	circuitStun=GetConVarFloat(cvarCircuitStun);
 	countdownHealth=GetConVarInt(cvarCountdownHealth);
 	countdownPlayers=GetConVarInt(cvarCountdownPlayers);
@@ -1701,6 +1712,17 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		BossCrits=bool:StringToInt(newValue);
 	}
+	else if(convar==cvarFirstRound)  //DEPRECATED
+	{
+		if(StringtoInt(newValue)!=-1)
+		{
+			arenaRounds=StringToInt(newValue) ? 0 : 1;
+		}
+	}
+	else if(convar==cvarArenaRounds)
+	{
+		arenaRounds=StringToInt(newValue);
+	}
 	else if(convar==cvarCircuitStun)
 	{
 		circuitStun=StringToFloat(newValue);
@@ -2043,9 +2065,9 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		SetControlPoint(true);
 		return Plugin_Continue;
 	}
-	else if(RoundCount<GetConVarInt(cvarArenaRounds))
+	else if(RoundCount<arenaRounds)
 	{
-		CPrintToChatAll("{olive}[FF2]{default} %t", "arena_round", GetConVarInt(cvarArenaRounds)-RoundCount);
+		CPrintToChatAll("{olive}[FF2]{default} %t", "arena_round", arenaRounds-RoundCount);
 		Enabled=false;
 		DisableSubPlugins();
 		SetArenaCapEnableTime(60.0);
@@ -4924,7 +4946,7 @@ public Action:OnChangeClass(client, const String:command[], args)
 
 public Action:OnJoinTeam(client, const String:command[], args)
 {
-	if(!Enabled || !args || RoundCount<GetConVarInt(cvarArenaRounds))
+	if(!Enabled || !args || RoundCount<arenaRounds)
 	{
 		return Plugin_Continue;
 	}
