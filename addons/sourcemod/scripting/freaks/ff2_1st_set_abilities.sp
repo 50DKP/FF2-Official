@@ -481,7 +481,7 @@ Rage_Bow(boss)
 public Action:Timer_Prepare_Explosion_Rage(Handle:timer, Handle:data)
 {
 	new boss=ReadPackCell(data);
-	new client=GetClientOfUserId(FF2_GetBossUserId(client));
+	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 
 	decl String:ability_name[64];
 	ReadPackString(data, ability_name, sizeof(ability_name));
@@ -634,7 +634,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Floa
 		ScaleVector(velocity, 2012.0);
 		TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, velocity);
 		new target=TR_GetEntityIndex(trace);
-		if(target>0 && target<=MaxClients)
+		if(target && target<=MaxClients)
 		{
 			new Handle:data;
 			CreateDataTimer(0.15, Timer_Rage_SlowMo_Attack, data);
@@ -659,7 +659,7 @@ public Action:Timer_Rage_SlowMo_Attack(Handle:timer, Handle:data)
 		if(GetVectorDistance(clientPosition, targetPosition)<=1500 && target!=oldTarget)
 		{
 			SetEntProp(client, Prop_Send, "m_bDucked", 1);
-			SetEntityFlags(FF2_GetBossIndex(client), GetEntityFlags(FF2_GetBossIndex(client))|FL_DUCKING);
+			SetEntityFlags(client, GetEntityFlags(client)|FL_DUCKING);
 			SDKHooks_TakeDamage(target, client, client, 900.0);
 			TeleportEntity(client, targetPosition, NULL_VECTOR, NULL_VECTOR);
 			oldTarget=target;
