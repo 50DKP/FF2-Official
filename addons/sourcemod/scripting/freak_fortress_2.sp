@@ -106,7 +106,6 @@ new Float:GlowTimer[MAXPLAYERS+1];
 new TFClassType:LastClass[MAXPLAYERS+1];
 new shortname[MAXPLAYERS+1];
 new bool:emitRageSound[MAXPLAYERS+1];
-new bool:manageSpeed[MAXPLAYERS+1];
 
 new timeleft;
 
@@ -2436,7 +2435,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			KvGetString(BossKV[Special[client]], "name", bossName, 64, "=Failed name=");
 			if(BossLives[client]>1)
 			{
-				Format(lives, 4, "x%i", BossLives[client]);
+				Format(lives, 4, "x%s", BossLives[client]);
 			}
 			else
 			{
@@ -3129,10 +3128,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	KvRewind(BossKV[Special[boss]]);
 	TF2_RemovePlayerDisguise(client);
 	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1));
-	if(KvGetNum(BossKV[Special[boss]], "disable_health_override", 0))
-	{
-		SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
-	}
+	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	if(GetClientTeam(client)!=BossTeam)
 	{
@@ -3168,12 +3164,6 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		{
 			FF2flags[client]|=FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS;
 		}
-	}
-
-	//TODO: Deprecate these two once #164 is implemented (formulas)
-	if(KvGetNum(BossKV[Special[boss]], "disable_speed_override", 0))
-	{
-		manageSpeed[boss]=false;
 	}
 
 	CreateTimer(0.2, MakeModelTimer, boss);
@@ -3635,10 +3625,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
-	if(KvGetNum(BossKV[Special[Boss[client]]], "disable_health_override", 0))
-	{
-		SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
-	}
+	SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	if(GetClientTeam(client)!=OtherTeam)
 	{
@@ -4005,12 +3992,13 @@ public Action:Timer_ResetUberCharge(Handle:timer, any:medigunid)
 
 public Action:Command_GetHPCmd(client, args)
 {
-	if(Enabled && IsValidClient(client) && CheckRoundState()==1)
+	if(!IsValidClient(client) || !Enabled || CheckRoundState()!=1)
 	{
-		Command_GetHP(client);
-		return Plugin_Handled;
+		return Plugin_Continue;
 	}
-	return Plugin_Continue;
+
+	Command_GetHP(client);
+	return Plugin_Handled;
 }
 
 public Action:Command_GetHP(client)  //TODO: This can rarely show a very large negative number if you time it right
@@ -4019,11 +4007,10 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 	{
 		new String:health[512];
 		decl String:lives[4], String:name[64];
-		for(new target; IsBoss(target); target++)
+		for(new boss; Boss[boss]; boss++)
 		{
-			new boss=GetBossIndex(target);
 			KvRewind(BossKV[Special[boss]]);
-			KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
+			KvGetString(BossKV[Special[boss]], "name", name, 64, "=Failed name=");
 			if(BossLives[boss]>1)
 			{
 				Format(lives, sizeof(lives), "x%i", BossLives[boss]);
@@ -4057,9 +4044,9 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 	if(RedAlivePlayers>1)
 	{
 		new String:waitTime[128];
-		for(new target; IsBoss(target); target++)
+		for(new boss; Boss[boss]; boss++)
 		{
-			Format(waitTime, 128, "%s %i,", waitTime, BossHealthLast[Boss[target]]);
+			Format(waitTime, 128, "%s %i,", waitTime, BossHealthLast[boss]);
 		}
 		CPrintToChat(client, "{olive}[FF2]{default} %t", "wait_hp", RoundFloat(HPTime-GetGameTime()), waitTime);
 	}
@@ -4625,12 +4612,9 @@ public Action:BossTimer(Handle:timer)
 		}
 		validBoss=true;
 
-		if(manageSpeed[Boss[client]])
-		{
-			SetEntPropFloat(Boss[client], Prop_Data, "m_flMaxspeed", BossSpeed[Special[client]]+0.7*(100-BossHealth[client]*100/BossLivesMax[client]/BossHealthMax[client]));
-		}
+		SetEntPropFloat(Boss[client], Prop_Data, "m_flMaxspeed", BossSpeed[Special[client]]+0.7*(100-BossHealth[client]*100/BossLivesMax[client]/BossHealthMax[client]));
 
-		if(BossHealth[client]<=0 && IsPlayerAlive(Boss[client]))  //Due to FF2 only syncing with the boss's actual health every 0.2 seconds -.-
+		if(BossHealth[client]<=0 && IsPlayerAlive(Boss[client]))  //Wat.  TODO:  Investigate
 		{
 			BossHealth[client]=1;
 		}
@@ -4734,9 +4718,8 @@ public Action:BossTimer(Handle:timer)
 		{
 			new String:message[512];
 			decl String:name[64];
-			for(new target; IsBoss(target); target++)
+			for(new boss; Boss[boss]; boss++)
 			{
-				new boss=GetBossIndex(target);
 				KvRewind(BossKV[Special[boss]]);
 				KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
 				//Format(bossLives, sizeof(bossLives), ((BossLives[boss]>1) ? ("x%i", BossLives[boss]) : ("")));
