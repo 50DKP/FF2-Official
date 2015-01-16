@@ -2370,7 +2370,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		return Plugin_Continue;
 	}
 
-	decl String:sound[PLATFORM_MAX_PATH];
+	decl String:text[128];
 	new bool:bossWin=false;
 	executed=false;
 	executed2=false;
@@ -2425,10 +2425,9 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		}
 	}
 
-	strcopy(sound, 2, "");
 	if(isBossAlive)
 	{
-		decl String:bossName[64], String:lives[4];
+		decl String:bossName[64], String:lives[4], String:sound[PLATFORM_MAX_PATH];
 		for(new target; target<=MaxClients; target++)
 		{
 			if(IsBoss(target))
@@ -2444,11 +2443,10 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 				{
 					strcopy(lives, 2, "");
 				}
-				Format(sound, PLATFORM_MAX_PATH, "%s\n%t", sound, "ff2_alive", bossName, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				Format(text, PLATFORM_MAX_PATH, "%s\n%t", text, "ff2_alive", bossName, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
 		}
 
-		strcopy(sound, 2, "");
 		if(RandomSound("sound_fail", sound, PLATFORM_MAX_PATH, boss))
 		{
 			EmitSoundToAll(sound);
@@ -2458,7 +2456,6 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 
 	new top[3];
-	strcopy(sound, 2, "");
 	Damage[0]=0;
 	for(new client; client<=MaxClients; client++)
 	{
@@ -2513,11 +2510,11 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			//TODO:  Clear HUD text here
 			if(IsBoss(client))
 			{
-				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], (bossWin ? "boss_win" : "boss_lose"));
+				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", text, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], (bossWin ? "boss_win" : "boss_lose"));
 			}
 			else
 			{
-				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", sound, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
+				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", text, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
 			}
 		}
 	}
