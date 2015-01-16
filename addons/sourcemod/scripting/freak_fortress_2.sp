@@ -2370,7 +2370,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		return Plugin_Continue;
 	}
 
-	decl String:text[128];
+	decl String:text[128], String:sound[PLATFORM_MAX_PATH];
 	new bool:bossWin=false;
 	executed=false;
 	executed2=false;
@@ -2426,7 +2426,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 	if(isBossAlive)
 	{
-		decl String:bossName[64], String:lives[4], String:sound[PLATFORM_MAX_PATH];
+		decl String:bossName[64], String:lives[4];
 		for(new target; target<=MaxClients; target++)
 		{
 			if(IsBoss(target))
