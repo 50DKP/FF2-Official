@@ -2429,19 +2429,23 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	if(isBossAlive)
 	{
 		decl String:bossName[64], String:lives[4];
-		for(new client; Boss[client]; client++)
+		for(new target; target<=MaxClients; target++)
 		{
-			KvRewind(BossKV[Special[client]]);
-			KvGetString(BossKV[Special[client]], "name", bossName, 64, "=Failed name=");
-			if(BossLives[client]>1)
+			if(IsBoss(target))
 			{
-				Format(lives, 4, "x%s", BossLives[client]);
+				new boss=Boss[target];
+				KvRewind(BossKV[Special[boss]]);
+				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
+				if(BossLives[client]>1)
+				{
+					Format(lives, 4, "x%s", BossLives[boss]);
+				}
+				else
+				{
+					strcopy(lives, 2, "");
+				}
+				Format(sound, PLATFORM_MAX_PATH, "%s\n%t", sound, "ff2_alive", bossName, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
-			else
-			{
-				strcopy(lives, 2, "");
-			}
-			Format(sound, PLATFORM_MAX_PATH, "%s\n%t", sound, "ff2_alive", bossName, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), BossHealthMax[client], lives);
 		}
 
 		strcopy(sound, 2, "");
@@ -3018,28 +3022,27 @@ public Action:MessageTimer(Handle:timer)
 	decl String:textChat[512];
 	decl String:lives[4];
 	decl String:name[64];
-	for(new client; Boss[client]; client++)
+	for(new client; client<=MaxClients; client++)
 	{
-		if(!IsValidEdict(Boss[client]))
+		if(IsBoss(client))
 		{
-			continue;
-		}
+			new boss=Boss[client];
+			KvRewind(BossKV[Special[boss]]);
+			KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
+			if(BossLives[boss]>1)
+			{
+				Format(lives, 4, "x%i", BossLives[boss]);
+			}
+			else
+			{
+				strcopy(lives, 2, "");
+			}
 
-		KvRewind(BossKV[Special[client]]);
-		KvGetString(BossKV[Special[client]], "name", name, 64, "=Failed name=");
-		if(BossLives[client]>1)
-		{
-			Format(lives, 4, "x%i", BossLives[client]);
+			Format(text, sizeof(text), "%s\n%t", text, "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
+			Format(textChat, sizeof(textChat), "{olive}[FF2]{default} %t!", "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
+			ReplaceString(textChat, sizeof(textChat), "\n", "");  //Get rid of newlines
+			CPrintToChatAll("%s", textChat);
 		}
-		else
-		{
-			strcopy(lives, 2, "");
-		}
-
-		Format(text, sizeof(text), "%s\n%t", text, "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
-		Format(textChat, sizeof(textChat), "{olive}[FF2]{default} %t!", "ff2_start", Boss[client], name, BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1), lives);
-		ReplaceString(textChat, sizeof(textChat), "\n", "");  //Get rid of newlines
-		CPrintToChatAll("%s", textChat);
 	}
 
 	for(new client; client<=MaxClients; client++)
@@ -4007,24 +4010,28 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 	{
 		new String:health[512];
 		decl String:lives[4], String:name[64];
-		for(new boss; Boss[boss]; boss++)
+		for(new target; target<=MaxClients; target++)
 		{
-			KvRewind(BossKV[Special[boss]]);
-			KvGetString(BossKV[Special[boss]], "name", name, 64, "=Failed name=");
-			if(BossLives[boss]>1)
+			if(IsBoss(target))
 			{
-				Format(lives, sizeof(lives), "x%i", BossLives[boss]);
+				new boss=Boss[target];
+				KvRewind(BossKV[Special[boss]]);
+				KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
+				if(BossLives[boss]>1)
+				{
+					Format(lives, sizeof(lives), "x%i", BossLives[boss]);
+				}
+				else
+				{
+					strcopy(lives, 2, "");
+				}
+				Format(health, sizeof(health), "%s\n%t", health, "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				BossHealthLast[boss]=BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1);
 			}
-			else
-			{
-				strcopy(lives, 2, "");
-			}
-			Format(health, sizeof(health), "%s\n%t", health, "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
-			CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
-			BossHealthLast[boss]=BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1);
 		}
 
-		for(new target=1; target<=MaxClients; target++)
+		for(new target; target<=MaxClients; target++)
 		{
 			if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
 			{
@@ -4044,9 +4051,12 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 	if(RedAlivePlayers>1)
 	{
 		new String:waitTime[128];
-		for(new boss; Boss[boss]; boss++)
+		for(new target; target<=MaxClients; target++)
 		{
-			Format(waitTime, 128, "%s %i,", waitTime, BossHealthLast[boss]);
+			if(IsBoss(target))
+			{
+				Format(waitTime, sizeof(waitTime), "%s %i,", waitTime, BossHealthLast[Boss[target]]);
+			}
 		}
 		CPrintToChat(client, "{olive}[FF2]{default} %t", "wait_hp", RoundFloat(HPTime-GetGameTime()), waitTime);
 	}
@@ -4718,18 +4728,22 @@ public Action:BossTimer(Handle:timer)
 		{
 			new String:message[512];
 			decl String:name[64];
-			for(new boss; Boss[boss]; boss++)
+			for(new target; target<=MaxClients; target++)
 			{
-				KvRewind(BossKV[Special[boss]]);
-				KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
-				//Format(bossLives, sizeof(bossLives), ((BossLives[boss]>1) ? ("x%i", BossLives[boss]) : ("")));
-				if(BossLives[boss]>1)
+				if(IsBoss(target))
 				{
-					Format(message, sizeof(message), "%s\n%s's HP: %i of %ix%i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], BossLives[boss]);
-				}
-				else
-				{
-					Format(message, sizeof(message), "%s\n%s's HP: %i of %i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss]);
+					new boss=Boss[target];
+					KvRewind(BossKV[Special[boss]]);
+					KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
+					//Format(bossLives, sizeof(bossLives), ((BossLives[boss]>1) ? ("x%i", BossLives[boss]) : ("")));
+					if(BossLives[boss]>1)
+					{
+						Format(message, sizeof(message), "%s\n%s's HP: %i of %ix%i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], BossLives[boss]);
+					}
+					else
+					{
+						Format(message, sizeof(message), "%s\n%s's HP: %i of %i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss]);
+					}
 				}
 			}
 
