@@ -3266,7 +3266,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-		case 40:  //Backburner
+		case 40, 1146:  //Backburner, Festive Backburner
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "165 ; 1.0");
 			if(itemOverride!=INVALID_HANDLE)
@@ -3842,9 +3842,12 @@ stock RemovePlayerTarge(client)
 	while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
 	{
 		new index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
-		if((index==131 || index==406) && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))  //Chargin' Targe, Splendid Screen
+		if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 		{
-			TF2_RemoveWearable(client, entity);
+			if((index==131 || index==406 || index==1099 || index==1144)  //Chargin' Targe, Splendid Screen, Tide Turner, Festive Chargin' Targe
+			{
+				TF2_RemoveWearable(client, entity);
+			}
 		}
 	}
 }
