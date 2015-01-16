@@ -2400,7 +2400,6 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			if(IsPlayerAlive(Boss[client]))
 			{
 				isBossAlive=true;
-				boss=client;
 			}
 
 			for(new slot=1; slot<8; slot++)
@@ -2432,10 +2431,10 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		{
 			if(IsBoss(target))
 			{
-				new boss=Boss[target];
+				boss=Boss[target];
 				KvRewind(BossKV[Special[boss]]);
 				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
-				if(BossLives[client]>1)
+				if(BossLives[boss]>1)
 				{
 					Format(lives, 4, "x%s", BossLives[boss]);
 				}
