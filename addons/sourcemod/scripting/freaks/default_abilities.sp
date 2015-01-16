@@ -31,8 +31,10 @@ new Float:UberRageCount[MAXPLAYERS+1];
 new BossTeam=_:TFTeam_Blue;
 
 new Handle:cvarOldJump;
+new Handle:cvarBaseJumperStun;
 
 new bool:oldJump;
+new bool:removeBaseJumperOnStun;
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -56,13 +58,25 @@ public OnPluginStart2()
 public OnAllPluginsLoaded()
 {
 	cvarOldJump=FindConVar("ff2_oldjump");  //Created in freak_fortress_2.sp
+	cvarBaseJumperStun=FindConVar("ff2_base_jumper_stun");
+
 	HookConVarChange(cvarOldJump, CvarChange);
+	HookConVarChange(cvarBaseJumperStun, CvarChange);
+
 	oldJump=GetConVarBool(cvarOldJump);
+	removeBaseJumperOnStun=GetConVarBool(cvarBaseJumperStun);
 }
 
 public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	oldJump=bool:StringToInt(newValue);
+	if(convar==cvarOldJump)
+	{
+		oldJump=bool:StringToInt(newValue);
+	}
+	else if(convar==cvarBaseJumperStun)
+	{
+		removeBaseJumperOnStun=bool:StringToInt(newValue);
+	}
 }
 
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
@@ -207,6 +221,10 @@ Rage_Stun(const String:ability_name[], boss)
 			GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPosition);
 			if(!TF2_IsPlayerInCondition(target, TFCond_Ubercharged) && (GetVectorDistance(bossPosition, targetPosition)<=distance))
 			{
+				if(removeBaseJumperOnStun)
+				{
+					TF2_RemoveCondition(target, TFCond_Parachute);
+				}
 				TF2_StunPlayer(target, duration, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, client);
 				CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(target, "yikes_fx", 75.0)));
 			}
