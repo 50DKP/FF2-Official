@@ -6392,7 +6392,6 @@ stock GetClientWithMostQueuePoints(bool:omit[])
 		{
 			if(SpecForceBoss || GetClientTeam(client)>_:TFTeam_Spectator)
 			{
-				Debug("%N (index %i) %i >= %N (index %i) %i", client, client, GetClientQueuePoints(client), winner, winner, GetClientQueuePoints(winner));
 				winner=client;
 			}
 		}
