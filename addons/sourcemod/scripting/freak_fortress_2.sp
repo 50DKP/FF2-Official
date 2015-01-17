@@ -2438,7 +2438,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 				if(BossLives[boss]>1)
 				{
-					Format(lives, 4, "x%s", BossLives[boss]);
+					Format(lives, 4, "x%i", BossLives[boss]);
 				}
 				else
 				{
@@ -8578,7 +8578,7 @@ FindHealthBar()
 
 public HealthbarEnableChanged(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	if(GetConVarBool(cvarHealthBar) && Enabled)
+	if(Enabled && GetConVarBool(cvarHealthBar) && healthBar!=-1)
 	{
 		UpdateHealthBar();
 	}
