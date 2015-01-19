@@ -256,7 +256,9 @@ static const String:ff2versiontitles[][]=
 	"1.10.3",
 	"1.10.3",
 	"1.10.3",
-	"1.10.3"
+	"1.10.3",
+	"1.10.4",
+	"1.10.4"
 };
 
 static const String:ff2versiondates[][]=
@@ -314,13 +316,31 @@ static const String:ff2versiondates[][]=
 	"November 6, 2014",	//1.10.3
 	"November 6, 2014",	//1.10.3
 	"November 6, 2014",	//1.10.3
-	"November 6, 2014"	//1.10.3
+	"November 6, 2014",	//1.10.3
+	"January 18, 2014",	//1.10.4
+	"January 18, 2014"	//1.10.4
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 55:
+		{
+			DrawPanelText(panel, "1) Fixed Darwin's Danger Shield getting replaced by the SMG (Wliu)");
+			DrawPanelText(panel, "2) Fixed 'sound_fail' (Wliu from M76030)");
+			DrawPanelText(panel, "3) Allowed companions to emit 'sound_nextlife' if they have it (Wliu from M76030)");
+			DrawPanelText(panel, "4) Fixed 'ff2_alive' never being shown (Wliu)");
+			DrawPanelText(panel, "5) Added Tide Turner and new festive weapons to the weapon whitelist (Wliu)");
+			DrawPanelText(panel, "See next page (press 1");
+		}
+		case 54:
+		{
+			DrawPanelText(panel, "6) [Server] Added 'ff2_arena_rounds' and deprecated 'ff2_first_round' (Wliu from Spyper)");
+			DrawPanelText(panel, "7) [Server] Added 'ff2_base_jumper_stun' to disable the parachute on stun (Wliu from Shadow)");
+			DrawPanelText(panel, "8) [Server] Prevented FF2 from loading if it gets loaded in the freaks/ directory (Wliu)");
+			DrawPanelText(panel, "9) [Dev] Added FF2_OnAlivePlayersChanged and deprecated FF2_Get{Alive|Boss}Players (Wliu from Shadow)");
+		}
 		case 53:  //1.10.3
 		{
 			DrawPanelText(panel, "1) Fixed bosses appearing to be overhealed (War3Evo/Wliu)");
