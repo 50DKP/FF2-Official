@@ -828,10 +828,9 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
 	decl String:plugin[PLATFORM_MAX_PATH];
 	GetPluginFilename(myself, plugin, sizeof(plugin));
-	PrintToServer("FF2's own filename is: %s", plugin);
 	if(!StrContains(plugin, "freaks/"))  //Prevent plugins/freaks/freak_fortress_2.ff2 from loading if it exists -.-
 	{
-		strcopy(error, err_max, "There is a duplicate copy of Freak Fortress 2 inside the /plugins/freaks folder.  Please remove it.");
+		strcopy(error, err_max, "There is a duplicate copy of Freak Fortress 2 inside the /plugins/freaks folder.  Please remove it");
 		return APLRes_Failure;
 	}
 
@@ -4402,8 +4401,10 @@ public Action:ClientTimer(Handle:timer)
 			{
 				if(GetClientCloakIndex(client)==59)  //Dead Ringer
 				{
+					Debug("%N is cloaked using the Dead Ringer");
 					if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 					{
+						Debug("Removed TFCond_DeadRingered from %N");
 						TF2_RemoveCondition(client, TFCond_DeadRingered);
 					}
 				}
@@ -5052,6 +5053,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 	{
 		if(!(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
+			Debug("Showing the damage screen for %N");
 			CreateTimer(1.0, Timer_Damage, GetClientUserId(client));
 		}
 
