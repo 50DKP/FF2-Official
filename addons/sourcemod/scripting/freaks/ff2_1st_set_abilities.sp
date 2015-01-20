@@ -29,7 +29,7 @@ public Plugin:myinfo=
 #define FLAG_SLOWMOREADYCHANGE	(1<<1)
 
 new FF2Flags[MAXPLAYERS+1];
-new TFClassType:LastClass[MAXPLAYERS+1];
+//new TFClassType:LastClass[MAXPLAYERS+1];
 new CloneOwnerIndex[MAXPLAYERS+1];
 
 new Handle:SlowMoTimer;
@@ -243,16 +243,16 @@ Rage_Clone(const String:ability_name[], boss)
 		temp=GetRandomInt(0, GetArraySize(players)-1);
 		clone=GetArrayCell(players, temp);
 		RemoveFromArray(players, temp);
-		if(LastClass[clone]==TFClass_Unknown)
+		/*if(LastClass[clone]==TFClass_Unknown)
 		{
 			LastClass[clone]=TF2_GetPlayerClass(clone);
-		}
+		}*/
 
 		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM);
 		ChangeClientTeam(clone, BossTeam);
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=boss;
-		TF2_SetPlayerClass(clone, (class ? (TFClassType:class) : (TFClassType:KvGetNum(bossKV[config], "class", 0))));
+		TF2_SetPlayerClass(clone, (class ? (TFClassType:class) : (TFClassType:KvGetNum(bossKV[config], "class", 0))), _, false);
 
 		if(changeModel)
 		{
@@ -759,7 +759,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new bossAttacker=FF2_GetBossIndex(attacker);
-	new bossClient=FF2_GetBossIndex(client);
+	//new bossClient=FF2_GetBossIndex(client);
 
 	if(!attacker || !client || attacker==client)
 	{
@@ -824,7 +824,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 		}
 	}
 
-	if(bossClient!=-1)
+	/*if(bossClient!=-1)
 	{
 		if(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
 		{
@@ -841,11 +841,11 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 				}
 			}
 		}
-	}
+	}*/
 	return Plugin_Continue;
 }
 
-public Action:Timer_RestoreLastClass(Handle:timer, any:userid)
+/*public Action:Timer_RestoreLastClass(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
 	if(LastClass[client])
@@ -863,7 +863,7 @@ public Action:Timer_RestoreLastClass(Handle:timer, any:userid)
 		ChangeClientTeam(client, _:TFTeam_Red);
 	}
 	return Plugin_Continue;
-}
+}*/
 
 public Action:Timer_RemoveRagdoll(Handle:timer, any:userid)
 {
