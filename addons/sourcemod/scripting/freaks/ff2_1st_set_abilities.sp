@@ -29,7 +29,6 @@ public Plugin:myinfo=
 #define FLAG_SLOWMOREADYCHANGE	(1<<1)
 
 new FF2Flags[MAXPLAYERS+1];
-//new TFClassType:LastClass[MAXPLAYERS+1];
 new CloneOwnerIndex[MAXPLAYERS+1];
 
 new Handle:SlowMoTimer;
@@ -243,10 +242,6 @@ Rage_Clone(const String:ability_name[], boss)
 		temp=GetRandomInt(0, GetArraySize(players)-1);
 		clone=GetArrayCell(players, temp);
 		RemoveFromArray(players, temp);
-		/*if(LastClass[clone]==TFClass_Unknown)
-		{
-			LastClass[clone]=TF2_GetPlayerClass(clone);
-		}*/
 
 		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM);
 		ChangeClientTeam(clone, BossTeam);
@@ -758,19 +753,18 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 {
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
-	new bossAttacker=FF2_GetBossIndex(attacker);
-	//new bossClient=FF2_GetBossIndex(client);
+	new boss=FF2_GetBossIndex(attacker);
 
 	if(!attacker || !client || attacker==client)
 	{
 		return Plugin_Continue;
 	}
 
-	if(bossAttacker!=-1)
+	if(boss!=-1)
 	{
-		if(FF2_HasAbility(bossAttacker, this_plugin_name, "special_dropprop"))
+		if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
 		{
-			if(FF2_GetAbilityArgument(bossAttacker, this_plugin_name, "special_dropprop", 3, 0))
+			if(FF2_GetAbilityArgument(boss, this_plugin_name, "special_dropprop", 3, 0))
 			{
 				CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"));
 			}
@@ -779,7 +773,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 			if(IsValidEntity(prop))
 			{
 				decl String:model[PLATFORM_MAX_PATH];
-				FF2_GetAbilityArgumentString(bossAttacker, this_plugin_name, "special_dropprop", 1, model, PLATFORM_MAX_PATH);
+				FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, PLATFORM_MAX_PATH);
 				SetEntityModel(prop, model);
 				SetEntityMoveType(prop, MOVETYPE_VPHYSICS);
 				SetEntProp(prop, Prop_Send, "m_CollisionGroup", 1);
@@ -790,7 +784,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 				GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 				position[2]+=20;
 				TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
-				new Float:duration=FF2_GetAbilityArgumentFloat(bossAttacker, this_plugin_name, "special_dropprop", 2, 0.0);
+				new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "special_dropprop", 2, 0.0);
 				if(duration>0.5)
 				{
 					CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(prop));
@@ -798,7 +792,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 			}
 		}
 
-		if(FF2_HasAbility(bossAttacker, this_plugin_name, "special_cbs_multimelee"))
+		if(FF2_HasAbility(boss, this_plugin_name, "special_cbs_multimelee"))
 		{
 			if(GetEntPropEnt(attacker, Prop_Send, "m_hActiveWeapon")==GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee))
 			{
@@ -824,46 +818,19 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 		}
 	}
 
-	/*if(bossClient!=-1)
+	boss=FF2_GetBossIndex(client);
+	if(boss!=-1 && !GetEventInt(event, "death_flags" & TF_DEATHFLAG_DEADRINGER) && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack"))
 	{
-		if(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER)
+		for(new target=1; target<=MaxClients; target++)
 		{
-			return Plugin_Continue;
-		}
-
-		if(FF2_HasAbility(bossClient, this_plugin_name, "rage_cloneattack"))
-		{
-			for(new target=1; target<=MaxClients; target++)
+			if(CloneOwnerIndex[target]==boss && IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)==BossTeam)
 			{
-				if(CloneOwnerIndex[target]==bossClient && IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)==BossTeam)
-				{
-					CreateTimer(0.5, Timer_RestoreLastClass, GetClientUserId(target));
-				}
+				ChangeClientTeam(target, BossTeam==_:TFTeam_Blue ? _:TFTeam_Red : _:TFTeam_Blue);
 			}
 		}
-	}*/
+	}
 	return Plugin_Continue;
 }
-
-/*public Action:Timer_RestoreLastClass(Handle:timer, any:userid)
-{
-	new client=GetClientOfUserId(userid);
-	if(LastClass[client])
-	{
-		TF2_SetPlayerClass(client, LastClass[client]);
-	}
-	LastClass[client]=TFClass_Unknown;
-
-	if(BossTeam==_:TFTeam_Red)
-	{
-		ChangeClientTeam(client, _:TFTeam_Blue);
-	}
-	else
-	{
-		ChangeClientTeam(client, _:TFTeam_Red);
-	}
-	return Plugin_Continue;
-}*/
 
 public Action:Timer_RemoveRagdoll(Handle:timer, any:userid)
 {
