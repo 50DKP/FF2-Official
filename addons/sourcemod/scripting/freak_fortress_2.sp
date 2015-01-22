@@ -5053,7 +5053,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 	{
 		if(!(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
-			Debug("Showing the damage screen for %N");
+			Debug("Showing the damage screen for %N", client);
 			CreateTimer(1.0, Timer_Damage, GetClientUserId(client));
 		}
 

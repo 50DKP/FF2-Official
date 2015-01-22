@@ -819,7 +819,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	}
 
 	boss=FF2_GetBossIndex(client);
-	if(boss!=-1 && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER) && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack"))
+	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack") && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
 		for(new target=1; target<=MaxClients; target++)
 		{
