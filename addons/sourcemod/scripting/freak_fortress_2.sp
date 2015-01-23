@@ -4401,10 +4401,10 @@ public Action:ClientTimer(Handle:timer)
 			{
 				if(GetClientCloakIndex(client)==59)  //Dead Ringer
 				{
-					Debug("%N is cloaked using the Dead Ringer");
+					Debug("%N is cloaked using the Dead Ringer", client);
 					if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 					{
-						Debug("Removed TFCond_DeadRingered from %N");
+						Debug("Removed TFCond_DeadRingered from %N", client);
 						TF2_RemoveCondition(client, TFCond_DeadRingered);
 					}
 				}
