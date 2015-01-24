@@ -1,10 +1,10 @@
-##Welcome to the official FF2 repository! [![Build Status](https://travis-ci.org/50DKP/FF2-Official.svg)](https://travis-ci.org/50DKP/FF2-Official)
+## Welcome to the official FF2 repository! [![Build Status](https://img.shields.io/jenkins/s/https/jenkins.qa.ubuntu.com/precise-desktop-amd64_default.svg?style=flat)](http://ff2.50dkp.com/jenkins/buildStatus/icon?job=FF2)
 
-Download the latest version from the [Releases](https://github.com/50DKP/FF2-Official/releases) page or check out the [forums](https://forums.alliedmods.net/forumdisplay.php?f=154) to learn more.  Brought to you by [50DKP](http://www.50dkp.com).
+Want the latest version?  Check out the [Releases](https://github.com/50DKP/FF2-Official/releases) page.  For those who always want the latest bleeding-edge features (and bugs), development builds are available on [Jenkins](http://ff2.50dkp.com/jenkins/job/FF2/).  You can also check out the [forums](https://forums.alliedmods.net/forumdisplay.php?f=154) to learn more.  Brought to you by [50DKP](http://www.50dkp.com).
 
 Some interesting stats: [![Issue Stats](http://issuestats.com/github/50DKP/FF2-Official/badge/pr?style=flat)](http://issuestats.com/github/50DKP/FF2-Official) [![Issue Stats](http://issuestats.com/github/50DKP/FF2-Official/badge/issue?style=flat)](http://issuestats.com/github/50DKP/FF2-Official)
 
-###Include File Changes
+### Include File Changes
 ***
 Some third-party include files were modified in order to make FF2 work properly with or without the plugin that the include file belonged to.
 It is highly recommended that you also make these changes when compiling FF2.
@@ -29,7 +29,7 @@ required = 0
 #endif
 ```
 
-###Formatting
+### Formatting
 ***
 If you wish to make a pull request, the following formatting rules should be adhered to:
 
