@@ -821,13 +821,23 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	boss=FF2_GetBossIndex(client);
 	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack") && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
+		Debug("%N just died", client);
 		for(new target=1; target<=MaxClients; target++)
 		{
-			if(CloneOwnerIndex[target]==boss && IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)==BossTeam)
+			if(CloneOwnerIndex[target]==boss && IsClientInGame(target) && GetClientTeam(target)==BossTeam)
 			{
+				Debug("Changing %N's team", target);
+				CloneOwnerIndex[target]=-1;
 				ChangeClientTeam(target, (BossTeam==_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
 			}
 		}
+	}
+
+	if(CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)
+	{
+		Debug("Changing %N's team (not due to boss death)", client);
+		CloneOwnerIndex[client]=-1;
+		ChangeClientTeam(target, (BossTeam==_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
 	}
 	return Plugin_Continue;
 }

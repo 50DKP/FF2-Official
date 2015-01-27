@@ -37,11 +37,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define MINOR_REVISION "10"
 #define STABLE_REVISION "4"
 #define DEV_REVISION "Beta"
-#define COMMIT_SHA "manual"
+#define BUILD_NUMBER "manual"
 #if !defined DEV_REVISION
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.4
 #else
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..."-"...COMMIT_SHA
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..."-"...BUILD_NUMBER
 #endif
 
 #define UPDATE_URL "http://ff2.50dkp.com/updater/ff2-official/update.txt"
