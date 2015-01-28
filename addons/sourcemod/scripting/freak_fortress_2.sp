@@ -4368,6 +4368,11 @@ public Action:ClientTimer(Handle:timer)
 		return Plugin_Stop;
 	}
 
+	if(GetClientHealth(client)>750)  //Arbitrary value to test for clients getting boss overheal
+	{
+		Debug("%N has a suspicious amount of health", client);
+	}
+
 	decl String:classname[32];
 	new TFCond:cond;
 	for(new client=1; client<=MaxClients; client++)
@@ -6234,6 +6239,7 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 		maxHealth=BossHealthMax[boss];
 		return Plugin_Handled;
 	}
+	Debug("%N is NOT a boss!", client);
 	return Plugin_Continue;
 }
 
