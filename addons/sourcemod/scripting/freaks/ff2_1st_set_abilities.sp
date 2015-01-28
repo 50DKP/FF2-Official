@@ -29,7 +29,7 @@ public Plugin:myinfo=
 #define FLAG_SLOWMOREADYCHANGE	(1<<1)
 
 new FF2Flags[MAXPLAYERS+1];
-new CloneOwnerIndex[MAXPLAYERS+1];
+new CloneOwnerIndex[MAXPLAYERS+1]=-1;
 
 new Handle:SlowMoTimer;
 new oldTarget;
@@ -751,7 +751,6 @@ public Action:Timer_SlowMoChange(Handle:timer, any:boss)
 
 public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	Debug("Entered OnPlayerDeath");
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new boss=FF2_GetBossIndex(attacker);
@@ -815,16 +814,12 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	}
 
 	boss=FF2_GetBossIndex(client);
-	Debug("Boss index is %i", boss);
 	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack") && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
-		Debug("%N just died", client);
 		for(new target=1; target<=MaxClients; target++)
 		{
-			Debug("CloneOwnerIndex[%i] is %i", target, CloneOwnerIndex[target]);
 			if(CloneOwnerIndex[target]==boss && IsClientInGame(target) && GetClientTeam(target)==BossTeam)
 			{
-				Debug("Changing %N's team", target);
 				CloneOwnerIndex[target]=-1;
 				ChangeClientTeam(target, (BossTeam==_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
 			}
@@ -833,7 +828,6 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 
 	if(CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)
 	{
-		Debug("Changing %N's team (not due to boss death)", client);
 		CloneOwnerIndex[client]=-1;
 		ChangeClientTeam(client, (BossTeam==_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
 	}
