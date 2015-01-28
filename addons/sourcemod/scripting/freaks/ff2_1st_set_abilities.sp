@@ -751,6 +751,7 @@ public Action:Timer_SlowMoChange(Handle:timer, any:boss)
 
 public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
+	Debug("Entered OnPlayerDeath");
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new boss=FF2_GetBossIndex(attacker);
@@ -819,11 +820,13 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	}
 
 	boss=FF2_GetBossIndex(client);
+	Debug("Boss index is %i", boss);
 	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack") && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
 		Debug("%N just died", client);
 		for(new target=1; target<=MaxClients; target++)
 		{
+			Debug("CloneOwnerIndex[%i] is %i", target, CloneOwnerIndex[target]);
 			if(CloneOwnerIndex[target]==boss && IsClientInGame(target) && GetClientTeam(target)==BossTeam)
 			{
 				Debug("Changing %N's team", target);
