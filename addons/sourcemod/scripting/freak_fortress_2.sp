@@ -4402,10 +4402,8 @@ public Action:ClientTimer(Handle:timer)
 			{
 				if(GetClientCloakIndex(client)==59)  //Dead Ringer
 				{
-					Debug("%N is cloaked using the Dead Ringer", client);
 					if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 					{
-						Debug("Removed TFCond_DeadRingered from %N", client);
 						TF2_RemoveCondition(client, TFCond_DeadRingered);
 					}
 				}
@@ -5054,7 +5052,6 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 	{
 		if(!(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
-			Debug("Showing the damage screen for %N", client);
 			CreateTimer(1.0, Timer_Damage, GetClientUserId(client));
 		}
 
@@ -6922,7 +6919,6 @@ public bool:PickCharacter(client, companion)
 FindCompanion(boss, players, bool:omit[])
 {
 	static playersNeeded=3;
-	Debug("Players needed: %i", playersNeeded);
 	decl String:companionName[64];
 	KvRewind(BossKV[Special[boss]]);
 	KvGetString(BossKV[Special[boss]], "companion", companionName, sizeof(companionName));
