@@ -225,7 +225,7 @@ Rage_Clone(const String:ability_name[], boss)
 				{
 					alive++;
 				}
-				else
+				else if(FF2_GetBossIndex(target)==-1)  //Don't let dead bosses become clones
 				{
 					PushArrayCell(players, target);
 					dead++;
