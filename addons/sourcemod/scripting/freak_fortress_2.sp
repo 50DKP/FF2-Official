@@ -4368,17 +4368,17 @@ public Action:ClientTimer(Handle:timer)
 		return Plugin_Stop;
 	}
 
-	if(GetClientHealth(client)>750)  //Arbitrary value to test for clients getting boss overheal
-	{
-		Debug("%N has a suspicious amount of health", client);
-	}
-
 	decl String:classname[32];
 	new TFCond:cond;
 	for(new client=1; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client) && !IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
 		{
+			if(GetClientHealth(client)>750)  //Arbitrary value to test for clients getting boss overheal
+			{
+				Debug("%N has a suspicious amount of health", client);
+			}
+
 			SetHudTextParams(-1.0, 0.88, 0.35, 90, 255, 90, 255, 0, 0.35, 0.0, 0.1);
 			if(!IsPlayerAlive(client))
 			{
