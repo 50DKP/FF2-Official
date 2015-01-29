@@ -926,9 +926,10 @@ stock AttachParticle(entity, String:particleType[], Float:offset=0.0, bool:attac
 	return particle;
 }
 
-stock UpdateClientCheatValue(client, value)
+stock UpdateClientCheatValue(boss, value)
 {
-	if(client && client<=MaxClients && IsClientInGame(client) && IsPlayerAlive(client) && !IsFakeClient(client))
+	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
+	if(client>0 && client<=MaxClients && IsClientInGame(client) && IsPlayerAlive(client) && !IsFakeClient(client))
 	{
 		decl String:cheatValue[2];
 		IntToString(value, cheatValue, sizeof(cheatValue));
