@@ -1164,6 +1164,7 @@ public OnConfigsExecuted()
 	tf_arena_first_blood=GetConVarInt(FindConVar("tf_arena_first_blood"));
 	mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
 	tf_scout_hype_pep_max=GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
+	Debug("OnConfigsExecuted: tf_scout_hype_pep_max is at %f", tf_scout_hype_pep_max);
 
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
@@ -1215,6 +1216,7 @@ public OnMapEnd()
 		SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
 		SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
 		SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), tf_scout_hype_pep_max);
+		Debug("OnMapEnd: tf_scout_hype_pep_max is %f", tf_scout_hype_pep_max);
 		#if defined _steamtools_included
 		if(steamtools)
 		{
@@ -1329,6 +1331,7 @@ public DisableFF2()
 	SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
 	SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
 	SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), tf_scout_hype_pep_max);
+	Debug("DisableFF2: tf_scout_hype_pep_max is %f", tf_scout_hype_pep_max);
 
 	if(doorCheckTimer!=INVALID_HANDLE)
 	{
