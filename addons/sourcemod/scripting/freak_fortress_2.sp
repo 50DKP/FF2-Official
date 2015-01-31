@@ -104,7 +104,6 @@ new Float:Marketed[MAXPLAYERS+1];
 new Float:KSpreeTimer[MAXPLAYERS+1];
 new KSpreeCount[MAXPLAYERS+1];
 new Float:GlowTimer[MAXPLAYERS+1];
-new TFClassType:LastClass[MAXPLAYERS+1];
 new shortname[MAXPLAYERS+1];
 new bool:emitRageSound[MAXPLAYERS+1];
 
@@ -337,10 +336,12 @@ stock FindVersionData(Handle:panel, versionIndex)
 		}
 		case 54:
 		{
-			DrawPanelText(panel, "6) [Server] Added 'ff2_arena_rounds' and deprecated 'ff2_first_round' (Wliu from Spyper)");
-			DrawPanelText(panel, "7) [Server] Added 'ff2_base_jumper_stun' to disable the parachute on stun (Wliu from Shadow)");
-			DrawPanelText(panel, "8) [Server] Prevented FF2 from loading if it gets loaded in the freaks/ directory (Wliu)");
-			DrawPanelText(panel, "9) [Dev] Added FF2_OnAlivePlayersChanged and deprecated FF2_Get{Alive|Boss}Players (Wliu from Shadow)");
+			DrawPanelText(panel, "6) Prevented dead companion bosses from becoming clones (Wliu)");
+			DrawPanelText(panel, "7) Improved class switching after you finish the round as a boss (Wliu)");
+			DrawPanelText(panel, "8) [Server] Added 'ff2_arena_rounds' and deprecated 'ff2_first_round' (Wliu from Spyper)");
+			DrawPanelText(panel, "9) [Server] Added 'ff2_base_jumper_stun' to disable the parachute on stun (Wliu from Shadow)");
+			DrawPanelText(panel, "10) [Server] Prevented FF2 from loading if it gets loaded in the freaks/ directory (Wliu)");
+			DrawPanelText(panel, "11) [Dev] Added FF2_OnAlivePlayersChanged and deprecated FF2_Get{Alive|Boss}Players (Wliu from Shadow)");
 		}
 		case 53:  //1.10.3
 		{
@@ -2205,11 +2206,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		BossLivesMax[0]=1;
 	}
 
-	if(LastClass[Boss[0]]==TFClass_Unknown)
-	{
-		LastClass[Boss[0]]=TF2_GetPlayerClass(Boss[0]);
-	}
-
 	FindCompanion(0, playing, omit);  //Find companions for the boss!
 
 	CreateTimer(0.2, Timer_GogoBoss, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -3092,19 +3088,20 @@ public Action:MakeModelTimer(Handle:timer, any:client)
 	return Plugin_Stop;
 }
 
-EquipBoss(client)
+EquipBoss(boss)
 {
-	DoOverlay(Boss[client], "");
-	TF2_RemoveAllWeapons(Boss[client]);
+	new client=Boss[boss];
+	DoOverlay(client, "");
+	TF2_RemoveAllWeapons(client);
 	decl String:weapon[64], String:attributes[256];
 	for(new i=1; ; i++)
 	{
-		KvRewind(BossKV[Special[client]]);
+		KvRewind(BossKV[Special[boss]]);
 		Format(weapon, 10, "weapon%i", i);
-		if(KvJumpToKey(BossKV[Special[client]], weapon))
+		if(KvJumpToKey(BossKV[Special[boss]], weapon))
 		{
-			KvGetString(BossKV[Special[client]], "name", weapon, sizeof(weapon));
-			KvGetString(BossKV[Special[client]], "attributes", attributes, sizeof(attributes));
+			KvGetString(BossKV[Special[boss]], "name", weapon, sizeof(weapon));
+			KvGetString(BossKV[Special[boss]], "attributes", attributes, sizeof(attributes));
 			if(attributes[0]!='\0')
 			{
 				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; %s", attributes);
@@ -3118,14 +3115,14 @@ EquipBoss(client)
 					//2: x3 damage
 			}
 
-			new BossWeapon=SpawnWeapon(Boss[client], weapon, KvGetNum(BossKV[Special[client]], "index"), 101, 5, attributes);
-			if(!KvGetNum(BossKV[Special[client]], "show", 0))
+			new BossWeapon=SpawnWeapon(client, weapon, KvGetNum(BossKV[Special[boss]], "index"), 101, 5, attributes);
+			if(!KvGetNum(BossKV[Special[boss]], "show", 0))
 			{
 				SetEntProp(BossWeapon, Prop_Send, "m_iWorldModelIndex", -1);
 				SetEntProp(BossWeapon, Prop_Send, "m_nModelIndexOverrides", -1, _, 0);
 				SetEntPropFloat(BossWeapon, Prop_Send, "m_flModelScale", 0.001);
 			}
-			SetEntPropEnt(Boss[client], Prop_Send, "m_hActiveWeapon", BossWeapon);
+			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", BossWeapon);
 		}
 		else
 		{
@@ -3133,11 +3130,11 @@ EquipBoss(client)
 		}
 	}
 
-	KvGoBack(BossKV[Special[client]]);
-	new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[client]], "class", 1);
-	if(TF2_GetPlayerClass(Boss[client])!=class)
+	KvGoBack(BossKV[Special[boss]]);
+	new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1);
+	if(TF2_GetPlayerClass(client)!=class)
 	{
-		TF2_SetPlayerClass(Boss[client], class);
+		TF2_SetPlayerClass(client, class, _, false);
 	}
 }
 
@@ -3147,19 +3144,6 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	if(!IsValidClient(client))
 	{
 		return Plugin_Continue;
-	}
-
-	KvRewind(BossKV[Special[boss]]);
-	TF2_RemovePlayerDisguise(client);
-	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1));
-	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
-
-	if(GetClientTeam(client)!=BossTeam)
-	{
-		SetEntProp(client, Prop_Send, "m_lifeState", 2);
-		ChangeClientTeam(client, BossTeam);
-		SetEntProp(client, Prop_Send, "m_lifeState", 0);
-		TF2_RespawnPlayer(client);
 	}
 
 	if(!IsPlayerAlive(client))
@@ -3173,6 +3157,19 @@ public Action:MakeBoss(Handle:timer, any:boss)
 			return Plugin_Continue;
 		}
 	}
+
+	if(GetClientTeam(client)!=BossTeam)
+	{
+		SetEntProp(client, Prop_Send, "m_lifeState", 2);
+		ChangeClientTeam(client, BossTeam);
+		SetEntProp(client, Prop_Send, "m_lifeState", 0);
+		TF2_RespawnPlayer(client);
+	}
+
+	KvRewind(BossKV[Special[boss]]);
+	TF2_RemovePlayerDisguise(client);
+	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
+	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	switch(KvGetNum(BossKV[Special[boss]], "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
 	{
@@ -3632,15 +3629,6 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		return Plugin_Continue;
-	}
-
-	if(LastClass[client]!=TFClass_Unknown)
-	{
-		SetEntProp(client, Prop_Send, "m_lifeState", 2);
-		TF2_SetPlayerClass(client, LastClass[client]);
-		SetEntProp(client, Prop_Send, "m_lifeState", 0);
-		LastClass[client]=TFClass_Unknown;
-		TF2_RespawnPlayer(client);
 	}
 
 	if(!IsVoteInProgress() && GetClientClassinfoCookie(client) && !(FF2flags[client] & FF2FLAG_CLASSHELPED))
@@ -4292,7 +4280,6 @@ public OnClientPutInServer(client)
 	{
 		SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
 	}
-	LastClass[client]=TFClass_Unknown;
 }
 
 public OnClientDisconnect(client)
@@ -5123,8 +5110,6 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		BossHealth[boss]=0;
 		UpdateHealthBar();
 
-		CreateTimer(0.5, Timer_RestoreLastClass, GetClientUserId(client));
-
 		Stabbed[boss]=0.0;
 		Marketed[boss]=0.0;
 		return Plugin_Continue;
@@ -5152,26 +5137,6 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				}
 			}
 		}
-	}
-	return Plugin_Continue;
-}
-
-public Action:Timer_RestoreLastClass(Handle:timer, any:userid)
-{
-	new client=GetClientOfUserId(userid);
-	if(LastClass[client])
-	{
-		TF2_SetPlayerClass(client, LastClass[client]);
-	}
-
-	LastClass[client]=TFClass_Unknown;
-	if(BossTeam==_:TFTeam_Red)
-	{
-		ChangeClientTeam(client, _:TFTeam_Blue);
-	}
-	else
-	{
-		ChangeClientTeam(client, _:TFTeam_Red);
 	}
 	return Plugin_Continue;
 }
@@ -6929,11 +6894,6 @@ FindCompanion(boss, players, bool:omit[])
 			{
 				PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
 				BossLivesMax[companion]=1;
-			}
-
-			if(LastClass[companion]==TFClass_Unknown)
-			{
-				LastClass[companion]=TF2_GetPlayerClass(companion);
 			}
 
 			playersNeeded++;
