@@ -6290,20 +6290,6 @@ stock SpawnSmallHealthPackAt(client, team=0)
 	}
 }
 
-public Action:Timer_StopTickle(Handle:timer, any:userid)
-{
-	new client=GetClientOfUserId(userid);
-	if(!IsValidClient(client) || !IsPlayerAlive(client))
-	{
-		return;
-	}
-
-	if(!GetEntProp(client, Prop_Send, "m_bIsReadyToHighFive") && !IsValidEntity(GetEntPropEnt(client, Prop_Send, "m_hHighFivePartner")))
-	{
-		TF2_RemoveCondition(client, TFCond_Taunting);
-	}
-}
-
 stock IncrementHeadCount(client)
 {
 	if(!TF2_IsPlayerInCondition(client, TFCond_DemoBuff))
