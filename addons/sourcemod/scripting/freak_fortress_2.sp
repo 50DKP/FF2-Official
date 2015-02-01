@@ -4364,11 +4364,6 @@ public Action:ClientTimer(Handle:timer)
 	{
 		if(IsValidClient(client) && !IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
 		{
-			if(GetClientHealth(client)>750)  //Arbitrary value to test for clients getting boss overheal
-			{
-				Debug("%N has a suspicious amount of health", client);
-			}
-
 			SetHudTextParams(-1.0, 0.88, 0.35, 90, 255, 90, 255, 0, 0.35, 0.0, 0.1);
 			if(!IsPlayerAlive(client))
 			{
@@ -4967,9 +4962,17 @@ public Action:OnSuicide(client, const String:command[], args)
 
 public Action:OnChangeClass(client, const String:command[], args)
 {
+	Debug("Entered OnChangeClass with command %s while CheckRoundState() is %i (IsBoss(%N): %i)", command, CheckRoundState(), client, IsBoss(client));
 	if(Enabled && IsBoss(client) && IsPlayerAlive(client))
 	{
-		return Plugin_Handled;
+		if(IsPlayerAlive(client))
+		{
+			return Plugin_Handled;
+		}
+		else
+		{
+			//ChangeClass[client]=
+		}
 	}
 	return Plugin_Continue;
 }

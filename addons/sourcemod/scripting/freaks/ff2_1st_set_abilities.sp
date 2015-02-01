@@ -12,7 +12,7 @@
 #define CBS_MAX_ARROWS 9
 
 #define SOUND_SLOW_MO_START "replay/enterperformancemode.wav"  //Used when Ninja Spy enters slow mo
-#define SOUND_SLOW_MO_END "replay/enterperformancemode.wav"  //Used when Ninja Spy exits slow mo
+#define SOUND_SLOW_MO_END "replay/exitperformancemode.wav"  //Used when Ninja Spy exits slow mo
 #define SOUND_DEMOPAN_RAGE "ui/notification_alert.wav"  //Used when Demopan rages
 
 #define PLUGIN_VERSION "1.10.4"
@@ -157,7 +157,8 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 	}
 	else if(!strcmp(ability_name, "rage_tradespam"))
 	{
-		Timer_Demopan_Rage(INVALID_HANDLE, 1);
+		//Timer_Demopan_Rage(INVALID_HANDLE, 1);
+		StartDemopanRage();
 	}
 	else if(!strcmp(ability_name, "rage_cbs_bowrage"))
 	{
@@ -407,15 +408,22 @@ public Action:SaveMinion(client, &attacker, &inflictor, &Float:damage, &damagety
 	return Plugin_Continue;
 }
 
-public Action:Timer_Demopan_Rage(Handle:timer, any:count)
+StartDemopanRage()
 {
-	if(count==13)
+	EmitSoundToAll(SOUND_DEMOPAN_RAGE, _, _, _, _, _, _, _, _, _, false);
+	DisplayOverlay("freak_fortress_2/demopan/trade_1");
+	CreateTimer(1.0, Timer_Demopan_Rage, 2);
+}
+
+public Action:Timer_Demopan_Rage(Handle:timer, any:count)  //TODO: Make this rage configurable
+{
+	if(count==13)  //Rage has finished-reset it in 6 seconds
 	{
-		CreateTimer(6.0, Timer_Demopan_Rage, 9001);
+		CreateTimer(6.0, Timer_Demopan_Rage, 0);
 	}
-	else if(count>13)
+	else if(!count)  //Stop the rage
 	{
-		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
+		/*SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 		for(new client=1; client<=MaxClients; client++)
 		{
 			if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
@@ -423,15 +431,18 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)
 				ClientCommand(client, "r_screenoverlay \"freak_fortress_2/demopan/trade_0\"");
 			}
 		}
-		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
+		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);*/
+		DisplayOverlay("freak_fortress_2/demopan/trade_0");
 		return Plugin_Stop;
 	}
 	else
 	{
-		decl String:overlay[128];
-		Format(overlay, sizeof(overlay), "r_screenoverlay \"freak_fortress_2/demopan/trade_%i\"", count);
+		decl String:overlay[PLATFORM_MAX_PATH];
+		Format(overlay, sizeof(overlay), "freak_fortress_2/demopan/trade_%i", count);
+		DisplayOverlay(overlay);
+		//Format(overlay, sizeof(overlay), "r_screenoverlay \"freak_fortress_2/demopan/trade_%i\"", count);
 		EmitSoundToAll(SOUND_DEMOPAN_RAGE, _, _, _, _, _, _, _, _, _, false);
-		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
+		/*SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 		for(new client=1; client<=MaxClients; client++)
 		{
 			if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
@@ -440,17 +451,33 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)
 			}
 		}
 
-		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
-		if(count>1)
-		{
-			CreateTimer(0.5/(count*1.0), Timer_Demopan_Rage, count+1);
-		}
-		else
+		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);*/
+		//if(count>1)
+		//{
+		CreateTimer(0.5/(count), Timer_Demopan_Rage, count+1);
+		//}
+		/*else
 		{
 			CreateTimer(1.0, Timer_Demopan_Rage, 2);
-		}
+		}*/
 	}
 	return Plugin_Continue;
+}
+
+DisplayOverlay(const String:overlay[])
+{
+	decl String:command[PLATFORM_MAX_PATH];
+	Format(command, sizeof(command), "r_screenoverlay \"%s\"", overlay);
+
+	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
+	for(new client=1; client<=MaxClients; client++)
+	{
+		if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
+		{
+			FakeClientCommand(client, command);  //Was: ClientCommand
+		}
+	}
+	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
 }
 
 Rage_Bow(boss)
