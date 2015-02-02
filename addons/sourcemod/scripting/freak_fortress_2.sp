@@ -104,7 +104,6 @@ new Float:Marketed[MAXPLAYERS+1];
 new Float:KSpreeTimer[MAXPLAYERS+1];
 new KSpreeCount[MAXPLAYERS+1];
 new Float:GlowTimer[MAXPLAYERS+1];
-new TFClassType:changeClass[MAXPLAYERS+1];
 new shortname[MAXPLAYERS+1];
 new bool:emitRageSound[MAXPLAYERS+1];
 
@@ -2168,7 +2167,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	if(!teamHasPlayers[0] || !teamHasPlayers[1])
 	{
-		if(IsValidClient(Boss[0]))
+		if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
 		{
 			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 2);
 			ChangeClientTeam(Boss[0], BossTeam);
@@ -2178,12 +2177,8 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 		for(new client; client<=MaxClients; client++)
 		{
-			if(IsValidClient(client) && !IsBoss(client) && GetClientTeam(client)>_:TFTeam_Spectator)
+			if(IsValidClient(client) && !IsBoss(client) && GetClientTeam(client)==BossTeam)
 			{
-				SetEntProp(client, Prop_Send, "m_lifeState", 2);
-				ChangeClientTeam(client, OtherTeam);
-				SetEntProp(client, Prop_Send, "m_lifeState", 0);
-				TF2_RespawnPlayer(client);
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
 			}
 		}
@@ -2677,7 +2672,7 @@ public Action:StartBossTimer(Handle:timer)
 		if(IsValidClient(client) && !IsBoss(client) && IsPlayerAlive(client))
 		{
 			playing++;
-			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client));
+			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client));  //TODO:  Is this needed?
 		}
 	}
 
@@ -3640,7 +3635,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 	SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
-	if(GetClientTeam(client)!=OtherTeam)
+	if(GetClientTeam(client)==BossTeam)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, OtherTeam);
@@ -4271,7 +4266,6 @@ public OnClientPutInServer(client)
 	FF2flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
-	changeClass[client]=TFClass_Unknown;
 
 	if(AreClientCookiesCached(client))
 	{
@@ -4966,40 +4960,41 @@ public Action:OnChangeClass(client, const String:command[], args)
 {
 	if(Enabled && IsBoss(client) && IsPlayerAlive(client))
 	{
+		//Don't allow the boss to switch classes but instead set their *desired* class (for the next round)
 		decl String:class[16];
 		GetCmdArg(1, class, sizeof(class));
 		Debug("%s", class);
 		if(StrEqual(class, "scout", false))
 		{
-			changeClass[client]=TFClass_Scout;
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Scout);
 		}
 		else if(StrEqual(class, "soldier", false))
 		{
-			changeClass[client]=TFClass_Soldier;
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Soldier);
 		}
 		else if(StrEqual(class, "pyro", false))
 		{
-			changeClass[client]=TFClass_Pyro;
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Pyro);
 		}
 		else if(StrEqual(class, "demoman", false))
 		{
-			changeClass[client]=TFClass_DemoMan;
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_DemoMan);
 		}
 		else if(StrEqual(class, "heavyweapons", false))
 		{
-			changeClass[client]=TFClass_Heavy;
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Heavy);
 		}
 		else if(StrEqual(class, "medic", false))
 		{
-			changeClass[client]=TFClass_Medic;
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Medic);
 		}
 		else if(StrEqual(class, "sniper", false))
 		{
-			changeClass[client]=TFClass_Sniper;
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Sniper);
 		}
 		else if(StrEqual(class, "spy", false))
 		{
-			changeClass[client]=TFClass_Spy;
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Spy);
 		}
 		return Plugin_Handled;
 	}
@@ -5139,13 +5134,6 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
 		}
-
-		if(changeClass[client]!=TFClass_Unknown)
-		{
-			TF2_SetPlayerClass(client, changeClass[client]);
-			changeClass[client]=TFClass_Unknown;
-		}
-		ChangeClientTeam(client, (BossTeam=_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
 
 		BossHealth[boss]=0;
 		UpdateHealthBar();
