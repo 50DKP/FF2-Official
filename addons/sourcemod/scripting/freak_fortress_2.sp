@@ -104,6 +104,7 @@ new Float:Marketed[MAXPLAYERS+1];
 new Float:KSpreeTimer[MAXPLAYERS+1];
 new KSpreeCount[MAXPLAYERS+1];
 new Float:GlowTimer[MAXPLAYERS+1];
+new TFClassType:changeClass[MAXPLAYERS+1];
 new shortname[MAXPLAYERS+1];
 new bool:emitRageSound[MAXPLAYERS+1];
 
@@ -4264,21 +4265,22 @@ stock SetArenaCapEnableTime(Float:time)
 
 public OnClientPutInServer(client)
 {
-	FF2flags[client]=0;
 	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
 	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+
+	FF2flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
-	if(!AreClientCookiesCached(client))
-	{
-		return;
-	}
+	changeClass[client]=TFClass_Unknown;
 
-	new String:buffer[24];
-	GetClientCookie(client, FF2Cookies, buffer, 24);
-	if(!buffer[0])
+	if(AreClientCookiesCached(client))
 	{
-		SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
+		new String:buffer[24];
+		GetClientCookie(client, FF2Cookies, buffer, sizeof(buffer));
+		if(!buffer[0])
+		{
+			SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
+		}
 	}
 }
 
@@ -4962,17 +4964,44 @@ public Action:OnSuicide(client, const String:command[], args)
 
 public Action:OnChangeClass(client, const String:command[], args)
 {
-	Debug("Entered OnChangeClass with command %s while CheckRoundState() is %i (IsBoss(%N): %i)", command, CheckRoundState(), client, IsBoss(client));
 	if(Enabled && IsBoss(client) && IsPlayerAlive(client))
 	{
-		if(IsPlayerAlive(client))
+		decl String:class[16];
+		GetCmdArg(1, class, sizeof(class));
+		Debug("%s", class);
+		if(StrEqual(class, "scout", false))
 		{
-			return Plugin_Handled;
+			changeClass[client]=TFClass_Scout;
 		}
-		else
+		else if(StrEqual(class, "soldier", false))
 		{
-			//ChangeClass[client]=
+			changeClass[client]=TFClass_Soldier;
 		}
+		else if(StrEqual(class, "pyro", false))
+		{
+			changeClass[client]=TFClass_Pyro;
+		}
+		else if(StrEqual(class, "demoman", false))
+		{
+			changeClass[client]=TFClass_DemoMan;
+		}
+		else if(StrEqual(class, "heavyweapons", false))
+		{
+			changeClass[client]=TFClass_Heavy;
+		}
+		else if(StrEqual(class, "medic", false))
+		{
+			changeClass[client]=TFClass_Medic;
+		}
+		else if(StrEqual(class, "sniper", false))
+		{
+			changeClass[client]=TFClass_Sniper;
+		}
+		else if(StrEqual(class, "spy", false))
+		{
+			changeClass[client]=TFClass_Spy;
+		}
+		return Plugin_Handled;
 	}
 	return Plugin_Continue;
 }
@@ -5110,6 +5139,14 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
 		}
+
+		if(changeClass[client]!=TFClass_Unknown)
+		{
+			TF2_SetPlayerClass(client, changeClass[client]);
+			changeClass[client]=TFClass_Unknown;
+		}
+		ChangeClientTeam(client, (BossTeam=_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
+
 		BossHealth[boss]=0;
 		UpdateHealthBar();
 

@@ -454,7 +454,8 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)  //TODO: Make this rag
 		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);*/
 		//if(count>1)
 		//{
-		CreateTimer(0.5/(count), Timer_Demopan_Rage, count+1);
+		CreateTimer(0.5/float(count), Timer_Demopan_Rage, count+1);
+		Debug("%i", 0.5/float(count));
 		//}
 		/*else
 		{
@@ -474,7 +475,7 @@ DisplayOverlay(const String:overlay[])
 	{
 		if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
 		{
-			FakeClientCommand(client, command);  //Was: ClientCommand
+			ClientCommand(client, command);
 		}
 	}
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
