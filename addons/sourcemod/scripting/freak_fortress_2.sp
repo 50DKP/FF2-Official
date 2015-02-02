@@ -5901,12 +5901,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						if(FF2flags[attacker] & FF2FLAG_ROCKET_JUMPING)
 						{
-							damage=(Pow(float(BossHealthMax[boss]), (0.74074))+512.0-(Marketed[Boss[boss]]/128*float(BossHealthMax[boss])))/3.0;
+							damage=(Pow(float(BossHealthMax[boss]), 0.74074)+512.0-(Marketed[client]/128*float(BossHealthMax[boss])))/3.0;
 							damagetype|=DMG_CRIT;
 
-							if(Marketed[Boss[boss]]<5)
+							if(Marketed[client]<5)
 							{
-								Marketed[Boss[boss]]++;
+								Marketed[client]++;
 							}
 
 							PrintHintText(attacker, "%t", "Market Gardener");  //You just market-gardened the boss!
