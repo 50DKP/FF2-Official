@@ -157,8 +157,7 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 	}
 	else if(!strcmp(ability_name, "rage_tradespam"))
 	{
-		//Timer_Demopan_Rage(INVALID_HANDLE, 1);
-		StartDemopanRage();
+		CreateTimer(0.0, Timer_Demopan_Rage, 1);
 	}
 	else if(!strcmp(ability_name, "rage_cbs_bowrage"))
 	{
@@ -408,29 +407,31 @@ public Action:SaveMinion(client, &attacker, &inflictor, &Float:damage, &damagety
 	return Plugin_Continue;
 }
 
-StartDemopanRage()
-{
-	EmitSoundToAll(SOUND_DEMOPAN_RAGE, _, _, _, _, _, _, _, _, _, false);
-	DisplayOverlay("freak_fortress_2/demopan/trade_1");
-	CreateTimer(1.0, Timer_Demopan_Rage, 2);
-}
-
 public Action:Timer_Demopan_Rage(Handle:timer, any:count)  //TODO: Make this rage configurable
 {
-	if(count==13)  //Rage has finished-reset it in 6 seconds
+	if(count==13)  //Rage has finished-reset it in 6 seconds (trade_0 is 100% transparent apparently)
 	{
 		CreateTimer(6.0, Timer_Demopan_Rage, 0);
 	}
 	else
 	{
 		decl String:overlay[PLATFORM_MAX_PATH];
-		Format(overlay, sizeof(overlay), "freak_fortress_2/demopan/trade_%i", count);
-		DisplayOverlay(overlay);
+		Format(overlay, sizeof(overlay), "r_screenoverlay \"freak_fortress_2/demopan/trade_%i\"", count);
+
+		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);  //Allow normal players to use r_screenoverlay
+		for(new client=1; client<=MaxClients; client++)
+		{
+			if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
+			{
+				ClientCommand(client, overlay);
+			}
+		}
+		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);  //Reset the cheat permissions
+
 		if(count)
 		{
 			EmitSoundToAll(SOUND_DEMOPAN_RAGE, _, _, _, _, _, _, _, _, _, false);
-			CreateTimer(1.0/float(count), Timer_Demopan_Rage, count+1);
-			Debug("%f %f", 1.0/float(count), 1.0/(_:count*1.0));
+			CreateTimer(count==1 ? 1.0 : 0.5/float(count), Timer_Demopan_Rage, count+1);  //Give a longer delay between the first and second overlay for "smoothness"
 		}
 		else  //Stop the rage
 		{
@@ -438,22 +439,6 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)  //TODO: Make this rag
 		}
 	}
 	return Plugin_Continue;
-}
-
-DisplayOverlay(const String:overlay[])
-{
-	decl String:command[PLATFORM_MAX_PATH];
-	Format(command, sizeof(command), "r_screenoverlay \"%s\"", overlay);
-
-	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
-	for(new client=1; client<=MaxClients; client++)
-	{
-		if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
-		{
-			ClientCommand(client, command);
-		}
-	}
-	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
 }
 
 Rage_Bow(boss)
