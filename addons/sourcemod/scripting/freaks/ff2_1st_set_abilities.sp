@@ -412,7 +412,7 @@ StartDemopanRage()
 {
 	EmitSoundToAll(SOUND_DEMOPAN_RAGE, _, _, _, _, _, _, _, _, _, false);
 	DisplayOverlay("freak_fortress_2/demopan/trade_1");
-	CreateTimer(0.5, Timer_Demopan_Rage, 2);
+	CreateTimer(1.0, Timer_Demopan_Rage, 2);
 }
 
 public Action:Timer_Demopan_Rage(Handle:timer, any:count)  //TODO: Make this rage configurable
@@ -429,8 +429,8 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)  //TODO: Make this rag
 		if(count)
 		{
 			EmitSoundToAll(SOUND_DEMOPAN_RAGE, _, _, _, _, _, _, _, _, _, false);
-			CreateTimer(0.5/float(count), Timer_Demopan_Rage, count+1);
-			Debug("%i", 0.5/(_:count*1.0));
+			CreateTimer(1.0/float(count), Timer_Demopan_Rage, count+1);
+			Debug("%f %f", 1.0/float(count), 1.0/(_:count*1.0));
 		}
 		else  //Stop the rage
 		{
