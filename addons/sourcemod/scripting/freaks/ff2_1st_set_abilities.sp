@@ -412,7 +412,7 @@ StartDemopanRage()
 {
 	EmitSoundToAll(SOUND_DEMOPAN_RAGE, _, _, _, _, _, _, _, _, _, false);
 	DisplayOverlay("freak_fortress_2/demopan/trade_1");
-	CreateTimer(1.0, Timer_Demopan_Rage, 2);
+	CreateTimer(0.5, Timer_Demopan_Rage, 2);
 }
 
 public Action:Timer_Demopan_Rage(Handle:timer, any:count)  //TODO: Make this rage configurable
@@ -421,46 +421,21 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)  //TODO: Make this rag
 	{
 		CreateTimer(6.0, Timer_Demopan_Rage, 0);
 	}
-	else if(!count)  //Stop the rage
-	{
-		/*SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
-		for(new client=1; client<=MaxClients; client++)
-		{
-			if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
-			{
-				ClientCommand(client, "r_screenoverlay \"freak_fortress_2/demopan/trade_0\"");
-			}
-		}
-		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);*/
-		DisplayOverlay("freak_fortress_2/demopan/trade_0");
-		return Plugin_Stop;
-	}
 	else
 	{
 		decl String:overlay[PLATFORM_MAX_PATH];
 		Format(overlay, sizeof(overlay), "freak_fortress_2/demopan/trade_%i", count);
 		DisplayOverlay(overlay);
-		//Format(overlay, sizeof(overlay), "r_screenoverlay \"freak_fortress_2/demopan/trade_%i\"", count);
-		EmitSoundToAll(SOUND_DEMOPAN_RAGE, _, _, _, _, _, _, _, _, _, false);
-		/*SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
-		for(new client=1; client<=MaxClients; client++)
+		if(count)
 		{
-			if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
-			{
-				ClientCommand(client, overlay);
-			}
+			EmitSoundToAll(SOUND_DEMOPAN_RAGE, _, _, _, _, _, _, _, _, _, false);
+			CreateTimer(0.5/float(count), Timer_Demopan_Rage, count+1);
+			Debug("%i", 0.5/(_:count*1.0));
 		}
-
-		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);*/
-		//if(count>1)
-		//{
-		CreateTimer(0.5/float(count), Timer_Demopan_Rage, count+1);
-		Debug("%i", 0.5/float(count));
-		//}
-		/*else
+		else  //Stop the rage
 		{
-			CreateTimer(1.0, Timer_Demopan_Rage, 2);
-		}*/
+			return Plugin_Stop;
+		}
 	}
 	return Plugin_Continue;
 }
