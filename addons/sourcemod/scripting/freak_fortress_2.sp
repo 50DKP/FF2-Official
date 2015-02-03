@@ -6800,15 +6800,46 @@ ForceTeamWin(team)
 	AcceptEntityInput(entity, "SetWinner");
 }
 
-public bool:PickCharacter(client, companion)
+public bool:PickCharacter(boss, companion)
 {
-	if(client==companion)
+	if(boss==companion)
 	{
-		Special[client]=Incoming[client];
-		Incoming[client]=-1;
-		if(Special[client]!=-1)  //We've already picked a boss through Command_SetNextBoss
+		Special[boss]=Incoming[boss];
+		Incoming[boss]=-1;
+		if(Special[boss]!=-1)  //We've already picked a boss through Command_SetNextBoss
 		{
-			PrecacheCharacter(Special[client]);
+			new Action:action;
+			Call_StartForward(OnSpecialSelected);
+			Call_PushCell(boss);
+			new characterIndex=Special[boss];
+			Call_PushCellRef(characterIndex);
+			decl String:newName[64];
+			KvRewind(BossKV[Special[boss]]);
+			KvGetString(BossKV[Special[boss]], "name", newName, sizeof(newName));
+			Call_PushStringEx(newName, sizeof(newName), 0, SM_PARAM_COPYBACK);
+			Call_Finish(action);
+			if(action==Plugin_Changed)
+			{
+				if(newName[0])
+				{
+					decl String:characterName[64];
+					for(new character; BossKV[character] && character<MAXSPECIALS; character++)
+					{
+						KvRewind(BossKV[character]);
+						KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
+						if(!strcmp(newName, characterName))
+						{
+							Special[boss]=character;
+							PrecacheCharacter(Special[boss]);
+							return true;
+						}
+					}
+				}
+				Special[boss]=characterIndex;
+				PrecacheCharacter(Special[boss]);
+				return true;
+			}
+			PrecacheCharacter(Special[boss]);
 			return true;
 		}
 
@@ -6819,19 +6850,19 @@ public bool:PickCharacter(client, companion)
 				new i=GetRandomInt(0, chances[chancesIndex-1]);
 				while(chancesIndex>=2 && i<chances[chancesIndex-1])
 				{
-					Special[client]=chances[chancesIndex-2]-1;
+					Special[boss]=chances[chancesIndex-2]-1;
 					chancesIndex-=2;
 				}
 			}
 			else
 			{
-				Special[client]=GetRandomInt(0, Specials-1);
+				Special[boss]=GetRandomInt(0, Specials-1);
 			}
 
-			KvRewind(BossKV[Special[client]]);
-			if(KvGetNum(BossKV[Special[client]], "blocked"))
+			KvRewind(BossKV[Special[boss]]);
+			if(KvGetNum(BossKV[Special[boss]], "blocked"))
 			{
-				Special[client]=0;
+				Special[boss]=0;
 				continue;
 			}
 			break;
@@ -6850,14 +6881,14 @@ public bool:PickCharacter(client, companion)
 			KvGetString(BossKV[character], "name", bossName, sizeof(bossName), "=Failed name=");
 			if(!strcmp(bossName, companionName, false))
 			{
-				Special[client]=character;
+				Special[boss]=character;
 				break;
 			}
 
 			KvGetString(BossKV[character], "filename", bossName, sizeof(bossName), "=Failed name=");
 			if(!strcmp(bossName, companionName, false))
 			{
-				Special[client]=character;
+				Special[boss]=character;
 				break;
 			}
 			character++;
@@ -6871,12 +6902,12 @@ public bool:PickCharacter(client, companion)
 
 	new Action:action;
 	Call_StartForward(OnSpecialSelected);
-	Call_PushCell(client);
-	new characterIndex=Special[client];
+	Call_PushCell(boss);
+	new characterIndex=Special[boss];
 	Call_PushCellRef(characterIndex);
 	decl String:newName[64];
-	KvRewind(BossKV[Special[client]]);
-	KvGetString(BossKV[Special[client]], "name", newName, sizeof(newName));
+	KvRewind(BossKV[Special[boss]]);
+	KvGetString(BossKV[Special[boss]], "name", newName, sizeof(newName));
 	Call_PushStringEx(newName, sizeof(newName), 0, SM_PARAM_COPYBACK);
 	Call_Finish(action);
 	if(action==Plugin_Changed)
@@ -6890,17 +6921,17 @@ public bool:PickCharacter(client, companion)
 				KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
 				if(!strcmp(newName, characterName))
 				{
-					Special[client]=character;
-					PrecacheCharacter(Special[client]);
+					Special[boss]=character;
+					PrecacheCharacter(Special[boss]);
 					return true;
 				}
 			}
 		}
-		Special[client]=characterIndex;
-		PrecacheCharacter(Special[client]);
+		Special[boss]=characterIndex;
+		PrecacheCharacter(Special[boss]);
 		return true;
 	}
-	PrecacheCharacter(Special[client]);
+	PrecacheCharacter(Special[boss]);
 	return true;
 }
 
