@@ -86,6 +86,17 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	return Plugin_Continue;
 }
 
+public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])
+{
+	if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
+	{
+		decl String:model[PLATFORM_MAX_PATH];
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
+		PrecacheModel(model);
+	}
+	return Plugin_Continue;
+}
+
 public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	for(new client; client<=MaxClients; client++)
@@ -756,7 +767,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 			if(IsValidEntity(prop))
 			{
 				decl String:model[PLATFORM_MAX_PATH];
-				FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, PLATFORM_MAX_PATH);
+				FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
 				SetEntityModel(prop, model);
 				SetEntityMoveType(prop, MOVETYPE_VPHYSICS);
 				SetEntProp(prop, Prop_Send, "m_CollisionGroup", 1);

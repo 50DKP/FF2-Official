@@ -27,6 +27,23 @@ public OnPluginStart2()
 	PrecacheSound("items/pumpkin_pickup.wav");
 }
 
+public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])
+{
+	if(FF2_HasAbility(boss, this_plugin_name, OBJECTS))
+	{
+		decl String:model[PLATFORM_MAX_PATH];
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 2, model, sizeof(model));
+		PrecacheModel(model);
+	}
+	else if(FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
+	{
+		decl String:model[PLATFORM_MAX_PATH];
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 2, model, sizeof(model));
+		PrecacheModel(model);
+	}
+	return Plugin_Continue;
+}
+
 public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
