@@ -93,7 +93,6 @@ public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])
 	{
 		decl String:model[PLATFORM_MAX_PATH];
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
-		Debug("Precaching model %s", model);
 		PrecacheModel(model);
 	}
 	return Plugin_Continue;

@@ -4963,7 +4963,6 @@ public Action:OnChangeClass(client, const String:command[], args)
 		//Don't allow the boss to switch classes but instead set their *desired* class (for the next round)
 		decl String:class[16];
 		GetCmdArg(1, class, sizeof(class));
-		Debug("%s", class);
 		if(StrEqual(class, "scout", false))
 		{
 			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Scout);
@@ -5126,6 +5125,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		new boss=GetBossIndex(client);
 		if(boss==-1 || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
+			Debug("Dead Ringer");
 			return Plugin_Continue;
 		}
 
@@ -5143,7 +5143,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		return Plugin_Continue;
 	}
 
-	if(TF2_GetPlayerClass(client)==TFClass_Engineer)
+	if(TF2_GetPlayerClass(client)==TFClass_Engineer && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
 		decl String:name[PLATFORM_MAX_PATH];
 		FakeClientCommand(client, "destroy 2");
@@ -5889,7 +5889,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						if(FF2flags[attacker] & FF2FLAG_ROCKET_JUMPING)
 						{
-							damage=(Pow(float(BossHealthMax[boss]), 0.74074)+512.0-(Marketed[client]/128*float(BossHealthMax[boss])))/3.0;
+							damage=(Pow(float(BossHealthMax[boss]), 0.74074)+512.0-(Marketed[client]/128.0*float(BossHealthMax[boss])))/3.0;
 							damagetype|=DMG_CRIT;
 
 							if(Marketed[client]<5)
@@ -5902,6 +5902,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 							EmitSoundToClient(attacker, "player/doubledonk.wav", _, _, _, _, 0.6, _, _, position, _, false);
 							EmitSoundToClient(client, "player/doubledonk.wav", _, _, _, _, 0.6, _, _, position, _, false);
+							return Plugin_Changed;
 						}
 					}
 					case 525, 595:  //Diamondback, Manmelter
@@ -6235,7 +6236,6 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 		maxHealth=BossHealthMax[boss];
 		return Plugin_Handled;
 	}
-	Debug("%N is NOT a boss!", client);
 	return Plugin_Continue;
 }
 
@@ -6816,18 +6816,19 @@ public bool:PickCharacter(boss, companion)
 			decl String:newName[64];
 			KvRewind(BossKV[Special[boss]]);
 			KvGetString(BossKV[Special[boss]], "name", newName, sizeof(newName));
-			Call_PushStringEx(newName, sizeof(newName), 0, SM_PARAM_COPYBACK);
+			Call_PushString(newName);
 			Call_Finish(action);
 			if(action==Plugin_Changed)
 			{
 				if(newName[0])
 				{
+					Debug("New name is %s", newName);
 					decl String:characterName[64];
 					for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 					{
 						KvRewind(BossKV[character]);
 						KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
-						if(!strcmp(newName, characterName))
+						if(!strcmp(newName, characterName, false))
 						{
 							Special[boss]=character;
 							PrecacheCharacter(Special[boss]);
@@ -6908,18 +6909,19 @@ public bool:PickCharacter(boss, companion)
 	decl String:newName[64];
 	KvRewind(BossKV[Special[boss]]);
 	KvGetString(BossKV[Special[boss]], "name", newName, sizeof(newName));
-	Call_PushStringEx(newName, sizeof(newName), 0, SM_PARAM_COPYBACK);
+	Call_PushString(newName);
 	Call_Finish(action);
 	if(action==Plugin_Changed)
 	{
 		if(newName[0])
 		{
+			Debug("New name is %s", newName);
 			decl String:characterName[64];
 			for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 			{
 				KvRewind(BossKV[character]);
 				KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
-				if(!strcmp(newName, characterName))
+				if(!strcmp(newName, characterName, false))
 				{
 					Special[boss]=character;
 					PrecacheCharacter(Special[boss]);
