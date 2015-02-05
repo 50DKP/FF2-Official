@@ -1,6 +1,6 @@
 env:
-    - SMVERSION=1.6
     - SMVERSION=1.7
+    - SMVERSION=1.8
 before_install:
     - sudo apt-get -qq update && sudo apt-get install gcc-multilib lynx lib32stdc++6
 install:
@@ -16,18 +16,12 @@ install:
     - unzip $(basename "$TF2ITEMSPACKAGE")
 before_script:
     - cd addons/sourcemod/scripting/
-    - wget "http://www.doctormckay.com/download/scripting/include/morecolors.inc"
-    - mv morecolors.inc include/
-    - wget "http://hg.limetech.org/projects/steamtools/raw-file/tip/plugin/steamtools.inc"
-    - mv steamtools.inc include/
-    - wget "https://bitbucket.org/GoD_Tony/updater/raw/94c43b6e49ac2e8f322b252bce52d6aef5c6a477/include/updater.inc"
-    - mv updater.inc include/
-    - wget "https://raw.githubusercontent.com/Flyflo/SM-Goomba-Stomp/master/addons/sourcemod/scripting/include/goomba.inc"
-    - mv goomba.inc include/
-    - wget "https://forums.alliedmods.net/attachment.php?attachmentid=115795&d=1360508618"
-    - mv 'attachment.php?attachmentid=115795&d=1360508618' include/rtd.inc
-    - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508"
-    - mv 'attachment.php?attachmentid=116849&d=1377667508' include/tf2attributes.inc
+    - wget "http://www.doctormckay.com/download/scripting/include/morecolors.inc" -O include/morecolors.inc
+    - wget "http://hg.limetech.org/projects/steamtools/raw-file/tip/plugin/steamtools.inc" -O include/steamtools.inc
+    - wget "https://bitbucket.org/GoD_Tony/updater/raw/default/include/updater.inc" -O include/updater.inc
+    - wget "https://raw.githubusercontent.com/Flyflo/SM-Goomba-Stomp/master/addons/sourcemod/scripting/include/goomba.inc" -O include/goomba.inc
+    - wget "https://forums.alliedmods.net/attachment.php?attachmentid=115795&d=1360508618" -O include/rtd.inc
+    - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508" -O include/tf2attributes.inc
     - chmod +x spcomp
     - mkdir compiled compiled/freaks
 script: ./compile.sh freak_fortress_2.sp freaks/*.sp
