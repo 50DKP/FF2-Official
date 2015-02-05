@@ -8040,10 +8040,10 @@ public Native_FF2Version(Handle:plugin, numParams)
 
 public Native_GetBoss(Handle:plugin, numParams)
 {
-	new client=GetNativeCell(1);
-	if(IsValidClient(Boss[client]))
+	new boss=GetNativeCell(1);
+	if(boss>=0 && boss<=MaxClients && IsValidClient(Boss[boss]))
 	{
-		return GetClientUserId(Boss[client]);
+		return GetClientUserId(Boss[boss]);
 	}
 	return -1;
 }
