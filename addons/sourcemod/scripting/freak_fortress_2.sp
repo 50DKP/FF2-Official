@@ -37,7 +37,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define MINOR_REVISION "10"
 #define STABLE_REVISION "4"
 #define DEV_REVISION "Beta"
-#define BUILD_NUMBER "manual"
+#define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.4
 #else
@@ -317,8 +317,8 @@ static const String:ff2versiondates[][]=
 	"November 6, 2014",	//1.10.3
 	"November 6, 2014",	//1.10.3
 	"November 6, 2014",	//1.10.3
-	"January 18, 2014",	//1.10.4
-	"January 18, 2014"	//1.10.4
+	"January 18, 2015",	//1.10.4
+	"January 18, 2015"	//1.10.4
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -877,7 +877,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	OnAbility=CreateGlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell);
 	OnMusic=CreateGlobalForward("FF2_OnMusic", ET_Hook, Param_String, Param_FloatByRef);
 	OnTriggerHurt=CreateGlobalForward("FF2_OnTriggerHurt", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
-	OnSpecialSelected=CreateGlobalForward("FF2_OnSpecialSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String);
+	OnSpecialSelected=CreateGlobalForward("FF2_OnSpecialSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String);  //Boss, character index, character name
 	OnAddQueuePoints=CreateGlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
 	OnLoadCharacterSet=CreateGlobalForward("FF2_OnLoadCharacterSet", ET_Hook, Param_CellByRef, Param_String);
 	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell);  //Boss, lives left, max lives
@@ -6816,7 +6816,7 @@ public bool:PickCharacter(boss, companion)
 			decl String:newName[64];
 			KvRewind(BossKV[Special[boss]]);
 			KvGetString(BossKV[Special[boss]], "name", newName, sizeof(newName));
-			Call_PushString(newName);
+			Call_PushStringEx(newName, sizeof(newName), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 			Call_Finish(action);
 			if(action==Plugin_Changed)
 			{
@@ -6909,7 +6909,7 @@ public bool:PickCharacter(boss, companion)
 	decl String:newName[64];
 	KvRewind(BossKV[Special[boss]]);
 	KvGetString(BossKV[Special[boss]], "name", newName, sizeof(newName));
-	Call_PushString(newName);
+	Call_PushStringEx(newName, sizeof(newName), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_Finish(action);
 	if(action==Plugin_Changed)
 	{
