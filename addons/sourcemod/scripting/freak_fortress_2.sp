@@ -4074,7 +4074,7 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 
 public Action:Command_SetNextBoss(client, args)
 {
-	decl String:name[32], String:boss[64];
+	decl String:name[64], String:boss[64];
 
 	if(args<1)
 	{
@@ -4086,19 +4086,19 @@ public Action:Command_SetNextBoss(client, args)
 	for(new config; config<Specials; config++)
 	{
 		KvRewind(BossKV[config]);
-		KvGetString(BossKV[config], "name", boss, 64);
-		if(StrContains(boss, name, false)>=0)
+		KvGetString(BossKV[config], "name", boss, sizeof(boss));
+		if(StrContains(boss, name, false)!=-1)
 		{
 			Incoming[0]=config;
 			CReplyToCommand(client, "{olive}[FF2]{default} Set the next boss to %s", boss);
 			return Plugin_Handled;
 		}
 
-		KvGetString(BossKV[config], "filename", boss, 64);
-		if(StrContains(boss, name, false)>=0)
+		KvGetString(BossKV[config], "filename", boss, sizeof(boss));
+		if(StrContains(boss, name, false)!=-1)
 		{
 			Incoming[0]=config;
-			KvGetString(BossKV[config], "name", boss, 64);
+			KvGetString(BossKV[config], "name", boss, sizeof(boss));
 			CReplyToCommand(client, "{olive}[FF2]{default} Set the next boss to %s", boss);
 			return Plugin_Handled;
 		}
@@ -6823,13 +6823,20 @@ public bool:PickCharacter(boss, companion)
 			{
 				if(newName[0])
 				{
-					Debug("New name is %s", newName);
 					decl String:characterName[64];
 					for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 					{
 						KvRewind(BossKV[character]);
 						KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
-						if(!strcmp(newName, characterName, false))
+						if(StrContains(newName, characterName, false)!=-1)
+						{
+							Special[boss]=character;
+							PrecacheCharacter(Special[boss]);
+							return true;
+						}
+
+						KvGetString(BossKV[character], "filename", characterName, sizeof(characterName));
+						if(StrContains(newName, characterName, false)!=-1)
 						{
 							Special[boss]=character;
 							PrecacheCharacter(Special[boss]);
@@ -6922,7 +6929,15 @@ public bool:PickCharacter(boss, companion)
 			{
 				KvRewind(BossKV[character]);
 				KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
-				if(!strcmp(newName, characterName, false))
+				if(StrContains(newName, characterName, false)!=-1)
+				{
+					Special[boss]=character;
+					PrecacheCharacter(Special[boss]);
+					return true;
+				}
+
+				KvGetString(BossKV[character], "filename", characterName, sizeof(characterName));
+				if(StrContains(newName, characterName, false)!=-1)
 				{
 					Special[boss]=character;
 					PrecacheCharacter(Special[boss]);
