@@ -796,7 +796,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 	}
 }
 
-static const maxVersion=(sizeof(ff2versiontitles)-1);
+static const maxVersion=sizeof(ff2versiontitles)-1;
 
 new Specials;
 new Handle:BossKV[MAXSPECIALS];
@@ -3634,6 +3634,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 	SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
+	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));  //Temporary: Reset health to avoid an overheal bug
 
 	if(GetClientTeam(client)==BossTeam)
 	{
