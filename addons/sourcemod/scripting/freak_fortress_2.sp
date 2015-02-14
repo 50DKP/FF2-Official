@@ -4488,12 +4488,9 @@ public Action:ClientTimer(Handle:timer)
 			}
 
 			new bool:addthecrit=false;
-			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee))
+			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee) && strcmp(classname, "tf_weapon_knife", false))
 			{
-				if(strcmp(classname, "tf_weapon_knife", false))
-				{
-					addthecrit=true;
-				}
+				addthecrit=true;
 			}
 
 			switch(index)
@@ -4547,7 +4544,7 @@ public Action:ClientTimer(Handle:timer)
 				}
 				case TFClass_DemoMan:
 				{
-					if(!IsValidEntity(GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)) && shieldCrits)  //Demoshields
+					if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && !IsValidEntity(GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)) && shieldCrits)  //Demoshields
 					{
 						addthecrit=true;
 						if(shieldCrits==1)
