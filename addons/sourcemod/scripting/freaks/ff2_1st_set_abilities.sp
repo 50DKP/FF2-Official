@@ -88,7 +88,6 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 
 public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])
 {
-	Debug("Entered FF2_OnSpecialSelected with boss %i special %i and specialName %s", boss, special, specialName);
 	if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
 	{
 		decl String:model[PLATFORM_MAX_PATH];

@@ -1061,6 +1061,14 @@ public OnPluginStart()
 	#if defined _steamtools_included
 	steamtools=LibraryExists("SteamTools");
 	#endif
+
+	#if defined _goomba_included
+	goomba=LibraryExists("goomba");
+	#endif
+
+	#if defined _tf2attributes_included
+	tf2attributes=LibraryExists("tf2attributes");
+	#endif
 }
 
 public bool:BossTargetFilter(const String:pattern[], Handle:clients)
@@ -4350,7 +4358,7 @@ public Action:Timer_RegenPlayer(Handle:timer, any:userid)
 
 public Action:ClientTimer(Handle:timer)
 {
-	if(CheckRoundState()==2 || CheckRoundState()==-1 || !Enabled)
+	if(!Enabled || CheckRoundState()==2 || CheckRoundState()==-1)
 	{
 		return Plugin_Stop;
 	}
@@ -5141,7 +5149,6 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 		Stabbed[boss]=0.0;
 		Marketed[boss]=0.0;
-		return Plugin_Continue;
 	}
 
 	if(TF2_GetPlayerClass(client)==TFClass_Engineer && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
@@ -5199,7 +5206,7 @@ public Action:Timer_Damage(Handle:timer, any:userid)
 
 public Action:event_deflect(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(!Enabled || GetEventInt(event, "weaponid"))
+	if(!Enabled || GetEventInt(event, "weaponid"))  //0 means that the client was airblasted, which is what we want
 	{
 		return Plugin_Continue;
 	}
@@ -5414,6 +5421,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	new boss=GetBossIndex(client);
 	new damage=GetEventInt(event, "damageamount");
+	Debug("%i");
 	new custom=GetEventInt(event, "custom");
 	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]) || client==attacker)
 	{
