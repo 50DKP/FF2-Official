@@ -185,7 +185,6 @@ new tf_arena_use_queue;
 new mp_teams_unbalance_limit;
 new tf_arena_first_blood;
 new mp_forcecamera;
-new Float:tf_scout_hype_pep_max;
 new Handle:cvarNextmap;
 new bool:areSubPluginsEnabled;
 
@@ -1174,8 +1173,6 @@ public OnConfigsExecuted()
 	mp_teams_unbalance_limit=GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
 	tf_arena_first_blood=GetConVarInt(FindConVar("tf_arena_first_blood"));
 	mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
-	tf_scout_hype_pep_max=GetConVarFloat(FindConVar("tf_scout_hype_pep_max"));
-	Debug("OnConfigsExecuted: tf_scout_hype_pep_max is at %f", tf_scout_hype_pep_max);
 
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
@@ -1226,8 +1223,6 @@ public OnMapEnd()
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
 		SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
 		SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
-		SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), tf_scout_hype_pep_max);
-		Debug("OnMapEnd: tf_scout_hype_pep_max is %f", tf_scout_hype_pep_max);
 		#if defined _steamtools_included
 		if(steamtools)
 		{
@@ -1296,7 +1291,6 @@ public EnableFF2()
 	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
 	SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
 	SetConVarInt(FindConVar("mp_forcecamera"), 0);
-	SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), 100.0);
 
 	new Float:time=Announce;
 	if(time>1.0)
@@ -1341,8 +1335,6 @@ public DisableFF2()
 	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
 	SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
 	SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
-	SetConVarFloat(FindConVar("tf_scout_hype_pep_max"), tf_scout_hype_pep_max);
-	Debug("DisableFF2: tf_scout_hype_pep_max is %f", tf_scout_hype_pep_max);
 
 	if(doorCheckTimer!=INVALID_HANDLE)
 	{
