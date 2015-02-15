@@ -852,6 +852,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_SetBossMaxLives", Native_SetBossMaxLives);
 	CreateNative("FF2_GetBossCharge", Native_GetBossCharge);
 	CreateNative("FF2_SetBossCharge", Native_SetBossCharge);
+	CreateNative("FF2_GetBossRageDamage", Native_GetBossRageDamage);
+	CreateNative("FF2_SetBossRageDamage", Native_SetBossRageDamage);
 	CreateNative("FF2_GetClientDamage", Native_GetDamage);
 	CreateNative("FF2_GetRoundState", Native_GetRoundState);
 	CreateNative("FF2_GetSpecialKV", Native_GetSpecialKV);
@@ -4528,7 +4530,7 @@ public Action:ClientTimer(Handle:timer)
 							FF2_ShowHudText(client, -1, "%T: %i", "uber-charge", client, charge);
 							if(charge==100 && !(FF2flags[client] & FF2FLAG_UBERREADY))
 							{
-								FakeClientCommand(client,"voicemenu 1 7");
+								FakeClientCommand(client, "voicemenu 1 7");  //"I am fully charged!"
 								FF2flags[client]|= FF2FLAG_UBERREADY;
 							}
 						}
@@ -8151,6 +8153,16 @@ public Native_GetBossCharge(Handle:plugin, numParams)
 public Native_SetBossCharge(Handle:plugin, numParams)
 {
 	BossCharge[GetNativeCell(1)][GetNativeCell(2)]=Float:GetNativeCell(3);
+}
+
+public Native_GetBossRageDamage(Handle:plugin, numParams)
+{
+	return _:BossRageDamage[Special[GetNativeCell(1)]];
+}
+
+public Native_SetBossRageDamage(Handle:plugin, numParams)
+{
+	BossRageDamage[Special[GetNativeCell(1)]]=Float:GetNativeCell(2);
 }
 
 public Native_GetRoundState(Handle:plugin, numParams)

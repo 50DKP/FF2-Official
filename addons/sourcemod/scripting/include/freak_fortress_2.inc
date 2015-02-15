@@ -177,6 +177,23 @@ native Float:FF2_GetBossCharge(boss, slot);
 native FF2_SetBossCharge(boss, slot, Float:value);
 
 /**
+ * Gets how much damage is needed in order to activate the rage of the current boss
+ *
+ * @param boss      Boss index
+ * @return          Total damage needed
+ */
+native FF2_GetBossRageDamage(boss);
+
+/**
+ * Sets how much damage is needed in order to activate the rage of the current boss
+ *
+ * @param boss      Boss index
+ * @param damage    New damage value
+ *@noreturn
+ */
+native FF2_SetBossRageDamage(boss, damage);
+
+/**
  * Gets damage dealt by this client
  *
  * @param client 	Client's index
@@ -584,6 +601,8 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_SetBossMaxLives");
 	MarkNativeAsOptional("FF2_GetBossCharge");
 	MarkNativeAsOptional("FF2_SetBossCharge");
+    MarkNativeAsOptional("FF2_GetBossRageDamage");
+    MarkNativeAsOptional("FF2_SetBossRageDamage");
 	MarkNativeAsOptional("FF2_GetClientDamage");
 	MarkNativeAsOptional("FF2_GetRoundState");
 	MarkNativeAsOptional("FF2_GetRageDist");
