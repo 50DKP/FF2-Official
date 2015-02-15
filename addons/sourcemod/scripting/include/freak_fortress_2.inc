@@ -601,8 +601,8 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_SetBossMaxLives");
 	MarkNativeAsOptional("FF2_GetBossCharge");
 	MarkNativeAsOptional("FF2_SetBossCharge");
-    MarkNativeAsOptional("FF2_GetBossRageDamage");
-    MarkNativeAsOptional("FF2_SetBossRageDamage");
+	MarkNativeAsOptional("FF2_GetBossRageDamage");
+	MarkNativeAsOptional("FF2_SetBossRageDamage");
 	MarkNativeAsOptional("FF2_GetClientDamage");
 	MarkNativeAsOptional("FF2_GetRoundState");
 	MarkNativeAsOptional("FF2_GetRageDist");
