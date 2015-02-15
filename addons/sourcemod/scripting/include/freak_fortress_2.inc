@@ -189,7 +189,7 @@ native FF2_GetBossRageDamage(boss);
  *
  * @param boss      Boss index
  * @param damage    New damage value
- *@noreturn
+ * @noreturn
  */
 native FF2_SetBossRageDamage(boss, damage);
 
