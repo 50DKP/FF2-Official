@@ -2416,6 +2416,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		if(IsValidClient(Boss[client]))
 		{
 			SetClientGlow(client, 0.0, 0.0);
+			SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 			if(IsPlayerAlive(Boss[client]))
 			{
 				isBossAlive=true;
@@ -3164,6 +3165,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		TF2_RespawnPlayer(client);
 	}
 
+	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 	KvRewind(BossKV[Special[boss]]);
 	TF2_RemovePlayerDisguise(client);
 	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
@@ -3635,9 +3637,11 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
-	SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
-	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));  //Temporary: Reset health to avoid an overheal bug
 
+	//SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
+	//SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));  //Temporary: Reset health to avoid an overheal bug
+	//SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));
+	Debug("%i %i %i", GetClientHealth(client), GetEntProp(client, Prop_Send, "m_iHealth"), GetEntProp(client, Prop_Data, "m_iMaxHealth"));
 	if(GetClientTeam(client)==BossTeam)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
