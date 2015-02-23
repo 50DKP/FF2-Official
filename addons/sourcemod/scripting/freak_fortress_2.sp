@@ -3641,7 +3641,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	//SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 	//SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));  //Temporary: Reset health to avoid an overheal bug
 	//SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));
-	Debug("%i %i %i", GetClientHealth(client), GetEntProp(client, Prop_Send, "m_iHealth"), GetEntProp(client, Prop_Data, "m_iMaxHealth"));
+	Debug("%i %i %i", GetEntProp(client, Prop_Send, "m_iHealth"), GetEntProp(client, Prop_Send, "m_iMaxBuffedHealth"), GetEntProp(client, Prop_Data, "m_iMaxHealth"));
 	if(GetClientTeam(client)==BossTeam)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
@@ -5416,7 +5416,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	new boss=GetBossIndex(client);
 	new damage=GetEventInt(event, "damageamount");
-	Debug("%i");
+	Debug("%i damage", damage);
 	new custom=GetEventInt(event, "custom");
 	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]) || client==attacker)
 	{
@@ -5763,7 +5763,25 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					return Plugin_Changed;
 				}
 
-				new index=(IsValidEntity(weapon) && weapon>MaxClients && attacker<=MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+				new index;
+				if(IsValidEntity(weapon) && weapon>MaxClients && attacker<=MaxClients)
+				{
+					decl String:classname[64];
+					GetEntityClassname(weapon, classname, sizeof(classname));
+					if(!StrContains(classname, "eyeball_boss"))  //Dang spell Monoculuses
+					{
+						index=-1;
+					}
+					else
+					{
+						index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+					}
+				}
+				else
+				{
+					index=-1;
+				}
+
 				switch(index)
 				{
 					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Sydney Sleeper, Bazaar Bargain, Machina, Festive Sniper Rifle, Hitman's Heatmaker, Botkiller Sniper Rifles
