@@ -3641,7 +3641,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	//SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 	//SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));  //Temporary: Reset health to avoid an overheal bug
 	//SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));
-	Debug("%i %i %i", GetEntProp(client, Prop_Send, "m_iHealth"), GetEntProp(client, Prop_Send, "m_iMaxBuffedHealth"), GetEntProp(client, Prop_Data, "m_iMaxHealth"));
+	Debug("%i %i %i", GetEntProp(client, Prop_Send, "m_iHealth"), GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxBuffedHealth", _, client), GetEntProp(client, Prop_Data, "m_iMaxHealth"));
 	if(GetClientTeam(client)==BossTeam)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
@@ -6256,7 +6256,7 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 		new boss=GetBossIndex(client);
 		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1));
 		maxHealth=BossHealthMax[boss];
-		return Plugin_Handled;
+		return Plugin_Changed;
 	}
 	return Plugin_Continue;
 }
