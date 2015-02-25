@@ -86,7 +86,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	return Plugin_Continue;
 }
 
-public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])
+/*public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])  //Re-enable in v2 or whenever the late-loading forward bug is fixed
 {
 	if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
 	{
@@ -95,7 +95,7 @@ public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])
 		PrecacheModel(model);
 	}
 	return Plugin_Continue;
-}
+}*/
 
 public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
