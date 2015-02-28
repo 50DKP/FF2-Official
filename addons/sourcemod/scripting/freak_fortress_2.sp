@@ -5133,7 +5133,6 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		new boss=GetBossIndex(client);
 		if(boss==-1 || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
-			Debug("Dead Ringer");
 			return Plugin_Continue;
 		}
 
@@ -5420,7 +5419,6 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	new boss=GetBossIndex(client);
 	new damage=GetEventInt(event, "damageamount");
-	Debug("%i damage", damage);
 	new custom=GetEventInt(event, "custom");
 	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]) || client==attacker)
 	{
@@ -6953,7 +6951,6 @@ public bool:PickCharacter(boss, companion)
 	{
 		if(newName[0])
 		{
-			Debug("New name is %s", newName);
 			decl String:characterName[64];
 			for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 			{
