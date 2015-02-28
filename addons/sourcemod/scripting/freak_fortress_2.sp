@@ -257,6 +257,9 @@ static const String:ff2versiontitles[][]=
 	"1.10.3",
 	"1.10.3",
 	"1.10.4",
+	"1.10.4",
+	"1.10.4",
+	"1.10.4",
 	"1.10.4"
 };
 
@@ -316,31 +319,58 @@ static const String:ff2versiondates[][]=
 	"November 6, 2014",	//1.10.3
 	"November 6, 2014",	//1.10.3
 	"November 6, 2014",	//1.10.3
-	"January 18, 2015",	//1.10.4
-	"January 18, 2015"	//1.10.4
+	"March 1, 2015",	//1.10.4
+	"March 1, 2015",	//1.10.4
+	"March 1, 2015",	//1.10.4
+	"March 1, 2015",	//1.10.4
+	"March 1, 2015"		//1.10.4
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 55:
+		case 58:  //1.10.4
 		{
-			DrawPanelText(panel, "1) Fixed Darwin's Danger Shield getting replaced by the SMG (Wliu)");
-			DrawPanelText(panel, "2) Fixed 'sound_fail' (Wliu from M76030)");
-			DrawPanelText(panel, "3) Allowed companions to emit 'sound_nextlife' if they have it (Wliu from M76030)");
-			DrawPanelText(panel, "4) Fixed 'ff2_alive' never being shown (Wliu)");
-			DrawPanelText(panel, "5) Added Tide Turner and new festive weapons to the weapon whitelist (Wliu)");
+			DrawPanelText(panel, "1) Fixed players getting overheal after winning as a boss (Wliu/FlaminSarge)");
+			DrawPanelText(panel, "2) Rebalanced the Baby Face's Blaster (Shadow)");
+			DrawPanelText(panel, "3) Fixed the Baby Face's Blaster being unusable when FF2 was disabled (Wliu from Curtgust)")
+			DrawPanelText(panel, "4) Fixed the Darwin's Danger Shield getting replaced by the SMG (Wliu)");
+			DrawPanelText(panel, "5) Added the Tide Turner and new festive weapons to the weapon whitelist (Wliu)");
 			DrawPanelText(panel, "See next page (press 1");
 		}
-		case 54:
+		case 57:  //1.10.4
 		{
-			DrawPanelText(panel, "6) Prevented dead companion bosses from becoming clones (Wliu)");
+			DrawPanelText(panel, "6) Fixed Market Gardener backstabs (Wliu)");
 			DrawPanelText(panel, "7) Improved class switching after you finish the round as a boss (Wliu)");
-			DrawPanelText(panel, "8) [Server] Added 'ff2_arena_rounds' and deprecated 'ff2_first_round' (Wliu from Spyper)");
-			DrawPanelText(panel, "9) [Server] Added 'ff2_base_jumper_stun' to disable the parachute on stun (Wliu from Shadow)");
-			DrawPanelText(panel, "10) [Server] Prevented FF2 from loading if it gets loaded in the freaks/ directory (Wliu)");
-			DrawPanelText(panel, "11) [Dev] Added FF2_OnAlivePlayersChanged and deprecated FF2_Get{Alive|Boss}Players (Wliu from Shadow)");
+			DrawPanelText(panel, "8) Fixed the !ff2 command again (Wliu)");
+			DrawPanelText(panel, "9) Fixed bosses not ducking when teleporting (CapnDev)");
+			DrawPanelText(panel, "10) Prevented dead companion bosses from becoming clones (Wliu)");
+			DrawPanelText(panel, "See next page (press 1)");
+		}
+		case 56:  //1.10.4
+		{
+			DrawPanelText(panel, "11) [Server] Fixed 'ff2_alive' never being shown (Wliu from various)");
+			DrawPanelText(panel, "12) [Server] Fixed invalid healthbar errors (Wliu from ClassicGuzzi)");
+			DrawPanelText(panel, "13) [Server] Fixed OnTakeDamage errors from spell Monoculuses (Wliu from ClassicGuzzi)");
+			DrawPanelText(panel, "14) [Server] Added 'ff2_arena_rounds' and deprecated 'ff2_first_round' (Wliu from Spyper)");
+			DrawPanelText(panel, "15) [Server] Added 'ff2_base_jumper_stun' to disable the parachute on stun (Wliu from Shadow)");
+			DrawPanelText(panel, "See next page (press 1)");
+		}
+		case 55:  //1.10.4
+		{
+			DrawPanelText(panel, "16) [Server] Prevented FF2 from loading if it gets loaded in the /plugins/freaks/ directory (Wliu)");
+			DrawPanelText(panel, "17) [Dev] Fixed 'sound_fail' (Wliu from M76030)");
+			DrawPanelText(panel, "18) [Dev] Allowed companions to emit 'sound_nextlife' if they have it (Wliu from M76030)");
+			DrawPanelText(panel, "19) [Dev] Added 'sound_last_life' (Wliu from WildCard65)");
+			DrawPanelText(panel, "20) [Dev] Added FF2_OnAlivePlayersChanged and deprecated FF2_Get{Alive|Boss}Players (Wliu from Shadow)");
+			DrawPanelText(paneo, "See next page (press 1)");
+		}
+		case 54:  //1.10.4
+		{
+			DrawPanelText(panel, "21) [Dev] Fixed AIOOB errors in FF2_GetBossUserId (Wliu)");
+			DrawPanelText(panel, "22) [Dev] Improved FF2_OnSpecialSelected so that only part of a boss name is needed (Wliu)");
+			DrawPanelText(panel, "23) [Dev] Added FF2_{Get|Set}BossRageDamage (Wliu from WildCard65)");
 		}
 		case 53:  //1.10.3
 		{
@@ -375,12 +405,12 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "17) [Server] Fixed a bug related to 'cvar_countdown_players' and the countdown timer (Wliu from Spyper)");
 			DrawPanelText(panel, "18) [Server] Fixed 'nextmap_charset' VFormat errors (Wliu from BBG_Theory)");
 			DrawPanelText(panel, "19) [Server] Fixed errors when Monoculus was attacking (Wliu from ClassicGuzzi)");
-			DrawPanelText(panel, "20) [Dev] Added \"sound_first_blood\" (Wliu from Mr-Bro)");
+			DrawPanelText(panel, "20) [Dev] Added 'sound_first_blood' (Wliu from Mr-Bro)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 49:  //1.10.3
 		{
-			DrawPanelText(panel, "21) [Dev] Added \"pickups\" to set what the boss can pick up (Wliu)");
+			DrawPanelText(panel, "21) [Dev] Added 'pickups' to set what the boss can pick up (Wliu)");
 			DrawPanelText(panel, "22) [Dev] Added FF2FLAG_ALLOW_{HEALTH|AMMO}_PICKUPS (Powerlord)");
 			DrawPanelText(panel, "23) [Dev] Added FF2_GetFF2Version (Wliu)");
 			DrawPanelText(panel, "24) [Dev] Added FF2_ShowSync{Hud}Text wrappers (Wliu)");

@@ -4,17 +4,15 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.10.3"
-			"Previous"	"1.10.2"
+			"Latest"	"1.10.4"
+			"Previous"	"1.10.3"
 		}
 
-		"Notes"	"More bugfixes"
-		"Notes"	"It is IMPERATIVE that you update HHH's config due to removed startup music"
-		"Notes"	"It is HIGHLY RECOMMENDED that you update configs for CBS, Demopan, Easter Bunny, and Gentlespy"
-		"Notes"	"It is SUGGESTED that you update configs for all other bosses"
-		"Notes"	"Install TF2Attributes to fix Mantreads not boosting rocket jump height"
-		"Notes"	"No more overhealed bosses"
-		"Notes"	"New developer flags, natives, and stocks added"
+		"Notes"	"More bugfixes like usual"
+		"Notes"	"Fixed players getting overheal after winning as a boss"
+		"Notes"	"Whitelisted/rebalanced/fixed some weapons"
+		"Notes"	"Added new developer natives"
+		"Notes"	"Added new sound options for bosses"
 		"Notes"	"See Github, the official thread, or the in-game changelog for the specifics"
 	}
 
@@ -28,10 +26,7 @@
 			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
 			"Plugin"	"Path_SM/plugins/freaks/default_abilities.ff2"
 			"Plugin"	"Path_SM/plugins/freaks/special_noanims.ff2"
-			"Plugin"	"Path_Mod/sound/freak_fortress_2/hhh/hhh_bgm.mp3"
 			"Plugin"	"Path_SM/translations/freak_fortress_2.phrases.txt"
-			"Plugin"	"Path_SM/translations/de/freak_fortress_2.phrases.txt"
-			"Plugin"	"Path_SM/translations/ru/freak_fortress_2.phrases.txt"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
 			"Source"	"Path_SM/scripting/freaks/default_abilities.sp"
 			"Source"	"Path_SM/scripting/freaks/easter_abilities.sp"
