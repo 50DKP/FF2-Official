@@ -5524,7 +5524,12 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 				}
 			}
 
-			if(RandomSound("sound_nextlife", ability, PLATFORM_MAX_PATH, boss))
+			if(BossLives[boss]==1 && RandomSound("sound_last_life", ability, PLATFORM_MAX_PATH, boss))
+			{
+				EmitSoundToAll(ability);
+				EmitSoundToAll(ability);
+			}
+			else if(RandomSound("sound_nextlife", ability, PLATFORM_MAX_PATH, boss))
 			{
 				EmitSoundToAll(ability);
 				EmitSoundToAll(ability);
