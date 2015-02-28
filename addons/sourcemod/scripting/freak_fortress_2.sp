@@ -3643,7 +3643,9 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	//SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 	//SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));  //Temporary: Reset health to avoid an overheal bug
 	//SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));
-	Debug("%i %i %i", GetEntProp(client, Prop_Send, "m_iHealth"), GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxBuffedHealth", _, client), GetEntProp(client, Prop_Data, "m_iMaxHealth"));
+	//Debug("%i %i %i", GetEntProp(client, Prop_Send, "m_iHealth"), GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxBuffedHealth", _, client), GetEntProp(client, Prop_Data, "m_iMaxHealth"));
+	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overhealh bug
+	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
 	if(GetClientTeam(client)==BossTeam)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
@@ -7713,7 +7715,12 @@ public VoiceTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 	}
 }
 
+//Ugly compatability layer since HookSound's arguments changed in 1.8
+#if SOURCEMOD_V_MAJOR==1 && SOURCEMOD_V_MINOR>=8
+public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH], &client, &channel, &Float:volume, &level, &pitch, &flags, String:soundEntry[PLATFORM_MAX_PATH], &seed)
+#else
 public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH], &client, &channel, &Float:volume, &level, &pitch, &flags)
+#endif
 {
 	if(!Enabled || !IsValidClient(client) || channel<1)
 	{
