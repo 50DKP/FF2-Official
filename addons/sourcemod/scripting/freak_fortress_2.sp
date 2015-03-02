@@ -98,6 +98,7 @@ new BossHealth[MAXPLAYERS+1];
 new BossHealthLast[MAXPLAYERS+1];
 new BossLives[MAXPLAYERS+1];
 new BossLivesMax[MAXPLAYERS+1];
+new BossRageDamage[MAXPLAYERS+1];
 new Float:BossCharge[MAXPLAYERS+1][8];
 new Float:Stabbed[MAXPLAYERS+1];
 new Float:Marketed[MAXPLAYERS+1];
@@ -841,7 +842,7 @@ new Handle:OnAlivePlayersChanged;
 
 new bool:bBlockVoice[MAXSPECIALS];
 new Float:BossSpeed[MAXSPECIALS];
-new Float:BossRageDamage[MAXSPECIALS];
+//new Float:BossRageDamage[MAXSPECIALS];
 
 new String:ChancesString[512];
 new chances[MAXSPECIALS];
@@ -1636,7 +1637,7 @@ public LoadCharacter(const String:character[])
 	KvGetString(BossKV[Specials], "name", config, PLATFORM_MAX_PATH);
 	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "sound_block_vo", 0);
 	BossSpeed[Specials]=KvGetFloat(BossKV[Specials], "maxspeed", 340.0);
-	BossRageDamage[Specials]=KvGetFloat(BossKV[Specials], "ragedamage", 1900.0);
+	//BossRageDamage[Specials]=KvGetFloat(BossKV[Specials], "ragedamage", 1900.0);
 	KvGotoFirstSubKey(BossKV[Specials]);
 
 	while(KvGotoNextKey(BossKV[Specials]))
@@ -2225,6 +2226,15 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	}
 
 	KvRewind(BossKV[Special[0]]);
+	BossRageDamage[0]=KvGetNum(BossKV[Specials], "ragedamage", 1900);
+	if(BossRageDamage[0]<=0)
+	{
+		decl String:bossName[64];
+		KvGetString(BossKV[Special[0]], "name", bossName, sizeof(bossName));
+		PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is below 0, setting to 1900", bossName);
+		BossRageDamage[0]=1900;
+	}
+
 	BossLivesMax[0]=KvGetNum(BossKV[Special[0]], "lives", 1);
 	if(BossLivesMax[0]<=0)
 	{
@@ -5567,7 +5577,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 
 	BossHealth[boss]-=damage;
-	BossCharge[boss][0]+=damage*100.0/BossRageDamage[Special[boss]];
+	BossCharge[boss][0]+=damage*100.0/BossRageDamage[boss];
 	Damage[attacker]+=damage;
 
 	new healers[MAXPLAYERS];
@@ -6158,7 +6168,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							damage=490.0;
 						}
 						BossHealth[boss]-=RoundFloat(damage);
-						BossCharge[boss][0]+=damage*100.0/BossRageDamage[Special[boss]];
+						BossCharge[boss][0]+=damage*100.0/BossRageDamage[boss];
 						if(BossHealth[boss]<=0)  //Wat
 						{
 							damage*=5;
@@ -7023,6 +7033,15 @@ FindCompanion(boss, players, bool:omit[])
 		omit[companion]=true;
 		if(PickCharacter(companion, boss))  //TODO: This is a bit misleading
 		{
+			BossRageDamage[companion]=KvGetNum(BossKV[Specials], "ragedamage", 1900);
+			if(BossRageDamage[companion]<=0)
+			{
+				decl String:bossName[64];
+				KvGetString(BossKV[Special[companion]], "name", bossName, sizeof(bossName));
+				PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is below 0, setting to 1900", bossName);
+				BossRageDamage[companion]=1900;
+			}
+
 			BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
 			if(BossLivesMax[companion]<=0)
 			{
@@ -8212,12 +8231,12 @@ public Native_SetBossCharge(Handle:plugin, numParams)
 
 public Native_GetBossRageDamage(Handle:plugin, numParams)
 {
-	return _:BossRageDamage[Special[GetNativeCell(1)]];
+	return BossRageDamage[GetNativeCell(1)];
 }
 
 public Native_SetBossRageDamage(Handle:plugin, numParams)
 {
-	BossRageDamage[Special[GetNativeCell(1)]]=Float:GetNativeCell(2);
+	BossRageDamage[GetNativeCell(1)]=GetNativeCell(2);
 }
 
 public Native_GetRoundState(Handle:plugin, numParams)
