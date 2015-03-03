@@ -33,7 +33,6 @@ before_deploy:
     - cd ../../../
     - mkdir freak_fortress_2 freak_fortress_2/addons freak_fortress_2/addons/sourcemod freak_fortress_2/addons/sourcemod/configs freak_fortress_2/addons/sourcemod/gamedata freak_fortress_2/addons/sourcemod/scripting freak_fortress_2/addons/sourcemod/scripting/freaks freak_fortress_2/addons/sourcemod/scripting/include freak_fortress_2/addons/sourcemod/translations
     - mv configs/freak_fortress_2 freak_fortress_2/addons/sourcemod/configs/freak_fortress_2
-    - mv gamedata/saxtonhale.txt freak_fortress_2/addons/sourcemod/gamedata/
     - mv scripting/freak_fortress_2.sp freak_fortress_2/addons/sourcemod/scripting/
     - mv scripting/compiled freak_fortress_2/addons/sourcemod/plugins
     - mv scripting/freaks/*.sp freak_fortress_2/addons/sourcemod/scripting/freaks/
