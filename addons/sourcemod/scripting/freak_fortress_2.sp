@@ -35,8 +35,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "4"
-//#define DEV_REVISION "Beta"
+#define STABLE_REVISION "5"
+#define DEV_REVISION "Beta"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.4
@@ -2226,7 +2226,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	}
 
 	KvRewind(BossKV[Special[0]]);
-	BossRageDamage[0]=KvGetNum(BossKV[Specials], "ragedamage", 1900);
+	BossRageDamage[0]=KvGetNum(BossKV[Special[0]], "ragedamage", 1900);
 	if(BossRageDamage[0]<=0)
 	{
 		decl String:bossName[64];
@@ -7033,7 +7033,7 @@ FindCompanion(boss, players, bool:omit[])
 		omit[companion]=true;
 		if(PickCharacter(companion, boss))  //TODO: This is a bit misleading
 		{
-			BossRageDamage[companion]=KvGetNum(BossKV[Specials], "ragedamage", 1900);
+			BossRageDamage[companion]=KvGetNum(BossKV[Special[companion]], "ragedamage", 1900);
 			if(BossRageDamage[companion]<=0)
 			{
 				decl String:bossName[64];
