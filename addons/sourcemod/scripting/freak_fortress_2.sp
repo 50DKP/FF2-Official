@@ -260,7 +260,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.4",
 	"1.10.4",
 	"1.10.4",
-	"1.10.4"
+	"1.10.4",
+	"1.10.5"
 };
 
 static const String:ff2versiondates[][]=
@@ -323,13 +324,20 @@ static const String:ff2versiondates[][]=
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
-	"March 1, 2015"		//1.10.4
+	"March 1, 2015",	//1.10.4
+	"March 4, 2015"		//1.10.5
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 59:  //1.10.5
+		{
+			DrawPanelText(panel, "1) Fixed the Festive SMG not getting crits (Wliu from Dalix)");
+			DrawPanelText(panel, "2) Fixed teleport sounds not being played (Wliu from Dalix)");
+			DrawPanelText(panel, "3) [Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
+		}
 		case 58:  //1.10.4
 		{
 			DrawPanelText(panel, "1) Fixed players getting overheal after winning as a boss (Wliu/FlaminSarge)");
