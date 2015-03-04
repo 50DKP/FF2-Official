@@ -174,7 +174,6 @@ new Handle:BossInfoTimer[MAXPLAYERS+1][2];
 new Handle:DrawGameTimer;
 new Handle:doorCheckTimer;
 
-new RoundCounter;
 new botqueuepoints;
 new Float:HPTime;
 new String:currentmap[99];
@@ -1226,7 +1225,6 @@ public OnMapStart()
 {
 	HPTime=0.0;
 	MusicTimer=INVALID_HANDLE;
-	RoundCounter=0;
 	doorCheckTimer=INVALID_HANDLE;
 	RoundCount=0;
 	for(new client; client<=MaxClients; client++)
@@ -2052,40 +2050,24 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		DeleteFile("bNextMapToFF2");
 	}
 
-	new bool:bBluBoss;
+	new bool:blueBoss;
 	switch(GetConVarInt(cvarForceBossTeam))
 	{
 		case 1:
 		{
-			bBluBoss=GetRandomInt(0, 1)==1;
+			blueBoss=bool:GetRandomInt(0, 1);
 		}
 		case 2:
 		{
-			bBluBoss=false;
-		}
-		case 3:
-		{
-			bBluBoss=true;
+			blueBoss=false;
 		}
 		default:
 		{
-			if(!StrContains(currentmap, "vsh_") || !StrContains(currentmap, "zf_"))
-			{
-				bBluBoss=true;
-			}
-			else if(RoundCounter>=3 && GetRandomInt(0, 1))
-			{
-				bBluBoss=(BossTeam!=3);
-				RoundCounter=0;
-			}
-			else
-			{
-				bBluBoss=(BossTeam==3);
-			}
+			blueBoss=true;
 		}
 	}
 
-	if(bBluBoss)
+	if(blueBoss)
 	{
 		new score1=GetTeamScore(OtherTeam);
 		new score2=GetTeamScore(BossTeam);
@@ -8478,7 +8460,7 @@ public Native_StopMusic(Handle:plugin, numParams)
 public Native_RandomSound(Handle:plugin, numParams)
 {
 	new length=GetNativeCell(3)+1;
-	new client=GetNativeCell(4);
+	new boss=GetNativeCell(4);
 	new slot=GetNativeCell(5);
 	new String:sound[length];
 	new kvLength;
@@ -8492,11 +8474,11 @@ public Native_RandomSound(Handle:plugin, numParams)
 	new bool:soundExists;
 	if(!strcmp(keyvalue, "sound_ability"))
 	{
-		soundExists=RandomSoundAbility(keyvalue, sound, length, client, slot);
+		soundExists=RandomSoundAbility(keyvalue, sound, length, boss, slot);
 	}
 	else
 	{
-		soundExists=RandomSound(keyvalue, sound, length, client);
+		soundExists=RandomSound(keyvalue, sound, length, boss);
 	}
 	SetNativeString(2, sound, length);
 	return soundExists;
