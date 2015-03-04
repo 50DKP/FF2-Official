@@ -4537,11 +4537,11 @@ public Action:ClientTimer(Handle:timer)
 
 			switch(index)
 			{
-				case 16, 56, 203, 305, 1005, 1079, 1092, 1100:  //SMG, Huntsman, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow, Fortified Compound, Bread Bite
+				case 16, 56, 203, 305, 1005, 1079, 1092, 1100, 1149:  //SMG, Huntsman, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow, Fortified Compound, Bread Bite, Festive SMG
 				{
 					addthecrit=true;
 				}
-				case 22, 23, 160, 209, 294, 449, 773:  //Pistols
+				case 22, 23, 160, 209, 294, 449, 773:  //Pistol (Engineer), Pistol (Scout), Lugermorph, Strange Pistol, Strange Lugermorph, Winger, Pretty Boy's Pocket Pistol
 				{
 					addthecrit=true;
 					if(class==TFClass_Scout && cond==TFCond_HalloweenCritCandy)
