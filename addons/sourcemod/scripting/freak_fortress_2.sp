@@ -2425,8 +2425,11 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	executed2=false;
 	if((GetEventInt(event, "team")==BossTeam))
 	{
-		if(RandomSound("sound_win", sound, PLATFORM_MAX_PATH))
+		Debug("Oogle boogle");
+		bossWin=true;
+		if(RandomSound("sound_win", sound, sizeof(sound)))
 		{
+			Debug("Even more oogle boogles");
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 		}
@@ -2501,7 +2504,6 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
 		}
-		bossWin=true;
 	}
 
 	new top[3];
