@@ -2077,21 +2077,17 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	if(blueBoss)
 	{
-		new score1=GetTeamScore(OtherTeam);
-		new score2=GetTeamScore(BossTeam);
-		SetTeamScore(2, score1);
-		SetTeamScore(3, score2);
-		OtherTeam=2;
-		BossTeam=3;
+		SetTeamScore(_:TFTeam_Red, GetTeamScore(OtherTeam));
+		SetTeamScore(_:TFTeam_Blue, GetTeamScore(BossTeam));
+		OtherTeam=_:TFTeam_Red;
+		BossTeam=_:TFTeam_Blue;
 	}
 	else
 	{
-		new score1=GetTeamScore(BossTeam);
-		new score2=GetTeamScore(OtherTeam);
-		SetTeamScore(2, score1);
-		SetTeamScore(3, score2);
-		BossTeam=2;
-		OtherTeam=3;
+		SetTeamScore(_:TFTeam_Red, GetTeamScore(BossTeam));
+		SetTeamScore(_:TFTeam_Blue, GetTeamScore(OtherTeam));
+		OtherTeam=_:TFTeam_Blue;
+		BossTeam=_:TFTeam_Red;
 	}
 
 	playing=0;
@@ -2106,7 +2102,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		}
 	}
 
-	if(GetClientCount()<=1 || playing<=1)
+	if(GetClientCount()<=1 || playing<=1)  //Not enough players D:
 	{
 		CPrintToChatAll("{olive}[FF2]{default} %t", "needmoreplayers");
 		Enabled=false;
@@ -2114,7 +2110,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		SetControlPoint(true);
 		return Plugin_Continue;
 	}
-	else if(RoundCount<arenaRounds)
+	else if(RoundCount<arenaRounds)  //We're still in arena mode
 	{
 		CPrintToChatAll("{olive}[FF2]{default} %t", "arena_round", arenaRounds-RoundCount);
 		Enabled=false;
@@ -2166,29 +2162,29 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	Boss[0]=GetClientWithMostQueuePoints(omit);
 	omit[Boss[0]]=true;
 
-	new bool:teamHasPlayers[2];
-	for(new client=1; client<=MaxClients; client++)
+	new bool:teamHasPlayers[TFTeam];
+	for(new client=1; client<=MaxClients; client++)  //Find out if each time has at least one player on it
 	{
 		if(IsValidClient(client))
 		{
 			new TFTeam:team=TFTeam:GetClientTeam(client);
-			if(!teamHasPlayers[0] && team==TFTeam_Blue)
+			if(!teamHasPlayers[TFTeam_Blue] && team==TFTeam_Blue)
 			{
-				teamHasPlayers[0]=true;
+				teamHasPlayers[TFTeam_Blue]=true;
 			}
-			else if(!teamHasPlayers[1] && team==TFTeam_Red)
+			else if(!teamHasPlayers[TFTeam_Red] && team==TFTeam_Red)
 			{
-				teamHasPlayers[1]=true;
+				teamHasPlayers[TFTeam_Red]=true;
 			}
 
-			if(teamHasPlayers[0] && teamHasPlayers[1])
+			if(teamHasPlayers[TFTeam_Blue] && teamHasPlayers[TFTeam_Red])
 			{
 				break;
 			}
 		}
 	}
 
-	if(!teamHasPlayers[0] || !teamHasPlayers[1])
+	if(!teamHasPlayers[TFTeam_Blue] || !teamHasPlayers[TFTeam_Red])  //If there's an empty team make sure it gets populated
 	{
 		if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
 		{
@@ -2198,9 +2194,9 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			TF2_RespawnPlayer(Boss[0]);
 		}
 
-		for(new client; client<=MaxClients; client++)
+		for(new client=1; client<=MaxClients; client++)
 		{
-			if(IsValidClient(client) && !IsBoss(client) && GetClientTeam(client)==BossTeam)
+			if(IsValidClient(client) && !IsBoss(client) && GetClientTeam(client)!=OtherTeam)
 			{
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
 			}
@@ -3670,12 +3666,8 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		HelpPanelClass(client);
 	}
 
-	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
+	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0)  //This really shouldn't be needed but I've been noticing players who still have glow
 
-	//SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
-	//SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));  //Temporary: Reset health to avoid an overheal bug
-	//SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(client, Prop_Data, "m_iMaxHealth"));
-	//Debug("%i %i %i", GetEntProp(client, Prop_Send, "m_iHealth"), GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxBuffedHealth", _, client), GetEntProp(client, Prop_Data, "m_iMaxHealth"));
 	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overhealh bug
 	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
 	if(GetClientTeam(client)==BossTeam)

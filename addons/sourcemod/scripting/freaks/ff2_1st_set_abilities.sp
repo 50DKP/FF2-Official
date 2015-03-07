@@ -574,7 +574,7 @@ Rage_Slowmo(boss, const String:ability_name[])
 	new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 1.0)+1.0;
 	SlowMoTimer=CreateTimer(duration, Timer_StopSlowMo, boss);
 	FF2Flags[boss]=FF2Flags[boss]|FLAG_SLOWMOREADYCHANGE|FLAG_ONSLOWMO;
-	UpdateClientCheatValue(boss, 1);
+	UpdateClientCheatValue(1);
 
 	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	if(client)
@@ -591,7 +591,7 @@ public Action:Timer_StopSlowMo(Handle:timer, any:boss)
 	SlowMoTimer=INVALID_HANDLE;
 	oldTarget=0;
 	SetConVarFloat(cvarTimeScale, 1.0);
-	UpdateClientCheatValue(boss, 0);
+	UpdateClientCheatValue(0);
 	if(boss!=-1)
 	{
 		FF2_SetFF2flags(boss, FF2_GetFF2flags(boss) & ~FF2FLAG_CHANGECVAR);
@@ -925,13 +925,13 @@ stock AttachParticle(entity, String:particleType[], Float:offset=0.0, bool:attac
 	return particle;
 }
 
-stock UpdateClientCheatValue(boss, value)
+stock UpdateClientCheatValue(value)
 {
-	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
-	if(client>0 && client<=MaxClients && IsClientInGame(client) && IsPlayerAlive(client) && !IsFakeClient(client))
+	for(new client=1; client<=MaxClients; client++)
 	{
-		decl String:cheatValue[2];
-		IntToString(value, cheatValue, sizeof(cheatValue));
-		SendConVarValue(client, cvarCheats, cheatValue);
+		if(IsClientInGame(client) && IsPlayerAlive(client) && !IsFakeClient(client))
+		{
+			SendConVarValue(client, cvarCheats, value ? "1" : "0");
+		}
 	}
 }
