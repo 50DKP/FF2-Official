@@ -334,9 +334,10 @@ stock FindVersionData(Handle:panel, versionIndex)
 	{
 		case 59:  //1.10.5
 		{
-			DrawPanelText(panel, "1) Fixed the Festive SMG not getting crits (Wliu from Dalix)");
-			DrawPanelText(panel, "2) Fixed teleport sounds not being played (Wliu from Dalix)");
-			DrawPanelText(panel, "3) [Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
+			DrawPanelText(panel, "1) Fixed slow-mo being extremely buggy (Wliu from various)");
+			DrawPanelText(panel, "2) Fixed the Festive SMG not getting crits (Wliu from Dalix)");
+			DrawPanelText(panel, "3) Fixed teleport sounds not being played (Wliu from Dalix)");
+			DrawPanelText(panel, "4) [Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
 		}
 		case 58:  //1.10.4
 		{
