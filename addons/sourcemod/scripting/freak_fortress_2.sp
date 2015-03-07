@@ -3666,7 +3666,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		HelpPanelClass(client);
 	}
 
-	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0)  //This really shouldn't be needed but I've been noticing players who still have glow
+	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);  //This really shouldn't be needed but I've been noticing players who still have glow
 
 	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overhealh bug
 	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
