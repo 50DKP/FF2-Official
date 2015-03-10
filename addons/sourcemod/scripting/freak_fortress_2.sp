@@ -325,7 +325,7 @@ static const String:ff2versiondates[][]=
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
-	"March 4, 2015"		//1.10.5
+	"March 10, 2015"	//1.10.5
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -337,7 +337,8 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "1) Fixed slow-mo being extremely buggy (Wliu from various)");
 			DrawPanelText(panel, "2) Fixed the Festive SMG not getting crits (Wliu from Dalix)");
 			DrawPanelText(panel, "3) Fixed teleport sounds not being played (Wliu from Dalix)");
-			DrawPanelText(panel, "4) [Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
+			DrawPanelText(panel, "4) !ff2_stop_music can now target a specific client (Wliu)");
+			DrawPanelText(panel, "5) [Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
 		}
 		case 58:  //1.10.4
 		{
@@ -2416,7 +2417,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		return Plugin_Continue;
 	}
 
-	decl String:text[128], String:sound[PLATFORM_MAX_PATH];
+	decl String:sound[PLATFORM_MAX_PATH];
 	new bool:bossWin=false;
 	executed=false;
 	executed2=false;
@@ -2432,7 +2433,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		}
 	}
 
-	Native_StopMusic(INVALID_HANDLE, 0);
+	StopMusic();
 	if(MusicTimer!=INVALID_HANDLE)
 	{
 		KillTimer(MusicTimer);
@@ -2476,7 +2477,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 	if(isBossAlive)
 	{
-		decl String:bossName[64], String:lives[4];
+		decl String:bossName[64], String:lives[4], String:text[128];
 		for(new target; target<=MaxClients; target++)
 		{
 			if(IsBoss(target))
@@ -2484,14 +2485,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 				boss=Boss[target];
 				KvRewind(BossKV[Special[boss]]);
 				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
-				if(BossLives[boss]>1)
-				{
-					Format(lives, 4, "x%i", BossLives[boss]);
-				}
-				else
-				{
-					strcopy(lives, 2, "");
-				}
+				BossLives[boss]>1 ? Format(lives, 4, "x%i", BossLives[boss]) : strcopy(lives, 2, "");
 				Format(text, PLATFORM_MAX_PATH, "%s\n%t", text, "ff2_alive", bossName, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
 		}
@@ -2550,6 +2544,8 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	PrintCenterTextAll("");
+
+	decl String:text[128];
 	for(new client; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client))
@@ -2894,6 +2890,39 @@ public Action:Timer_MusicTheme(Handle:timer, any:userid)
 		return Plugin_Stop;
 	}
 	return Plugin_Continue;
+}
+
+StopMusic(target=0)
+{
+	if(!BossKV[Special[0]])
+	{
+		return;
+	}
+
+	KvRewind(BossKV[Special[0]]);
+	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
+	{
+		decl String:music[PLATFORM_MAX_PATH];
+		Format(music, sizeof(music), "path%i", MusicIndex);
+		KvGetString(BossKV[Special[0]], music, music, sizeof(music));
+
+		if(!target || target<0)  //Stop music for all clients
+		{
+			for(target=1; target<=MaxClients; target++)
+			{
+				if(IsValidClient(target))
+				{
+					StopSound(target, SNDCHAN_AUTO, music);
+					StopSound(target, SNDCHAN_AUTO, music);
+				}
+			}
+		}
+		else
+		{
+			StopSound(target, SNDCHAN_AUTO, music);
+			StopSound(target, SNDCHAN_AUTO, music);
+		}
+	}
 }
 
 stock EmitSoundToAllExcept(exceptiontype=SOUNDEXCEPT_MUSIC, const String:sample[], entity=SOUND_FROM_PLAYER, channel=SNDCHAN_AUTO, level=SNDLEVEL_NORMAL, flags=SND_NOFLAGS, Float:volume=SNDVOL_NORMAL, pitch=SNDPITCH_NORMAL, speakerentity=-1, const Float:origin[3]=NULL_VECTOR, const Float:dir[3]=NULL_VECTOR, bool:updatePos=true, Float:soundtime=0.0)
@@ -4187,14 +4216,24 @@ public Action:Command_Points(client, args)
 
 public Action:Command_StopMusic(client, args)
 {
-	if(!Enabled2)
+	if(Enabled2)
 	{
-		return Plugin_Continue;
-	}
+		decl String:temp[4];
+		GetCmdArg(1, temp, sizeof(temp));
+		new target=StringToInt(temp);  //This will be 0 if the optional argument is missing or not an integer which is a good fallback
+		StopMusic(target);
 
-	Native_StopMusic(INVALID_HANDLE, 0);
-	CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music.");
-	return Plugin_Handled;
+		if(target)
+		{
+			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for %N.", target);
+		}
+		else
+		{
+			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for all clients.");
+		}
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
 }
 
 public Action:Command_Charset(client, args)
@@ -8419,45 +8458,7 @@ public Native_StartMusic(Handle:plugin, numParams)
 
 public Native_StopMusic(Handle:plugin, numParams)
 {
-	if(!BossKV[Special[0]])
-	{
-		return;
-	}
-
-	KvRewind(BossKV[Special[0]]);
-	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
-	{
-		decl String:music[PLATFORM_MAX_PATH];
-		Format(music, sizeof(music), "path%i", MusicIndex);
-		KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
-
-		new client;
-		if(plugin==INVALID_HANDLE)
-		{
-			client=0;
-		}
-		else
-		{
-			client=GetNativeCell(1);
-		}
-
-		if(!client)
-		{
-			for(new target=1; target<=MaxClients; target++)
-			{
-				if(IsValidClient(target))
-				{
-					StopSound(target, SNDCHAN_AUTO, music);
-					StopSound(target, SNDCHAN_AUTO, music);
-				}
-			}
-		}
-		else
-		{
-			StopSound(client, SNDCHAN_AUTO, music);
-			StopSound(client, SNDCHAN_AUTO, music);
-		}
-	}
+	StopMusic(GetNativeCell(1));
 }
 
 public Native_RandomSound(Handle:plugin, numParams)
