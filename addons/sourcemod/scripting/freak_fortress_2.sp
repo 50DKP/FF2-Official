@@ -2486,11 +2486,11 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 				KvRewind(BossKV[Special[boss]]);
 				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 				BossLives[boss]>1 ? Format(lives, 4, "x%i", BossLives[boss]) : strcopy(lives, 2, "");
-				Format(text, PLATFORM_MAX_PATH, "%s\n%t", text, "ff2_alive", bossName, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				Format(text, sizeof(text), "%s\n%t", text, "ff2_alive", bossName, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
 		}
 
-		if(RandomSound("sound_fail", sound, PLATFORM_MAX_PATH, boss))
+		if(RandomSound("sound_fail", sound, sizeof(sound), boss))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
@@ -2499,7 +2499,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 	new top[3];
 	Damage[0]=0;
-	for(new client; client<=MaxClients; client++)
+	for(new client=1; client<=MaxClients; client++)
 	{
 		if(Damage[client]<=0 || IsBoss(client))
 		{
@@ -2578,15 +2578,10 @@ public Action:Timer_NineThousand(Handle:timer)
 
 public Action:Timer_CalcQueuePoints(Handle:timer)
 {
-	CalcQueuePoints();
-}
-
-stock CalcQueuePoints()
-{
 	new damage;
 	botqueuepoints+=5;
-	new add_points[MAXPLAYERS+1];
-	new add_points2[MAXPLAYERS+1];
+	new add_points[MaxClients+1];
+	new add_points2[MaxClients+1];
 	for(new client=1; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client))
@@ -2624,9 +2619,9 @@ stock CalcQueuePoints()
 		}
 	}
 
-	new Action:action=Plugin_Continue;
+	new Action:action;
 	Call_StartForward(OnAddQueuePoints);
-	Call_PushArrayEx(add_points2, MAXPLAYERS+1, SM_PARAM_COPYBACK);
+	Call_PushArrayEx(add_points2, MaxClients+1, SM_PARAM_COPYBACK);
 	Call_Finish(action);
 	switch(action)
 	{
