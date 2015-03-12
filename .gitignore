@@ -18,8 +18,8 @@ addons/sourcemod/logs/
 addons/sourcemod/plugins/
 addons/sourcemod/scripting/**
 !addons/sourcemod/scripting/freak_fortress_2.sp
-!addons/sourcemod/scripting/freaks/
-!addons/sourcemod/scripting/freaks/**
+!addons/sourcemod/scripting/freak_fortress_2/
+!addons/sourcemod/scripting/freak_fortress_2/**
 addons/sourcemod/scripting/include/**
 !addons/sourcemod/scripting/include/
 !addons/sourcemod/scripting/include/freak_fortress_2*.inc

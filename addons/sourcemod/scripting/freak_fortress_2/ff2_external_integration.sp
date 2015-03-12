@@ -10,21 +10,21 @@
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#define PLUGIN_VERSION "2.0.0"
+#define PLUGIN_VERSION "0.0.0"
 
-new Handle:cvarGoomba;
-new Handle:cvarGoombaDamage;
-new Handle:cvarGoombaRebound;
-new Handle:cvarRTD;
-new Handle:cvarBossRTD;
+Handle cvarGoomba;
+Handle cvarGoombaDamage;
+Handle cvarGoombaRebound;
+Handle cvarRTD;
+Handle cvarBossRTD;
 
-new bool:goomba;
-new Float:goombaDamage;
-new Float:goombaRebound;
-new bool:rtd;
-new bool:canBossRTD;
+bool goomba;
+float goombaDamage;
+float goombaRebound;
+bool rtd;
+bool canBossRTD;
 
-public Plugin:myinfo=
+public Plugin myinfo=
 {
 	name="Freak Fortress 2 External Integration Subplugin",
 	author="Wliu, WildCard65",
@@ -32,7 +32,7 @@ public Plugin:myinfo=
 	version=PLUGIN_VERSION,
 };
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	cvarGoomba=CreateConVar("ff2_goomba", "1", "Allow FF2 to integrate with Goomba Stomp?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multiplied by", FCVAR_PLUGIN, true, 0.0, true, 1.0);
@@ -49,11 +49,11 @@ public OnPluginStart()
 	AutoExecConfig(false, "ff2_external_integration", "sourcemod/freak_fortress_2");
 }
 
-public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[])
+public void CvarChange(Handle convar, const char[] oldValue, const char[] newValue)
 {
 	if(convar==cvarGoomba)
 	{
-		goomba=bool:StringToInt(newValue);
+		goomba=view_as<bool>StringToInt(newValue);
 	}
 	else if(convar==cvarGoombaDamage)
 	{
@@ -65,15 +65,15 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	}
 	else if(convar==cvarRTD)
 	{
-		rtd=bool:StringToInt(newValue);
+		rtd=view_as<bool>StringToInt(newValue);
 	}
 	else if(convar==cvarBossRTD)
 	{
-		canBossRTD=bool:StringToInt(newValue);
+		canBossRTD=view_as<bool>StringToInt(newValue);
 	}
 }
 
-public OnConfigsExecuted()
+public void OnConfigsExecuted()
 {
 	goomba=GetConVarBool(cvarGoomba);
 	goombaDamage=GetConVarFloat(cvarGoombaDamage);
@@ -82,13 +82,13 @@ public OnConfigsExecuted()
 	canBossRTD=GetConVarBool(cvarBossRTD);
 }
 
-public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
+public Action OnStomp(attacker, victim, float &damageMultiplier, float &damageBonus, float &JumpPower)
 {
 	if(goomba)
 	{
 		if(FF2_GetBossIndex(attacker)!=-1)
 		{
-			new Float:position[3];
+			float position[3];
 			GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
 			damageMultiplier=900.0;
 			JumpPower=0.0;
@@ -108,7 +108,7 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 	return Plugin_Continue;
 }
 
-public Action:RTD_CanRollDice(client)
+public Action RTD_CanRollDice(client)
 {
 	return (FF2_GetBossIndex(client)!=-1 && rtd && !canBossRTD) ? Plugin_Handled : Plugin_Continue;
 }

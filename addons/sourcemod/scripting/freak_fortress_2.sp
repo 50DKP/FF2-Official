@@ -1263,7 +1263,7 @@ public OnMapEnd()
 			Steam_SetGameDescription("Team Fortress");
 		}
 		#endif
-		DisableSubPlugins();
+		//DisableSubPlugins();
 
 		if(MusicTimer!=INVALID_HANDLE)
 		{
@@ -1361,7 +1361,7 @@ public DisableFF2()
 	Enabled=false;
 	Enabled2=false;
 
-	DisableSubPlugins();
+	//DisableSubPlugins();
 
 	SetConVarInt(FindConVar("tf_arena_use_queue"), tf_arena_use_queue);
 	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
@@ -1529,7 +1529,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	isCharSetSelected=false;
 }
 
-EnableSubPlugins(bool:force=false)
+/*EnableSubPlugins(bool:force=false)
 {
 	if(areSubPluginsEnabled && !force)
 	{
@@ -1538,7 +1538,7 @@ EnableSubPlugins(bool:force=false)
 
 	areSubPluginsEnabled=true;
 	decl String:path[PLATFORM_MAX_PATH], String:filename[PLATFORM_MAX_PATH], String:filename_old[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks");
+	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freak_fortress_2");
 	decl FileType:filetype;
 	new Handle:directory=OpenDirectory(path);
 	while(ReadDirEntry(directory, filename, PLATFORM_MAX_PATH, filetype))
@@ -1558,7 +1558,7 @@ EnableSubPlugins(bool:force=false)
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
-			ServerCommand("sm plugins load freaks/%s", filename);
+			ServerCommand("sm plugins load freak_fortress_2/%s", filename);
 		}
 	}
 }
@@ -1571,19 +1571,19 @@ DisableSubPlugins(bool:force=false)
 	}
 
 	decl String:path[PLATFORM_MAX_PATH], String:filename[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks");
+	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freak_fortress_2");
 	decl FileType:filetype;
 	new Handle:directory=OpenDirectory(path);
 	while(ReadDirEntry(directory, filename, PLATFORM_MAX_PATH, filetype))
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
-			InsertServerCommand("sm plugins unload freaks/%s", filename);  //ServerCommand will not work when switching maps
+			InsertServerCommand("sm plugins unload freak_fortress_2/%s", filename);  //ServerCommand will not work when switching maps
 		}
 	}
 	ServerExecute();
 	areSubPluginsEnabled=false;
-}
+}*/
 
 /*public ParseChangelog() //Ideally, this should only be called once, and then precached into something like String:changelog[256][256]
 {
@@ -2093,7 +2093,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	{
 		CPrintToChatAll("{olive}[FF2]{default} %t", "More Players Needed");
 		Enabled=false;
-		DisableSubPlugins();
+		//DisableSubPlugins();
 		SetControlPoint(true);
 		return Plugin_Continue;
 	}
@@ -2101,7 +2101,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	{
 		CPrintToChatAll("{olive}[FF2]{default} %t", "arena_round", arenaRounds-RoundCount);
 		Enabled=false;
-		DisableSubPlugins();
+		//DisableSubPlugins();
 		SetArenaCapEnableTime(60.0);
 		CreateTimer(71.0, Timer_EnableCap, _, TIMER_FLAG_NO_MAPCHANGE);
 		new bool:toRed;
@@ -2142,7 +2142,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	}
 
 	Enabled=true;
-	EnableSubPlugins();
+	//EnableSubPlugins();
 	CheckArena();
 
 	new bool:omit[MaxClients+1];
@@ -4445,8 +4445,20 @@ public Action:Command_ReloadSubPlugins(client, args)
 {
 	if(Enabled)
 	{
-		DisableSubPlugins(true);
-		EnableSubPlugins(true);
+		//DisableSubPlugins(true);
+		//EnableSubPlugins(true);
+		decl String:path[PLATFORM_MAX_PATH], String:filename[PLATFORM_MAX_PATH];
+		BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freak_fortress_2");
+		decl FileType:filetype;
+		new Handle:directory=OpenDirectory(path);
+		while(ReadDirEntry(directory, filename, sizeof(filename), filetype))
+		{
+			if(filetype==FileType_File && StrContains(filename, ".smx", false)!=-1)
+			{
+				ServerCommand("sm plugins unload freak_fortress_2/%s", filename);
+				ServerCommand("sm plugins load freak_fortress_2/%s", filename);
+			}
+		}
 	}
 	CReplyToCommand(client, "{olive}[FF2]{default} Reloaded subplugins!");
 	return Plugin_Handled;
