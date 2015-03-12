@@ -89,7 +89,6 @@ new Damage[MAXPLAYERS+1];
 new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
-new isClientRocketJumping[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
 
 new FF2flags[MAXPLAYERS+1];
@@ -964,7 +963,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 	RegPluginLibrary("freak_fortress_2");
 
-	AskPluginLoad_VSH();
 	#if defined _steamtools_included
 	MarkNativeAsOptional("Steam_SetGameDescription");
 	#endif
@@ -3683,43 +3681,6 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 444:  //Mantreads
 		{
 			TF2Attrib_SetByDefIndex(client, 58, 1.5);
-		}
-		case 656:  //Holiday Punch
-		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "178 ; 0 ; 358 ; 0 ; 362 ; 0 ; 363 ; 0 ; 369 ; 0", true);
-				//178:  +100% faster weapon switch
-				//Other attributes:  Because TF2Items doesn't feel like stripping the Holiday Punch's attributes for some reason
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 772:  //Baby Face's Blaster
-		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.25 ; 16 ; 10 ; 26 ; 15 ; 109 ; 0.25 ; 128 ; 1 ; 191 ; -3 ; 418 ; 1", true);
-				//2: +25% damage bonus
-				//16: +10 health on hit
-				//26: +15 max health
-				//109: -75% health from packs on wearer
-				//128: Only when weapon is active
-				//191: -3 health drained per second
-				//418: Build hype for faster speed
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 1103:  //Back Scatter
-		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "179 ; 1");
-				//179: Crit instead of mini-critting
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
 		}
 		case 656:  //Holiday Punch
 		{
@@ -6524,18 +6485,6 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 		new boss=GetBossIndex(client);
 		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1));
 		maxHealth=BossHealthMax[boss];
-		return Plugin_Handled;
-	}
-	return Plugin_Continue;
-}
-
-public Action:OnGetMaxHealth(client, &maxHealth)
-{
-	if(Enabled && IsBoss(client))
-	{
-		new boss=GetBossIndex(client);
-		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1));
-		maxHealth=BossHealthMax[boss];
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
@@ -8988,5 +8937,3 @@ SetClientGlow(client, Float:time1, Float:time2=-1.0)
 		SetEntProp((IsValidClient(Boss[client]) ? Boss[client] : client), Prop_Send, "m_bGlowEnabled", 1);
 	}
 }
-
-#include <freak_fortress_2_vsh_feedback>
