@@ -161,12 +161,6 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 	{
 		Rage_StunSentry(ability_name, boss);
 	}
-	else if(!strcmp(ability_name, "rage_preventtaunt"))  //DEPRECATED-to be removed in 2.0.0
-	{
-		decl String:name[64];
-		FF2_GetBossSpecial(boss, name, sizeof(name));
-		PrintToServer("[FF2] Warning: \"rage_preventtaunt\" has been deprecated!  Please remove this ability from %s", name);
-	}
 	else if(!strcmp(ability_name, "rage_instant_teleport"))
 	{
 		new client=GetClientOfUserId(FF2_GetBossUserId(boss));

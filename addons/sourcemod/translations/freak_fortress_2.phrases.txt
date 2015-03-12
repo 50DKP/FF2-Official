@@ -239,9 +239,10 @@
 	{
 		"en"		"You will become the Boss soon. Type {olive}/ff2next{default} to make sure."
 	}
-	"First Round Arena"
+	"Arena Rounds Left"
 	{
-		"en"		"Waiting for players to finish loading.  The gamemode will be arena for this round"
+		"#format"	"{1:i}"
+		"en"		"Waiting for players to finish loading.  FF2 will start in {1} more rounds"
 	}
 	"FF2 Music"
 	{

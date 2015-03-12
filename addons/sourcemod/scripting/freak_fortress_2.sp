@@ -2098,7 +2098,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	}
 	else if(RoundCount<arenaRounds)  //We're still in arena mode
 	{
-		CPrintToChatAll("{olive}[FF2]{default} %t", "arena_round", arenaRounds-RoundCount);
+		CPrintToChatAll("{olive}[FF2]{default} %t", "Arena Rounds Left", arenaRounds-RoundCount);  //Waiting for players to finish loading.  FF2 will start in {1} more rounds
 		Enabled=false;
 		//DisableSubPlugins();
 		SetArenaCapEnableTime(60.0);
