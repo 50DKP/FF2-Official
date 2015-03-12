@@ -20,18 +20,16 @@ before_script:
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508" -O include/tf2attributes.inc
     - chmod +x spcomp
     - mkdir compiled compiled/freaks
-script: ./compile.sh freak_fortress_2.sp freaks/*.sp
+script: ./compile.sh freak_fortress_2.sp freak_fortress_2/*.sp
 
 #Releases
 before_deploy:
-    - cd compiled/freaks
-    - rename 's/.smx/.ff2/' *.smx
-    - cd ../../../
+    - cd ../
     - mkdir freak_fortress_2 freak_fortress_2/addons freak_fortress_2/addons/sourcemod freak_fortress_2/addons/sourcemod/configs freak_fortress_2/addons/sourcemod/gamedata freak_fortress_2/addons/sourcemod/scripting freak_fortress_2/addons/sourcemod/scripting/freaks freak_fortress_2/addons/sourcemod/scripting/include freak_fortress_2/addons/sourcemod/translations
     - mv configs/freak_fortress_2 freak_fortress_2/addons/sourcemod/configs/freak_fortress_2
     - mv scripting/freak_fortress_2.sp freak_fortress_2/addons/sourcemod/scripting/
     - mv scripting/compiled freak_fortress_2/addons/sourcemod/plugins
-    - mv scripting/freaks/*.sp freak_fortress_2/addons/sourcemod/scripting/freaks/
+    - mv scripting/freak_fortress_2/*.sp freak_fortress_2/addons/sourcemod/scripting/freak_fortress_2/
     - mv scripting/include/freak_fortress_2* freak_fortress_2/addons/sourcemod/scripting/include/
     - mv translations/ff2_* freak_fortress_2/addons/sourcemod/translations/
     - mv translations/freak_fortress_2.phrases.txt freak_fortress_2/addons/sourcemod/translations/
@@ -46,7 +44,7 @@ deploy:
         secure: WH0qyFNS6i3CwA2yS0VMTbdD+TOvJb1B5Y/3kIEHAS9O4bLyJ4y26AjMlXx6koXF4dDrgebht2JL1Fz2kFbrmdDh3p6sd+nbj9a0k85uqNC/V3ISJDlzzDxf8mpZ1o6bVJm35QNDDq0kebC7k7zX5d14o6BD9vTOWIMdpL0OR+g=
     file:
         - freak_fortress_2.zip
-        - freak_fotress_2.tar.gz
+        - freak_fortress_2.tar.gz
     on:
         repo: 50DKP/FF2-Official
         tags: true
