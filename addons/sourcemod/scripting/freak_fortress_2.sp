@@ -186,7 +186,6 @@ new mp_teams_unbalance_limit;
 new tf_arena_first_blood;
 new mp_forcecamera;
 new Handle:cvarNextmap;
-new bool:areSubPluginsEnabled;
 
 new FF2CharSet;
 new String:FF2CharSetString[42];
@@ -405,7 +404,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		}
 		case 55:  //1.10.4
 		{
-			DrawPanelText(panel, "16) [Server] Prevented FF2 from loading if it gets loaded in the /plugins/freaks/ directory (Wliu)");
+			DrawPanelText(panel, "16) [Server] Prevented FF2 from loading if it gets loaded in the /plugins/freak_fortress_2/ directory (Wliu)");
 			DrawPanelText(panel, "17) [Dev] Fixed 'sound_fail' (Wliu from M76030)");
 			DrawPanelText(panel, "18) [Dev] Allowed companions to emit 'sound_nextlife' if they have it (Wliu from M76030)");
 			DrawPanelText(panel, "19) [Dev] Added 'sound_last_life' (Wliu from WildCard65)");
@@ -850,7 +849,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "7) I've missed 2nd item.");
 			DrawPanelText(panel, "8) Fixed \"Random\" charpack, there is no vote if only one charpack.");
 			DrawPanelText(panel, "9) Fixed bug when boss' music have a chance to DON'T play.");
-			DrawPanelText(panel, "10) Fixed bug associated with ff2_enabled in cfg/sourcemod/FreakFortress2.cfg and disabling of pugin.");
+			DrawPanelText(panel, "10) Fixed bug associated with ff2_enabled in cfg/sourcemod/freak_fortress_2.cfg and disabling of pugin.");
 		}
 		case 0:  //1.0
 		{
@@ -905,9 +904,9 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
 	decl String:plugin[PLATFORM_MAX_PATH];
 	GetPluginFilename(myself, plugin, sizeof(plugin));
-	if(!StrContains(plugin, "freaks/"))  //Prevent plugins/freaks/freak_fortress_2.ff2 from loading if it exists -.-
+	if(!StrContains(plugin, "freak_fortress_2/"))  //Prevent plugins/freak_fortress_2/freak_fortress_2.smx from loading if it exists -.-
 	{
-		strcopy(error, err_max, "There is a duplicate copy of Freak Fortress 2 inside the /plugins/freaks folder.  Please remove it");
+		strcopy(error, err_max, "There is a duplicate copy of Freak Fortress 2 inside the /plugins/freak_fortress_2 folder.  Please remove it");
 		return APLRes_Failure;
 	}
 
@@ -1098,7 +1097,7 @@ public OnPluginStart()
 	RegAdminCmd("hale_resetqueuepoints", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 	RegAdminCmd("hale_resetq", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 
-	AutoExecConfig(true, "FreakFortress2");
+	AutoExecConfig(true, "freak_fortress_2");
 
 	FF2Cookies=RegClientCookie("ff2_cookies_mk2", "", CookieAccess_Protected);
 
@@ -1113,7 +1112,7 @@ public OnPluginStart()
 	GetConVarString(cvarVersion, oldVersion, sizeof(oldVersion));
 	if(strcmp(oldVersion, PLUGIN_VERSION, false))
 	{
-		PrintToServer("[FF2] Warning: Your config may be outdated. Back up tf/cfg/sourcemod/FreakFortress2.cfg and delete it, and this plugin will generate a new one that you can then modify to your original values.");
+		PrintToServer("[FF2] Warning: Your config may be outdated. Back up tf/cfg/sourcemod/freak_fortress_2.cfg and delete it, and this plugin will generate a new one that you can then modify to your original values.");
 	}
 
 	LoadTranslations("freak_fortress_2.phrases");
@@ -1618,7 +1617,7 @@ public LoadCharacter(const String:character[])
 		{
 			decl String:plugin_name[64];
 			KvGetString(BossKV[Specials], "plugin_name", plugin_name, 64);
-			BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "plugins/freaks/%s.ff2", plugin_name);
+			BuildPath(Path_SM, config, sizeof(config), "plugins/freak_fortress_2/%s.smx", plugin_name);
 			if(!FileExists(config))
 			{
 				LogError("[FF2] Character %s needs plugin %s!", character, plugin_name);
