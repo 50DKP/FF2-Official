@@ -359,22 +359,6 @@ native Float:FF2_GetClientGlow(client);
 native FF2_SetClientGlow(client, Float:time1, Float:time2=-1.0);
 
 /**
- * Retrieves the number of alive players left (not including bosses)
- *
- * @return			Number of non-boss players left alive
- */
-#pragma deprecated Use FF2_OnAlivePlayersChanged
-native FF2_GetAlivePlayers();
-
-/**
- * Retrieves the number of boss players left (including minions)
- *
- * @return			Number of boss players left alive
- */
-#pragma deprecated Use FF2_OnAlivePlayersChanged
-native FF2_GetBossPlayers();
-
-/**
  * Returns whether or not debug is enabled
  * @return			True if enabled, false otherwise
  */
@@ -422,7 +406,6 @@ forward Action:FF2_OnTriggerHurt(boss, triggerHurt, &Float:damage);
  * @return				Plugin_Stop will prevent music, Plugin_Changed will change it.
  */
 forward Action:FF2_OnMusic(String:path[], &Float:time);
-
 
 /**
  * Called when FF2 picks a character for a Boss
@@ -472,7 +455,6 @@ forward Action:FF2_OnLoseLife(boss, &lives, maxLives);
 forward Action:FF2_OnAlivePlayersChanged(players, bosses);
 
 /**
- *
  * Gives ammo to a weapon
  *
  * @param client	Client's index
@@ -555,22 +537,6 @@ stock Debug(String:buffer[], any:...)
 	}
 }
 
-// These exist for compatibility reasons (<1.10.1)
-#pragma deprecated Use TF2_RemoveWeaponSlot
-stock TF2_RemoveWeaponSlot2(client, slot)
-{
-	TF2_RemoveWeaponSlot(client, slot);
-}
-
-#pragma deprecated Use TF2_RemoveAllWeapons
-stock TF2_RemoveAllWeapons2(client)
-{
-	for(new slot=0; slot<=5; slot++)
-	{
-		TF2_RemoveWeaponSlot(client, slot);
-	}
-}
-
 public SharedPlugin:__pl_FF2=
 {
 	name="freak_fortress_2",
@@ -620,7 +586,5 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_DoAbility");
 	MarkNativeAsOptional("FF2_GetClientGlow");
 	MarkNativeAsOptional("FF2_SetClientGlow");
-	MarkNativeAsOptional("FF2_GetAlivePlayers");
-	MarkNativeAsOptional("FF2_GetBossPlayers");
 }
 #endif

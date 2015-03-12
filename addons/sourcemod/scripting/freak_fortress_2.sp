@@ -118,7 +118,6 @@ new Handle:cvarEnabled;
 new Handle:cvarAliveToEnable;
 new Handle:cvarPointType;
 new Handle:cvarCrits;
-new Handle:cvarFirstRound;  //DEPRECATED
 new Handle:cvarArenaRounds;
 new Handle:cvarCircuitStun;
 new Handle:cvarSpecForceBoss;
@@ -947,8 +946,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_SetQueuePoints", Native_SetQueuePoints);
 	CreateNative("FF2_GetClientGlow", Native_GetClientGlow);
 	CreateNative("FF2_SetClientGlow", Native_SetClientGlow);
-	CreateNative("FF2_GetAlivePlayers", Native_GetAlivePlayers);  //TODO: Deprecated, remove in 2.0.0
-	CreateNative("FF2_GetBossPlayers", Native_GetBossPlayers);  //TODO: Deprecated, remove in 2.0.0
 	CreateNative("FF2_Debug", Native_Debug);
 
 	PreAbility=CreateGlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);
@@ -980,7 +977,6 @@ public OnPluginStart()
 	cvarAnnounce=CreateConVar("ff2_announce", "120", "Amount of seconds to wait until FF2 info is displayed again.  0 to disable", FCVAR_PLUGIN, true, 0.0);
 	cvarEnabled=CreateConVar("ff2_enabled", "1", "0-Disable FF2 (WHY?), 1-Enable FF2", FCVAR_PLUGIN|FCVAR_DONTRECORD, true, 0.0, true, 1.0);
 	cvarCrits=CreateConVar("ff2_crits", "1", "Can Boss get crits?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarFirstRound=CreateConVar("ff2_first_round", "-1", "This cvar is deprecated.  Please use 'ff2_arena_rounds' instead by setting this cvar to -1", FCVAR_PLUGIN, true, -1.0, true, 1.0);  //DEPRECATED
 	cvarArenaRounds=CreateConVar("ff2_arena_rounds", "1", "Number of rounds to make arena before switching to FF2 (helps for slow-loading players)", FCVAR_PLUGIN, true, 0.0);
 	cvarCircuitStun=CreateConVar("ff2_circuit_stun", "2", "Amount of seconds the Short Circuit stuns the boss for.  0 to disable", FCVAR_PLUGIN, true, 0.0);
 	cvarCountdownPlayers=CreateConVar("ff2_countdown_players", "1", "Amount of players until the countdown timer starts (0 to disable)", FCVAR_PLUGIN, true, 0.0);
@@ -1781,13 +1777,6 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	else if(convar==cvarCrits)
 	{
 		BossCrits=bool:StringToInt(newValue);
-	}
-	else if(convar==cvarFirstRound)  //DEPRECATED
-	{
-		if(StringToInt(newValue)!=-1)
-		{
-			arenaRounds=StringToInt(newValue) ? 0 : 1;
-		}
 	}
 	else if(convar==cvarArenaRounds)
 	{
@@ -8658,16 +8647,6 @@ public Native_GetClientGlow(Handle:plugin, numParams)
 public Native_SetClientGlow(Handle:plugin, numParams)
 {
 	SetClientGlow(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3));
-}
-
-public Native_GetAlivePlayers(Handle:plugin, numParams)
-{
-	return RedAlivePlayers;
-}
-
-public Native_GetBossPlayers(Handle:plugin, numParams)
-{
-	return BlueAlivePlayers;
 }
 
 public Native_Debug(Handle:plugin, numParams)
