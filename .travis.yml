@@ -19,7 +19,7 @@ before_script:
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=115795&d=1360508618" -O include/rtd.inc
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508" -O include/tf2attributes.inc
     - chmod +x spcomp
-    - mkdir compiled compiled/freaks
+    - mkdir compiled compiled/freak_fortress_2
 script: ./compile.sh freak_fortress_2.sp freak_fortress_2/*.sp
 
 #Releases
