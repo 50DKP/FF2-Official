@@ -1314,14 +1314,7 @@ public EnableFF2()
 	canBossRTD=GetConVarBool(cvarBossRTD);*/
 	AliveToEnable=GetConVarInt(cvarAliveToEnable);
 	BossCrits=GetConVarBool(cvarCrits);
-	if(GetConVarInt(cvarFirstRound)!=-1)
-	{
-		arenaRounds=GetConVarInt(cvarFirstRound) ? 0 : 1;
-	}
-	else
-	{
-		arenaRounds=GetConVarInt(cvarArenaRounds);
-	}
+	arenaRounds=GetConVarInt(cvarArenaRounds);
 	circuitStun=GetConVarFloat(cvarCircuitStun);
 	countdownHealth=GetConVarInt(cvarCountdownHealth);
 	countdownPlayers=GetConVarInt(cvarCountdownPlayers);
@@ -8652,91 +8645,6 @@ public Native_SetClientGlow(Handle:plugin, numParams)
 public Native_Debug(Handle:plugin, numParams)
 {
 	return GetConVarBool(cvarDebug);
-}
-
-public Native_IsVSHMap(Handle:plugin, numParams)
-{
-	return false;
-}
-
-public Action:VSH_OnIsSaxtonHaleModeEnabled(&result)
-{
-	if((!result || result==1) && Enabled)
-	{
-		result=2;
-		return Plugin_Changed;
-	}
-	return Plugin_Continue;
-}
-
-public Action:VSH_OnGetSaxtonHaleTeam(&result)
-{
-	if(Enabled)
-	{
-		result=BossTeam;
-		return Plugin_Changed;
-	}
-	return Plugin_Continue;
-}
-
-public Action:VSH_OnGetSaxtonHaleUserId(&result)
-{
-	if(Enabled && IsClientConnected(Boss[0]))
-	{
-		result=GetClientUserId(Boss[0]);
-		return Plugin_Changed;
-	}
-	return Plugin_Continue;
-}
-
-public Action:VSH_OnGetSpecialRoundIndex(&result)
-{
-	if(Enabled)
-	{
-		result=Special[0];
-		return Plugin_Changed;
-	}
-	return Plugin_Continue;
-}
-
-public Action:VSH_OnGetSaxtonHaleHealth(&result)
-{
-	if(Enabled)
-	{
-		result=BossHealth[0];
-		return Plugin_Changed;
-	}
-	return Plugin_Continue;
-}
-
-public Action:VSH_OnGetSaxtonHaleHealthMax(&result)
-{
-	if(Enabled)
-	{
-		result=BossHealthMax[0];
-		return Plugin_Changed;
-	}
-	return Plugin_Continue;
-}
-
-public Action:VSH_OnGetClientDamage(client, &result)
-{
-	if(Enabled)
-	{
-		result=Damage[client];
-		return Plugin_Changed;
-	}
-	return Plugin_Continue;
-}
-
-public Action:VSH_OnGetRoundState(&result)
-{
-	if(Enabled)
-	{
-		result=_:CheckRoundState();
-		return Plugin_Changed;
-	}
-	return Plugin_Continue;
 }
 
 public OnTakeDamagePost(client, attacker, inflictor, Float:damage, damagetype)
