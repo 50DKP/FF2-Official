@@ -325,7 +325,7 @@ static const String:ff2versiondates[][]=
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
-	"March 10, 2015"	//1.10.5
+	"March 12, 2015"	//1.10.5
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -338,7 +338,8 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Fixed the Festive SMG not getting crits (Wliu from Dalix)");
 			DrawPanelText(panel, "3) Fixed teleport sounds not being played (Wliu from Dalix)");
 			DrawPanelText(panel, "4) !ff2_stop_music can now target a specific client (Wliu)");
-			DrawPanelText(panel, "5) [Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
+			DrawPanelText(panel, "5) [Server] Fixed multiple sounds not working after TF2 changed the default sound extension type (Wliu)");
+			DrawPanelText(panel, "6) [Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
 		}
 		case 58:  //1.10.4
 		{
@@ -1529,15 +1530,15 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 
 	AddFileToDownloadsTable("sound/saxton_hale/9000.wav");
 	PrecacheSound("saxton_hale/9000.wav", true);
-	PrecacheSound("vo/announcer_am_capincite01.wav", true);
-	PrecacheSound("vo/announcer_am_capincite03.wav", true);
-	PrecacheSound("vo/announcer_am_capenabled01.wav", true);
-	PrecacheSound("vo/announcer_am_capenabled02.wav", true);
-	PrecacheSound("vo/announcer_am_capenabled03.wav", true);
-	PrecacheSound("vo/announcer_am_capenabled04.wav", true);
+	PrecacheSound("vo/announcer_am_capincite01.mp3", true);
+	PrecacheSound("vo/announcer_am_capincite03.mp3", true);
+	PrecacheSound("vo/announcer_am_capenabled01.mp3", true);
+	PrecacheSound("vo/announcer_am_capenabled02.mp3", true);
+	PrecacheSound("vo/announcer_am_capenabled03.mp3", true);
+	PrecacheSound("vo/announcer_am_capenabled04.mp3", true);
 	PrecacheSound("weapons/barret_arm_zap.wav", true);
-	PrecacheSound("vo/announcer_ends_5min.wav", true);
-	PrecacheSound("vo/announcer_ends_2min.wav", true);
+	PrecacheSound("vo/announcer_ends_5min.mp3", true);
+	PrecacheSound("vo/announcer_ends_2min.mp3", true);
 	PrecacheSound("player/doubledonk.wav", true);
 	isCharSetSelected=false;
 }
@@ -5355,11 +5356,11 @@ public Action:CheckAlivePlayers(Handle:timer)
 			new String:sound[64];
 			if(GetRandomInt(0, 1))
 			{
-				Format(sound, sizeof(sound), "vo/announcer_am_capenabled0%i.wav", GetRandomInt(1, 4));
+				Format(sound, sizeof(sound), "vo/announcer_am_capenabled0%i.mp3", GetRandomInt(1, 4));
 			}
 			else
 			{
-				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.wav", GetRandomInt(0, 1) ? 1 : 3);
+				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.mp3", GetRandomInt(0, 1) ? 1 : 3);
 			}
 			EmitSoundToAll(sound);
 		}
@@ -5421,28 +5422,28 @@ public Action:Timer_DrawGame(Handle:timer)
 	{
 		case 300:
 		{
-			EmitSoundToAll("vo/announcer_ends_5min.wav");
+			EmitSoundToAll("vo/announcer_ends_5min.mp3");
 		}
 		case 120:
 		{
-			EmitSoundToAll("vo/announcer_ends_2min.wav");
+			EmitSoundToAll("vo/announcer_ends_2min.mp3");
 		}
 		case 60:
 		{
-			EmitSoundToAll("vo/announcer_ends_60sec.wav");
+			EmitSoundToAll("vo/announcer_ends_60sec.mp3");
 		}
 		case 30:
 		{
-			EmitSoundToAll("vo/announcer_ends_30sec.wav");
+			EmitSoundToAll("vo/announcer_ends_30sec.mp3");
 		}
 		case 10:
 		{
-			EmitSoundToAll("vo/announcer_ends_10sec.wav");
+			EmitSoundToAll("vo/announcer_ends_10sec.mp3");
 		}
 		case 1, 2, 3, 4, 5:
 		{
 			decl String:sound[PLATFORM_MAX_PATH];
-			Format(sound, PLATFORM_MAX_PATH, "vo/announcer_ends_%isec.wav", time);
+			Format(sound, PLATFORM_MAX_PATH, "vo/announcer_ends_%isec.mp3", time);
 			EmitSoundToAll(sound);
 		}
 		case 0:
