@@ -959,7 +959,7 @@ public OnPluginStart()
 	cvarCountdownResult=CreateConVar("ff2_countdown_result", "0", "0-Kill players when the countdown ends, 1-End the round in a stalemate", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarSpecForceBoss=CreateConVar("ff2_spec_force_boss", "0", "0-Spectators are excluded from the queue system, 1-Spectators are counted in the queue system", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarEnableEurekaEffect=CreateConVar("ff2_enable_eureka", "0", "0-Disable the Eureka Effect, 1-Enable the Eureka Effect", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
+	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0 and 3-Boss is always on Blu, 1-Boss is on a random team each round, 2-Boss is always on Red", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
@@ -2424,11 +2424,11 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	executed2=false;
 	if((GetEventInt(event, "team")==BossTeam))
 	{
-		Debug("Oogle boogle");
+		//Debug("Oogle boogle");
 		bossWin=true;
 		if(RandomSound("sound_win", sound, sizeof(sound)))
 		{
-			Debug("Even more oogle boogles");
+			//Debug("Even more oogle boogles");
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 		}
@@ -2486,7 +2486,15 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 				boss=Boss[target];
 				KvRewind(BossKV[Special[boss]]);
 				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
-				BossLives[boss]>1 ? Format(lives, 4, "x%i", BossLives[boss]) : strcopy(lives, 2, "");
+				//BossLives[boss]>1 ? Format(lives, 4, "x%i", BossLives[boss]) : strcopy(lives, 2, "");
+				if(BossLives[boss]>1)
+				{
+					Format(lives, sizeof(lives), "x%i", BossLives[boss]);
+				}
+				else
+				{
+					strcopy(lives, 2, "");
+				}
 				Format(text, sizeof(text), "%s\n%t", text, "ff2_alive", bossName, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
 		}
@@ -4214,14 +4222,21 @@ public Action:Command_StopMusic(client, args)
 {
 	if(Enabled2)
 	{
-		decl String:temp[4];
-		GetCmdArg(1, temp, sizeof(temp));
-		new target=StringToInt(temp);  //This will be 0 if the optional argument is missing or not an integer which is a good fallback
-		StopMusic(target);
-
-		if(target)
+		decl String:pattern[MAX_TARGET_LENGTH];
+		GetCmdArg(1, pattern, MAX_TARGET_LENGTH);
+		new String:targetName[MAX_TARGET_LENGTH];
+		new targets[1], targetCount;
+		new bool:targetNounIsMultiLanguage;
+		if((targetCount=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage))<=0)
 		{
-			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for %N.", target);
+			ReplyToTargetError(client, targetCount);
+			return Plugin_Handled;
+		}
+		StopMusic(targets[0]);
+
+		if(targets[0])
+		{
+			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for %s.", targetName);
 		}
 		else
 		{
