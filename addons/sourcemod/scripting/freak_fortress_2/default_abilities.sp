@@ -346,15 +346,15 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 			decl String:sound[PLATFORM_MAX_PATH];
 			if(FF2_RandomSound("sound_ability", sound, PLATFORM_MAX_PATH, boss, slot))
 			{
-				EmitSoundToAll(sound, client, _, _, _, _, _, boss, position);
-				EmitSoundToAll(sound, client, _, _, _, _, _, boss, position);
+				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 
 				for(new target=1; target<=MaxClients; target++)
 				{
-					if(IsClientInGame(target) && target!=boss)
+					if(IsClientInGame(target) && target!=client)
 					{
-						EmitSoundToClient(target, sound, client, _, _, _, _, _, boss, position);
-						EmitSoundToClient(target, sound, client, _, _, _, _, _, boss, position);
+						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
+						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
 					}
 				}
 			}

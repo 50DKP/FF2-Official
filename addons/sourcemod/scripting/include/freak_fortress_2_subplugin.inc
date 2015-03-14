@@ -3,8 +3,8 @@ new String:this_plugin_name[80];
 GetThisPluginName()
 {
 	decl String:pluginName[80];
-	GetPluginFilename(INVALID_HANDLE, pluginName, 80);
-	ReplaceString(pluginName, 80, ".ff2", "", false);
+	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
+	ReplaceString(pluginName, sizeof(pluginName), ".ff2", "", false);
 	new forwardSlash=-1;
 	new backwardSlash=-1;
 	new finalPluginName=-1;
@@ -29,7 +29,7 @@ GetThisPluginName()
 			finalPluginName=forwardSlash;
 		}
 	}
-	strcopy(this_plugin_name, 80, pluginName[finalPluginName+1]);
+	strcopy(this_plugin_name, sizeof(this_plugin_name), pluginName[finalPluginName+1]);
 }
 
 public OnPluginStart()
@@ -38,6 +38,7 @@ public OnPluginStart()
 	GetThisPluginName();
 }
 
+//This is very broken-FF2_OnAbility's args are client, plugin_name, ability_name, SLOT, status
 public Action:FF2_OnAbility(client, const String:plugin_name[], const String:ability_name[], status)
 {
 	if(plugin_name[0])
@@ -47,6 +48,7 @@ public Action:FF2_OnAbility(client, const String:plugin_name[], const String:abi
 			return Plugin_Continue;
 		}
 	}
+	//So we're really passing 'slot' here and not 'status'-currently subplugins have no way of getting status
 	FF2_OnAbility2(client, plugin_name, ability_name, status);
 	return Plugin_Continue;
 }

@@ -39,7 +39,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define DEV_REVISION "Alpha 2"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.4
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.5
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..." (build "...BUILD_NUMBER...")"
 #endif
@@ -360,7 +360,7 @@ static const String:ff2versiondates[][]=
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
-	"March 10, 2015"	//1.10.5
+	"March 13, 2015"	//1.10.5
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -372,8 +372,9 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "1) Fixed slow-mo being extremely buggy (Wliu from various)");
 			DrawPanelText(panel, "2) Fixed the Festive SMG not getting crits (Wliu from Dalix)");
 			DrawPanelText(panel, "3) Fixed teleport sounds not being played (Wliu from Dalix)");
-			DrawPanelText(panel, "4) !ff2_stop_music can now target a specific client (Wliu)");
-			DrawPanelText(panel, "5) [Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
+			DrawPanelText(panel, "4) !ff2_stop_music can now target specific clients (Wliu)");
+			DrawPanelText(panel, "5) [Server] Fixed multiple sounds not working after TF2 changed the default sound extension type (Wliu)");
+			DrawPanelText(panel, "6) [Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
 		}
 		case 58:  //1.10.4
 		{
@@ -984,7 +985,7 @@ public OnPluginStart()
 	cvarCountdownResult=CreateConVar("ff2_countdown_result", "0", "0-Kill players when the countdown ends, 1-End the round in a stalemate", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarSpecForceBoss=CreateConVar("ff2_spec_force_boss", "0", "0-Spectators are excluded from the queue system, 1-Spectators are counted in the queue system", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarEnableEurekaEffect=CreateConVar("ff2_enable_eureka", "0", "0-Disable the Eureka Effect, 1-Enable the Eureka Effect", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss team depends on FF2 logic, 1-Boss is on a random team each round, 2-Boss is always on Red, 3-Boss is always on Blu", FCVAR_PLUGIN, true, 0.0, true, 3.0);
+	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0 and 3-Boss is always on Blu, 1-Boss is on a random team each round, 2-Boss is always on Red", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
@@ -1515,15 +1516,15 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 
 	AddFileToDownloadsTable("sound/saxton_hale/9000.wav");
 	PrecacheSound("saxton_hale/9000.wav", true);
-	PrecacheSound("vo/announcer_am_capincite01.wav", true);
-	PrecacheSound("vo/announcer_am_capincite03.wav", true);
-	PrecacheSound("vo/announcer_am_capenabled01.wav", true);
-	PrecacheSound("vo/announcer_am_capenabled02.wav", true);
-	PrecacheSound("vo/announcer_am_capenabled03.wav", true);
-	PrecacheSound("vo/announcer_am_capenabled04.wav", true);
+	PrecacheSound("vo/announcer_am_capincite01.mp3", true);
+	PrecacheSound("vo/announcer_am_capincite03.mp3", true);
+	PrecacheSound("vo/announcer_am_capenabled01.mp3", true);
+	PrecacheSound("vo/announcer_am_capenabled02.mp3", true);
+	PrecacheSound("vo/announcer_am_capenabled03.mp3", true);
+	PrecacheSound("vo/announcer_am_capenabled04.mp3", true);
 	PrecacheSound("weapons/barret_arm_zap.wav", true);
-	PrecacheSound("vo/announcer_ends_5min.wav", true);
-	PrecacheSound("vo/announcer_ends_2min.wav", true);
+	PrecacheSound("vo/announcer_ends_5min.mp3", true);
+	PrecacheSound("vo/announcer_ends_2min.mp3", true);
 	PrecacheSound("player/doubledonk.wav", true);
 	isCharSetSelected=false;
 }
@@ -2401,17 +2402,17 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		return Plugin_Continue;
 	}
 
-	decl String:sound[PLATFORM_MAX_PATH];
+	decl String:sound[PLATFORM_MAX_PATH], String:text[128];
 	new bool:bossWin=false;
 	executed=false;
 	executed2=false;
 	if((GetEventInt(event, "team")==BossTeam))
 	{
-		Debug("Oogle boogle");
+		//Debug("Oogle boogle");
 		bossWin=true;
 		if(RandomSound("sound_win", sound, sizeof(sound)))
 		{
-			Debug("Even more oogle boogles");
+			//Debug("Even more oogle boogles");
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 		}
@@ -2461,7 +2462,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 	if(isBossAlive)
 	{
-		decl String:bossName[64], String:lives[4], String:text[128];
+		decl String:bossName[64], String:lives[4];
 		for(new target; target<=MaxClients; target++)
 		{
 			if(IsBoss(target))
@@ -2470,7 +2471,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 				KvRewind(BossKV[Special[boss]]);
 				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 				BossLives[boss]>1 ? Format(lives, 4, "x%i", BossLives[boss]) : strcopy(lives, 2, "");
-				Format(text, sizeof(text), "%s\n%t", text, "ff2_alive", bossName, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				Format(text, sizeof(text), "%s\n%t", text, "ff2_alive", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
 		}
 
@@ -2529,7 +2530,6 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	PrintCenterTextAll("");
 
-	decl String:text[128];
 	for(new client; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client))
@@ -4345,33 +4345,39 @@ public Action:Command_Points(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:queuePoints[80];
-	decl String:targetName[PLATFORM_MAX_PATH];
-	GetCmdArg(1, targetName, sizeof(targetName));
-	GetCmdArg(2, queuePoints, sizeof(queuePoints));
-	new points=StringToInt(queuePoints);
+	decl String:stringPoints[8];
+	decl String:pattern[PLATFORM_MAX_PATH];
+	GetCmdArg(1, pattern, sizeof(pattern));
+	GetCmdArg(2, stringPoints, sizeof(stringPoints));
+	new points=StringToInt(stringPoints);
 
-	new String:target_name[MAX_TARGET_LENGTH];
-	new target_list[MAXPLAYERS], target_count;
-	new bool:tn_is_ml;
+	new String:targetName[MAX_TARGET_LENGTH];
+	new targets[MAXPLAYERS], matches;
+	new bool:targetNounIsMultiLanguage;
 
-	if((target_count=ProcessTargetString(targetName, client, target_list, MaxClients, 0, target_name, sizeof(target_name), tn_is_ml))<=0)
+	if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage))<=0)
 	{
-		ReplyToTargetError(client, target_count);
+		ReplyToTargetError(client, matches);
 		return Plugin_Handled;
 	}
 
-	for(new target; target<target_count; target++)
+	if(matches>1)
 	{
-		if(IsClientSourceTV(target_list[target]) || IsClientReplay(target_list[target]))
+		for(new target; target<matches; target++)
 		{
-			continue;
+			if(!IsClientSourceTV(targets[target]) && !IsClientReplay(targets[target]))
+			{
+				SetClientQueuePoints(targets[target], GetClientQueuePoints(targets[target])+points);
+				LogAction(client, targets[target], "\"%L\" added %d queue points to \"%L\"", client, points, targets[target]);
+			}
 		}
-
-		SetClientQueuePoints(target_list[target], GetClientQueuePoints(target_list[target])+points);
-		LogAction(client, target_list[target], "\"%L\" added %d queue points to \"%L\"", client, points, target_list[target]);
-		CReplyToCommand(client, "{olive}[FF2]{default} Added %d queue points to %s", points, target_name);
 	}
+	else
+	{
+		SetClientQueuePoints(targets[0], GetClientQueuePoints(targets[0])+points);
+		LogAction(client, targets[0], "\"%L\" added %d queue points to \"%L\"", client, points, targets[0]);
+	}
+	CReplyToCommand(client, "{olive}[FF2]{default} Added %d queue points to %s", points, targetName);
 	return Plugin_Handled;
 }
 
@@ -4379,17 +4385,35 @@ public Action:Command_StopMusic(client, args)
 {
 	if(Enabled2)
 	{
-		decl String:temp[4];
-		GetCmdArg(1, temp, sizeof(temp));
-		new target=StringToInt(temp);  //This will be 0 if the optional argument is missing or not an integer which is a good fallback
-		StopMusic(target);
-
-		if(target)
+		if(args)
 		{
-			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for %N.", target);
+			decl String:pattern[MAX_TARGET_LENGTH];
+			GetCmdArg(1, pattern, sizeof(pattern));
+			new String:targetName[MAX_TARGET_LENGTH];
+			new targets[MAXPLAYERS], matches;
+			new bool:targetNounIsMultiLanguage;
+			if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), COMMAND_FILTER_NO_BOTS, targetName, sizeof(targetName), targetNounIsMultiLanguage))<=0)
+			{
+				ReplyToTargetError(client, matches);
+				return Plugin_Handled;
+			}
+
+			if(matches>1)
+			{
+				for(new target; target<matches; target++)
+				{
+					StopMusic(targets[target]);
+				}
+			}
+			else
+			{
+				StopMusic(targets[0]);
+			}
+			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for %s.", targetName);
 		}
 		else
 		{
+			StopMusic();
 			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for all clients.");
 		}
 		return Plugin_Handled;
@@ -5533,11 +5557,11 @@ public Action:CheckAlivePlayers(Handle:timer)
 			new String:sound[64];
 			if(GetRandomInt(0, 1))
 			{
-				Format(sound, sizeof(sound), "vo/announcer_am_capenabled0%i.wav", GetRandomInt(1, 4));
+				Format(sound, sizeof(sound), "vo/announcer_am_capenabled0%i.mp3", GetRandomInt(1, 4));
 			}
 			else
 			{
-				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.wav", GetRandomInt(0, 1) ? 1 : 3);
+				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.mp3", GetRandomInt(0, 1) ? 1 : 3);
 			}
 			EmitSoundToAll(sound);
 		}
@@ -5599,28 +5623,28 @@ public Action:Timer_DrawGame(Handle:timer)
 	{
 		case 300:
 		{
-			EmitSoundToAll("vo/announcer_ends_5min.wav");
+			EmitSoundToAll("vo/announcer_ends_5min.mp3");
 		}
 		case 120:
 		{
-			EmitSoundToAll("vo/announcer_ends_2min.wav");
+			EmitSoundToAll("vo/announcer_ends_2min.mp3");
 		}
 		case 60:
 		{
-			EmitSoundToAll("vo/announcer_ends_60sec.wav");
+			EmitSoundToAll("vo/announcer_ends_60sec.mp3");
 		}
 		case 30:
 		{
-			EmitSoundToAll("vo/announcer_ends_30sec.wav");
+			EmitSoundToAll("vo/announcer_ends_30sec.mp3");
 		}
 		case 10:
 		{
-			EmitSoundToAll("vo/announcer_ends_10sec.wav");
+			EmitSoundToAll("vo/announcer_ends_10sec.mp3");
 		}
 		case 1, 2, 3, 4, 5:
 		{
 			decl String:sound[PLATFORM_MAX_PATH];
-			Format(sound, PLATFORM_MAX_PATH, "vo/announcer_ends_%isec.wav", time);
+			Format(sound, PLATFORM_MAX_PATH, "vo/announcer_ends_%isec.mp3", time);
 			EmitSoundToAll(sound);
 		}
 		case 0:
@@ -7390,18 +7414,29 @@ public Action:ResetQueuePointsCmd(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:targetname[MAX_TARGET_LENGTH];
-	GetCmdArg(1, targetname, MAX_TARGET_LENGTH);
-	new String:target_name[MAX_TARGET_LENGTH];
-	new target_list[1], target_count;
-	new bool:tn_is_ml;
+	decl String:pattern[MAX_TARGET_LENGTH];
+	GetCmdArg(1, pattern, sizeof(pattern));
+	new String:targetName[MAX_TARGET_LENGTH];
+	new targets[MAXPLAYERS], matches;
+	new bool:targetNounIsMultiLanguage;
 
-	if((target_count=ProcessTargetString(targetname, client, target_list, 1, 0, target_name, MAX_TARGET_LENGTH, tn_is_ml))<=0)
+	if((matches=ProcessTargetString(pattern, client, targets, 1, 0, targetName, sizeof(targetName), targetNounIsMultiLanguage))<=0)
 	{
-		ReplyToTargetError(client, target_count);
+		ReplyToTargetError(client, matches);
 		return Plugin_Handled;
 	}
-	TurnToZeroPanel(client, target_list[0]);
+
+	if(matches>1)
+	{
+		for(new target; target<matches; target++)
+		{
+			TurnToZeroPanel(client, targets[target]);  //FIXME:  This can only handle one client currently and doesn't iterate through all clients
+		}
+	}
+	else
+	{
+		TurnToZeroPanel(client, targets[0]);
+	}
 	return Plugin_Handled;
 }
 
@@ -7411,18 +7446,18 @@ public TurnToZeroPanelH(Handle:menu, MenuAction:action, client, position)
 	{
 		if(shortname[client]==client)
 		{
-			CPrintToChat(client,"{olive}[FF2]{default} %t", "Reset Queue Points Done");
+			CPrintToChat(client,"{olive}[FF2]{default} %t", "Reset Queue Points Done");  //Your queue points have been reset to {olive}0{default}
 		}
 		else
 		{
-			CPrintToChat(client, "{olive}[FF2]{default} %t", "Reset Player's Points Done", shortname[client]);
-			CPrintToChat(shortname[client], "{olive}[FF2]{default} %t", "Queue Points Reset by Admin", client);
+			CPrintToChat(client, "{olive}[FF2]{default} %t", "Reset Player's Points Done", shortname[client]);  //{olive}{1}{default}'s queue points have been reset to {olive}0{default}
+			CPrintToChat(shortname[client], "{olive}[FF2]{default} %t", "Queue Points Reset by Admin", client);  //{olive}{1}{default} reset your queue points to {olive}0{default}
 		}
 		SetClientQueuePoints(shortname[client], 0);
 	}
 }
 
-public Action:TurnToZeroPanel(caller, client)
+public Action:TurnToZeroPanel(client, target)
 {
 	if(!Enabled2)
 	{
@@ -7430,25 +7465,25 @@ public Action:TurnToZeroPanel(caller, client)
 	}
 
 	new Handle:panel=CreatePanel();
-	decl String:text[512];
-	SetGlobalTransTarget(caller);
-	if(caller==client)
+	decl String:text[128];
+	SetGlobalTransTarget(client);
+	if(client==target)
 	{
-		Format(text, 512, "%t", "Reset Queue Points Confirmation");
+		Format(text, 512, "%t", "Reset Queue Points Confirmation");  //Do you really want to set your queue points to 0?
 	}
 	else
 	{
-		Format(text, 512, "%t", "Reset Player's Queue Points", client);
+		Format(text, 512, "%t", "Reset Player's Queue Points", client);  //Do you really want to set {1}'s queue points to 0?
 	}
 
-	PrintToChat(caller, text);
+	PrintToChat(client, text);
 	SetPanelTitle(panel, text);
-	Format(text, 512, "%t", "Yes");
+	Format(text, sizeof(text), "%t", "Yes");
 	DrawPanelItem(panel, text);
-	Format(text, 512, "%t", "No");
+	Format(text, sizeof(text), "%t", "No");
 	DrawPanelItem(panel, text);
-	shortname[caller]=client;
-	SendPanelToClient(panel, caller, TurnToZeroPanelH, MENU_TIME_FOREVER);
+	shortname[client]=target;
+	SendPanelToClient(panel, client, TurnToZeroPanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Handled;
 }

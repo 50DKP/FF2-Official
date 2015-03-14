@@ -201,8 +201,8 @@
 	}
 	"ff2_alive"
 	{
-		"#format" "{1:s},{2:i},{3:i},{4:s}"
-		"de"	"Noch {1} übrig mit {2} von {3}{4} Leben."
+		"#format" "{1:s},{2:n},{3:i},{4:i},{5:s}"
+		"de"	"Noch {1} ({2}) übrig mit {2} von {3}{4} Leben."
 	}
 	"select_charset"
 	{
