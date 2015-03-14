@@ -10,6 +10,8 @@
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
+#pragma newdecls required  //Move this to the top once all include files have been updated to new-style syntax
+
 #define PLUGIN_VERSION "0.0.0"
 
 Handle cvarGoomba;
@@ -82,7 +84,7 @@ public void OnConfigsExecuted()
 	canBossRTD=GetConVarBool(cvarBossRTD);
 }
 
-public Action OnStomp(attacker, victim, float &damageMultiplier, float &damageBonus, float &JumpPower)
+public Action OnStomp(int attacker, int victim, float &damageMultiplier, float &damageBonus, float &JumpPower)
 {
 	if(goomba)
 	{
@@ -108,7 +110,7 @@ public Action OnStomp(attacker, victim, float &damageMultiplier, float &damageBo
 	return Plugin_Continue;
 }
 
-public Action RTD_CanRollDice(client)
+public Action RTD_CanRollDice(int client)
 {
 	return (FF2_GetBossIndex(client)!=-1 && rtd && !canBossRTD) ? Plugin_Handled : Plugin_Continue;
 }

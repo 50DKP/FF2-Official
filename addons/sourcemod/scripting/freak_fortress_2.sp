@@ -7976,12 +7976,7 @@ public VoiceTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 	}
 }
 
-//Ugly compatability layer since HookSound's arguments changed in 1.8
-#if SOURCEMOD_V_MAJOR==1 && SOURCEMOD_V_MINOR>=8
 public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH], &client, &channel, &Float:volume, &level, &pitch, &flags, String:soundEntry[PLATFORM_MAX_PATH], &seed)
-#else
-public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH], &client, &channel, &Float:volume, &level, &pitch, &flags)
-#endif
 {
 	if(!Enabled || !IsValidClient(client) || channel<1)
 	{
