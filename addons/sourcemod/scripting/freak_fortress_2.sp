@@ -6553,7 +6553,7 @@ stock CalcBossHealthMax(client)
 	new _operator[128];
 
 	KvRewind(BossKV[Special[client]]);
-	KvGetString(BossKV[Special[client]], "health_formula", formula, sizeof(formula), "((460+n)*n)^1.075");
+	KvGetString(BossKV[Special[client]], "health_formula", formula, sizeof(formula), "(((760.8+n)*n-1)^1.0341)+2046");
 	ReplaceString(formula, sizeof(formula), " ", "");  //Get rid of spaces
 	new length=strlen(formula);
 	for(new i; i<=length; i++)
