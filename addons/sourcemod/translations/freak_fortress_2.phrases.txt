@@ -201,8 +201,8 @@
 	}
 	"ff2_alive"
 	{
-		"#format" "{1:s},{2:i},{3:i},{4:s}"
-		"en"	"{1} won with {2} out of {3}{4} hp left."
+		"#format" "{1:s},{2:N},{3:i},{4:i},{5:s}"
+		"en"	"{1} ({2}) won with {3} out of {4}{5} hp left."
 	}
 	"select_charset"
 	{

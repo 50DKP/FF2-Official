@@ -4,16 +4,17 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.10.4"
-			"Previous"	"1.10.3"
+			"Latest"	"1.10.5"
+			"Previous"	"1.10.4"
 		}
 
-		"Notes"			"More bugfixes like usual"
-		"Notes"			"Fixed players getting overheal after winning as a boss"
-		"Notes"			"Whitelisted/rebalanced/fixed some weapons"
-		"Notes"			"Added new developer natives"
-		"Notes"			"Added new sound options for bosses"
-		"Notes"			"See Github, the official thread, or the in-game changelog for the specifics"
+		"Notes"			"Fixed slow-mo being extremely buggy for players"
+		"Notes"			"Fixed the Festive SMG not getting crits"
+		"Notes"			"Fixed teleport sounds not getting played"
+		"Notes"			"Improved ff2_stop_music"
+		"Notes"			"Fixed many sounds not working after the 3/12/2015 A.D. TF2 update"
+		"Notes"			"It is IMPERATIVE that you manually fix every boss's config file so that vo/*.wav becomes vo/*.mp3"
+		"Notes"			"Fixed FF2_SetBossRageDamage"
 	}
 
 	"Files"
@@ -22,18 +23,10 @@
 		{
 			"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
 			"Plugin"	"Path_SM/plugins/freaks/default_abilities.ff2"
-			"Plugin"	"Path_SM/plugins/freaks/easter_abilities.ff2"
 			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
-			"Plugin"	"Path_SM/plugins/freaks/rage_overlay.ff2"
-			"Plugin"	"Path_SM/plugins/freaks/special_noanims.ff2"
-			"Plugin"	"Path_SM/translations/freak_fortress_2.phrases.txt"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
 			"Source"	"Path_SM/scripting/freaks/default_abilities.sp"
-			"Source"	"Path_SM/scripting/freaks/easter_abilities.sp"
 			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
-			"Source"	"Path_SM/scripting/freaks/rage_overlay.sp"
-			"Source"	"Path_SM/scripting/freaks/special_noanims.sp"
-			"Source"	"Path_SM/scripting/include/freak_fortress_2.inc"
 		}
 
 		"Plugin"		"Path_SM/plugins/freak_fortress_2.smx"

@@ -46,7 +46,7 @@ deploy:
         secure: WH0qyFNS6i3CwA2yS0VMTbdD+TOvJb1B5Y/3kIEHAS9O4bLyJ4y26AjMlXx6koXF4dDrgebht2JL1Fz2kFbrmdDh3p6sd+nbj9a0k85uqNC/V3ISJDlzzDxf8mpZ1o6bVJm35QNDDq0kebC7k7zX5d14o6BD9vTOWIMdpL0OR+g=
     file:
         - freak_fortress_2.zip
-        - freak_fotress_2.tar.gz
+        - freak_fortress_2.tar.gz
     on:
         repo: 50DKP/FF2-Official
         tags: true

@@ -2418,7 +2418,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		return Plugin_Continue;
 	}
 
-	decl String:sound[PLATFORM_MAX_PATH];
+	decl String:sound[PLATFORM_MAX_PATH], String:text[128];
 	new bool:bossWin=false;
 	executed=false;
 	executed2=false;
@@ -2478,7 +2478,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 	if(isBossAlive)
 	{
-		decl String:bossName[64], String:lives[4], String:text[128];
+		decl String:bossName[64], String:lives[4];
 		for(new target; target<=MaxClients; target++)
 		{
 			if(IsBoss(target))
@@ -2486,16 +2486,8 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 				boss=Boss[target];
 				KvRewind(BossKV[Special[boss]]);
 				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
-				//BossLives[boss]>1 ? Format(lives, 4, "x%i", BossLives[boss]) : strcopy(lives, 2, "");
-				if(BossLives[boss]>1)
-				{
-					Format(lives, sizeof(lives), "x%i", BossLives[boss]);
-				}
-				else
-				{
-					strcopy(lives, 2, "");
-				}
-				Format(text, sizeof(text), "%s\n%t", text, "ff2_alive", bossName, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				BossLives[boss]>1 ? Format(lives, 4, "x%i", BossLives[boss]) : strcopy(lives, 2, "");
+				Format(text, sizeof(text), "%s\n%t", text, "ff2_alive", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
 		}
 
@@ -2554,7 +2546,6 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	PrintCenterTextAll("");
 
-	decl String:text[128];
 	for(new client; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client))
@@ -4188,33 +4179,39 @@ public Action:Command_Points(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:queuePoints[80];
-	decl String:targetName[PLATFORM_MAX_PATH];
-	GetCmdArg(1, targetName, sizeof(targetName));
-	GetCmdArg(2, queuePoints, sizeof(queuePoints));
-	new points=StringToInt(queuePoints);
+	decl String:stringPoints[8];
+	decl String:pattern[PLATFORM_MAX_PATH];
+	GetCmdArg(1, pattern, sizeof(pattern));
+	GetCmdArg(2, stringPoints, sizeof(stringPoints));
+	new points=StringToInt(stringPoints);
 
-	new String:target_name[MAX_TARGET_LENGTH];
-	new target_list[MAXPLAYERS], target_count;
-	new bool:tn_is_ml;
+	new String:targetName[MAX_TARGET_LENGTH];
+	new targets[MAXPLAYERS], matches;
+	new bool:targetNounIsMultiLanguage;
 
-	if((target_count=ProcessTargetString(targetName, client, target_list, MaxClients, 0, target_name, sizeof(target_name), tn_is_ml))<=0)
+	if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage))<=0)
 	{
-		ReplyToTargetError(client, target_count);
+		ReplyToTargetError(client, matches);
 		return Plugin_Handled;
 	}
 
-	for(new target; target<target_count; target++)
+	if(matches>1)
 	{
-		if(IsClientSourceTV(target_list[target]) || IsClientReplay(target_list[target]))
+		for(new target; target<matches; target++)
 		{
-			continue;
+			if(!IsClientSourceTV(targets[target]) && !IsClientReplay(targets[target]))
+			{
+				SetClientQueuePoints(targets[target], GetClientQueuePoints(targets[target])+points);
+				LogAction(client, targets[target], "\"%L\" added %d queue points to \"%L\"", client, points, targets[target]);
+			}
 		}
-
-		SetClientQueuePoints(target_list[target], GetClientQueuePoints(target_list[target])+points);
-		LogAction(client, target_list[target], "\"%L\" added %d queue points to \"%L\"", client, points, target_list[target]);
-		CReplyToCommand(client, "{olive}[FF2]{default} Added %d queue points to %s", points, target_name);
 	}
+	else
+	{
+		SetClientQueuePoints(targets[0], GetClientQueuePoints(targets[0])+points);
+		LogAction(client, targets[0], "\"%L\" added %d queue points to \"%L\"", client, points, targets[0]);
+	}
+	CReplyToCommand(client, "{olive}[FF2]{default} Added %d queue points to %s", points, targetName);
 	return Plugin_Handled;
 }
 
@@ -4222,24 +4219,35 @@ public Action:Command_StopMusic(client, args)
 {
 	if(Enabled2)
 	{
-		decl String:pattern[MAX_TARGET_LENGTH];
-		GetCmdArg(1, pattern, MAX_TARGET_LENGTH);
-		new String:targetName[MAX_TARGET_LENGTH];
-		new targets[1], targetCount;
-		new bool:targetNounIsMultiLanguage;
-		if((targetCount=ProcessTargetString(pattern, client, targets, sizeof(targets), 0, targetName, sizeof(targetName), targetNounIsMultiLanguage))<=0)
+		if(args)
 		{
-			ReplyToTargetError(client, targetCount);
-			return Plugin_Handled;
-		}
-		StopMusic(targets[0]);
+			decl String:pattern[MAX_TARGET_LENGTH];
+			GetCmdArg(1, pattern, sizeof(pattern));
+			new String:targetName[MAX_TARGET_LENGTH];
+			new targets[MAXPLAYERS], matches;
+			new bool:targetNounIsMultiLanguage;
+			if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), COMMAND_FILTER_NO_BOTS, targetName, sizeof(targetName), targetNounIsMultiLanguage))<=0)
+			{
+				ReplyToTargetError(client, matches);
+				return Plugin_Handled;
+			}
 
-		if(targets[0])
-		{
+			if(matches>1)
+			{
+				for(new target; target<matches; target++)
+				{
+					StopMusic(targets[target]);
+				}
+			}
+			else
+			{
+				StopMusic(targets[0]);
+			}
 			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for %s.", targetName);
 		}
 		else
 		{
+			StopMusic();
 			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for all clients.");
 		}
 		return Plugin_Handled;
@@ -7250,18 +7258,32 @@ public Action:ResetQueuePointsCmd(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:targetname[MAX_TARGET_LENGTH];
-	GetCmdArg(1, targetname, MAX_TARGET_LENGTH);
-	new String:target_name[MAX_TARGET_LENGTH];
-	new target_list[1], target_count;
-	new bool:tn_is_ml;
+	decl String:pattern[MAX_TARGET_LENGTH];
+	GetCmdArg(1, pattern, sizeof(pattern));
+	new String:targetName[MAX_TARGET_LENGTH];
+	new targets[MAXPLAYERS], matches;
+	new bool:targetNounIsMultiLanguage;
 
-	if((target_count=ProcessTargetString(targetname, client, target_list, 1, 0, target_name, MAX_TARGET_LENGTH, tn_is_ml))<=0)
+	if((matches=ProcessTargetString(pattern, client, targets, 1, 0, targetName, sizeof(targetName), targetNounIsMultiLanguage))<=0)
 	{
-		ReplyToTargetError(client, target_count);
+		ReplyToTargetError(client, matches);
 		return Plugin_Handled;
 	}
-	TurnToZeroPanel(client, target_list[0]);
+
+	if(matches>1)
+	{
+		for(new target; target<matches; target++)
+		{
+			TurnToZeroPanel(client, targets[target]);
+			LogAction(client, targets[target], "\"%L\" reset \"%L\"'s queue points", client, targets[target]);
+		}
+	}
+	else
+	{
+		TurnToZeroPanel(client, targets[0]);
+		LogAction(client, targets[0], "\"%L\" reset \"%L\"'s queue points", client, targets[0]);
+	}
+	CReplyToCommand(client, "{olive}[FF2]{default} Reset %s's queue points", targetName);
 	return Plugin_Handled;
 }
 
