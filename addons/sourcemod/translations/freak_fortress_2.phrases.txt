@@ -233,17 +233,17 @@
 	}
 	"to0_done"
 	{
-		"en"	"Now you have {olive}0{default} queue points"
+		"en"	"Your queue points have been reset to {olive}0{default}"
 	}
 	"to0_done_admin"
 	{
 		"#format" "{1:N}"
-		"en"	"Now {olive}{1}{default} have {olive}0{default} queue points"
+		"en"	"{olive}{1}{default}'s queue points have been reset to {olive}0{default}"
 	}
 	"to0_done_by_admin"
 	{
 		"#format" "{1:N}"
-		"en"	"{olive}{1}{default} set your queue points to {olive}0{default}"
+		"en"	"{olive}{1}{default} reset your queue points to {olive}0{default}"
 	}
 	"to0_near"
 	{

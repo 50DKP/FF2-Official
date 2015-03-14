@@ -36,10 +36,10 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
 #define STABLE_REVISION "5"
-#define DEV_REVISION "Beta"
+//#define DEV_REVISION "Beta"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.4
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.5
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..." (build "...BUILD_NUMBER...")"
 #endif
@@ -325,7 +325,7 @@ static const String:ff2versiondates[][]=
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
-	"March 12, 2015"	//1.10.5
+	"March 13, 2015"	//1.10.5
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -337,7 +337,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "1) Fixed slow-mo being extremely buggy (Wliu from various)");
 			DrawPanelText(panel, "2) Fixed the Festive SMG not getting crits (Wliu from Dalix)");
 			DrawPanelText(panel, "3) Fixed teleport sounds not being played (Wliu from Dalix)");
-			DrawPanelText(panel, "4) !ff2_stop_music can now target a specific client (Wliu)");
+			DrawPanelText(panel, "4) !ff2_stop_music can now target specific clients (Wliu)");
 			DrawPanelText(panel, "5) [Server] Fixed multiple sounds not working after TF2 changed the default sound extension type (Wliu)");
 			DrawPanelText(panel, "6) [Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
 		}
@@ -7274,16 +7274,13 @@ public Action:ResetQueuePointsCmd(client, args)
 	{
 		for(new target; target<matches; target++)
 		{
-			TurnToZeroPanel(client, targets[target]);
-			LogAction(client, targets[target], "\"%L\" reset \"%L\"'s queue points", client, targets[target]);
+			TurnToZeroPanel(client, targets[target]);  //FIXME:  This can only handle one client currently and doesn't iterate through all clients
 		}
 	}
 	else
 	{
 		TurnToZeroPanel(client, targets[0]);
-		LogAction(client, targets[0], "\"%L\" reset \"%L\"'s queue points", client, targets[0]);
 	}
-	CReplyToCommand(client, "{olive}[FF2]{default} Reset %s's queue points", targetName);
 	return Plugin_Handled;
 }
 
@@ -7293,18 +7290,19 @@ public TurnToZeroPanelH(Handle:menu, MenuAction:action, client, position)
 	{
 		if(shortname[client]==client)
 		{
-			CPrintToChat(client,"{olive}[FF2]{default} %t", "to0_done");
+			CPrintToChat(client,"{olive}[FF2]{default} %t", "to0_done");  //Your queue points have been reset to {olive}0{default}
 		}
 		else
 		{
-			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_done_admin", shortname[client]);
-			CPrintToChat(shortname[client], "{olive}[FF2]{default} %t", "to0_done_by_admin", client);
+			CPrintToChat(client, "{olive}[FF2]{default} %t", "to0_done_admin", shortname[client]);  //{olive}{1}{default}'s queue points have been reset to {olive}0{default}
+			CPrintToChat(shortname[client], "{olive}[FF2]{default} %t", "to0_done_by_admin", client);  //{olive}{1}{default} reset your queue points to {olive}0{default}
+			LogAction(client, shortname[client], "\"%L\" reset \"%L\"'s queue points to 0", client, shortname[client]);
 		}
 		SetClientQueuePoints(shortname[client], 0);
 	}
 }
 
-public Action:TurnToZeroPanel(caller, client)
+public Action:TurnToZeroPanel(client, target)
 {
 	if(!Enabled2)
 	{
@@ -7312,25 +7310,25 @@ public Action:TurnToZeroPanel(caller, client)
 	}
 
 	new Handle:panel=CreatePanel();
-	decl String:text[512];
-	SetGlobalTransTarget(caller);
-	if(caller==client)
+	decl String:text[128];
+	SetGlobalTransTarget(client);
+	if(client==target)
 	{
-		Format(text, 512, "%t", "to0_title");
+		Format(text, sizeof(text), "%t", "to0_title");  //Do you really want to set your queue points to 0?
 	}
 	else
 	{
-		Format(text, 512, "%t", "to0_title_admin", client);
+		Format(text, sizeof(text), "%t", "to0_title_admin", target);  //Do you really want to set {1}'s queue points to 0?
 	}
 
-	PrintToChat(caller, text);
+	PrintToChat(client, text);
 	SetPanelTitle(panel, text);
-	Format(text, 512, "%t", "Yes");
+	Format(text, sizeof(text), "%t", "Yes");
 	DrawPanelItem(panel, text);
-	Format(text, 512, "%t", "No");
+	Format(text, sizeof(text), "%t", "No");
 	DrawPanelItem(panel, text);
-	shortname[caller]=client;
-	SendPanelToClient(panel, caller, TurnToZeroPanelH, MENU_TIME_FOREVER);
+	shortname[client]=target;
+	SendPanelToClient(panel, client, TurnToZeroPanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Handled;
 }
