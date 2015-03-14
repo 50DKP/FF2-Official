@@ -35,8 +35,8 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "5"
-//#define DEV_REVISION "Beta"
+#define STABLE_REVISION "6"
+#define DEV_REVISION "Beta"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.5
@@ -2697,11 +2697,6 @@ public Action:StartBossTimer(Handle:timer)
 			playing++;
 			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client));  //TODO:  Is this needed?
 		}
-	}
-
-	if(playing<5)
-	{
-		playing+=2;
 	}
 
 	for(new boss; boss<=MaxClients; boss++)
@@ -6711,7 +6706,7 @@ stock CalcBossHealthMax(client)
 		KvRewind(BossKV[Special[client]]);
 		KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName));
 		LogError("[FF2] %s has a malformed boss health formula, using default!", bossName);
-		health=RoundFloat(Pow(((460.0+playing)*playing), 1.075));
+		health=RoundFloat(Pow(((760.8+playing)*(playing-1)), 1.0341))+2046;
 	}
 
 	if(bMedieval)
