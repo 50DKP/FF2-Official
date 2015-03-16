@@ -200,6 +200,16 @@ static bool:executed2=false;
 
 new changeGamemode;
 
+enum calcOperators
+{
+    Operation_None=0,
+    Operation_Add,
+    Operation_Subtract,
+    Operation_Multiplication,
+    Operation_Division,
+    Operation_Exponential,
+};
+
 static const String:ff2versiontitles[][]=
 {
 	"1.0",
@@ -2708,7 +2718,7 @@ public Action:StartBossTimer(Handle:timer)
 	{
 		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
-			BossHealthMax[boss]=CalcBossHealthMax(boss);
+			BossHealthMax[boss]=ParseFormula(boss, "health_formula", "(((760.8+n)*n-1)^1.0341)+2046", RoundFloat(Pow((760.8+Float:playing)*(Float:playing-1.0), 1.0341)+2046.0));
 			BossLives[boss]=BossLivesMax[boss];
 			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 			BossHealthLast[boss]=BossHealth[boss];
@@ -6543,182 +6553,247 @@ stock GetBossIndex(client)
 	return -1;
 }
 
-stock CalcBossHealthMax(client)
+stock ParseFormula(client, const String:key[], const String:defaultFormula[], defaultValue)
 {
 	decl String:formula[1024], String:buffer[2];
-	new String:value[1024];
-	new bool:mustClose, bool:usePlayers, bool:canAdd, bool:valueReady;
-	new parentheses;
-	new Float:sum[128];
-	new _operator[128];
-
+	new String:strValue[1024], Float:sum[128], calcOperators:_operator[128];
+	new bool:closeBracket, bool:usePlayers, bool:foundOperator, bracket;
 	KvRewind(BossKV[Special[client]]);
-	KvGetString(BossKV[Special[client]], "health_formula", formula, sizeof(formula), "(((760.8+n)*n-1)^1.0341)+2046");
-	ReplaceString(formula, sizeof(formula), " ", "");  //Get rid of spaces
+	KvGetString(BossKV[Special[client]], key, formula, sizeof(formula), defaultFormula);
+	ReplaceString(formula, sizeof(formula), " ", ""); //Get rid of spaces
 	new length=strlen(formula);
 	for(new i; i<=length; i++)
 	{
 		strcopy(buffer, sizeof(buffer), formula[i]);
-		switch(buffer[0])
+		switch (buffer[0])
 		{
+			case '\0':
+			{
+				foundOperator = true; //Probably less hacky way of detecting constant hp.
+				break;
+			}
 			case '(':
 			{
-				parentheses++;
-				sum[parentheses]=0.0;
-				_operator[parentheses]=0;
+				if (bracket + 1 == sizeof(_operator))
+				{
+					decl String:bossName[32];
+					KvRewind(BossKV[Special[client]]);
+					KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName));
+					LogError("[FF2] %s's %s formula is too complex, using default!", bossName, key);
+					return defaultValue;
+				}
+				closeBracket = false;
+				bracket++;
+				_operator[bracket] = Operation_None;
+				sum[bracket] = 0.0;
+				break;
 			}
 			case ')':
 			{
-				valueReady=true;
-				mustClose=true;
-			}
-			case '\0':
-			{
-				valueReady=true;
+				closeBracket = true;
+				break;
 			}
 			case 'n', 'x':
 			{
-				usePlayers=true;
+				usePlayers = true;
+				break;
 			}
 			case '+':
 			{
-				_operator[parentheses]=1;
-				canAdd=true;
+				_operator[bracket] = Operation_Add;
+				foundOperator = true;
+				break;
 			}
 			case '-':
 			{
-				_operator[parentheses]=2;
-				canAdd=true;
+				_operator[bracket] = Operation_Subtract;
+				foundOperator = true;
+				break;
 			}
 			case '*':
 			{
-				_operator[parentheses]=3;
-				canAdd=true;
+				_operator[bracket] = Operation_Multiplication;
+				foundOperator = true;
+				break;
 			}
 			case '/':
 			{
-				_operator[parentheses]=4;
-				canAdd=true;
+				_operator[bracket] = Operation_Division;
+				foundOperator = true;
+				break;
 			}
 			case '^':
 			{
-				_operator[parentheses]=5;
-				canAdd=true;
+				_operator[bracket] = Operation_Exponential;
+				foundOperator = true;
+				break;
+			}
+			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+			{
+				//It's a number... 100% safer then assuming buffer has a number.
+				StrCat(strValue, sizeof(strValue), buffer);
+				break;
 			}
 			default:
 			{
-				StrCat(value, sizeof(value), buffer);
+				decl String:bossName[32];
+				KvRewind(BossKV[Special[client]]);
+				KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName));
+				LogError("[FF2] %s's %s formula contains invalid character %c!", bossName, key, buffer[0]);
+				break;
 			}
 		}
-
-		if(valueReady)
+		if (foundOperator || closeBracket)
 		{
-			valueReady=false;
-			if(usePlayers)
+			if (foundOperator)
 			{
-				usePlayers=false;
-				switch(_operator[parentheses])
+				foundOperator = false; //This here is just so I don't forget to tell the code, "We already operated on."
+			}
+			if (closeBracket)
+			{
+				closeBracket = false;
+				bracket--; //We need to operate on the 1 less bracket
+				switch(_operator[bracket])
 				{
-					case 1:
+					case Operation_Add:
 					{
-						sum[parentheses]+=playing;
+						sum[bracket] += sum[bracket+1];
+						break;
 					}
-					case 2:
+					case Operation_Subtract:
 					{
-						sum[parentheses]-=playing;
+						sum[bracket] -= sum[bracket+1];
+						break;
 					}
-					case 3:
+					case Operation_Multiplication:
 					{
-						sum[parentheses]*=playing;
+						sum[bracket] *= sum[bracket+1];
+						break;
 					}
-					case 4:
+					case Operation_Division:
 					{
-						sum[parentheses]/=playing;
+						sum[bracket] /= sum[bracket+1];
+						break;
 					}
-					case 5:
+					case Operation_Exponential:
 					{
-						sum[parentheses]=Pow(sum[parentheses], Float:playing);
+						sum[bracket] = Pow(sum[bracket], sum[bracket+1]);
+						break;
 					}
 					default:
 					{
-						parentheses=1;
+						//We don't got an operation for this ending bracket.(eg: "))")
+						sum[bracket] = sum[bracket+1];
+						break;
+					}
+				}
+				_operator[bracket+1] = Operation_None;
+			}
+			if (usePlayers)
+			{
+				usePlayers = false;
+				//Add sum with players.
+				switch(_operator[bracket])
+				{
+					case Operation_Add:
+					{
+						sum[bracket] += float(playing);
+						break;
+					}
+					case Operation_Subtract:
+					{
+						sum[bracket] -= float(playing);
+						break;
+					}
+					case Operation_Multiplication:
+					{
+						sum[bracket] *= float(playing);
+						break;
+					}
+					case Operation_Division:
+					{
+						sum[bracket] /= float(playing);
+						break;
+					}
+					case Operation_Exponential:
+					{
+						sum[bracket] = Pow(sum[bracket], float(playing));
+						break;
+					}
+					default:
+					{
+						sum[bracket] = float(playing);
 						break;
 					}
 				}
 			}
-
-			if(value[0]!='\0' && canAdd)
+			//TODO: Add useLives back.
+			if (strValue[0] != '\0') //Value has something in it, by time we get here we already have all the value parsed(hopefully).
 			{
-				canAdd=false;
-				switch(_operator[parentheses])
+				new Float:value = StringToFloat(strValue);
+				switch(_operator[bracket])
 				{
-					case 1:
+					case Operation_Add:
 					{
-						sum[parentheses]+=StringToFloat(value);
-						strcopy(value, sizeof(value), "");
+						sum[bracket] += value;
+						break;
 					}
-					case 2:
+					case Operation_Subtract:
 					{
-						sum[parentheses]-=StringToFloat(value);
-						strcopy(value, sizeof(value), "");
+						sum[bracket] -= value;
+						break;
 					}
-					case 3:
+					case Operation_Multiplication:
 					{
-						sum[parentheses]*=StringToFloat(value);
-						strcopy(value, sizeof(value), "");
+						sum[bracket] *= value;
+						break;
 					}
-					case 4:
+					case Operation_Division:
 					{
-						if(!StringToFloat(value))
+						if (!StringToInt(strValue) && StrContains(strValue, ".") == -1) //I can't find a good way to check if it's 0.0 due to things like 0.01 or 0.001
 						{
-							parentheses=1;
+							bracket = 0;
+							sum[bracket] = -999999.0; //Let malformation handle this.
+							_operator[bracket] = Operation_None;
 							break;
 						}
-						sum[parentheses]/=StringToFloat(value);
-						strcopy(value, sizeof(value), "");
+						sum[bracket] /= value;
+						break;
 					}
-					case 5:
+					case Operation_Exponential:
 					{
-						sum[parentheses]=Pow(sum[parentheses], StringToFloat(value));
-						strcopy(value, sizeof(value), "");
+						sum[bracket] = Pow(sum[bracket], value);
+						break;
 					}
-					default:
+					default: //Just set sum to be value. (eg: "(5000)" or incase of contant value.)
 					{
-						parentheses=1;
+						sum[bracket] = value;
 						break;
 					}
 				}
 			}
-		}
-
-		if(mustClose)
-		{
-			mustClose=false;
-			parentheses--;
-			sum[parentheses]=sum[parentheses+1];
+			strcopy(strValue, sizeof(strValue), "");
+			_operator[bracket] = Operation_None;
 		}
 	}
-
-	new health=RoundFloat(sum[0]);
-	if(!health && value[0]!='\0')  //Check to see if we're dealing with a constant health value
+	new result=RoundFloat(sum[0]);
+	if(!result && strValue[0]!='\0') //Check to see if we're dealing with a constant health value
 	{
-		health=StringToInt(value);
+		return StringToInt(strValue);
 	}
-
-	if(parentheses || health<=0)
+	if(bracket || result<=0)
 	{
 		decl String:bossName[32];
 		KvRewind(BossKV[Special[client]]);
 		KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName));
-		LogError("[FF2] %s has a malformed boss health formula, using default!", bossName);
-		health=RoundFloat(Pow(((460.0+playing)*playing), 1.075));
+		LogError("[FF2] %s has a malformed %s formula, using default!", bossName, key);
+		return defaultValue;
 	}
-
 	if(bMedieval)
 	{
-		health=RoundFloat(health/3.6);  //TODO: Make this configurable
+		return RoundFloat(result/3.6); //TODO: Make this configurable
 	}
-	return health;
+	return result;
 }
 
 stock GetAbilityArgument(index,const String:plugin_name[],const String:ability_name[],arg,defvalue=0)
