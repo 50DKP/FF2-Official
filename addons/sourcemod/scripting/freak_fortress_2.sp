@@ -6604,6 +6604,7 @@ stock Float:DoMiniOperation(const String:formula[], const indexes[2], Handle:bKv
 					{
 						vSet[ii]=true;
 						values[ii]=DoMiniOperation(formula, tIndexes, bKv, key);
+						break;
 					}
 					Debug("Operation value was %f", values[ii]);
 				}
@@ -6616,6 +6617,7 @@ stock Float:DoMiniOperation(const String:formula[], const indexes[2], Handle:bKv
 					{
 						vSet[ii]=true;
 						values[ii]=StringToFloat(strValue);
+						break;
 					}
 				}
 				switch (operation)
@@ -6654,6 +6656,7 @@ stock Float:DoMiniOperation(const String:formula[], const indexes[2], Handle:bKv
 					{
 						vSet[ii]=true;
 						values[ii]=float(playing);
+						break;
 					}
 				}
 			}
@@ -6666,6 +6669,7 @@ stock Float:DoMiniOperation(const String:formula[], const indexes[2], Handle:bKv
 					{
 						vSet[ii]=true;
 						values[ii]=StringToFloat(strValue);
+						break;
 					}
 				}
 			}
@@ -6678,6 +6682,7 @@ stock Float:DoMiniOperation(const String:formula[], const indexes[2], Handle:bKv
 					{
 						vSet[ii]=true;
 						values[ii]=StringToFloat(strValue);
+						break;
 					}
 				}
 			}
@@ -6690,6 +6695,7 @@ stock Float:DoMiniOperation(const String:formula[], const indexes[2], Handle:bKv
 					{
 						vSet[ii]=true;
 						values[ii]=StringToFloat(strValue);
+						break;
 					}
 				}
 			}
@@ -6702,6 +6708,7 @@ stock Float:DoMiniOperation(const String:formula[], const indexes[2], Handle:bKv
 					{
 						vSet[ii]=true;
 						values[ii]=StringToFloat(strValue);
+						break;
 					}
 				}
 			}
@@ -6714,6 +6721,7 @@ stock Float:DoMiniOperation(const String:formula[], const indexes[2], Handle:bKv
 					{
 						vSet[ii]=true;
 						values[ii]=StringToFloat(strValue);
+						break;
 					}
 				}
 			}
