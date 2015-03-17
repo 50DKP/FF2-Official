@@ -6772,7 +6772,7 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 								bracket = 0;
 								sum[bracket] = -999999.0; //Let malformation handle this.
 								_operator[bracket] = Operation_None;
-                                break;
+								break;
 							}
 						}
 						else if (!StringToInt(strValue))
@@ -6781,7 +6781,7 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 							bracket = 0;
 							sum[bracket] = -999999.0; //Let malformation handle this.
 							_operator[bracket] = Operation_None;
-                            break;
+							break;
 						}
 						Debug("Dividing %f onto %f", value, sum[bracket]);
 						sum[bracket] /= value;
