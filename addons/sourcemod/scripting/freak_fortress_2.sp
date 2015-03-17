@@ -6750,7 +6750,18 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 					}
 					case Operation_Division:
 					{
-						if (!StringToInt(strValue) && StrContains(strValue, ".") == -1) //I can't find a good way to check if it's 0.0 due to things like 0.01 or 0.001
+						int dotInd = StrContains(strValue, ".");
+						if (dotInd > -1)
+						{
+							int mult = strlen(strValue) - dotInd + 1;
+							if (!RoundFloat(StringToFloat(strValue) * float(mult)))
+							{
+								bracket = 0;
+								sum[bracket] = -999999.0; //Let malformation handle this.
+								_operator[bracket] = Operation_None;
+							}
+						}
+						else if (!StringToInt(strValue))
 						{
 							bracket = 0;
 							sum[bracket] = -999999.0; //Let malformation handle this.
