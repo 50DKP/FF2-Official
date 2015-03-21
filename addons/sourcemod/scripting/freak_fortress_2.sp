@@ -2501,8 +2501,9 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 			}
 		}
 
-		if(RandomSound("sound_fail", sound, sizeof(sound), boss))
+		if(!bossWin && RandomSound("sound_fail", sound, sizeof(sound), boss))
 		{
+			Debug("Oo La Laaa");
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
 		}
