@@ -15,6 +15,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #pragma semicolon 1
 
 #include <sourcemod>
+#include <adt_array>
 #include <freak_fortress_2>
 #include <sdktools>
 #include <sdkhooks>
@@ -200,14 +201,13 @@ static bool:executed2=false;
 
 new changeGamemode;
 
-enum calcOperators
-{
-    Operation_None=0,
-    Operation_Add,
-    Operation_Subtract,
-    Operation_Multiplication,
-    Operation_Division,
-    Operation_Exponential,
+enum Operators {
+	Operator_None = -1,
+	Operator_Add,
+	Operator_Subtract,
+	Operator_Multiply,
+	Operator_Divide,
+	Operator_Exponent,
 };
 
 static const String:ff2versiontitles[][]=
@@ -6556,266 +6556,15 @@ stock GetBossIndex(client)
 
 stock ParseFormula(client, const String:key[], const String:defaultFormula[], defaultValue)
 {
-	decl String:formula[1024], String:buffer[2];
-	new String:strValue[1024], Float:sum[128], calcOperators:_operator[128];
-	new bool:closeBracket, bool:usePlayers, bool:foundOperator, bracket;
+	decl String:formula[1024], String:bossName[1024];
 	KvRewind(BossKV[Special[client]]);
+	KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName), "");
 	KvGetString(BossKV[Special[client]], key, formula, sizeof(formula), defaultFormula);
 	ReplaceString(formula, sizeof(formula), " ", ""); //Get rid of spaces
-	new length=strlen(formula);
-	for(new i; i<=length; i++)
+	new result=RoundFloat(IterateFormula(formula, key, bossName));
+	Debug("result = %i", result);
+	if(result<=0)
 	{
-		strcopy(buffer, sizeof(buffer), formula[i]);
-		Debug("buffer[0] contains %c", buffer[0]);
-		switch (buffer[0])
-		{
-			case '\0':
-			{
-				foundOperator = true; //Probably less hacky way of detecting constant hp.
-				Debug("Null terminator found!");
-			}
-			case '(':
-			{
-				Debug("'(' found! bracket = %i", bracket);
-				if (bracket + 1 == sizeof(_operator))
-				{
-					decl String:bossName[32];
-					KvRewind(BossKV[Special[client]]);
-					KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName));
-					LogError("[FF2] %s's %s formula is too complex, using default!", bossName, key);
-					return defaultValue;
-				}
-				closeBracket = false;
-				bracket++;
-				_operator[bracket] = Operation_None;
-				sum[bracket] = 0.0;
-			}
-			case ')':
-			{
-				Debug("')' found!");
-				closeBracket = true;
-			}
-			case 'n', 'x':
-			{
-				Debug("We must operate with players!");
-				usePlayers = true;
-			}
-			case '+':
-			{
-				Debug("Addition time!");
-				_operator[bracket] = Operation_Add;
-				foundOperator = true;
-			}
-			case '-':
-			{
-				Debug("Subtraction time!");
-				_operator[bracket] = Operation_Subtract;
-				foundOperator = true;
-			}
-			case '*':
-			{
-				Debug("Multiplication time!");
-				_operator[bracket] = Operation_Multiplication;
-				foundOperator = true;
-			}
-			case '/':
-			{
-				Debug("Division time!");
-				_operator[bracket] = Operation_Division;
-				foundOperator = true;
-			}
-			case '^':
-			{
-				Debug("Exponential time!");
-				_operator[bracket] = Operation_Exponential;
-				foundOperator = true;
-			}
-			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
-			{
-				Debug("Adding %c onto %s", buffer[0], strValue);
-				//It's a number... 100% safer then assuming buffer has a number.
-				StrCat(strValue, sizeof(strValue), buffer);
-				Debug("After: %s", strValue);
-			}
-			default:
-			{
-				Debug("Invalid: %c", buffer[0]);
-				decl String:bossName[32];
-				KvRewind(BossKV[Special[client]]);
-				KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName));
-				LogError("[FF2] %s's %s formula contains invalid character %c!", bossName, key, buffer[0]);
-				break;
-			}
-		}
-		if (foundOperator || closeBracket)
-		{
-			Debug("Time to operate!");
-			if (foundOperator)
-			{
-				Debug("Setting foundOperator to false.");
-				foundOperator = false; //This here is just so I don't forget to tell the code, "We already operated on."
-			}
-			if (closeBracket)
-			{
-				Debug("Operating on sums.");
-				closeBracket = false;
-				bracket--; //We need to operate on the 1 less bracket
-				switch(_operator[bracket])
-				{
-					case Operation_Add:
-					{
-						Debug("Adding %f onto %f", sum[bracket+1], sum[bracket]);
-						sum[bracket] += sum[bracket+1];
-					}
-					case Operation_Subtract:
-					{
-						Debug("Subtracting %f onto %f", sum[bracket+1], sum[bracket]);
-						sum[bracket] -= sum[bracket+1];
-					}
-					case Operation_Multiplication:
-					{
-						Debug("SMultiplying %f onto %f", sum[bracket+1], sum[bracket]);
-						sum[bracket] *= sum[bracket+1];
-					}
-					case Operation_Division:
-					{
-						Debug("Dividing %f onto %f", sum[bracket+1], sum[bracket]);
-						sum[bracket] /= sum[bracket+1];
-					}
-					case Operation_Exponential:
-					{
-						Debug("Powering %f onto %f", sum[bracket+1], sum[bracket]);
-						sum[bracket] = Pow(sum[bracket], sum[bracket+1]);
-					}
-					default:
-					{
-						Debug("Setting %f onto %f", sum[bracket+1], sum[bracket]);
-						//We don't got an operation for this ending bracket.(eg: "))")
-						sum[bracket] = sum[bracket+1];
-					}
-				}
-				Debug("Afterwords: %f", sum[bracket]);
-				_operator[bracket+1] = Operation_None;
-			}
-			if (usePlayers)
-			{
-				Debug("Operating on players.");
-				usePlayers = false;
-				//Add sum with players.
-				switch(_operator[bracket])
-				{
-					case Operation_Add:
-					{
-						Debug("Adding %i onto %f", playing, sum[bracket]);
-						sum[bracket] += float(playing);
-					}
-					case Operation_Subtract:
-					{
-						Debug("Subtracting %i onto %f", playing, sum[bracket]);
-						sum[bracket] -= float(playing);
-					}
-					case Operation_Multiplication:
-					{
-						Debug("Multiplying %i onto %f", playing, sum[bracket]);
-						sum[bracket] *= float(playing);
-					}
-					case Operation_Division:
-					{
-						Debug("Dividing %i onto %f", playing, sum[bracket]);
-						sum[bracket] /= float(playing);
-					}
-					case Operation_Exponential:
-					{
-						Debug("Powering %i onto %f", playing, sum[bracket]);
-						sum[bracket] = Pow(sum[bracket], float(playing));
-					}
-					default:
-					{
-						Debug("Setting %i onto %f", playing, sum[bracket]);
-						sum[bracket] = float(playing);
-					}
-				}
-			}
-			//TODO: Add useLives back.
-			if (strValue[0] != '\0') //Value has something in it, by time we get here we already have all the value parsed(hopefully).
-			{
-				new Float:value = StringToFloat(strValue);
-				Debug("Operating on value");
-				switch(_operator[bracket])
-				{
-					case Operation_Add:
-					{
-						Debug("Adding %f onto %f", value, sum[bracket]);
-						sum[bracket] += value;
-					}
-					case Operation_Subtract:
-					{
-						Debug("Subtracting %f onto %f", value, sum[bracket]);
-						sum[bracket] -= value;
-					}
-					case Operation_Multiplication:
-					{
-						Debug("Multiplying %f onto %f", value, sum[bracket]);
-						sum[bracket] *= value;
-					}
-					case Operation_Division:
-					{
-						Debug("Running 0 check b4 dividing.");
-						int dotInd = StrContains(strValue, ".");
-						Debug("dotInd = %i", dotInd);
-						if (dotInd > -1)
-						{
-							Debug("'.' detected!");
-							int mult = strlen(strValue) - dotInd + 1;
-							Debug("strlen(strValue) = %i; mult = %i; inEnd = %f", strlen(strValue), mult, StringToFloat(strValue) * float(mult));
-							if (!RoundFloat(StringToFloat(strValue) * float(mult)))
-							{
-								bracket = 0;
-								sum[bracket] = -999999.0; //Let malformation handle this.
-								_operator[bracket] = Operation_None;
-								break;
-							}
-						}
-						else if (!StringToInt(strValue))
-						{
-							Debug("No '.' detected, got 0");
-							bracket = 0;
-							sum[bracket] = -999999.0; //Let malformation handle this.
-							_operator[bracket] = Operation_None;
-							break;
-						}
-						Debug("Dividing %f onto %f", value, sum[bracket]);
-						sum[bracket] /= value;
-					}
-					case Operation_Exponential:
-					{
-						Debug("Powering %f onto %f", value, sum[bracket]);
-						sum[bracket] = Pow(sum[bracket], value);
-					}
-					default: //Just set sum to be value. (eg: "(5000)" or incase of contant value.)
-					{
-						Debug("Setting %f onto %f", value, sum[bracket]);
-						sum[bracket] = value;
-					}
-				}
-			}
-			strcopy(strValue, sizeof(strValue), "");
-			//_operator[bracket] = Operation_None;
-		}
-	}
-	new result=RoundFloat(sum[0]);
-	Debug("sum[0] = %f, result = %i", sum[0], result);
-	if(!result && strValue[0]!='\0') //Check to see if we're dealing with a constant health value
-	{
-		Debug("Constant detected after for...");
-		return StringToInt(strValue);
-	}
-	if(bracket || result<=0)
-	{
-		Debug("MALFORMATION! bracket=%i", bracket);
-		decl String:bossName[32];
-		KvRewind(BossKV[Special[client]]);
-		KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName));
 		LogError("[FF2] %s has a malformed %s formula, using default!", bossName, key);
 		return defaultValue;
 	}
@@ -6824,6 +6573,122 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 		return RoundFloat(result/3.6); //TODO: Make this configurable
 	}
 	return result;
+}
+
+stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
+{
+	new Float:sum = GetArrayCell(sumArray, bracket);
+	switch (GetArrayCell(_operator, bracket))
+	{
+		case Operator_Add:
+		{
+			SetArrayCell(sumArray, bracket, sum + value);
+		}
+		case Operator_Subtract:
+		{
+			SetArrayCell(sumArray, bracket, sum - value);
+		}
+		case Operator_Multiply:
+		{
+			SetArrayCell(sumArray, bracket, sum * value);
+		}
+		case Operator_Divide:
+		{
+			if (FloatCompare(value, 0.000001) == -1 || FloatCompare(value, -0.000001) == 1)
+			{
+				LogError("[FF2] Cowardly refusing divide by zero!");
+				bracket = 0;
+				return;
+			}
+			SetArrayCell(sumArray, bracket, sum / value);
+		}
+		case Operator_Exponent:
+		{
+			SetArrayCell(sumArray, bracket, Pow(sum, value));
+		}
+		default:
+		{
+			SetArrayCell(sumArray, bracket, value);
+		}
+	}
+	SetArrayCell(_operator, bracket, Operator_None);
+}
+
+stock OperateString(Handle:sumArray, bracket, String:strValue[], size, Handle:_operator)
+{
+	if (!StrEqual(strValue, ""))
+	{
+		Operate(sumArray, bracket, StringToFloat(strValue), _operator);
+		strcopy(strValue, size, "");
+	}
+}
+
+stock Float:IterateFormula(const String:formula[], const String:key[], const String:bossName[])
+{
+	new Handle:sumArray = CreateArray(), Handle:_operator = CreateArray(), bracket, String:cBuffer[2], String:strValue[1024];
+	for (new i; i <= strlen(formula); i++)
+	{
+		cBuffer[0] = formula[i];
+		switch (cBuffer[0])
+		{
+			case '(':
+			{
+				bracket++;
+				if (GetArraySize(sumArray) < bracket)
+				{
+					ResizeArray(sumArray, bracket);
+					ResizeArray(_operator, bracket);
+				}
+				SetArrayCell(sumArray, bracket, 0.0);
+				SetArrayCell(_operator, bracket, Operator_None);
+			}
+			case ')':
+			{
+				OperateString(sumArray, bracket, strValue, sizeof(strValue), _operator);
+				if (--bracket < 0)
+				{
+					LogError("[FF2] %s's %s formula contains 1 too many ')'", bossName, key);
+					return 0.0;
+				}
+				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
+				SetArrayCell(sumArray, bracket+1, 0.0);
+				SetArrayCell(_operator, bracket+1, Operator_None);
+			}
+			case '\0':
+			{
+				OperateString(sumArray, bracket, strValue, sizeof(strValue), _operator);
+			}
+			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
+			{
+				StrCat(strValue, sizeof(strValue), cBuffer);
+			}
+			case '+', '-', '*', '/', '^':
+			{
+				OperateString(sumArray, bracket, strValue, sizeof(strValue), _operator);
+				switch (cBuffer[0])
+				{
+					case '+':
+						SetArrayCell(_operator, bracket, Operator_Add);
+					case '-':
+						SetArrayCell(_operator, bracket, Operator_Subtract);
+					case '*':
+						SetArrayCell(_operator, bracket, Operator_Multiply);
+					case '/':
+						SetArrayCell(_operator, bracket, Operator_Divide);
+					case '^':
+						SetArrayCell(_operator, bracket, Operator_Exponent);
+				}
+			}
+			case 'n', 'x':
+			{
+				Operate(sumArray, bracket, float(playing), _operator);
+			}
+		}
+	}
+	new Float:sum = GetArrayCell(sumArray, 0);
+	CloseHandle(sumArray);
+	CloseHandle(_operator);
+	return sum;
 }
 
 stock GetAbilityArgument(index,const String:plugin_name[],const String:ability_name[],arg,defvalue=0)
