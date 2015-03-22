@@ -6647,7 +6647,7 @@ stock Float:IterateFormula(const String:formula[], const String:key[], const Str
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 				if (--bracket < 0)
 				{
-					LogError("[FF2] %s's %s formula contains 1 too many ')'", bossName, key);
+					LogError("[FF2] %s's %s formula has unbalanced parentheses ')'", bossName, key);
 					return 0.0;
 				}
 				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
