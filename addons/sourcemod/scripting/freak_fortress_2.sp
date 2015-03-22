@@ -6556,9 +6556,9 @@ stock GetBossIndex(client)
 
 stock ParseFormula(client, const String:key[], const String:defaultFormula[], defaultValue)
 {
-	decl String:formula[1024], String:bossName[1024];
+	decl String:formula[1024], String:bossName[64];
 	KvRewind(BossKV[Special[client]]);
-	KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName), "");
+	KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName), "INVALID NAME");
 	KvGetString(BossKV[Special[client]], key, formula, sizeof(formula), defaultFormula);
 	ReplaceString(formula, sizeof(formula), " ", ""); //Get rid of spaces
 	new result=RoundFloat(IterateFormula(formula, key, bossName));
@@ -6596,7 +6596,7 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 		{
 			if (FloatCompare(value, 0.000001) == -1 || FloatCompare(value, -0.000001) == 1)
 			{
-				LogError("[FF2] Cowardly refusing divide by zero!");
+				LogError("[FF2 Bosses] Detected a divide by 0!");
 				bracket = 0;
 				return;
 			}
