@@ -6557,7 +6557,7 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 {
 	decl String:formula[1024], String:bossName[64];
 	KvRewind(BossKV[Special[client]]);
-	KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName), "INVALID NAME");
+	KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName), "=Failed name=");
 	KvGetString(BossKV[Special[client]], key, formula, sizeof(formula), defaultFormula);
 	ReplaceString(formula, sizeof(formula), " ", ""); //Get rid of spaces
 	new result=RoundFloat(IterateFormula(formula, key, bossName));
