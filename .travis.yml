@@ -4,7 +4,7 @@ env:
 before_install:
     - sudo apt-get -qq update && sudo apt-get install gcc-multilib lib32stdc++6
 install:
-    - wget http://sourcemod.net/smdrop/$SMVERSION/ -O - | grep "\.tar\.gz" | sed 's/^.*"sourcemod/sourcemod/;s/\.tar\.gz".*$/.tar.gz/' | head -1 > sourcemod
+    - wget http://sourcemod.net/smdrop/$SMVERSION/ -O - | grep "\.tar\.gz" | sed 's/^.*"sourcemod/sourcemod/;s/\.tar\.gz".*$/.tar.gz/' | tail --lines=1 > sourcemod
     - wget --input-file=sourcemod --base=http://sourcemod.net/smdrop/$SMVERSION/
     - tar -xzf $(cat sourcemod)
 before_script:
