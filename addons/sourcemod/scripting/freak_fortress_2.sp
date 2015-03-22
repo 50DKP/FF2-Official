@@ -201,8 +201,9 @@ static bool:executed2=false;
 
 new changeGamemode;
 
-enum Operators {
-	Operator_None = -1,
+enum Operators
+{
+	Operator_None=-1,
 	Operator_Add,
 	Operator_Subtract,
 	Operator_Multiply,
@@ -6556,30 +6557,30 @@ stock GetBossIndex(client)
 
 stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 {
-	new Float:sum = GetArrayCell(sumArray, bracket);
-	switch (GetArrayCell(_operator, bracket))
+	new Float:sum=GetArrayCell(sumArray, bracket);
+	switch(GetArrayCell(_operator, bracket))
 	{
 		case Operator_Add:
 		{
-			SetArrayCell(sumArray, bracket, sum + value);
+			SetArrayCell(sumArray, bracket, sum+value);
 		}
 		case Operator_Subtract:
 		{
-			SetArrayCell(sumArray, bracket, sum - value);
+			SetArrayCell(sumArray, bracket, sum-value);
 		}
 		case Operator_Multiply:
 		{
-			SetArrayCell(sumArray, bracket, sum * value);
+			SetArrayCell(sumArray, bracket, sum*value);
 		}
 		case Operator_Divide:
 		{
-			if (FloatCompare(value, 0.000001) == -1 || FloatCompare(value, -0.000001) == 1)
+			if(FloatCompare(value, 0.000001) == -1 || FloatCompare(value, -0.000001)==1)
 			{
 				LogError("[FF2 Bosses] Detected a divide by 0!");
-				bracket = 0;
+				bracket=0;
 				return;
 			}
-			SetArrayCell(sumArray, bracket, sum / value);
+			SetArrayCell(sumArray, bracket, sum/value);
 		}
 		case Operator_Exponent:
 		{
@@ -6595,7 +6596,7 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 
 stock OperateString(Handle:sumArray, bracket, String:value[], size, Handle:_operator)
 {
-	if (!StrEqual(value, ""))
+	if(!StrEqual(value, ""))
 	{
 		Operate(sumArray, bracket, StringToFloat(value), _operator);
 		strcopy(value, size, "");
@@ -6608,17 +6609,17 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 	KvRewind(BossKV[Special[client]]);
 	KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName), "=Failed name=");
 	KvGetString(BossKV[Special[client]], key, formula, sizeof(formula), defaultFormula);
-	ReplaceString(formula, sizeof(formula), " ", ""); //Get rid of spaces
-	new Handle:sumArray = CreateArray(), Handle:_operator = CreateArray(), bracket, String:character[2], String:value[1024];
-	for (new i; i <= strlen(formula); i++)
+	ReplaceString(formula, sizeof(formula), " ", "");  //Get rid of spaces
+	new Handle:sumArray=CreateArray(), Handle:_operator=CreateArray(), bracket, String:character[2], String:value[1024];
+	for (new i; i<=strlen(formula); i++)
 	{
-		character[0] = formula[i];
-		switch (character[0])
+		character[0]=formula[i];
+		switch(character[0])
 		{
 			case '(':
 			{
 				bracket++;
-				if (GetArraySize(sumArray) < bracket)
+				if (GetArraySize(sumArray)<bracket)
 				{
 					ResizeArray(sumArray, bracket);
 					ResizeArray(_operator, bracket);
@@ -6629,7 +6630,7 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 			case ')':
 			{
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
-				if (--bracket < 0)
+				if (--bracket<0)
 				{
 					LogError("[FF2] %s's %s formula has unbalanced parentheses", bossName, key);
 					return 0;
@@ -6652,15 +6653,25 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 				switch (character[0])
 				{
 					case '+':
+					{
 						SetArrayCell(_operator, bracket, Operator_Add);
+					}
 					case '-':
+					{
 						SetArrayCell(_operator, bracket, Operator_Subtract);
+					}
 					case '*':
+					{
 						SetArrayCell(_operator, bracket, Operator_Multiply);
+					}
 					case '/':
+					{
 						SetArrayCell(_operator, bracket, Operator_Divide);
+					}
 					case '^':
+					{
 						SetArrayCell(_operator, bracket, Operator_Exponent);
+					}
 				}
 			}
 			case 'n', 'x':
@@ -6669,7 +6680,8 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 			}
 		}
 	}
-	new result = RoundFloat(GetArrayCell(sumArray, 0));
+
+	new result=RoundFloat(GetArrayCell(sumArray, 0));
 	CloseHandle(sumArray);
 	CloseHandle(_operator);
 	Debug("result = %i", result);
@@ -6678,9 +6690,10 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 		LogError("[FF2] %s has a malformed %s formula, using default!", bossName, key);
 		return defaultValue;
 	}
+
 	if(bMedieval)
 	{
-		return RoundFloat(result/3.6); //TODO: Make this configurable
+		return RoundFloat(result/3.6);  //TODO: Make this configurable
 	}
 	return result;
 }
