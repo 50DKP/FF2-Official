@@ -6613,22 +6613,22 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 	SetArrayCell(_operator, bracket, Operator_None);
 }
 
-stock OperateString(Handle:sumArray, bracket, String:strValue[], size, Handle:_operator)
+stock OperateString(Handle:sumArray, bracket, String:value[], size, Handle:_operator)
 {
-	if (!StrEqual(strValue, ""))
+	if (!StrEqual(value, ""))
 	{
-		Operate(sumArray, bracket, StringToFloat(strValue), _operator);
-		strcopy(strValue, size, "");
+		Operate(sumArray, bracket, StringToFloat(value), _operator);
+		strcopy(value, size, "");
 	}
 }
 
 stock Float:IterateFormula(const String:formula[], const String:key[], const String:bossName[])
 {
-	new Handle:sumArray = CreateArray(), Handle:_operator = CreateArray(), bracket, String:cBuffer[2], String:strValue[1024];
+	new Handle:sumArray = CreateArray(), Handle:_operator = CreateArray(), bracket, String:character[2], String:value[1024];
 	for (new i; i <= strlen(formula); i++)
 	{
-		cBuffer[0] = formula[i];
-		switch (cBuffer[0])
+		character[0] = formula[i];
+		switch (character[0])
 		{
 			case '(':
 			{
@@ -6643,7 +6643,7 @@ stock Float:IterateFormula(const String:formula[], const String:key[], const Str
 			}
 			case ')':
 			{
-				OperateString(sumArray, bracket, strValue, sizeof(strValue), _operator);
+				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 				if (--bracket < 0)
 				{
 					LogError("[FF2] %s's %s formula contains 1 too many ')'", bossName, key);
@@ -6655,16 +6655,16 @@ stock Float:IterateFormula(const String:formula[], const String:key[], const Str
 			}
 			case '\0':
 			{
-				OperateString(sumArray, bracket, strValue, sizeof(strValue), _operator);
+				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 			}
 			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
 			{
-				StrCat(strValue, sizeof(strValue), cBuffer);
+				StrCat(value, sizeof(value), character);
 			}
 			case '+', '-', '*', '/', '^':
 			{
-				OperateString(sumArray, bracket, strValue, sizeof(strValue), _operator);
-				switch (cBuffer[0])
+				OperateString(sumArray, bracket, value, sizeof(value), _operator);
+				switch (character[0])
 				{
 					case '+':
 						SetArrayCell(_operator, bracket, Operator_Add);
