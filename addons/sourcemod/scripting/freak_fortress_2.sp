@@ -6553,27 +6553,6 @@ stock GetBossIndex(client)
 	return -1;
 }
 
-stock ParseFormula(client, const String:key[], const String:defaultFormula[], defaultValue)
-{
-	decl String:formula[1024], String:bossName[64];
-	KvRewind(BossKV[Special[client]]);
-	KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName), "=Failed name=");
-	KvGetString(BossKV[Special[client]], key, formula, sizeof(formula), defaultFormula);
-	ReplaceString(formula, sizeof(formula), " ", ""); //Get rid of spaces
-	new result=RoundFloat(IterateFormula(formula, key, bossName));
-	Debug("result = %i", result);
-	if(result<=0)
-	{
-		LogError("[FF2] %s has a malformed %s formula, using default!", bossName, key);
-		return defaultValue;
-	}
-	if(bMedieval)
-	{
-		return RoundFloat(result/3.6); //TODO: Make this configurable
-	}
-	return result;
-}
-
 stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 {
 	new Float:sum = GetArrayCell(sumArray, bracket);
@@ -6622,8 +6601,13 @@ stock OperateString(Handle:sumArray, bracket, String:value[], size, Handle:_oper
 	}
 }
 
-stock Float:IterateFormula(const String:formula[], const String:key[], const String:bossName[])
+stock ParseFormula(client, const String:key[], const String:defaultFormula[], defaultValue)
 {
+	decl String:formula[1024], String:bossName[64];
+	KvRewind(BossKV[Special[client]]);
+	KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName), "=Failed name=");
+	KvGetString(BossKV[Special[client]], key, formula, sizeof(formula), defaultFormula);
+	ReplaceString(formula, sizeof(formula), " ", ""); //Get rid of spaces
 	new Handle:sumArray = CreateArray(), Handle:_operator = CreateArray(), bracket, String:character[2], String:value[1024];
 	for (new i; i <= strlen(formula); i++)
 	{
@@ -6684,10 +6668,20 @@ stock Float:IterateFormula(const String:formula[], const String:key[], const Str
 			}
 		}
 	}
-	new Float:sum = GetArrayCell(sumArray, 0);
+	new result = RoundFloat(GetArrayCell(sumArray, 0));
 	CloseHandle(sumArray);
 	CloseHandle(_operator);
-	return sum;
+	Debug("result = %i", result);
+	if(result<=0)
+	{
+		LogError("[FF2] %s has a malformed %s formula, using default!", bossName, key);
+		return defaultValue;
+	}
+	if(bMedieval)
+	{
+		return RoundFloat(result/3.6); //TODO: Make this configurable
+	}
+	return result;
 }
 
 stock GetAbilityArgument(index,const String:plugin_name[],const String:ability_name[],arg,defvalue=0)
