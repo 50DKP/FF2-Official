@@ -6632,7 +6632,7 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 				if (--bracket < 0)
 				{
 					LogError("[FF2] %s's %s formula has unbalanced parentheses", bossName, key);
-					return 0.0;
+					return 0;
 				}
 				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
 				SetArrayCell(sumArray, bracket+1, 0.0);
