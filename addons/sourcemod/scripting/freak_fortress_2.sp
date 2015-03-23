@@ -6574,7 +6574,7 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 		}
 		case Operator_Divide:
 		{
-			if(FloatCompare(value, 0.000001)==-1 || FloatCompare(value, -0.000001)==1)
+			if(FloatCompare(value, 0.000001)==-1 && FloatCompare(value, -0.000001)==1)
 			{
 				LogError("[FF2 Bosses] Detected a divide by 0!");
 				bracket=0;
@@ -6612,7 +6612,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	ReplaceString(formula, sizeof(formula), " ", "");  //Get rid of spaces
 
 	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum.
-	new Handle:sumArray=CreateArray(), Handle:_operator=CreateArray()
+	new Handle:sumArray=CreateArray(), Handle:_operator=CreateArray();
 	decl String:character[2], String:value[1024];
 	for(new i; i<=strlen(formula); i++)
 	{
