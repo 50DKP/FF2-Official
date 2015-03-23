@@ -37,7 +37,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
 #define STABLE_REVISION "5"
-//#define DEV_REVISION "Beta"
+#define DEV_REVISION "Beta"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.5
@@ -6574,7 +6574,7 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 		}
 		case Operator_Divide:
 		{
-			if(FloatCompare(value, 0.000001) == -1 || FloatCompare(value, -0.000001)==1)
+			if(FloatCompare(value, 0.000001)==-1 || FloatCompare(value, -0.000001)==1)
 			{
 				LogError("[FF2 Bosses] Detected a divide by 0!");
 				bracket=0;
@@ -6588,7 +6588,7 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 		}
 		default:
 		{
-			SetArrayCell(sumArray, bracket, value);
+			SetArrayCell(sumArray, bracket, value);  //This means we're dealing with a constant
 		}
 	}
 	SetArrayCell(_operator, bracket, Operator_None);
@@ -6603,54 +6603,60 @@ stock OperateString(Handle:sumArray, bracket, String:value[], size, Handle:_oper
 	}
 }
 
-stock ParseFormula(client, const String:key[], const String:defaultFormula[], defaultValue)
+stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defaultValue)
 {
 	decl String:formula[1024], String:bossName[64];
-	KvRewind(BossKV[Special[client]]);
-	KvGetString(BossKV[Special[client]], "name", bossName, sizeof(bossName), "=Failed name=");
-	KvGetString(BossKV[Special[client]], key, formula, sizeof(formula), defaultFormula);
+	KvRewind(BossKV[Special[boss]]);
+	KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
+	KvGetString(BossKV[Special[boss]], key, formula, sizeof(formula), defaultFormula);
 	ReplaceString(formula, sizeof(formula), " ", "");  //Get rid of spaces
-	new Handle:sumArray=CreateArray(), Handle:_operator=CreateArray(), bracket, String:character[2], String:value[1024];
-	for (new i; i<=strlen(formula); i++)
+
+	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum.
+	new Handle:sumArray=CreateArray(), Handle:_operator=CreateArray()
+	decl String:character[2], String:value[1024];
+	for(new i; i<=strlen(formula); i++)
 	{
-		character[0]=formula[i];
+		character[0]=formula[i];  //Find out what the next char in the formula is
 		switch(character[0])
 		{
 			case '(':
 			{
-				bracket++;
-				if(GetArraySize(sumArray)<(bracket+1))
+				bracket++;  //We've just entered a new parentheses so increment the bracket #
+				if(GetArraySize(sumArray)<(bracket+1))  //If we've reached the array limit, just increase it
 				{
 					ResizeArray(sumArray, bracket+1);
 					ResizeArray(_operator, bracket+1);
 				}
-				SetArrayCell(sumArray, bracket, 0.0);
+
+				SetArrayCell(sumArray, bracket, 0.0);  //Set this bracket's sum to 0 since we just entered it
 				SetArrayCell(_operator, bracket, Operator_None);
 			}
 			case ')':
 			{
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
-				if(--bracket<0)
+				if(--bracket<0)  //Something like (5))
 				{
 					LogError("[FF2 Bosses] %s's %s formula has unbalanced parentheses", bossName, key);
-					return 0;
+					SetArrayCell(sumArray, 0, 0.0);
+					break;
 				}
+
 				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
 				SetArrayCell(sumArray, bracket+1, 0.0);
 				SetArrayCell(_operator, bracket+1, Operator_None);
 			}
-			case '\0':
+			case '\0':  //End of formula
 			{
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 			}
 			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
 			{
-				StrCat(value, sizeof(value), character);
+				StrCat(value, sizeof(value), character);  //Constant?  Just add it to the current value
 			}
 			case '+', '-', '*', '/', '^':
 			{
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
-				switch (character[0])
+				switch(character[0])
 				{
 					case '+':
 					{
@@ -6674,7 +6680,7 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 					}
 				}
 			}
-			case 'n', 'x':
+			case 'n', 'x':  //n and x denote player variables
 			{
 				Operate(sumArray, bracket, float(playing), _operator);
 			}
