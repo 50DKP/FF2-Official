@@ -6619,10 +6619,10 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 			case '(':
 			{
 				bracket++;
-				if (GetArraySize(sumArray)<bracket)
+				if(GetArraySize(sumArray)<(bracket+1))
 				{
-					ResizeArray(sumArray, bracket);
-					ResizeArray(_operator, bracket);
+					ResizeArray(sumArray, bracket+1);
+					ResizeArray(_operator, bracket+1);
 				}
 				SetArrayCell(sumArray, bracket, 0.0);
 				SetArrayCell(_operator, bracket, Operator_None);
@@ -6630,9 +6630,9 @@ stock ParseFormula(client, const String:key[], const String:defaultFormula[], de
 			case ')':
 			{
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
-				if (--bracket<0)
+				if(--bracket<0)
 				{
-					LogError("[FF2] %s's %s formula has unbalanced parentheses", bossName, key);
+					LogError("[FF2 Bosses] %s's %s formula has unbalanced parentheses", bossName, key);
 					return 0;
 				}
 				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
