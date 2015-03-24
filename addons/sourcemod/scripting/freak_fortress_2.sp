@@ -36,11 +36,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "5"
+#define STABLE_REVISION "6"
 #define DEV_REVISION "Beta"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.5
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.6
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..." (build "...BUILD_NUMBER...")"
 #endif
