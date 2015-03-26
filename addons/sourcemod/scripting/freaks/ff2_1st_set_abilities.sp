@@ -765,16 +765,21 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 		
 			decl String:model[PLATFORM_MAX_PATH];
 			FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
-			if(model[0] != '\0') // NEVER fire special_dropprop sequence if string is blank
+			if(model[0]!='\0') // NEVER fire special_dropprop sequence if string is blank
 			{
-				Debug("Model specified is '%s'", model);
 				if(!IsModelPrecached(model)) // Check to see if 'mod_precache' precached the models properly or not
 				{
-					Debug("Model '%s' is NOT precached! precaching model", model);
+					if(!FileExists(model, true))
+					{
+						LogError("[FF2] Warning: Model '%s' does NOT exist!", model);
+						return Plugin_Continue;
+					}
+				
+					new String:bossname[256];
+					FF2_GetBossSpecial(boss, bossname, sizeof(bossname));
+					LogError("[FF2] Warning: Model '%s' is NOT precached! Please check \"mod_precache\" on %s", model, bossname);
 					PrecacheModel(model);
 				}
-				else
-					Debug("Model '%s' is precached!", model);
 					
 				if(FF2_GetAbilityArgument(boss, this_plugin_name, "special_dropprop", 3, 0))
 				{
