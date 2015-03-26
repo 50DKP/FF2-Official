@@ -758,6 +758,11 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	{
 		if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
 		{
+			if(!attacker || !client || attacker==client) // Somehow this is needed for special_dropprop
+			{
+				return Plugin_Continue;
+			}
+		
 			decl String:model[PLATFORM_MAX_PATH];
 			FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
 			if(model[0] != '\0') // NEVER fire special_dropprop sequence if string is blank
