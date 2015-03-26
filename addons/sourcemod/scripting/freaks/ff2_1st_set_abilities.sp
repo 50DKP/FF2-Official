@@ -758,30 +758,52 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	{
 		if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
 		{
-			if(FF2_GetAbilityArgument(boss, this_plugin_name, "special_dropprop", 3, 0))
+			if(!attacker || !client || attacker==client) // Somehow this is needed for special_dropprop
 			{
-				CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"));
+				return Plugin_Continue;
 			}
-
-			new prop=CreateEntityByName("prop_physics_override");
-			if(IsValidEntity(prop))
+		
+			decl String:model[PLATFORM_MAX_PATH];
+			FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
+			if(model[0]!='\0') // NEVER fire special_dropprop sequence if string is blank
 			{
-				decl String:model[PLATFORM_MAX_PATH];
-				FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
-				SetEntityModel(prop, model);
-				SetEntityMoveType(prop, MOVETYPE_VPHYSICS);
-				SetEntProp(prop, Prop_Send, "m_CollisionGroup", 1);
-				SetEntProp(prop, Prop_Send, "m_usSolidFlags", 16);
-				DispatchSpawn(prop);
-
-				new Float:position[3];
-				GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
-				position[2]+=20;
-				TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
-				new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "special_dropprop", 2, 0.0);
-				if(duration>0.5)
+				if(!IsModelPrecached(model)) // Check to see if 'mod_precache' precached the models properly or not
 				{
-					CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(prop));
+					if(!FileExists(model, true))
+					{
+						LogError("[FF2] Warning: Model '%s' does NOT exist!", model);
+						return Plugin_Continue;
+					}
+				
+					new String:bossname[256];
+					FF2_GetBossSpecial(boss, bossname, sizeof(bossname));
+					LogError("[FF2] Warning: Model '%s' is NOT precached! Please check \"mod_precache\" on %s", model, bossname);
+					PrecacheModel(model);
+				}
+					
+				if(FF2_GetAbilityArgument(boss, this_plugin_name, "special_dropprop", 3, 0))
+				{
+					CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"));
+				}
+					
+				new prop=CreateEntityByName("prop_physics_override");
+				if(IsValidEntity(prop))
+				{		
+					SetEntityModel(prop, model);
+					SetEntityMoveType(prop, MOVETYPE_VPHYSICS);
+					SetEntProp(prop, Prop_Send, "m_CollisionGroup", 1);
+					SetEntProp(prop, Prop_Send, "m_usSolidFlags", 16);
+					DispatchSpawn(prop);
+
+					new Float:position[3];
+					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
+					position[2]+=20;
+					TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
+					new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "special_dropprop", 2, 0.0);
+					if(duration>0.5)
+					{
+						CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(prop));
+					}
 				}
 			}
 		}
