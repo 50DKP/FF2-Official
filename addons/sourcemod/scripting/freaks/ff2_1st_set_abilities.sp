@@ -762,7 +762,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 			FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
 			if(model[0] != '\0') // NEVER fire special_dropprop sequence if string is blank
 			{
-				Debug("Model specified is '%s'", model)
+				Debug("Model specified is '%s'", model);
 				if(!IsModelPrecached(model)) // Check to see if 'mod_precache' precached the models properly or not
 				{
 					Debug("Model '%s' is NOT precached! precaching model", model);
