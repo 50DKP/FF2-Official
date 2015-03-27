@@ -1,0 +1,10 @@
+#Standardize ALL the things
+
+#For text files, make sure they're using LF line endings, don't have trailing whitespace, and are using hard tabs
+[attr]ff2text	text eol=lf whitespace=trailing-space,space-before-tab,tabwidth=4
+
+#Text files!  Don't include Markdown (.md) files because they're special(TM)
+*.sp	ff2text	diff=cpp
+*.inc	ff2text	diff=cpp
+*.txt	ff2text
+*.cfg	ff2text
