@@ -1,8 +1,18 @@
+#Use the new container-based infrastructure
+sudo: false
+
+#Install some apt packages needed for spcomp
+addons:
+    apt_packages:
+        - gcc-multilib
+        - lib32stdc++6
+
+#Set the build environment
 env:
     - SMVERSION=1.7
     - SMVERSION=1.8
-before_install:
-    - sudo apt-get -qq update && sudo apt-get install gcc-multilib lib32stdc++6
+
+#And compile!
 install:
     - wget http://sourcemod.net/smdrop/$SMVERSION/ -O - | grep "\.tar\.gz" | sed 's/^.*"sourcemod/sourcemod/;s/\.tar\.gz".*$/.tar.gz/' | tail --lines=1 > sourcemod
     - wget --input-file=sourcemod --base=http://sourcemod.net/smdrop/$SMVERSION/
