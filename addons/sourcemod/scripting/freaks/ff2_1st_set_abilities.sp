@@ -758,37 +758,32 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	{
 		if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
 		{
-			if(!attacker || !client || attacker==client) // Somehow this is needed for special_dropprop
-			{
-				return Plugin_Continue;
-			}
-		
 			decl String:model[PLATFORM_MAX_PATH];
 			FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
-			if(model[0]!='\0') // NEVER fire special_dropprop sequence if string is blank
+			if(model[0]!='\0')  //Because you never know when someone is careless and doesn't specify a model...
 			{
-				if(!IsModelPrecached(model)) // Check to see if 'mod_precache' precached the models properly or not
+				if(!IsModelPrecached(model))  //Make sure the boss author precached the model (similar to above)
 				{
+					new String:bossName[64];
+					FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
 					if(!FileExists(model, true))
 					{
-						LogError("[FF2] Warning: Model '%s' does NOT exist!", model);
+						LogError("[FF2 Bosses] Model '%s' doesn't exist!  Please check %s's \"mod_precache\"", bossName, model);
 						return Plugin_Continue;
 					}
-				
-					new String:bossname[256];
-					FF2_GetBossSpecial(boss, bossname, sizeof(bossname));
-					LogError("[FF2] Warning: Model '%s' is NOT precached! Please check \"mod_precache\" on %s", model, bossname);
+
+					LogError("[FF2 Bosses] Model '%s' isn't precached!  Please check %s's \"mod_precache\"", bossName, model);
 					PrecacheModel(model);
 				}
-					
+
 				if(FF2_GetAbilityArgument(boss, this_plugin_name, "special_dropprop", 3, 0))
 				{
 					CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"));
 				}
-					
+
 				new prop=CreateEntityByName("prop_physics_override");
 				if(IsValidEntity(prop))
-				{		
+				{
 					SetEntityModel(prop, model);
 					SetEntityMoveType(prop, MOVETYPE_VPHYSICS);
 					SetEntProp(prop, Prop_Send, "m_CollisionGroup", 1);
