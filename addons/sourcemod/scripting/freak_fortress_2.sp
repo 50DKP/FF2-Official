@@ -273,7 +273,9 @@ static const String:ff2versiontitles[][]=
 	"1.10.4",
 	"1.10.4",
 	"1.10.4",
-	"1.10.5"
+	"1.10.5",
+	"1.10.6",
+	"1.10.6"
 };
 
 static const String:ff2versiondates[][]=
@@ -337,13 +339,29 @@ static const String:ff2versiondates[][]=
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
-	"March 13, 2015"	//1.10.5
+	"March 13, 2015",	//1.10.5
+	"March 26, 2015",	//1.10.6
+	"March 26, 2015"	//1.10.6
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 61:  //1.10.6
+		{
+			DrawPanelText(panel, "1) Updated the default health formula to match VSH's (Wliu)");
+			DrawPanelText(panel, "2) Fixed 'sound_fail' playing even when the boss won (Shadow)");
+			DrawPanelText(panel, "3) Fixed charset voting again (Wliu from Shadow)");
+			DrawPanelText(panel, "4) Fixed bravejump sounds not playing (Wliu from Maximilian_)");
+			DrawPanelText(panel, "5) [Server] Fixed 'UTIL_SetModel not precached' crashes-see #6 for the underlying fix (Shadow/Wliu)");
+			DrawPanelText(panel, "See next page for more (press 1)");
+		}
+		case 60:  //1.10.6
+		{
+			DrawPanelText(panel, "6) [Dev] FF2_GetBossIndex now makes sure the client index passed is valid (Wliu)");
+			DrawPanelText(panel, "7) [Dev] Rewrote the health formula parser and fixed a few bugs along the way (WildCard65)");
+		}
 		case 59:  //1.10.5
 		{
 			DrawPanelText(panel, "1) Fixed slow-mo being extremely buggy (Wliu from various)");
@@ -6546,11 +6564,14 @@ stock LastBossIndex()
 
 stock GetBossIndex(client)
 {
-	for(new boss; boss<=MaxClients; boss++)
+	if(client>0)
 	{
-		if(Boss[boss]==client)
+		for(new boss; boss<=MaxClients; boss++)
 		{
-			return boss;
+			if(Boss[boss]==client)
+			{
+				return boss;
+			}
 		}
 	}
 	return -1;
