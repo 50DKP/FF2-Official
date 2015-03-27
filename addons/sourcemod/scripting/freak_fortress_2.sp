@@ -8003,10 +8003,10 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 		charsets++;
 		validCharsets[charsets]=total;
 
-		KvGetSectionName(Kv, config, 64);
+		KvGetSectionName(Kv, charset, sizeof(charset));
 		//Format(charset, sizeof(charset), "%i %s", charsets, config);
 		//AddMenuItem(menu, charset, config);
-		AddMenuItem(menu, config, config);
+		AddMenuItem(menu, charset, charset);
 	}
 	while(KvGotoNextKey(Kv));
 	CloseHandle(Kv);
