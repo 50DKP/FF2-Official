@@ -190,6 +190,7 @@ new Handle:cvarNextmap;
 new bool:areSubPluginsEnabled;
 
 new FF2CharSet;
+new validCharsets[64];
 new String:FF2CharSetString[42];
 new bool:isCharSetSelected=false;
 
@@ -7805,10 +7806,10 @@ public VoiceTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 }
 
 //Ugly compatability layer since HookSound's arguments changed in 1.8
-#if SOURCEMOD_V_MAJOR==1 && SOURCEMOD_V_MINOR>=8
-public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH], &client, &channel, &Float:volume, &level, &pitch, &flags, String:soundEntry[PLATFORM_MAX_PATH], &seed)
-#else
+#if SOURCEMOD_V_MAJOR==1 && SOURCEMOD_V_MINOR<=7
 public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH], &client, &channel, &Float:volume, &level, &pitch, &flags)
+#else
+public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH], &client, &channel, &Float:volume, &level, &pitch, &flags, String:soundEntry[PLATFORM_MAX_PATH], &seed)
 #endif
 {
 	if(!Enabled || !IsValidClient(client) || channel<1)
@@ -7893,26 +7894,35 @@ stock bool:IsValidClient(client, bool:replaycheck=true)
 	return true;
 }
 
-public NextmapPanelH(Handle:menu, MenuAction:action, client, selection)
+public Handler_VoteCharset(Handle:menu, MenuAction:action, param1, param2)
 {
-	if(action==MenuAction_Select && selection==1)
+	/*if(action==MenuAction_Select && param2==1)
 	{
 		new clients[1];
-		clients[0]=client;
+		clients[0]=param1;
 		if(!IsVoteInProgress())
 		{
-			VoteMenu(menu, clients, client, 1, MENU_TIME_FOREVER);
+			VoteMenu(menu, clients, param1, 1, MENU_TIME_FOREVER);
 		}
+	}
+	else */if(action==MenuAction_VoteEnd)
+	{
+		FF2CharSet=param1 ? StringToInt(param1)-1 : validCharsets[GetRandomInt(0, FF2CharSet)];
+
+		decl String:nextmap[32];
+		GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
+		GetMenuItem(menu, param1, FF2CharSetString, sizeof(FF2CharSetString));
+		CPrintToChatAll("{olive}[FF2]{default} %t", "nextmap_charset", nextmap, FF2CharSetString);  //"The character set for {1} will be {2}."
+		isCharSetSelected=true;
 	}
 	else if(action==MenuAction_End)
 	{
 		CloseHandle(menu);
 	}
-
 	return;
 }
 
-public Handler_VoteCharset(Handle:menu, votes, clients, const clientInfo[][2], items, const itemInfo[][2])
+/*public Handler_VoteCharset(Handle:menu, votes, clients, const clientInfo[][2], items, const itemInfo[][2])
 {
 	decl String:item[42], String:display[42], String:nextmap[42];
 	GetMenuItem(menu, itemInfo[0][VOTEINFO_ITEM_INDEX], item, sizeof(item), _, display, sizeof(display));
@@ -7930,7 +7940,7 @@ public Handler_VoteCharset(Handle:menu, votes, clients, const clientInfo[][2], i
 	strcopy(FF2CharSetString, 42, item[StrContains(item, " ")+1]);
 	CPrintToChatAll("{olive}[FF2]{default} %t", "nextmap_charset", nextmap, FF2CharSetString);  //display
 	isCharSetSelected=true;
-}
+}*/
 
 public CvarChangeNextmap(Handle:convar, const String:oldValue[], const String:newValue[])
 {
@@ -7946,42 +7956,43 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 
 	if(IsVoteInProgress())
 	{
-		CreateTimer(5.0, Timer_DisplayCharsetVote, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(5.0, Timer_DisplayCharsetVote, _, TIMER_FLAG_NO_MAPCHANGE);  //Try again in 5 seconds if there's a different vote going on
 		return Plugin_Continue;
 	}
 
-	new Handle:menu=CreateMenu(NextmapPanelH, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(menu, "%t", "select_charset");
-	SetVoteResultCallback(menu, Handler_VoteCharset);
+	new Handle:menu=CreateMenu(Handler_VoteCharset, MenuAction:MENU_ACTIONS_ALL);
+	SetMenuTitle(menu, "%t", "select_charset");  //"Please vote for the character set for the next map."
+	//SetVoteResultCallback(menu, Handler_VoteCharset);
 
 	decl String:config[PLATFORM_MAX_PATH], String:charset[64];
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
 
 	new Handle:Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, config);
-	AddMenuItem(menu, "0 Random", "Random");
-	//AddMenuItem(menu, "0", "Random");
-	new i, charsets;
+	//AddMenuItem(menu, "0 Random", "Random");
+	AddMenuItem(menu, "0", "Random");
+	new total, charsets;
 	do
 	{
-		i++;
-		if(KvGetNum(Kv, "hidden", 0))
+		total++;
+		if(KvGetNum(Kv, "hidden", 0))  //Hidden charsets are hidden for a reason :P
 		{
 			continue;
 		}
 		charsets++;
+		validCharsets[charsets]=total;
 
 		KvGetSectionName(Kv, config, 64);
-		Format(charset, sizeof(charset), "%i %s", i, config);
+		//Format(charset, sizeof(charset), "%i %s", charsets, config);
+		//AddMenuItem(menu, charset, config);
 		AddMenuItem(menu, charset, config);
-		//AddMenuItem(menu, i, config);
 	}
 	while(KvGotoNextKey(Kv));
 	CloseHandle(Kv);
 
 	if(charsets>1)  //We have enough to call a vote
 	{
-		//FF2CharSet=i;  //We're going to be setting this in the map callback...
+		FF2CharSet=charsets;  //Temporary so that if the vote result is random we know how many valid charsets are in the validCharset array
 		new Handle:voteDuration=FindConVar("sm_mapvote_voteduration");
 		VoteMenuToAll(menu, voteDuration ? GetConVarInt(voteDuration) : 20);
 	}
