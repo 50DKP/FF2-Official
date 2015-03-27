@@ -8006,7 +8006,7 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 		KvGetSectionName(Kv, config, 64);
 		//Format(charset, sizeof(charset), "%i %s", charsets, config);
 		//AddMenuItem(menu, charset, config);
-		AddMenuItem(menu, charset, config);
+		AddMenuItem(menu, config, config);
 	}
 	while(KvGotoNextKey(Kv));
 	CloseHandle(Kv);
