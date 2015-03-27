@@ -7907,7 +7907,7 @@ public Handler_VoteCharset(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else */if(action==MenuAction_VoteEnd)
 	{
-		FF2CharSet=param1 ? StringToInt(param1)-1 : validCharsets[GetRandomInt(0, FF2CharSet)];
+		FF2CharSet=param1 ? param1-1 : validCharsets[GetRandomInt(0, FF2CharSet)];
 
 		decl String:nextmap[32];
 		GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
