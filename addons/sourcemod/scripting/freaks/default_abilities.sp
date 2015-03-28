@@ -25,6 +25,7 @@ new Handle:OnHaleWeighdown;
 new Handle:gravityDatapack[MAXPLAYERS+1];
 
 new Handle:jumpHUD;
+new Handle:teleHUD;
 
 new bool:enableSuperDuperJump[MAXPLAYERS+1];
 new Float:UberRageCount[MAXPLAYERS+1];
@@ -47,7 +48,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 public OnPluginStart2()
 {
 	jumpHUD=CreateHudSynchronizer();
-
+	teleHUD=CreateHudSynchronizer();
 	HookEvent("object_deflected", OnDeflect, EventHookMode_Pre);
 	HookEvent("teamplay_round_start", OnRoundStart);
 	HookEvent("player_death", OnPlayerDeath);
@@ -278,13 +279,25 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 	{
 		case 1:
 		{
-			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
+			switch(slot)
+			{
+				case 1:
+					SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
+				case 2:
+					SetHudTextParams(-1.0, 0.93, 0.15, 255, 255, 255, 255);
+			}
 			FF2_ShowSyncHudText(client, jumpHUD, "%t", "jump_status_2", -RoundFloat(charge));
 		}
 		case 2:
 		{
-			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-			if(enableSuperDuperJump[boss])
+			switch(slot)
+			{
+				case 1:
+					SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
+				case 2:
+					SetHudTextParams(-1.0, 0.93, 0.15, 255, 255, 255, 255);
+			}
+			if(enableSuperDuperJump[boss] && slot==1)
 			{
 				SetHudTextParams(-1.0, 0.88, 0.15, 255, 64, 64, 255);
 				FF2_ShowSyncHudText(client, jumpHUD, "%t", "super_duper_jump");
@@ -313,10 +326,10 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 			new Float:position[3], Float:velocity[3];
 			GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 			GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);
-
+			
 			if(oldJump)
 			{
-				if(enableSuperDuperJump[boss])
+				if(enableSuperDuperJump[boss] && slot==1)
 				{
 					velocity[2]=750+(charge/4)*13.0+2000;
 					enableSuperDuperJump[boss]=false;
@@ -333,7 +346,7 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 			{
 				new Float:angles[3];
 				GetClientEyeAngles(client, angles);
-				if(enableSuperDuperJump[boss])
+				if(enableSuperDuperJump[boss] && slot==1)
 				{
 					velocity[0]+=Cosine(DegToRad(angles[0]))*Cosine(DegToRad(angles[1]))*500*multiplier;
 					velocity[1]+=Cosine(DegToRad(angles[0]))*Sine(DegToRad(angles[1]))*500*multiplier;
@@ -376,13 +389,25 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 	{
 		case 1:
 		{
-			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-			FF2_ShowSyncHudText(client, jumpHUD, "%t", "teleport_status_2", -RoundFloat(charge));
+			switch(slot)
+			{
+				case 1:
+					SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
+				case 2:
+					SetHudTextParams(-1.0, 0.93, 0.15, 255, 255, 255, 255);
+			}
+			FF2_ShowSyncHudText(client, teleHUD, "%t", "teleport_status_2", -RoundFloat(charge));
 		}
 		case 2:
 		{
-			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-			FF2_ShowSyncHudText(client, jumpHUD, "%t", "teleport_status", RoundFloat(charge));
+			switch(slot)
+			{
+				case 1:
+					SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
+				case 2:
+					SetHudTextParams(-1.0, 0.93, 0.15, 255, 255, 255, 255);
+			}
+			FF2_ShowSyncHudText(client, teleHUD, "%t", "teleport_status", RoundFloat(charge));
 		}
 		case 3:
 		{
@@ -400,7 +425,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 				enableSuperDuperJump[boss]=superJump;
 			}
 
-			if(enableSuperDuperJump[boss])
+			if(enableSuperDuperJump[boss] && slot==1)
 			{
 				enableSuperDuperJump[boss]=false;
 			}
