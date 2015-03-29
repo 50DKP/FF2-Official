@@ -49,6 +49,7 @@ public OnPluginStart2()
 {
 	jumpHUD=CreateHudSynchronizer();
 	teleHUD=CreateHudSynchronizer();
+
 	HookEvent("object_deflected", OnDeflect, EventHookMode_Pre);
 	HookEvent("teamplay_round_start", OnRoundStart);
 	HookEvent("player_death", OnPlayerDeath);
