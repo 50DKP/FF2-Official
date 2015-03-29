@@ -4,7 +4,6 @@ sudo: false
 #Install some apt packages needed for spcomp
 addons:
     apt_packages:
-        - gcc-multilib
         - lib32stdc++6
 
 #Set the build environment
