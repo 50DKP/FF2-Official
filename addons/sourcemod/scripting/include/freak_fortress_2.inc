@@ -401,7 +401,7 @@ native bool:FF2_Debug();
  *							3 - In use
  * @return				Plugin_Stop can not prevent the ability. Use FF2_PreAbility with enabled=false
  */
-forward FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[], slot, status, &bool:enabled);
+forward FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[], slot, &bool:enabled);
 forward Action:FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[], slot, status);
 
 /**
