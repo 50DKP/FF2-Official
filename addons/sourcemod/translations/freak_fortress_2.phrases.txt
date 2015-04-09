@@ -330,6 +330,14 @@
 	{
 		"en"	"You are not allowed to suicide before the round starts!"
 	}
+	"Boss Disconnected"
+	{
+		"en"	"The boss has disconnected!"
+	}
+	"Disconnected Boss Replaced Pre-Round"
+	{
+		"en"	"Surprise! You are now the boss!"
+	}
 	"Backstab"
 	{
 		"en"	"You just backstabbed the boss!"
