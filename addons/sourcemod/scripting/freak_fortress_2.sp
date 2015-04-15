@@ -4434,7 +4434,7 @@ public OnClientDisconnect(client)
 					
 					CreateTimer(0.1, MakeBoss);
 					
-					CPrintToChat(Boss[boss], "{olive}[FF2] %t", "Replace Disconnected Boss");
+					CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
 					CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
 				}
 			}
