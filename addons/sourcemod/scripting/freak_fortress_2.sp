@@ -8129,6 +8129,7 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 	}
 	else
 	{
+		Call_PushCell(slot);  //Slot!
 		SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 		new button;
 		switch(buttonMode)
