@@ -4413,19 +4413,19 @@ public OnClientDisconnect(client)
 		if(IsBoss(client))
 		{
 		
-			if (CheckRoundState()==1)
+			if(CheckRoundState()==1)
 			{
 				ForceTeamWin(OtherTeam);
 			}
 			
-			if (GetConVarBool(cvarPreroundBossDisconnect) && CheckRoundState()<=0)
+			if(GetConVarBool(cvarPreroundBossDisconnect) && CheckRoundState()==0)
 			{
 				new bool:omit[MaxClients+1];
 				new boss=GetBossIndex(client);
 				Boss[boss]=GetClientWithMostQueuePoints(omit);
 				omit[Boss[boss]]=true;
 				
-				if (IsValidClient(Boss[boss]))
+				if(IsValidClient(Boss[boss]))
 				{	
 					SetEntProp(Boss[boss], Prop_Send, "m_lifeState", 2);
 					ChangeClientTeam(Boss[boss], BossTeam);
