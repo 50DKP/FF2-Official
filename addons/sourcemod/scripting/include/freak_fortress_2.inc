@@ -384,6 +384,7 @@ native bool:FF2_Debug();
  * FF2_OnAbility:
  * Called when a Boss uses an ability (Rage, jump, teleport, etc)
  * Calls every 0.2 seconds for charge abilities
+ * Note, status is only in OnAbility, and due to issues, the parma status in OnAbility isn't passed anything, slot is both slot(for non-charge stuff) and status for charge stuff.
  *
  * Use FF2_PreAbility with enabled=false ONLY to prevent FF2_OnAbility!
  *
