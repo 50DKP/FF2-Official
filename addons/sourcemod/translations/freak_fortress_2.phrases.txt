@@ -332,9 +332,10 @@
 	}
 	"Boss Disconnected"
 	{
-		"en"	"The boss has disconnected!"
+		"#format" "{1:N}, {2:N}"
+		"en"	"{1} has disconnected and now {2} is the new boss!"
 	}
-	"Disconnected Boss Replaced Pre-Round"
+	"Replace Disconnected Boss"
 	{
 		"en"	"Surprise! You are now the boss!"
 	}
