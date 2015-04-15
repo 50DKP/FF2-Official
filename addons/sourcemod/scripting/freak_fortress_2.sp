@@ -8080,12 +8080,14 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 	if(slot==-1)
 	{
 		Call_PushCell(0);  //Slot
+		Call_PushCell(3);  //Status - we're assuming here a life-loss ability will always be in use if it gets called
 		Call_Finish(action);
 	}
 	else if(!slot)
 	{
 		FF2flags[Boss[client]]&=~FF2FLAG_BOTRAGE;
 		Call_PushCell(0);  //Slot
+		Call_PushCell(3);  //Status - we're assuming here a rage ability will always be in use if it gets called
 		Call_Finish(action);
 		BossCharge[client][slot]=0.0;
 	}

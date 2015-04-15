@@ -390,11 +390,11 @@ native bool:FF2_Debug();
  * @param boss	 		Boss's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
- * @param slot 			Slot of ability
+ * @param slot 			Slot of ability - -1 (life loss) may be passed in FF2_PreAbility
  *							0 - Rage
  *							1 - Jump/teleport
  *							2 - Other charge
- * @param status		Status of ability (for slots 1 and 2)
+ * @param status		Status of ability - Is not present in FF2_PreAbility
  *							0 - Not in use
  *							1 - Charging
  *							2 - Charged
