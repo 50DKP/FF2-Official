@@ -204,7 +204,7 @@ new changeGamemode;
 
 enum Operators
 {
-	Operator_None=-1,
+	Operator_None=0,
 	Operator_Add,
 	Operator_Subtract,
 	Operator_Multiply,
@@ -6616,7 +6616,7 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 	SetArrayCell(_operator, bracket, Operator_None);
 }
 
-stock OperateString(Handle:sumArray, bracket, String:value[], size, Handle:_operator)
+stock OperateString(Handle:sumArray, &bracket, String:value[], size, Handle:_operator)
 {
 	if(!StrEqual(value, ""))
 	{
@@ -6631,27 +6631,31 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	KvRewind(BossKV[Special[boss]]);
 	KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 	KvGetString(BossKV[Special[boss]], key, formula, sizeof(formula), defaultFormula);
-	ReplaceString(formula, sizeof(formula), " ", "");  //Get rid of spaces
-
 	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum.
-	new Handle:sumArray=CreateArray(), Handle:_operator=CreateArray();
+	new Handle:sumArray=CreateArray(_, 1), Handle:_operator=CreateArray(_, 1);
 	decl String:character[2], String:value[1024];
 	for(new i; i<=strlen(formula); i++)
 	{
 		character[0]=formula[i];  //Find out what the next char in the formula is
 		switch(character[0])
 		{
+			case ' ', '\t':  //Ignore whitespace.
+			{
+				continue;
+			}
 			case '(':
 			{
 				bracket++;  //We've just entered a new parentheses so increment the bracket #
 				if(GetArraySize(sumArray)<(bracket+1))  //If we've reached the array limit, just increase it
 				{
-					ResizeArray(sumArray, bracket+1);
-					ResizeArray(_operator, bracket+1);
+					PushArrayCell(sumArray, 0.0);
+					PushArrayCell(_operator, Operator_None);
 				}
-
-				SetArrayCell(sumArray, bracket, 0.0);  //Set this bracket's sum to 0 since we just entered it
-				SetArrayCell(_operator, bracket, Operator_None);
+				else
+				{
+					SetArrayCell(sumArray, bracket, 0.0);
+					SetArrayCell(_operator, bracket, Operator_None);
+				}
 			}
 			case ')':
 			{
