@@ -6613,7 +6613,7 @@ stock GetBossIndex(client)
 	return -1;
 }
 
-stock Operate(Handle:sumArray, bracket, Float:value, Handle:_operator)
+stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 {
 	new Float:sum=GetArrayCell(sumArray, bracket);
 	switch(GetArrayCell(_operator, bracket))
@@ -6635,6 +6635,7 @@ stock Operate(Handle:sumArray, bracket, Float:value, Handle:_operator)
 			if(FloatCompare(value, 0.000001)==-1 && FloatCompare(value, -0.000001)==1)
 			{
 				LogError("[FF2 Bosses] Detected a divide by 0!");
+				bracket=0;
 				return;
 			}
 			SetArrayCell(sumArray, bracket, sum/value);
@@ -6651,7 +6652,7 @@ stock Operate(Handle:sumArray, bracket, Float:value, Handle:_operator)
 	SetArrayCell(_operator, bracket, Operator_None);
 }
 
-stock OperateString(Handle:sumArray, bracket, String:value[], size, Handle:_operator)
+stock OperateString(Handle:sumArray, &bracket, String:value[], size, Handle:_operator)
 {
 	if(!StrEqual(value, ""))
 	{
