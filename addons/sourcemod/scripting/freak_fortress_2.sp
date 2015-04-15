@@ -6631,15 +6631,17 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 	KvGetString(BossKV[Special[boss]], key, formula, sizeof(formula), defaultFormula);
 	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum.
-	new Handle:sumArray=CreateArray(.startsize=1), Handle:_operator=CreateArray(.startsize=1);
+	new Handle:sumArray=CreateArray(_, 1), Handle:_operator=CreateArray(_, 1);
 	decl String:character[2], String:value[1024];
 	for(new i; i<=strlen(formula); i++)
 	{
 		character[0]=formula[i];  //Find out what the next char in the formula is
 		switch(character[0])
 		{
-			case ' ': //Ignore whitespace.
+			case ' ', '\t':  //Ignore whitespace.
+			{
 				continue;
+			}
 			case '(':
 			{
 				bracket++;  //We've just entered a new parentheses so increment the bracket #
@@ -6663,6 +6665,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 					SetArrayCell(sumArray, 0, 0.0);
 					break;
 				}
+
 				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
 				SetArrayCell(sumArray, bracket+1, 0.0);
 				SetArrayCell(_operator, bracket+1, Operator_None);
