@@ -389,6 +389,8 @@ native bool:FF2_Debug();
  * @param boss	 		Boss's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
+ * slot					Useless, kept in for backwards compat. Arg0=slot.
+ * status				State of ability. 0=Cooling down. 1=Charging. 2=Charged to 100%. 3=Fired.
  * @return				Plugin_Stop can not prevent the ability. Use FF2_PreAbility with enabled=false
  */
 forward FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[], slot, &bool:enabled);
