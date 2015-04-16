@@ -381,7 +381,6 @@ native FF2_GetBossPlayers();
 native bool:FF2_Debug();
 
 /**
- * FF2_OnAbility:
  * Called when a Boss uses an ability (Rage, jump, teleport, etc)
  * Calls every 0.2 seconds for charge abilities
  *
