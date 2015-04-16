@@ -1,54 +1,51 @@
-new String:this_plugin_name[80];
+#include <freak_fortress_2>
 
-GetThisPluginName()
+#define this_plugin_name myPluginName
+
+new String:myPluginName[80];
+
+GetMyPluginName()
 {
 	decl String:pluginName[80];
 	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
-	ReplaceString(pluginName, sizeof(pluginName), ".ff2", "", false);
-	new forwardSlash=-1;
-	new backwardSlash=-1;
-	new finalPluginName=-1;
-	for(;;)
+	new i=strlen(pluginName);
+	while (i > -1)
 	{
-		forwardSlash=StrContains(pluginName[finalPluginName+1], "/");
-		backwardSlash=StrContains(pluginName[finalPluginName+1], "\\");
-		if((backwardSlash<forwardSlash && backwardSlash!=-1) || forwardSlash==-1)
+		if (pluginName[i] == '/' || pluginName[i] == '\\')
 		{
-			if(backwardSlash==-1)
-			{
-				break;
-			}
-			finalPluginName=backwardSlash;
+			break;
 		}
-		else if((forwardSlash<backwardSlash && forwardSlash!=-1) || backwardSlash==-1)
-		{
-			if(forwardSlash==-1)
-			{
-				break;
-			}
-			finalPluginName=forwardSlash;
-		}
+		i--;
 	}
-	strcopy(this_plugin_name, sizeof(this_plugin_name), pluginName[finalPluginName+1]);
+	strcopy(myPluginName, sizeof(myPluginName), pluginName[i+1]);
 }
 
 public OnPluginStart()
 {
+	GetMyPluginName();
+#if !defined NO_PLUGINSTART2
 	OnPluginStart2();
-	GetThisPluginName();
+#endif
 }
 
-//This is very broken-FF2_OnAbility's args are client, plugin_name, ability_name, SLOT, status
-public Action:FF2_OnAbility(client, const String:plugin_name[], const String:ability_name[], status)
+public FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[], slot, &bool:enabled)
 {
-	if(plugin_name[0])
-	{
-		if(strcmp(this_plugin_name, plugin_name))
-		{
-			return Plugin_Continue;
-		}
-	}
-	//So we're really passing 'slot' here and not 'status'-currently subplugins have no way of getting status
-	FF2_OnAbility2(client, plugin_name, ability_name, status);
-	return Plugin_Continue;
+	if (!StrEqual(pluginName, myPluginName))
+		return;
+#if defined PREABILITY2
+#if defined PREABILITY2_NOPNAME
+	FF2_PreAbility2(boss, abilityName, enabled);
+#else
+	FF2_PreAbility2(boss, pluginName, abilityName, enabled);
+#endif
+#endif
+}
+
+public Action:FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[], status)
+{
+	if (!StrEqual(pluginName, myPluginName))
+		return;
+#if !defined NO_ONABILITY2
+	FF2_OnAbility2(boss, pluginName, abilityName, status);
+#endif
 }
