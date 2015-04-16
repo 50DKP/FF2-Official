@@ -43,7 +43,7 @@ public FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[
 
 public Action:FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[], status)
 {
-	if (!StrEqual(pluginName, myPluginName))
+	if (pluginName[0] != '\0' && myPluginName[0] != '\0' && !StrEqual(pluginName, myPluginName))
 		return;
 #if !defined NO_ONABILITY2
 	FF2_OnAbility2(boss, pluginName, abilityName, status);
