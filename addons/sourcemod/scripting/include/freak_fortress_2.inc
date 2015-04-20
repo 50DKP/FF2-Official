@@ -389,15 +389,8 @@ native bool:FF2_Debug();
  * @param boss	 		Boss's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
- * @param slot 			Slot of ability - -1 (life loss) may be passed in FF2_PreAbility
- *							0 - Rage
- *							1 - Jump/teleport
- *							2 - Other charge
- * @param status		Status of ability - Is not present in FF2_PreAbility
- *							0 - Not in use
- *							1 - Charging
- *							2 - Charged
- *							3 - In use
+ * @param slot 			In OnAbility, this param is actually status. Useless in PreAbility(kept for backwards compat and to sane SM).
+ * @param status		This is here to keep backwards compat. Slot is actually status in OnAbility
  * @return				Plugin_Stop can not prevent the ability. Use FF2_PreAbility with enabled=false
  */
 forward FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[], slot, &bool:enabled);
