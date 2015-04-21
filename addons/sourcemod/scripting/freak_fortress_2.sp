@@ -3253,6 +3253,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	KvRewind(BossKV[Special[boss]]);
 	TF2_RemovePlayerDisguise(client);
 	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
+	TF2_RespawnPlayer(client);  //Fixes a bug where spectators would not get a class assigned before they were respawned onto the boss team making them a living spectator
 	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	switch(KvGetNum(BossKV[Special[boss]], "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
