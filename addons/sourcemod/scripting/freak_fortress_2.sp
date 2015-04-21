@@ -4418,9 +4418,12 @@ public OnClientDisconnect(client)
 				ForceTeamWin(OtherTeam);
 			}
 			
-			if(GetConVarBool(cvarPreroundBossDisconnect) && CheckRoundState()==0)
+			if(GetConVarBool(cvarPreroundBossDisconnect) && !CheckRoundState())
 			{
 				new bool:omit[MaxClients+1];
+			
+				omit[client]=true;
+				
 				new boss=GetBossIndex(client);
 				Boss[boss]=GetClientWithMostQueuePoints(omit);
 				omit[Boss[boss]]=true;
