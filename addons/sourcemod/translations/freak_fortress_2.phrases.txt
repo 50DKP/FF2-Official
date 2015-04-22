@@ -330,6 +330,15 @@
 	{
 		"en"	"You are not allowed to suicide before the round starts!"
 	}
+	"Boss Disconnected"
+	{
+		"#format" "{1:N}, {2:N}"
+		"en"	"{1} has disconnected and now {2} is the new boss!"
+	}
+	"Replace Disconnected Boss"
+	{
+		"en"	"Surprise! You are now the boss!"
+	}
 	"Backstab"
 	{
 		"en"	"You just backstabbed the boss!"

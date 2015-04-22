@@ -139,6 +139,7 @@ new Handle:cvarGoombaRebound;
 new Handle:cvarBossRTD;
 new Handle:cvarUpdater;
 new Handle:cvarDebug;
+new Handle:cvarPreroundBossDisconnect;
 
 new Handle:FF2Cookies;
 
@@ -994,6 +995,7 @@ public OnPluginStart()
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
 	cvarBossSuicide=CreateConVar("ff2_boss_suicide", "0", "Allow the boss to suicide after the round starts?", FCVAR_PLUGIN, true, 0.0, true, 1.0);
+	cvarPreroundBossDisconnect=CreateConVar("ff2_replace_disconnected_boss", "1", "If a boss disconnects before the round starts, use the next player in line instead? 0 - No, 1 - Yes", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarCaberDetonations=CreateConVar("ff2_caber_detonations", "5", "Amount of times somebody can detonate the Ullapool Caber", FCVAR_PLUGIN);
 	cvarShieldCrits=CreateConVar("ff2_shield_crits", "0", "0 to disable grenade launcher crits when equipping a shield, 1 for minicrits, 2 for crits", FCVAR_PLUGIN, true, 0.0, true, 2.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", FCVAR_PLUGIN, true, 0.01, true, 1.0);
@@ -4406,9 +4408,46 @@ public OnClientPutInServer(client)
 
 public OnClientDisconnect(client)
 {
-	if(Enabled && IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==1)
+	if(Enabled)
 	{
-		CreateTimer(0.1, CheckAlivePlayers);
+	
+		if(IsBoss(client))
+		{
+		
+			if(CheckRoundState()==1)
+			{
+				ForceTeamWin(OtherTeam);
+			}
+			
+			if(GetConVarBool(cvarPreroundBossDisconnect) && !CheckRoundState())
+			{
+				new bool:omit[MaxClients+1];
+			
+				omit[client]=true;
+				
+				new boss=GetBossIndex(client);
+				Boss[boss]=GetClientWithMostQueuePoints(omit);
+				omit[Boss[boss]]=true;
+				
+				if(IsValidClient(Boss[boss]))
+				{	
+					SetEntProp(Boss[boss], Prop_Send, "m_lifeState", 2);
+					ChangeClientTeam(Boss[boss], BossTeam);
+					SetEntProp(Boss[boss], Prop_Send, "m_lifeState", 0);
+					TF2_RespawnPlayer(Boss[boss]);
+					
+					CreateTimer(0.1, MakeBoss);
+					
+					CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
+					CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
+				}
+			}
+		}
+		
+		if(IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==1)
+		{
+			CreateTimer(0.1, CheckAlivePlayers);
+		}
 	}
 }
 
@@ -5525,7 +5564,7 @@ public Action:Timer_DrawGame(Handle:timer)
 
 public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(!Enabled)
+	if(!Enabled || CheckRoundState()!=1)
 	{
 		return Plugin_Continue;
 	}
