@@ -381,7 +381,7 @@ native FF2_GetBossPlayers();
 native bool:FF2_Debug();
 
 /**
- * THIS FORWARD IS KNOWN TO BE BUGGED AND WILL NOT BE FIXED TO PRESERVE BACKWARDS COMPATABILITY.  DO NOT USE IT.
+ * FF2_ONABILITY IS KNOWN TO BE BUGGED AND WILL NOT BE FIXED TO PRESERVE BACKWARDS COMPATABILITY.  DO NOT USE IT.
  * Called when a Boss uses an ability (Rage, jump, teleport, etc)
  * Called every 0.2 seconds for charge abilities
  *
@@ -390,7 +390,7 @@ native bool:FF2_Debug();
  * @param boss	 		Boss's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
- * @param slot			Slot of ability (THIS DOES NOT RETURN WHAT YOU THINK IT RETURNS-if you insist on using this, refer to freak_fortress_2.sp to see what it actually does)
+ * @param slot			Slot of ability (THIS DOES NOT RETURN WHAT YOU THINK IT RETURNS FOR FF2_ONABILITY-if you insist on using this, refer to freak_fortress_2.sp to see what it actually does)
  * 							0 - Rage or life-loss
  * 							1 - Jump or teleport
  * 							2 - Other

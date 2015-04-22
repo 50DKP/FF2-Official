@@ -4410,40 +4410,27 @@ public OnClientDisconnect(client)
 {
 	if(Enabled)
 	{
-	
 		if(IsBoss(client))
 		{
-		
 			if(CheckRoundState()==1)
 			{
 				ForceTeamWin(OtherTeam);
 			}
-			
+
 			if(GetConVarBool(cvarPreroundBossDisconnect) && !CheckRoundState())
 			{
-				new bool:omit[MaxClients+1];
-			
-				omit[client]=true;
-				
 				new boss=GetBossIndex(client);
+				new bool:omit[MaxClients+1];
+				omit[client]=true;
 				Boss[boss]=GetClientWithMostQueuePoints(omit);
 				omit[Boss[boss]]=true;
-				
-				if(IsValidClient(Boss[boss]))
-				{	
-					SetEntProp(Boss[boss], Prop_Send, "m_lifeState", 2);
-					ChangeClientTeam(Boss[boss], BossTeam);
-					SetEntProp(Boss[boss], Prop_Send, "m_lifeState", 0);
-					TF2_RespawnPlayer(Boss[boss]);
-					
-					CreateTimer(0.1, MakeBoss);
-					
-					CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
-					CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
-				}
+
+				CreateTimer(0.1, MakeBoss);
+				CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
+				CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
 			}
 		}
-		
+
 		if(IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==1)
 		{
 			CreateTimer(0.1, CheckAlivePlayers);
