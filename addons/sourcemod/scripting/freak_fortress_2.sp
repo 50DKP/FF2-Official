@@ -2227,12 +2227,14 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			ChangeClientTeam(Boss[0], BossTeam);
 			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 0);
 			TF2_RespawnPlayer(Boss[0]);
+			Debug("No boss on BLU, changing boss's team");
 		}
 
 		for(new client=1; client<=MaxClients; client++)
 		{
 			if(IsValidClient(client) && !IsBoss(client) && GetClientTeam(client)!=OtherTeam)
 			{
+				Debug("Calling MakeNotBoss from event_round_start");
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
 			}
 		}
@@ -2320,17 +2322,15 @@ public Action:Timer_EnableCap(Handle:timer)
 
 public Action:Timer_GogoBoss(Handle:timer)
 {
-	if(!CheckRoundState())
+	for(new boss; boss<=MaxClients; boss++)
 	{
-		for(new client; client<=MaxClients; client++)
+		BossInfoTimer[boss][0]=INVALID_HANDLE;
+		BossInfoTimer[boss][1]=INVALID_HANDLE;
+		if(Boss[boss])
 		{
-			BossInfoTimer[client][0]=INVALID_HANDLE;
-			BossInfoTimer[client][1]=INVALID_HANDLE;
-			if(Boss[client])
-			{
-				CreateTimer(0.1, MakeBoss, client);
-				BossInfoTimer[client][0]=CreateTimer(30.0, BossInfoTimer_Begin, client);
-			}
+			Debug("Calling MakeBoss from Timer_GogoBoss");
+			CreateTimer(0.1, MakeBoss, boss);
+			BossInfoTimer[boss][0]=CreateTimer(30.0, BossInfoTimer_Begin, boss);
 		}
 	}
 	return Plugin_Continue;
@@ -2728,6 +2728,7 @@ public Action:StartBossTimer(Handle:timer)
 		if(IsValidClient(client) && !IsBoss(client) && IsPlayerAlive(client))
 		{
 			playing++;
+			Debug("Calling MakeNotBoss from StartBossTimer");
 			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client));  //TODO:  Is this needed?
 		}
 	}
@@ -3225,6 +3226,7 @@ EquipBoss(boss)
 
 public Action:MakeBoss(Handle:timer, any:boss)
 {
+	Debug("Boop!");
 	new client=Boss[boss];
 	if(!IsValidClient(client))
 	{
@@ -3235,6 +3237,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	{
 		if(!CheckRoundState())
 		{
+			Debug("Dead boss, respawning :(");
 			TF2_RespawnPlayer(client);
 		}
 		else
@@ -3245,6 +3248,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 
 	if(GetClientTeam(client)!=BossTeam)
 	{
+		Debug("Boss on the wrong team, respawning :(");
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, BossTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
@@ -3714,6 +3718,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 
 public Action:MakeNotBoss(Handle:timer, any:userid)
 {
+	Debug("Ho!");
 	new client=GetClientOfUserId(userid);
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
@@ -4456,6 +4461,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(IsBoss(client))// && !CheckRoundState())
 	{
+		Debug("Calling MakeBoss from event_player_spawn");
 		CreateTimer(0.1, MakeBoss, GetBossIndex(client));
 	}
 
@@ -4472,6 +4478,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 				TF2_RegeneratePlayer(client);
 				CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
+			Debug("Calling MakeNotBoss from event_player_spawn");
 			CreateTimer(0.2, MakeNotBoss, GetClientUserId(client));
 		}
 		else
