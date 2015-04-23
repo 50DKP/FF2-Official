@@ -2269,7 +2269,16 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	FindCompanion(0, playing, omit);  //Find companions for the boss!
 
-	CreateTimer(0.2, Timer_GogoBoss, _, TIMER_FLAG_NO_MAPCHANGE);
+	for(new boss; boss<=MaxClients; boss++)
+	{
+		BossInfoTimer[boss][0]=INVALID_HANDLE;
+		BossInfoTimer[boss][1]=INVALID_HANDLE;
+		if(Boss[boss])
+		{
+			BossInfoTimer[boss][0]=CreateTimer(30.0, BossInfoTimer_Begin, boss);
+		}
+	}
+
 	CreateTimer(3.5, StartResponseTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(9.1, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(9.6, MessageTimer, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -2320,34 +2329,18 @@ public Action:Timer_EnableCap(Handle:timer)
 	}
 }
 
-public Action:Timer_GogoBoss(Handle:timer)
+public Action:BossInfoTimer_Begin(Handle:timer, any:boss)
 {
-	for(new boss; boss<=MaxClients; boss++)
+	BossInfoTimer[boss][0]=INVALID_HANDLE;
+	BossInfoTimer[boss][1]=CreateTimer(0.2, BossInfoTimer_ShowInfo, boss, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	return Plugin_Continue;
+}
+
+public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
+{
+	if((FF2flags[Boss[boss]] & FF2FLAG_USINGABILITY))
 	{
-		BossInfoTimer[boss][0]=INVALID_HANDLE;
 		BossInfoTimer[boss][1]=INVALID_HANDLE;
-		if(Boss[boss])
-		{
-			Debug("Calling MakeBoss from Timer_GogoBoss");
-			CreateTimer(0.1, MakeBoss, boss);
-			BossInfoTimer[boss][0]=CreateTimer(30.0, BossInfoTimer_Begin, boss);
-		}
-	}
-	return Plugin_Continue;
-}
-
-public Action:BossInfoTimer_Begin(Handle:timer, any:client)
-{
-	BossInfoTimer[client][0]=INVALID_HANDLE;
-	BossInfoTimer[client][1]=CreateTimer(0.2, BossInfoTimer_ShowInfo, client, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	return Plugin_Continue;
-}
-
-public Action:BossInfoTimer_ShowInfo(Handle:timer, any:client)
-{
-	if((FF2flags[Boss[client]] & FF2FLAG_USINGABILITY))
-	{
-		BossInfoTimer[client][1]=INVALID_HANDLE;
 		return Plugin_Stop;
 	}
 
@@ -2356,17 +2349,17 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:client)
 	{
 		decl String:s[10];
 		Format(s, 10, "ability%i", n);
-		if(client==-1 || Special[client]==-1 || !BossKV[Special[client]])
+		if(boss==-1 || Special[boss]==-1 || !BossKV[Special[boss]])
 		{
 			return Plugin_Stop;
 		}
 
-		KvRewind(BossKV[Special[client]]);
-		if(KvJumpToKey(BossKV[Special[client]], s))
+		KvRewind(BossKV[Special[boss]]);
+		if(KvJumpToKey(BossKV[Special[boss]], s))
 		{
 			decl String:plugin_name[64];
-			KvGetString(BossKV[Special[client]], "plugin_name", plugin_name, 64);
-			if(KvGetNum(BossKV[Special[client]], "buttonmode", 0)==2)
+			KvGetString(BossKV[Special[boss]], "plugin_name", plugin_name, 64);
+			if(KvGetNum(BossKV[Special[boss]], "buttonmode", 0)==2)
 			{
 				see=true;
 				break;
@@ -2377,30 +2370,30 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:client)
 			break;
 		}
 	}
-	new need_info_bout_reload=see && CheckInfoCookies(Boss[client], 0);
-	new need_info_bout_rmb=CheckInfoCookies(Boss[client], 1);
+	new need_info_bout_reload=see && CheckInfoCookies(Boss[boss], 0);
+	new need_info_bout_rmb=CheckInfoCookies(Boss[boss], 1);
 	if(need_info_bout_reload)
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
-		SetGlobalTransTarget(Boss[client]);
+		SetGlobalTransTarget(Boss[boss]);
 		if(need_info_bout_rmb)
 		{
-			FF2_ShowSyncHudText(Boss[client], abilitiesHUD, "%t\n%t", "ff2_buttons_reload", "ff2_buttons_rmb");
+			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t\n%t", "ff2_buttons_reload", "ff2_buttons_rmb");
 		}
 		else
 		{
-			FF2_ShowSyncHudText(Boss[client], abilitiesHUD, "%t", "ff2_buttons_reload");
+			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "ff2_buttons_reload");
 		}
 	}
 	else if(need_info_bout_rmb)
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
-		SetGlobalTransTarget(Boss[client]);
-		FF2_ShowSyncHudText(Boss[client], abilitiesHUD, "%t", "ff2_buttons_rmb");
+		SetGlobalTransTarget(Boss[boss]);
+		FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "ff2_buttons_rmb");
 	}
 	else
 	{
-		BossInfoTimer[client][1]=INVALID_HANDLE;
+		BossInfoTimer[boss][1]=INVALID_HANDLE;
 		return Plugin_Stop;
 	}
 	return Plugin_Continue;
