@@ -4985,7 +4985,7 @@ stock GetIndexOfWeaponSlot(client, slot)
 
 public TF2_OnConditionAdded(client, TFCond:condition)
 {
-	if(Enabled && IsBoss(client) && condition==TFCond_Jarated || condition==TFCond_MarkedForDeath || (condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42)))
+	if(Enabled && IsBoss(client) && (condition==TFCond_Jarated || condition==TFCond_MarkedForDeath || (condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42))))
 	{
 		TF2_RemoveCondition(client, condition);
 		new boss=GetBossIndex(client);
