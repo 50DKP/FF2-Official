@@ -2275,7 +2275,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		BossInfoTimer[boss][1]=INVALID_HANDLE;
 		if(Boss[boss])
 		{
-			BossInfoTimer[boss][0]=CreateTimer(30.0, BossInfoTimer_Begin, boss);
+			BossInfoTimer[boss][0]=CreateTimer(30.2, BossInfoTimer_Begin, boss, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 
@@ -2323,7 +2323,7 @@ public Action:Timer_EnableCap(Handle:timer)
 
 			if(doorCheckTimer==INVALID_HANDLE)
 			{
-				doorCheckTimer=CreateTimer(5.0, Timer_CheckDoors, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+				doorCheckTimer=CreateTimer(5.0, Timer_CheckDoors, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 	}
@@ -2370,6 +2370,7 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 			break;
 		}
 	}
+
 	new need_info_bout_reload=see && CheckInfoCookies(Boss[boss], 0);
 	new need_info_bout_rmb=CheckInfoCookies(Boss[boss], 1);
 	if(need_info_bout_reload)
@@ -2467,40 +2468,41 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 	DrawGameTimer=INVALID_HANDLE;
 
-	new bool:isBossAlive, boss;
-	for(new client; client<=MaxClients; client++)
+	new bool:isBossAlive;
+	for(new boss; boss<=MaxClients; boss++)
 	{
-		if(IsValidClient(Boss[client]))
+		if(IsValidClient(Boss[boss]))
 		{
-			SetClientGlow(client, 0.0, 0.0);
-			SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
-			if(IsPlayerAlive(Boss[client]))
+			SetClientGlow(boss, 0.0, 0.0);
+			SDKUnhook(boss, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
+			if(IsPlayerAlive(Boss[boss]))
 			{
 				isBossAlive=true;
 			}
 
 			for(new slot=1; slot<8; slot++)
 			{
-				BossCharge[client][slot]=0.0;
+				BossCharge[boss][slot]=0.0;
 			}
 		}
-		else if(IsValidClient(client))
+		else if(IsValidClient(boss))  //Boss here is actually a client index
 		{
-			SetClientGlow(client, 0.0, 0.0);
-			shield[client]=0;
-			detonations[client]=0;
+			SetClientGlow(boss, 0.0, 0.0);
+			shield[boss]=0;
+			detonations[boss]=0;
 		}
 
 		for(new timer; timer<=1; timer++)
 		{
-			if(BossInfoTimer[client][timer]!=INVALID_HANDLE)
+			if(BossInfoTimer[boss][timer]!=INVALID_HANDLE)
 			{
-				KillTimer(BossInfoTimer[client][timer]);
-				BossInfoTimer[client][timer]=INVALID_HANDLE;
+				KillTimer(BossInfoTimer[boss][timer]);
+				BossInfoTimer[boss][timer]=INVALID_HANDLE;
 			}
 		}
 	}
 
+	new boss;
 	if(isBossAlive)
 	{
 		decl String:bossName[64], String:lives[4];
