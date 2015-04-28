@@ -1008,7 +1008,7 @@ public OnPluginStart()
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
-	HookEvent("teamplay_round_start", event_round_start);
+	HookEvent("teamplay_round_start", event_round_start, EventHookMode_Pre);
 	HookEvent("teamplay_round_win", event_round_end);
 	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
