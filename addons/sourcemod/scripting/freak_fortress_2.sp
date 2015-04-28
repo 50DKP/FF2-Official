@@ -2221,14 +2221,13 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	if(!teamHasPlayers[TFTeam_Blue] || !teamHasPlayers[TFTeam_Red])  //If there's an empty team make sure it gets populated
 	{
-		if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
+		/*if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
 		{
 			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 2);
 			ChangeClientTeam(Boss[0], BossTeam);
 			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 0);
 			TF2_RespawnPlayer(Boss[0]);
-			Debug("No boss on BLU, changing boss's team");
-		}
+		}*/
 
 		for(new client=1; client<=MaxClients; client++)
 		{
@@ -2450,11 +2449,9 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	executed2=false;
 	if((GetEventInt(event, "team")==BossTeam))
 	{
-		//Debug("Oogle boogle");
 		bossWin=true;
 		if(RandomSound("sound_win", sound, sizeof(sound)))
 		{
-			//Debug("Even more oogle boogles");
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 		}
@@ -2520,7 +2517,6 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 		if(!bossWin && RandomSound("sound_fail", sound, sizeof(sound), boss))
 		{
-			Debug("Oo La Laaa");
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
 		}
@@ -3221,7 +3217,6 @@ EquipBoss(boss)
 
 public Action:MakeBoss(Handle:timer, any:boss)
 {
-	Debug("Boop!");
 	new client=Boss[boss];
 	if(!IsValidClient(client))
 	{
@@ -3232,7 +3227,6 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	{
 		if(!CheckRoundState())
 		{
-			Debug("Dead boss, respawning :(");
 			TF2_RespawnPlayer(client);
 		}
 		else
@@ -3241,9 +3235,11 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		}
 	}
 
+	KvRewind(BossKV[Special[boss]]);
+	TF2_RemovePlayerDisguise(client);
+	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
 	if(GetClientTeam(client)!=BossTeam)
 	{
-		Debug("Boss on the wrong team, respawning :(");
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, BossTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
@@ -3251,10 +3247,6 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
-	KvRewind(BossKV[Special[boss]]);
-	TF2_RemovePlayerDisguise(client);
-	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
-	//TF2_RespawnPlayer(client);  //Fixes a bug where spectators would not get a class assigned before they were respawned onto the boss team making them a living spectator
 	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	switch(KvGetNum(BossKV[Special[boss]], "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
@@ -3273,7 +3265,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		}
 	}
 
-	CreateTimer(0.2, MakeModelTimer, boss);
+	CreateTimer(0.2, MakeModelTimer, boss, TIMER_FLAG_NO_MAPCHANGE);
 	if(!IsVoteInProgress() && GetClientClassinfoCookie(client))
 	{
 		HelpPanelBoss(boss);
@@ -4456,7 +4448,6 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(IsBoss(client))// && !CheckRoundState())
 	{
-		Debug("Calling MakeBoss from event_player_spawn");
 		CreateTimer(0.1, MakeBoss, GetBossIndex(client));
 	}
 
@@ -6745,7 +6736,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	new result=RoundFloat(GetArrayCell(sumArray, 0));
 	CloseHandle(sumArray);
 	CloseHandle(_operator);
-	Debug("result = %i", result);
 	if(result<=0)
 	{
 		LogError("[FF2] %s has a malformed %s formula, using default!", bossName, key);
