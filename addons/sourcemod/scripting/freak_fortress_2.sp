@@ -2228,15 +2228,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 0);
 			TF2_RespawnPlayer(Boss[0]);
 		}*/
-
-		for(new client=1; client<=MaxClients; client++)
-		{
-			if(IsValidClient(client) && !IsBoss(client) && GetClientTeam(client)!=OtherTeam)
-			{
-				Debug("Calling MakeNotBoss from event_round_start");
-				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
-			}
-		}
 		return Plugin_Continue;
 	}
 
@@ -3720,8 +3711,9 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 
 	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overhealh bug
 	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
-	if(GetClientTeam(client)==BossTeam)
+	if(GetClientTeam(client)!=OtherTeam)
 	{
+		Debug("test");
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, OtherTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
