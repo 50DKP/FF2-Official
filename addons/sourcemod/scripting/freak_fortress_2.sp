@@ -2697,14 +2697,14 @@ public Action:StartResponseTimer(Handle:timer)
 
 public Action:StartBossTimer(Handle:timer)
 {
-	CreateTimer(0.1, Timer_Move);
+	CreateTimer(0.1, Timer_Move, _, TIMER_FLAG_NO_MAPCHANGE);
 	new bool:isBossAlive;
-	for(new client; client<=MaxClients; client++)
+	for(new boss; boss<=MaxClients; boss++)
 	{
-		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
+		if(IsValidClient(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
 			isBossAlive=true;
-			SetEntityMoveType(Boss[client], MOVETYPE_NONE);
+			SetEntityMoveType(Boss[boss], MOVETYPE_NONE);
 		}
 	}
 
@@ -2719,14 +2719,9 @@ public Action:StartBossTimer(Handle:timer)
 		if(IsValidClient(client) && !IsBoss(client) && IsPlayerAlive(client))
 		{
 			playing++;
-			Debug("Calling MakeNotBoss from StartBossTimer");
-			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client));  //TODO:  Is this needed?
+			//Debug("Calling MakeNotBoss from StartBossTimer");
+			//CreateTimer(0.15, MakeNotBoss, GetClientUserId(client));  //TODO:  Is this needed?
 		}
-	}
-
-	if(playing<5)
-	{
-		playing+=2;
 	}
 
 	for(new boss; boss<=MaxClients; boss++)
@@ -2740,8 +2735,8 @@ public Action:StartBossTimer(Handle:timer)
 		}
 	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(0.2, CheckAlivePlayers);
-	CreateTimer(0.2, StartRound);
+	CreateTimer(0.2, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.2, StartRound_, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, ClientTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(2.0, Timer_MusicPlay, 0, TIMER_FLAG_NO_MAPCHANGE);
 
@@ -3717,6 +3712,10 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		HelpPanelClass(client);
 	}
 
+	RemovePlayerBack(client, {57, 133, 405, 444, 608, 642}, 7);
+	RemovePlayerTarge(client);
+	TF2_RemoveAllWeapons(client);
+
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);  //This really shouldn't be needed but I've been noticing players who still have glow
 
 	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overhealh bug
@@ -3729,12 +3728,13 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		TF2_RespawnPlayer(client);
 	}
 
-	CreateTimer(0.1, CheckItems, client);
+	CreateTimer(0.1, CheckItems, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Continue;
 }
 
-public Action:CheckItems(Handle:timer, any:client)
+public Action:CheckItems(Handle:timer, any:userid)
 {
+	new client=GetClientOfUserId(userid);
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		return Plugin_Continue;
@@ -4448,12 +4448,12 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 
 	if(IsBoss(client))// && !CheckRoundState())
 	{
-		CreateTimer(0.1, MakeBoss, GetBossIndex(client));
+		CreateTimer(0.1, MakeBoss, GetBossIndex(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
-		if(CheckRoundState()!=1)
+		/*if(CheckRoundState()!=1)
 		{
 			if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
 			{
@@ -4463,19 +4463,19 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 				TF2_RemoveAllWeapons(client);
 				TF2_RegeneratePlayer(client);
 				CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			}
+			}*/
 			Debug("Calling MakeNotBoss from event_player_spawn");
-			CreateTimer(0.2, MakeNotBoss, GetClientUserId(client));
-		}
+			CreateTimer(0.2, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		/*}
 		else
 		{
-			CreateTimer(0.1, CheckItems, client);
-		}
+			CreateTimer(0.1, CheckItems, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		}*/
 	}
 
 	if(CheckRoundState()==1)
 	{
-		CreateTimer(0.1, CheckAlivePlayers);
+		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
