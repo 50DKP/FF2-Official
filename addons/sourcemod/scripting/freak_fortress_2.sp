@@ -3718,7 +3718,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		TF2_RespawnPlayer(client);
 	}
 
-	CreateTimer(0.1, CheckItems, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Continue;
 }
 
@@ -3732,13 +3732,12 @@ public Action:CheckItems(Handle:timer, any:userid)
 
 	SetEntityRenderColor(client, 255, 255, 255, 255);
 	shield[client]=0;
-	new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	new index=-1;
-	new civilianCheck[MAXPLAYERS+1];
+	new civilianCheck[MaxClients+1];
 
 	if(bMedieval)  //Make sure players can't stay cloaked forever in medieval mode
 	{
-		weapon=GetPlayerWeaponSlot(client, 4);
+		new weapon=GetPlayerWeaponSlot(client, 4);
 		if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
 		{
 			TF2_RemoveWeaponSlot(client, 4);
@@ -3747,6 +3746,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 		return Plugin_Continue;
 	}
 
+	new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	if(weapon && IsValidEdict(weapon))
 	{
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
@@ -3797,6 +3797,34 @@ public Action:CheckItems(Handle:timer, any:userid)
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				weapon=SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
 				FF2_SetAmmo(client, weapon, 24);
+			}
+		}
+
+		if(TF2_GetPlayerClass(client)==TFClass_Medic && GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)  //10 means the weapon is customized, so we don't want to touch those
+		{
+			switch(index)
+			{
+				case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
+				{
+					//NOOP
+				}
+				default:
+				{
+					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+					weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+						//Switch to regular medigun
+						//10: +25% faster charge rate
+						//178: +25% faster weapon switch
+						//144: Quick-fix speed/jump effects
+						//11: +50% overheal bonus
+				}
+			}
+			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40)
+
+			if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
+			{
+				SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
+				SetEntityRenderColor(weapon, 255, 255, 255, 75);
 			}
 		}
 	}
@@ -3874,43 +3902,6 @@ public Action:CheckItems(Handle:timer, any:userid)
 	{
 		TF2_RemoveWeaponSlot(client, 4);
 		weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
-	}
-
-	if(TF2_GetPlayerClass(client)==TFClass_Medic)
-	{
-		weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-		if(weapon>MaxClients && IsValidEdict(weapon))
-		{
-			if(GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)  //10 means the weapon is customized, so we don't want to touch those
-			{
-				index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
-				switch(index)
-				{
-					case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
-					{
-						SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
-					}
-					default:
-					{
-						TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-						weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
-							//Switch to regular medigun
-							//10: +25% faster charge rate
-							//178: +25% faster weapon switch
-							//144: Quick-fix speed/jump effects
-							//11: +50% overheal bonus
-						SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
-					}
-				}
-
-				if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
-				{
-					SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
-					SetEntityRenderColor(weapon, 255, 255, 255, 75);
-				}
-				SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
-			}
-		}
 	}
 
 	if(civilianCheck[client]==3)
@@ -4438,7 +4429,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
 
-	if(IsBoss(client))// && !CheckRoundState())
+	if(IsBoss(client))
 	{
 		CreateTimer(0.1, MakeBoss, GetBossIndex(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
@@ -4457,7 +4448,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 				CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}*/
 			Debug("Calling MakeNotBoss from event_player_spawn");
-			CreateTimer(0.2, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(0.1, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		/*}
 		else
 		{
