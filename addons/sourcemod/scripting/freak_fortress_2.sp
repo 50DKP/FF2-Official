@@ -2177,7 +2177,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	for(new client; client<=MaxClients; client++)
 	{
 		Boss[client]=0;
-		if(!IsValidClient(client) || !IsPlayerAlive(client))
+		/*if(!IsValidClient(client) || !IsPlayerAlive(client))
 		{
 			continue;
 		}
@@ -2185,7 +2185,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
 		{
 			TF2_RespawnPlayer(client);
-		}
+		}*/
 	}
 
 	Enabled=true;
@@ -3712,7 +3712,6 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
 	if(GetClientTeam(client)!=OtherTeam)
 	{
-		Debug("test");
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, OtherTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
@@ -4476,14 +4475,14 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	return Plugin_Continue;
 }
 
-public Action:Timer_RegenPlayer(Handle:timer, any:userid)
+/*public Action:Timer_RegenPlayer(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
 	if(IsValidClient(client) && IsPlayerAlive(client))
 	{
 		TF2_RegeneratePlayer(client);
 	}
-}
+}*/
 
 public Action:ClientTimer(Handle:timer)
 {
