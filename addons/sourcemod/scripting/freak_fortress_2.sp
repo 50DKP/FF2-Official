@@ -38,10 +38,9 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define STABLE_REVISION "6"
 #define DEV_REVISION "Beta"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
-#if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.6
-#else
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..." (build "...BUILD_NUMBER...")"
+#define PLUGIN_VERSION PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.6
+#if defined DEV_REVISION
+	#define PLUGIN_VERSION PLUGIN_VERSION " "...DEV_REVISION..." (build "...BUILD_NUMBER...")"
 #endif
 
 #define UPDATE_URL "http://ff2.50dkp.com/updater/ff2-official/update.txt"
