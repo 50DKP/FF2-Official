@@ -3819,7 +3819,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 						//11: +50% overheal bonus
 				}
 			}
-			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40)
+			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
 
 			if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
 			{
