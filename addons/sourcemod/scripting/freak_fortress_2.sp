@@ -15,23 +15,22 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #pragma semicolon 1
 
 #include <sourcemod>
-#include <adt_array>
 #include <freak_fortress_2>
-#include <sdktools>
+#include <adt_array>
+#include <clientprefs>
+#include <morecolors>
 #include <sdkhooks>
 #include <tf2_stocks>
-#include <morecolors>
 #include <tf2items>
-#include <clientprefs>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
 //#tryinclude <smac>
-#tryinclude <updater>
 #tryinclude <goomba>
 #tryinclude <rtd>
 #tryinclude <tf2attributes>
+#tryinclude <updater>
 #define REQUIRE_PLUGIN
 
 #define MAJOR_REVISION "1"
