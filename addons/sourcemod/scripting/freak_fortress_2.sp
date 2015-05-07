@@ -1527,9 +1527,9 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	KvGetString(Kv, "chances", ChancesString, sizeof(ChancesString));
 	CloseHandle(Kv);
 
-	decl String:stringChances[MAXSPECIALS*2][8];
 	if(ChancesString[0])
 	{
+		decl String:stringChances[MAXSPECIALS*2][8];
 		new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
 		if(amount % 2)
 		{
@@ -1539,23 +1539,15 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 		}
 
 		chances[0]=StringToInt(stringChances[0]);
-		chances[1]=StringToInt(stringChances[1]);
-		for(chancesIndex=2; chancesIndex<amount; chancesIndex++)
+		for(chancesIndex=1; chancesIndex<amount/2; chancesIndex++)
 		{
-			if(chancesIndex % 2)
+			if(StringToInt(stringChances[chancesIndex*2+1])<=0)
 			{
-				if(StringToInt(stringChances[chancesIndex])<=0)
-				{
-					LogError("[FF2 Bosses] Character %i cannot have a zero or negative chance, disregarding chances", chancesIndex-1);
-					strcopy(ChancesString, sizeof(ChancesString), "");
-					break;
-				}
-				chances[chancesIndex]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2];
+				LogError("[FF2 Bosses] Character %i cannot have a zero or negative chance, disregarding chances", chancesIndex*2);
+				strcopy(ChancesString, sizeof(ChancesString), "");
+				break;
 			}
-			else
-			{
-				chances[chancesIndex]=StringToInt(stringChances[chancesIndex]);
-			}
+			chances[chancesIndex]=StringToInt(stringChances[chancesIndex*2+1])+chances[chancesIndex-1];
 		}
 	}
 
@@ -6978,11 +6970,11 @@ public bool:PickCharacter(boss, companion)
 		{
 			if(ChancesString[0])
 			{
-				new i=GetRandomInt(0, chances[chancesIndex-1]);
-				while(chancesIndex>=2 && i<chances[chancesIndex-1])
+				new i=GetRandomInt(0, chances[chancesIndex-1]);  //We shift everything by 1 here because arrays start at 0
+				while(chancesIndex>=1 && i<chances[chancesIndex-1])
 				{
-					Special[boss]=chances[chancesIndex-2]-1;
-					chancesIndex-=2;
+					Special[boss]=chancesIndex-1;
+					chancesIndex--;
 				}
 			}
 			else
