@@ -1527,9 +1527,10 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	KvGetString(Kv, "chances", ChancesString, sizeof(ChancesString));
 	CloseHandle(Kv);
 
-	decl String:stringChances[MAXSPECIALS*2][8];
 	if(ChancesString[0])
 	{
+		decl String:stringChances[MAXSPECIALS*2][8];
+
 		new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
 		if(amount % 2)
 		{
