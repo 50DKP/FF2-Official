@@ -885,7 +885,7 @@ new Float:BossSpeed[MAXSPECIALS];
 //new Float:BossRageDamage[MAXSPECIALS];
 
 new String:ChancesString[512];
-new chances[MAXSPECIALS];
+new chances[MAXSPECIALS*2];  //This is multiplied by two because it has to hold both the boss indices and chances
 new chancesIndex;
 
 public Plugin:myinfo=
