@@ -1007,7 +1007,7 @@ public OnPluginStart()
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 
-	HookEvent("teamplay_round_start", event_round_start, EventHookMode_Pre);
+	HookEvent("teamplay_round_start", event_round_start);
 	HookEvent("teamplay_round_win", event_round_end);
 	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
@@ -2178,7 +2178,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	for(new client; client<=MaxClients; client++)
 	{
 		Boss[client]=0;
-		/*if(!IsValidClient(client) || !IsPlayerAlive(client))
+		if(!IsValidClient(client) || !IsPlayerAlive(client))
 		{
 			continue;
 		}
@@ -2186,7 +2186,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
 		{
 			TF2_RespawnPlayer(client);
-		}*/
+		}
 	}
 
 	Enabled=true;
@@ -2221,13 +2221,23 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 
 	if(!teamHasPlayers[TFTeam_Blue] || !teamHasPlayers[TFTeam_Red])  //If there's an empty team make sure it gets populated
 	{
-		/*if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
+		if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
 		{
 			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 2);
 			ChangeClientTeam(Boss[0], BossTeam);
 			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 0);
 			TF2_RespawnPlayer(Boss[0]);
-		}*/
+			Debug("No boss on BLU, changing boss's team");
+		}
+
+		for(new client=1; client<=MaxClients; client++)
+		{
+			if(IsValidClient(client) && !IsBoss(client) && GetClientTeam(client)!=OtherTeam)
+			{
+				Debug("Calling MakeNotBoss from event_round_start");
+				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
+			}
+		}
 		return Plugin_Continue;
 	}
 
@@ -2265,7 +2275,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		BossInfoTimer[boss][1]=INVALID_HANDLE;
 		if(Boss[boss])
 		{
-			BossInfoTimer[boss][0]=CreateTimer(30.2, BossInfoTimer_Begin, boss, TIMER_FLAG_NO_MAPCHANGE);
+			BossInfoTimer[boss][0]=CreateTimer(30.0, BossInfoTimer_Begin, boss);
 		}
 	}
 
@@ -2313,7 +2323,7 @@ public Action:Timer_EnableCap(Handle:timer)
 
 			if(doorCheckTimer==INVALID_HANDLE)
 			{
-				doorCheckTimer=CreateTimer(5.0, Timer_CheckDoors, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+				doorCheckTimer=CreateTimer(5.0, Timer_CheckDoors, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
 			}
 		}
 	}
@@ -2360,7 +2370,6 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 			break;
 		}
 	}
-
 	new need_info_bout_reload=see && CheckInfoCookies(Boss[boss], 0);
 	new need_info_bout_rmb=CheckInfoCookies(Boss[boss], 1);
 	if(need_info_bout_reload)
@@ -2440,9 +2449,11 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	executed2=false;
 	if((GetEventInt(event, "team")==BossTeam))
 	{
+		//Debug("Oogle boogle");
 		bossWin=true;
 		if(RandomSound("sound_win", sound, sizeof(sound)))
 		{
+			//Debug("Even more oogle boogles");
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 		}
@@ -2456,41 +2467,40 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	}
 	DrawGameTimer=INVALID_HANDLE;
 
-	new bool:isBossAlive;
-	for(new boss; boss<=MaxClients; boss++)
+	new bool:isBossAlive, boss;
+	for(new client; client<=MaxClients; client++)
 	{
-		if(IsValidClient(Boss[boss]))
+		if(IsValidClient(Boss[client]))
 		{
-			SetClientGlow(boss, 0.0, 0.0);
-			SDKUnhook(boss, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
-			if(IsPlayerAlive(Boss[boss]))
+			SetClientGlow(client, 0.0, 0.0);
+			SDKUnhook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
+			if(IsPlayerAlive(Boss[client]))
 			{
 				isBossAlive=true;
 			}
 
 			for(new slot=1; slot<8; slot++)
 			{
-				BossCharge[boss][slot]=0.0;
+				BossCharge[client][slot]=0.0;
 			}
 		}
-		else if(IsValidClient(boss))  //Boss here is actually a client index
+		else if(IsValidClient(client))
 		{
-			SetClientGlow(boss, 0.0, 0.0);
-			shield[boss]=0;
-			detonations[boss]=0;
+			SetClientGlow(client, 0.0, 0.0);
+			shield[client]=0;
+			detonations[client]=0;
 		}
 
 		for(new timer; timer<=1; timer++)
 		{
-			if(BossInfoTimer[boss][timer]!=INVALID_HANDLE)
+			if(BossInfoTimer[client][timer]!=INVALID_HANDLE)
 			{
-				KillTimer(BossInfoTimer[boss][timer]);
-				BossInfoTimer[boss][timer]=INVALID_HANDLE;
+				KillTimer(BossInfoTimer[client][timer]);
+				BossInfoTimer[client][timer]=INVALID_HANDLE;
 			}
 		}
 	}
 
-	new boss;
 	if(isBossAlive)
 	{
 		decl String:bossName[64], String:lives[4];
@@ -2508,6 +2518,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 		if(!bossWin && RandomSound("sound_fail", sound, sizeof(sound), boss))
 		{
+			Debug("Oo La Laaa");
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
 		}
@@ -2688,14 +2699,14 @@ public Action:StartResponseTimer(Handle:timer)
 
 public Action:StartBossTimer(Handle:timer)
 {
-	CreateTimer(0.1, Timer_Move, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.1, Timer_Move);
 	new bool:isBossAlive;
-	for(new boss; boss<=MaxClients; boss++)
+	for(new client; client<=MaxClients; client++)
 	{
-		if(IsValidClient(Boss[boss]) && IsPlayerAlive(Boss[boss]))
+		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
 		{
 			isBossAlive=true;
-			SetEntityMoveType(Boss[boss], MOVETYPE_NONE);
+			SetEntityMoveType(Boss[client], MOVETYPE_NONE);
 		}
 	}
 
@@ -2710,9 +2721,14 @@ public Action:StartBossTimer(Handle:timer)
 		if(IsValidClient(client) && !IsBoss(client) && IsPlayerAlive(client))
 		{
 			playing++;
-			//Debug("Calling MakeNotBoss from StartBossTimer");
-			//CreateTimer(0.15, MakeNotBoss, GetClientUserId(client));  //TODO:  Is this needed?
+			Debug("Calling MakeNotBoss from StartBossTimer");
+			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client));  //TODO:  Is this needed?
 		}
+	}
+
+	if(playing<5)
+	{
+		playing+=2;
 	}
 
 	for(new boss; boss<=MaxClients; boss++)
@@ -2726,8 +2742,8 @@ public Action:StartBossTimer(Handle:timer)
 		}
 	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(0.2, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(0.2, StartRound, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.2, CheckAlivePlayers);
+	CreateTimer(0.2, StartRound);
 	CreateTimer(0.2, ClientTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(2.0, Timer_MusicPlay, 0, TIMER_FLAG_NO_MAPCHANGE);
 
@@ -3203,6 +3219,7 @@ EquipBoss(boss)
 
 public Action:MakeBoss(Handle:timer, any:boss)
 {
+	Debug("Boop!");
 	new client=Boss[boss];
 	if(!IsValidClient(client))
 	{
@@ -3213,6 +3230,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	{
 		if(!CheckRoundState())
 		{
+			Debug("Dead boss, respawning :(");
 			TF2_RespawnPlayer(client);
 		}
 		else
@@ -3221,11 +3239,9 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		}
 	}
 
-	KvRewind(BossKV[Special[boss]]);
-	TF2_RemovePlayerDisguise(client);
-	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
 	if(GetClientTeam(client)!=BossTeam)
 	{
+		Debug("Boss on the wrong team, respawning :(");
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, BossTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
@@ -3233,6 +3249,9 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
+	KvRewind(BossKV[Special[boss]]);
+	TF2_RemovePlayerDisguise(client);
+	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
 	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	switch(KvGetNum(BossKV[Special[boss]], "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
@@ -3251,7 +3270,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		}
 	}
 
-	CreateTimer(0.2, MakeModelTimer, boss, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.2, MakeModelTimer, boss);
 	if(!IsVoteInProgress() && GetClientClassinfoCookie(client))
 	{
 		HelpPanelBoss(boss);
@@ -3703,15 +3722,11 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		HelpPanelClass(client);
 	}
 
-	RemovePlayerBack(client, {57, 133, 405, 444, 608, 642}, 7);
-	RemovePlayerTarge(client);
-	TF2_RemoveAllWeapons(client);
-
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);  //This really shouldn't be needed but I've been noticing players who still have glow
 
 	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overhealh bug
 	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
-	if(GetClientTeam(client)!=OtherTeam)
+	if(GetClientTeam(client)==BossTeam)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, OtherTeam);
@@ -3719,13 +3734,12 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		TF2_RespawnPlayer(client);
 	}
 
-	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.1, CheckItems, client);
 	return Plugin_Continue;
 }
 
-public Action:CheckItems(Handle:timer, any:userid)
+public Action:CheckItems(Handle:timer, any:client)
 {
-	new client=GetClientOfUserId(userid);
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		return Plugin_Continue;
@@ -3733,12 +3747,13 @@ public Action:CheckItems(Handle:timer, any:userid)
 
 	SetEntityRenderColor(client, 255, 255, 255, 255);
 	shield[client]=0;
+	new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	new index=-1;
-	new civilianCheck[MaxClients+1];
+	new civilianCheck[MAXPLAYERS+1];
 
 	if(bMedieval)  //Make sure players can't stay cloaked forever in medieval mode
 	{
-		new weapon=GetPlayerWeaponSlot(client, 4);
+		weapon=GetPlayerWeaponSlot(client, 4);
 		if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
 		{
 			TF2_RemoveWeaponSlot(client, 4);
@@ -3747,7 +3762,6 @@ public Action:CheckItems(Handle:timer, any:userid)
 		return Plugin_Continue;
 	}
 
-	new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	if(weapon && IsValidEdict(weapon))
 	{
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
@@ -3798,34 +3812,6 @@ public Action:CheckItems(Handle:timer, any:userid)
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				weapon=SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
 				FF2_SetAmmo(client, weapon, 24);
-			}
-		}
-
-		if(TF2_GetPlayerClass(client)==TFClass_Medic && GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)  //10 means the weapon is customized, so we don't want to touch those
-		{
-			switch(index)
-			{
-				case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
-				{
-					//NOOP
-				}
-				default:
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-					weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
-						//Switch to regular medigun
-						//10: +25% faster charge rate
-						//178: +25% faster weapon switch
-						//144: Quick-fix speed/jump effects
-						//11: +50% overheal bonus
-				}
-			}
-			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
-
-			if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
-			{
-				SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
-				SetEntityRenderColor(weapon, 255, 255, 255, 75);
 			}
 		}
 	}
@@ -3903,6 +3889,43 @@ public Action:CheckItems(Handle:timer, any:userid)
 	{
 		TF2_RemoveWeaponSlot(client, 4);
 		weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
+	}
+
+	if(TF2_GetPlayerClass(client)==TFClass_Medic)
+	{
+		weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+		if(weapon>MaxClients && IsValidEdict(weapon))
+		{
+			if(GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)  //10 means the weapon is customized, so we don't want to touch those
+			{
+				index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+				switch(index)
+				{
+					case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
+					{
+						SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
+					}
+					default:
+					{
+						TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+						weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+							//Switch to regular medigun
+							//10: +25% faster charge rate
+							//178: +25% faster weapon switch
+							//144: Quick-fix speed/jump effects
+							//11: +50% overheal bonus
+						SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
+					}
+				}
+
+				if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
+				{
+					SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
+					SetEntityRenderColor(weapon, 255, 255, 255, 75);
+				}
+				SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
+			}
+		}
 	}
 
 	if(civilianCheck[client]==3)
@@ -4430,14 +4453,15 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
 
-	if(IsBoss(client))
+	if(IsBoss(client))// && !CheckRoundState())
 	{
-		CreateTimer(0.1, MakeBoss, GetBossIndex(client), TIMER_FLAG_NO_MAPCHANGE);
+		Debug("Calling MakeBoss from event_player_spawn");
+		CreateTimer(0.1, MakeBoss, GetBossIndex(client));
 	}
 
 	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
-		/*if(CheckRoundState()!=1)
+		if(CheckRoundState()!=1)
 		{
 			if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
 			{
@@ -4447,19 +4471,19 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 				TF2_RemoveAllWeapons(client);
 				TF2_RegeneratePlayer(client);
 				CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			}*/
+			}
 			Debug("Calling MakeNotBoss from event_player_spawn");
-			CreateTimer(0.1, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-		/*}
+			CreateTimer(0.2, MakeNotBoss, GetClientUserId(client));
+		}
 		else
 		{
-			CreateTimer(0.1, CheckItems, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-		}*/
+			CreateTimer(0.1, CheckItems, client);
+		}
 	}
 
 	if(CheckRoundState()==1)
 	{
-		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(0.1, CheckAlivePlayers);
 	}
 
 	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
@@ -4467,14 +4491,14 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	return Plugin_Continue;
 }
 
-/*public Action:Timer_RegenPlayer(Handle:timer, any:userid)
+public Action:Timer_RegenPlayer(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
 	if(IsValidClient(client) && IsPlayerAlive(client))
 	{
 		TF2_RegeneratePlayer(client);
 	}
-}*/
+}
 
 public Action:ClientTimer(Handle:timer)
 {
@@ -6720,6 +6744,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	new result=RoundFloat(GetArrayCell(sumArray, 0));
 	CloseHandle(sumArray);
 	CloseHandle(_operator);
+	Debug("result = %i", result);
 	if(result<=0)
 	{
 		LogError("[FF2] %s has a malformed %s formula, using default!", bossName, key);
