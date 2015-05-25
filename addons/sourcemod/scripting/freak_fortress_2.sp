@@ -6948,25 +6948,48 @@ public bool:PickCharacter(boss, companion)
 				if(newName[0])
 				{
 					decl String:characterName[64];
+					new foundExactMatch, foundPartialMatch;
 					for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 					{
 						KvRewind(BossKV[character]);
 						KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
-						if(StrContains(newName, characterName, false)!=-1)
+						if(StrEqual(newName, characterName, false))
 						{
-							Special[boss]=character;
-							PrecacheCharacter(Special[boss]);
-							return true;
+							foundExactMatch=character;
+							break;  //If we find an exact match there's no reason to keep looping
+						}
+						else if(StrContains(newName, characterName, false)!=-1)
+						{
+							foundPartialMatch=character;
 						}
 
+						//Do the same thing as above here, but look at the filename instead of the boss name
 						KvGetString(BossKV[character], "filename", characterName, sizeof(characterName));
-						if(StrContains(newName, characterName, false)!=-1)
+						if(StrEqual(newName, characterName, false))
 						{
-							Special[boss]=character;
-							PrecacheCharacter(Special[boss]);
-							return true;
+							foundExactMatch=character;
+							break;  //If we find an exact match there's no reason to keep looping
+						}
+						else if(StrContains(newName, characterName, false)!=-1)
+						{
+							foundPartialMatch=character;
 						}
 					}
+
+					if(foundExactMatch)
+					{
+						Special[boss]=foundExactMatch;
+					}
+					else if(foundPartialMatch)
+					{
+						Special[boss]=foundPartialMatch;
+					}
+					else
+					{
+						return false;
+					}
+					PrecacheCharacter(Special[boss]);
+					return true;
 				}
 				Special[boss]=characterIndex;
 				PrecacheCharacter(Special[boss]);
@@ -7048,25 +7071,48 @@ public bool:PickCharacter(boss, companion)
 		if(newName[0])
 		{
 			decl String:characterName[64];
+			new foundExactMatch, foundPartialMatch;
 			for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 			{
 				KvRewind(BossKV[character]);
 				KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
-				if(StrContains(newName, characterName, false)!=-1)
+				if(StrEqual(newName, characterName, false))
 				{
-					Special[boss]=character;
-					PrecacheCharacter(Special[boss]);
-					return true;
+					foundExactMatch=character;
+					break;  //If we find an exact match there's no reason to keep looping
+				}
+				else if(StrContains(newName, characterName, false)!=-1)
+				{
+					foundPartialMatch=character;
 				}
 
+				//Do the same thing as above here, but look at the filename instead of the boss name
 				KvGetString(BossKV[character], "filename", characterName, sizeof(characterName));
-				if(StrContains(newName, characterName, false)!=-1)
+				if(StrEqual(newName, characterName, false))
 				{
-					Special[boss]=character;
-					PrecacheCharacter(Special[boss]);
-					return true;
+					foundExactMatch=character;
+					break;  //If we find an exact match there's no reason to keep looping
+				}
+				else if(StrContains(newName, characterName, false)!=-1)
+				{
+					foundPartialMatch=character;
 				}
 			}
+
+			if(foundExactMatch)
+			{
+				Special[boss]=foundExactMatch;
+			}
+			else if(foundPartialMatch)
+			{
+				Special[boss]=foundPartialMatch;
+			}
+			else
+			{
+				return false;
+			}
+			PrecacheCharacter(Special[boss]);
+			return true;
 		}
 		Special[boss]=characterIndex;
 		PrecacheCharacter(Special[boss]);
