@@ -3221,6 +3221,11 @@ public Action:MakeBoss(Handle:timer, any:boss)
 
 	if(GetClientTeam(client)!=BossTeam)
 	{
+		if(TF2_GetPlayerClass(client)==TFClass_Unknown)  //Make sure when we respawn them they have a class
+		{
+			KvRewind(BossKV[Special[boss]]);
+			TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
+		}
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, BossTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
