@@ -989,7 +989,7 @@ public OnPluginStart()
 	cvarCountdownResult=CreateConVar("ff2_countdown_result", "0", "0-Kill players when the countdown ends, 1-End the round in a stalemate", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarSpecForceBoss=CreateConVar("ff2_spec_force_boss", "0", "0-Spectators are excluded from the queue system, 1-Spectators are counted in the queue system", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarEnableEurekaEffect=CreateConVar("ff2_enable_eureka", "0", "0-Disable the Eureka Effect, 1-Enable the Eureka Effect", FCVAR_PLUGIN, true, 0.0, true, 1.0);
-	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0 and 3-Boss is always on Blu, 1-Boss is on a random team each round, 2-Boss is always on Red", FCVAR_PLUGIN, true, 0.0, true, 3.0);
+	cvarForceBossTeam=CreateConVar("ff2_force_team", "0", "0-Boss is always on Blu, 1-Boss is on a random team each round, 2-Boss is always on Red", FCVAR_PLUGIN, true, 0.0, true, 3.0);
 	cvarHealthBar=CreateConVar("ff2_health_bar", "0", "0-Disable the health bar, 1-Show the health bar", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarLastPlayerGlow=CreateConVar("ff2_last_player_glow", "1", "0-Don't outline the last player, 1-Outline the last player alive", FCVAR_PLUGIN, true, 0.0, true, 1.0);
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", FCVAR_PLUGIN, true, -1.0, true, 1.0);
@@ -2178,12 +2178,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	for(new client; client<=MaxClients; client++)
 	{
 		Boss[client]=0;
-		if(!IsValidClient(client) || !IsPlayerAlive(client))
-		{
-			continue;
-		}
-
-		if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
+		if(IsValidClient(client) && IsPlayerAlive(client) && !(FF2flags[client] & FF2FLAG_HASONGIVED))
 		{
 			TF2_RespawnPlayer(client);
 		}
@@ -2198,18 +2193,14 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	omit[Boss[0]]=true;
 
 	new bool:teamHasPlayers[TFTeam];
-	for(new client=1; client<=MaxClients; client++)  //Find out if each time has at least one player on it
+	for(new client=1; client<=MaxClients; client++)  //Find out if each team has at least one player on it
 	{
 		if(IsValidClient(client))
 		{
 			new TFTeam:team=TFTeam:GetClientTeam(client);
-			if(!teamHasPlayers[TFTeam_Blue] && team==TFTeam_Blue)
+			if(team>TFTeam_Spectator)
 			{
-				teamHasPlayers[TFTeam_Blue]=true;
-			}
-			else if(!teamHasPlayers[TFTeam_Red] && team==TFTeam_Red)
-			{
-				teamHasPlayers[TFTeam_Red]=true;
+				teamHasPlayers[team]=true;
 			}
 
 			if(teamHasPlayers[TFTeam_Blue] && teamHasPlayers[TFTeam_Red])
@@ -2252,7 +2243,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 	{
 		decl String:bossName[64];
 		KvGetString(BossKV[Special[0]], "name", bossName, sizeof(bossName));
-		PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is below 0, setting to 1900", bossName);
+		PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is 0 or below, setting to 1900", bossName);
 		BossRageDamage[0]=1900;
 	}
 
@@ -3230,6 +3221,11 @@ public Action:MakeBoss(Handle:timer, any:boss)
 
 	if(GetClientTeam(client)!=BossTeam)
 	{
+		if(TF2_GetPlayerClass(client)==TFClass_Unknown)  //Make sure when we respawn them they have a class
+		{
+			KvRewind(BossKV[Special[boss]]);
+			TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
+		}
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, BossTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
@@ -6948,25 +6944,48 @@ public bool:PickCharacter(boss, companion)
 				if(newName[0])
 				{
 					decl String:characterName[64];
+					new foundExactMatch, foundPartialMatch;
 					for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 					{
 						KvRewind(BossKV[character]);
 						KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
-						if(StrContains(newName, characterName, false)!=-1)
+						if(StrEqual(newName, characterName, false))
 						{
-							Special[boss]=character;
-							PrecacheCharacter(Special[boss]);
-							return true;
+							foundExactMatch=character;
+							break;  //If we find an exact match there's no reason to keep looping
+						}
+						else if(StrContains(newName, characterName, false)!=-1)
+						{
+							foundPartialMatch=character;
 						}
 
+						//Do the same thing as above here, but look at the filename instead of the boss name
 						KvGetString(BossKV[character], "filename", characterName, sizeof(characterName));
-						if(StrContains(newName, characterName, false)!=-1)
+						if(StrEqual(newName, characterName, false))
 						{
-							Special[boss]=character;
-							PrecacheCharacter(Special[boss]);
-							return true;
+							foundExactMatch=character;
+							break;  //If we find an exact match there's no reason to keep looping
+						}
+						else if(StrContains(newName, characterName, false)!=-1)
+						{
+							foundPartialMatch=character;
 						}
 					}
+
+					if(foundExactMatch)
+					{
+						Special[boss]=foundExactMatch;
+					}
+					else if(foundPartialMatch)
+					{
+						Special[boss]=foundPartialMatch;
+					}
+					else
+					{
+						return false;
+					}
+					PrecacheCharacter(Special[boss]);
+					return true;
 				}
 				Special[boss]=characterIndex;
 				PrecacheCharacter(Special[boss]);
@@ -7048,25 +7067,48 @@ public bool:PickCharacter(boss, companion)
 		if(newName[0])
 		{
 			decl String:characterName[64];
+			new foundExactMatch, foundPartialMatch;
 			for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 			{
 				KvRewind(BossKV[character]);
 				KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
-				if(StrContains(newName, characterName, false)!=-1)
+				if(StrEqual(newName, characterName, false))
 				{
-					Special[boss]=character;
-					PrecacheCharacter(Special[boss]);
-					return true;
+					foundExactMatch=character;
+					break;  //If we find an exact match there's no reason to keep looping
+				}
+				else if(StrContains(newName, characterName, false)!=-1)
+				{
+					foundPartialMatch=character;
 				}
 
+				//Do the same thing as above here, but look at the filename instead of the boss name
 				KvGetString(BossKV[character], "filename", characterName, sizeof(characterName));
-				if(StrContains(newName, characterName, false)!=-1)
+				if(StrEqual(newName, characterName, false))
 				{
-					Special[boss]=character;
-					PrecacheCharacter(Special[boss]);
-					return true;
+					foundExactMatch=character;
+					break;  //If we find an exact match there's no reason to keep looping
+				}
+				else if(StrContains(newName, characterName, false)!=-1)
+				{
+					foundPartialMatch=character;
 				}
 			}
+
+			if(foundExactMatch)
+			{
+				Special[boss]=foundExactMatch;
+			}
+			else if(foundPartialMatch)
+			{
+				Special[boss]=foundPartialMatch;
+			}
+			else
+			{
+				return false;
+			}
+			PrecacheCharacter(Special[boss]);
+			return true;
 		}
 		Special[boss]=characterIndex;
 		PrecacheCharacter(Special[boss]);
