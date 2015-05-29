@@ -2433,10 +2433,10 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 		return Plugin_Continue;
 	}
 
-	decl String:sound[PLATFORM_MAX_PATH], String:text[128];
-	new bool:bossWin=false;
 	executed=false;
 	executed2=false;
+	new bool:bossWin=false;
+	decl String:sound[PLATFORM_MAX_PATH];
 	if((GetEventInt(event, "team")==BossTeam))
 	{
 		bossWin=true;
@@ -2493,6 +2493,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	if(isBossAlive)
 	{
 		decl String:bossName[64], String:lives[4];
+		new String:text[128];  //Don't decl this because we append the value of text to itself -.-
 		for(new target; target<=MaxClients; target++)
 		{
 			if(IsBoss(target))
@@ -2560,6 +2561,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	PrintCenterTextAll("");
 
+	new String:text[128];
 	for(new client; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client))
