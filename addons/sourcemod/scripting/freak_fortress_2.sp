@@ -2717,7 +2717,7 @@ public Action:StartBossTimer(Handle:timer)
 	{
 		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
-			BossHealthMax[boss]=ParseFormula(boss, "health_formula", "(((760.8+n)*n-1)^1.0341)+2046", RoundFloat(Pow((760.8+Float:playing)*(Float:playing-1.0), 1.0341)+2046.0));
+			BossHealthMax[boss]=ParseFormula(boss, "health_formula", "(((760.8+n)*(n-1))^1.0341)+2046", RoundFloat(Pow((760.8+Float:playing)*(Float:playing-1.0), 1.0341)+2046.0));
 			BossLives[boss]=BossLivesMax[boss];
 			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 			BossHealthLast[boss]=BossHealth[boss];
@@ -6634,7 +6634,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	KvGetString(BossKV[Special[boss]], key, formula, sizeof(formula), defaultFormula);
 	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum.
 	new Handle:sumArray=CreateArray(_, 1), Handle:_operator=CreateArray(_, 1);
-	decl String:character[2], String:value[1024];
+	new String:character[2], String:value[16];  //We don't decl value because we directly append characters to it and there's no point in decl'ing character
 	for(new i; i<=strlen(formula); i++)
 	{
 		character[0]=formula[i];  //Find out what the next char in the formula is
@@ -6647,7 +6647,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			case '(':
 			{
 				bracket++;  //We've just entered a new parentheses so increment the bracket #
-				if(GetArraySize(sumArray)<(bracket+1))  //If we've reached the array limit, just increase it
+				if(GetArraySize(sumArray)<bracket+1)  //If we've reached the array limit, just increase it
 				{
 					PushArrayCell(sumArray, 0.0);
 					PushArrayCell(_operator, Operator_None);
