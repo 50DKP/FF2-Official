@@ -1748,7 +1748,7 @@ public PrecacheCharacter(characterIndex)
 		{
 			for(new i=1; ; i++)
 			{
-				Format(key, sizeof(key), "%s%d", "path", i);
+				Format(key, sizeof(key), "path%d", i);
 
 				KvGetString(BossKV[characterIndex], key, file, PLATFORM_MAX_PATH);
 				if(!file[0])
@@ -1758,7 +1758,7 @@ public PrecacheCharacter(characterIndex)
 				PrecacheSound(file);
 			}
 		}
-		else if(!strcmp(section, "mod_precache") || !StrContains(section, "sound_") || !strcmp(section, "catch_phrase"))
+		else if(StrEqual(section, "mod_precache") || !StrContains(section, "sound_") || StrEqual(section, "catch_phrase"))
 		{
 			for(new i=1; ; i++)
 			{
@@ -1769,7 +1769,7 @@ public PrecacheCharacter(characterIndex)
 					break;
 				}
 
-				if(!strcmp(section, "mod_precache"))
+				if(StrEqual(section, "mod_precache"))
 				{
 					PrecacheModel(file);
 				}
