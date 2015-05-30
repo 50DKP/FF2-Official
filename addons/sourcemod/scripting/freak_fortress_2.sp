@@ -6360,6 +6360,7 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 		new String:bossName[768];
 		new boss=FF2_GetBossIndex(victim);
 		FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
+		
 		damageMultiplier=GoombaDamage;
 		JumpPower=reboundPower;
 		PrintHintText(victim, "%t", "Boss Goomba Stomped");
