@@ -2268,6 +2268,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		}
 	}
 
+	CreateTimer(0.3, MakeBoss, 0, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(3.5, StartResponseTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(9.1, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(9.6, MessageTimer, _, TIMER_FLAG_NO_MAPCHANGE);
