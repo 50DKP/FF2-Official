@@ -341,7 +341,8 @@
 	}
 	"Backstab"
 	{
-		"en"	"You just backstabbed the boss!"
+		"#format"	"{1:s}"
+		"en"	"You just backstabbed {1}!"
 	}
 	"Backstabbed"
 	{
@@ -349,7 +350,8 @@
 	}
 	"Market Gardener"
 	{
-		"en"	"You just market-gardened the boss!"
+		"#format"	"{1:s}"
+		"en"	"You just market-gardened {1}!"
 	}
 	"Market Gardened"
 	{
@@ -359,5 +361,23 @@
 	{
 		"#format"	"{1:i}"
 		"en"		"You have {1} detonations left!"
+	}
+	"Boss Goomba Stomps"
+	{
+		"#format"	"{1:N}"
+		"en"	"You just goomba stomped {1}!"	
+	}
+	"Boss Goomba Stomped"
+	{
+		"en"	"You were just goomba stomped!"
+	}
+	"Player Goomba Stomps"
+	{
+		"#format"	"{1:s}"
+		"en"	"You just goomba stomped {1}!"
+	}
+	"Player Goomba Stomped"
+	{
+		"en"	"Ouch!  Watch your head!"
 	}
 }

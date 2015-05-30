@@ -5828,6 +5828,9 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 		new boss=GetBossIndex(client);
 		if(boss!=-1)
 		{
+			new String:bossName[768];
+			FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
+			
 			if(attacker<=MaxClients)
 			{
 				new bool:bIsTelefrag, bool:bIsBackstab;
@@ -6043,7 +6046,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 								Marketed[client]++;
 							}
 
-							PrintHintText(attacker, "%t", "Market Gardener");  //You just market-gardened the boss!
+							PrintHintText(attacker, "%t", "Market Gardener", bossName);  //You just market-gardened the boss!
 							PrintHintText(client, "%t", "Market Gardened");  //You just got market-gardened!
 
 							EmitSoundToClient(attacker, "player/doubledonk.wav", _, _, _, _, 0.6, _, _, position, _, false);
@@ -6170,7 +6173,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 					if(!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
 					{
-						PrintHintText(attacker, "%t", "Backstab");
+						PrintHintText(attacker, "%t", "Backstab", bossName);
 					}
 
 					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
@@ -6348,16 +6351,19 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 		}
 		damageMultiplier=900.0;
 		JumpPower=0.0;
-		PrintHintText(victim, "Ouch!  Watch your head!");
-		PrintHintText(attacker, "You just goomba stomped somebody!");
+		PrintHintText(victim, "%t", "Player Goomba Stomped");
+		PrintHintText(attacker, "%t", "Boss Goomba Stomps", victim);
 		return Plugin_Changed;
 	}
 	else if(IsBoss(victim))
 	{
+		new String:bossName[768];
+		new boss=FF2_GetBossIndex(victim);
+		FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
 		damageMultiplier=GoombaDamage;
 		JumpPower=reboundPower;
-		PrintHintText(victim, "You were just goomba stomped!");
-		PrintHintText(attacker, "You just goomba stomped the boss!");
+		PrintHintText(victim, "%t", "Boss Goomba Stomped");
+		PrintHintText(attacker, "%t", "Player Goomba Stomps", bossName);
 		UpdateHealthBar();
 		return Plugin_Changed;
 	}
