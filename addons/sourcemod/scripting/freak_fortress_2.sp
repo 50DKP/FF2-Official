@@ -4860,23 +4860,22 @@ public Action:BossTimer(Handle:timer)
 
 		if(RedAlivePlayers==1)
 		{
-			new String:message[512];
-			decl String:name[64];
-			for(new target; target<=MaxClients; target++)
+			decl String:message[512], String:name[64];
+			for(new target; target<=MaxClients; target++)  //TODO: Why is this for loop needed when we're already in a boss for loop
 			{
 				if(IsBoss(target))
 				{
-					new boss=Boss[target];
-					KvRewind(BossKV[Special[boss]]);
-					KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
-					//Format(bossLives, sizeof(bossLives), ((BossLives[boss]>1) ? ("x%i", BossLives[boss]) : ("")));
-					if(BossLives[boss]>1)
+					new boss2=GetBossIndex(target);
+					KvRewind(BossKV[Special[boss2]]);
+					KvGetString(BossKV[Special[boss2]], "name", name, sizeof(name), "=Failed name=");
+					//Format(bossLives, sizeof(bossLives), ((BossLives[boss2]>1) ? ("x%i", BossLives[boss2]) : ("")));
+					if(BossLives[boss2]>1)
 					{
-						Format(message, sizeof(message), "%s\n%s's HP: %i of %ix%i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], BossLives[boss]);
+						Format(message, sizeof(message), "%s\n%s's HP: %i of %ix%i", message, name, BossHealth[boss2]-BossHealthMax[boss2]*(BossLives[boss2]-1), BossHealthMax[boss2], BossLives[boss2]);
 					}
 					else
 					{
-						Format(message, sizeof(message), "%s\n%s's HP: %i of %i", message, name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss]);
+						Format(message, sizeof(message), "%s\n%s's HP: %i of %i", message, name, BossHealth[boss2]-BossHealthMax[boss2]*(BossLives[boss2]-1), BossHealthMax[boss2]);
 					}
 				}
 			}
