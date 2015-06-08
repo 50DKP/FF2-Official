@@ -2461,7 +2461,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	{
 		if(IsValidClient(Boss[boss]))
 		{
-			SetClientGlow(boss, 0.0, 0.0);
+			SetClientGlow(Boss[boss], 0.0, 0.0);
 			SDKUnhook(boss, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 			if(IsPlayerAlive(Boss[boss]))
 			{
@@ -4747,66 +4747,67 @@ public Action:BossTimer(Handle:timer)
 	}
 
 	new bool:validBoss=false;
-	for(new client; client<=MaxClients; client++)
+	for(new boss; boss<=MaxClients; boss++)
 	{
-		if(!IsValidClient(Boss[client]) || !IsPlayerAlive(Boss[client]) || !(FF2flags[Boss[client]] & FF2FLAG_USEBOSSTIMER))
+		new client=Boss[boss];
+		if(!IsValidClient(client) || !IsPlayerAlive(client) || !(FF2flags[client] & FF2FLAG_USEBOSSTIMER))
 		{
 			continue;
 		}
 		validBoss=true;
 
-		SetEntPropFloat(Boss[client], Prop_Data, "m_flMaxspeed", BossSpeed[Special[client]]+0.7*(100-BossHealth[client]*100/BossLivesMax[client]/BossHealthMax[client]));
+		SetEntPropFloat(client, Prop_Data, "m_flMaxspeed", BossSpeed[Special[boss]]+0.7*(100-BossHealth[boss]*100/BossLivesMax[boss]/BossHealthMax[boss]));
 
-		if(BossHealth[client]<=0 && IsPlayerAlive(Boss[client]))  //Wat.  TODO:  Investigate
+		if(BossHealth[boss]<=0 && IsPlayerAlive(client))  //Wat.  TODO:  Investigate
 		{
-			BossHealth[client]=1;
+			BossHealth[boss]=1;
 		}
 
-		if(BossLivesMax[client]>1)
+		if(BossLivesMax[boss]>1)
 		{
 			SetHudTextParams(-1.0, 0.77, 0.15, 255, 255, 255, 255);
-			FF2_ShowSyncHudText(Boss[client], livesHUD, "%t", "Boss Lives Left", BossLives[client], BossLivesMax[client]);
+			FF2_ShowSyncHudText(client, livesHUD, "%t", "Boss Lives Left", BossLives[boss], BossLivesMax[boss]);
 		}
 
-		if(RoundFloat(BossCharge[client][0])==100.0)
+		if(RoundFloat(BossCharge[boss][0])==100.0)
 		{
-			if(IsFakeClient(Boss[client]) && !(FF2flags[Boss[client]] & FF2FLAG_BOTRAGE))
+			if(IsFakeClient(client) && !(FF2flags[client] & FF2FLAG_BOTRAGE))
 			{
-				CreateTimer(1.0, Timer_BotRage, client, TIMER_FLAG_NO_MAPCHANGE);
-				FF2flags[Boss[client]]|=FF2FLAG_BOTRAGE;
+				CreateTimer(1.0, Timer_BotRage, boss, TIMER_FLAG_NO_MAPCHANGE);
+				FF2flags[client]|=FF2FLAG_BOTRAGE;
 			}
 			else
 			{
 				SetHudTextParams(-1.0, 0.83, 0.15, 255, 64, 64, 255);
-				FF2_ShowSyncHudText(Boss[client], rageHUD, "%t", "do_rage");
+				FF2_ShowSyncHudText(client, rageHUD, "%t", "do_rage");
 
 				decl String:sound[PLATFORM_MAX_PATH];
-				if(RandomSound("sound_full_rage", sound, PLATFORM_MAX_PATH, client) && emitRageSound[client])
+				if(RandomSound("sound_full_rage", sound, PLATFORM_MAX_PATH, boss) && emitRageSound[boss])
 				{
 					new Float:position[3];
-					GetEntPropVector(Boss[client], Prop_Send, "m_vecOrigin", position);
+					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 
-					FF2flags[Boss[client]]|=FF2FLAG_TALKING;
-					EmitSoundToAll(sound, Boss[client], _, _, _, _, _, Boss[client], position);
-					EmitSoundToAll(sound, Boss[client], _, _, _, _, _, Boss[client], position);
+					FF2flags[client]|=FF2FLAG_TALKING;
+					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 
 					for(new target=1; target<=MaxClients; target++)
 					{
-						if(IsClientInGame(target) && target!=Boss[client])
+						if(IsClientInGame(target) && target!=client)
 						{
-							EmitSoundToClient(target, sound, Boss[client], _, _, _, _, _, Boss[client], position);
-							EmitSoundToClient(target, sound, Boss[client], _, _, _, _, _, Boss[client], position);
+							EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
+							EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
 						}
 					}
-					FF2flags[Boss[client]]&=~FF2FLAG_TALKING;
-					emitRageSound[client]=false;
+					FF2flags[client]&=~FF2FLAG_TALKING;
+					emitRageSound[boss]=false;
 				}
 			}
 		}
 		else
 		{
 			SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255);
-			FF2_ShowSyncHudText(Boss[client], rageHUD, "%t", "rage_meter", RoundFloat(BossCharge[client][0]));
+			FF2_ShowSyncHudText(client, rageHUD, "%t", "rage_meter", RoundFloat(BossCharge[boss][0]));
 		}
 		SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 
@@ -4816,36 +4817,36 @@ public Action:BossTimer(Handle:timer)
 		for(new i=1; ; i++)
 		{
 			decl String:ability[10];
-			Format(ability, 10, "ability%i", i);
-			KvRewind(BossKV[Special[client]]);
-			if(KvJumpToKey(BossKV[Special[client]], ability))
+			Format(ability, sizeof(ability), "ability%i", i);
+			KvRewind(BossKV[Special[boss]]);
+			if(KvJumpToKey(BossKV[Special[boss]], ability))
 			{
 				decl String:plugin_name[64];
-				KvGetString(BossKV[Special[client]], "plugin_name", plugin_name, 64);
-				new slot=KvGetNum(BossKV[Special[client]], "arg0", 0);
-				new buttonmode=KvGetNum(BossKV[Special[client]], "buttonmode", 0);
+				KvGetString(BossKV[Special[boss]], "plugin_name", plugin_name, sizeof(plugin_name));
+				new slot=KvGetNum(BossKV[Special[boss]], "arg0", 0);
+				new buttonmode=KvGetNum(BossKV[Special[boss]], "buttonmode", 0);
 				if(slot<1)
 				{
 					continue;
 				}
 
-				KvGetString(BossKV[Special[client]], "life", ability, 10, "");
+				KvGetString(BossKV[Special[boss]], "life", ability, 10, "");
 				if(!ability[0])
 				{
 					decl String:ability_name[64];
-					KvGetString(BossKV[Special[client]], "name", ability_name, 64);
-					UseAbility(ability_name, plugin_name, client, slot, buttonmode);
+					KvGetString(BossKV[Special[boss]], "name", ability_name, 64);
+					UseAbility(ability_name, plugin_name, boss, slot, buttonmode);
 				}
 				else
 				{
 					new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
 					for(new n; n<count; n++)
 					{
-						if(StringToInt(lives[n])==BossLives[client])
+						if(StringToInt(lives[n])==BossLives[boss])
 						{
 							decl String:ability_name[64];
-							KvGetString(BossKV[Special[client]], "name", ability_name, 64);
-							UseAbility(ability_name, plugin_name, client, slot, buttonmode);
+							KvGetString(BossKV[Special[boss]], "name", ability_name, 64);
+							UseAbility(ability_name, plugin_name, boss, slot, buttonmode);
 							break;
 						}
 					}
@@ -4895,12 +4896,12 @@ public Action:BossTimer(Handle:timer)
 			}
 		}
 
-		if(BossCharge[client][0]<100.0)
+		if(BossCharge[boss][0]<100.0)
 		{
-			BossCharge[client][0]+=OnlyScoutsLeft()*0.2;
-			if(BossCharge[client][0]>100.0)
+			BossCharge[boss][0]+=OnlyScoutsLeft()*0.2;
+			if(BossCharge[boss][0]>100.0)
 			{
-				BossCharge[client][0]=100.0;
+				BossCharge[boss][0]=100.0;
 			}
 		}
 
@@ -5920,7 +5921,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 									new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
 									new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
 									time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1.0 : 2.0) : 4.0)*(chargelevel/100.0);
-									SetClientGlow(boss, time);
+									SetClientGlow(Boss[boss], time);
 									if(GlowTimer[boss]>30.0)
 									{
 										GlowTimer[boss]=30.0;
@@ -8850,25 +8851,23 @@ UpdateHealthBar()
 
 SetClientGlow(client, Float:time1, Float:time2=-1.0)
 {
-	if(!IsValidClient(client) && !IsValidClient(Boss[client]))
+	if(IsValidClient(client))
 	{
-		return;
-	}
+		GlowTimer[client]+=time1;
+		if(time2>=0)
+		{
+			GlowTimer[client]=time2;
+		}
 
-	GlowTimer[client]+=time1;
-	if(time2>=0)
-	{
-		GlowTimer[client]=time2;
-	}
-
-	if(GlowTimer[client]<=0.0)
-	{
-		GlowTimer[client]=0.0;
-		SetEntProp((IsValidClient(Boss[client]) ? Boss[client] : client), Prop_Send, "m_bGlowEnabled", 0);
-	}
-	else
-	{
-		SetEntProp((IsValidClient(Boss[client]) ? Boss[client] : client), Prop_Send, "m_bGlowEnabled", 1);
+		if(GlowTimer[client]<=0.0)
+		{
+			GlowTimer[client]=0.0;
+			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
+		}
+		else
+		{
+			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
+		}
 	}
 }
 
