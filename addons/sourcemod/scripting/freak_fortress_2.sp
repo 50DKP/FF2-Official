@@ -2724,7 +2724,7 @@ public Action:StartBossTimer(Handle:timer)
 			BossLives[boss]=BossLivesMax[boss];
 			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 			BossHealthLast[boss]=BossHealth[boss];
-			Debug("%N (client index %i, boss index %i) has %i lives", Boss[boss], boss, BossLivesMax[boss]);
+			Debug("%N (client index %i, boss index %i) has %i lives", Boss[boss], Boss[boss], boss, BossLivesMax[boss]);
 		}
 	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
