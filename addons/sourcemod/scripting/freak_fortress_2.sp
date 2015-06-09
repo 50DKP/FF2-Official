@@ -2492,8 +2492,8 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	new boss;
 	if(isBossAlive)
 	{
+		new String:text[128];  //Do not decl this
 		decl String:bossName[64], String:lives[4];
-		new String:text[128];  //Don't decl this because we append the value of text to itself -.-
 		for(new target; target<=MaxClients; target++)
 		{
 			if(IsBoss(target))
@@ -2561,7 +2561,7 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	PrintCenterTextAll("");
 
-	new String:text[128];
+	new String:text[128];  //Do not decl this
 	for(new client; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client))
@@ -3099,7 +3099,7 @@ public Action:MessageTimer(Handle:timer)
 	}
 
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
-	new String:text[512];
+	new String:text[512];  //Do not decl this
 	decl String:textChat[512];
 	decl String:lives[4];
 	decl String:name[64];
@@ -4087,7 +4087,7 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 {
 	if(IsBoss(client) || GetGameTime()>=HPTime)
 	{
-		new String:health[512];
+		new String:text[512];  //Do not decl this
 		decl String:lives[4], String:name[64];
 		for(new target; target<=MaxClients; target++)
 		{
@@ -4104,7 +4104,7 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 				{
 					strcopy(lives, 2, "");
 				}
-				Format(health, sizeof(health), "%s\n%t", health, "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				Format(text, sizeof(text), "%s\n%t", text, "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 				BossHealthLast[boss]=BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1);
 			}
@@ -4115,7 +4115,7 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 			if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
 			{
 				SetGlobalTransTarget(target);
-				PrintCenterText(target, health);
+				PrintCenterText(target, text);
 			}
 		}
 
@@ -4863,7 +4863,8 @@ public Action:BossTimer(Handle:timer)
 
 		if(RedAlivePlayers==1)
 		{
-			decl String:message[512], String:name[64];
+			new String:message[512];  //Do not decl this
+			decl String:name[64];
 			for(new target; target<=MaxClients; target++)  //TODO: Why is this for loop needed when we're already in a boss for loop
 			{
 				if(IsBoss(target))
