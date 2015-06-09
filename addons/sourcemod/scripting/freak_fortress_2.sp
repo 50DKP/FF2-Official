@@ -6622,7 +6622,7 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 		default:
 		{
 			SetArrayCell(sumArray, bracket, value);  //This means we're dealing with a constant
-			Debug("sumArray for bracket %i is now %f", value);
+			Debug("sumArray for bracket %i is now %f", bracket, value);
 		}
 	}
 	SetArrayCell(_operator, bracket, Operator_None);
