@@ -2724,6 +2724,7 @@ public Action:StartBossTimer(Handle:timer)
 			BossLives[boss]=BossLivesMax[boss];
 			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 			BossHealthLast[boss]=BossHealth[boss];
+			Debug("%N (client index %i, boss index %i) has %i lives", Boss[boss], boss, BossLivesMax[boss]);
 		}
 	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -7023,7 +7024,7 @@ public bool:PickCharacter(boss, companion)
 			break;
 		}
 	}
-	else
+	else  //'COMPANION' IS THE BOSS INDEX HERE AND 'BOSS' IS THE COMPANION CLIENT INDEX (I know, this code is just so well written)
 	{
 		decl String:bossName[64], String:companionName[64];
 		new character;
@@ -7134,6 +7135,7 @@ FindCompanion(boss, players, bool:omit[])
 		omit[companion]=true;
 		if(PickCharacter(companion, boss))  //TODO: This is a bit misleading
 		{
+			Debug("PickCharacter succeeded");
 			BossRageDamage[companion]=KvGetNum(BossKV[Special[companion]], "ragedamage", 1900);
 			if(BossRageDamage[companion]<=0)
 			{
@@ -7149,6 +7151,7 @@ FindCompanion(boss, players, bool:omit[])
 				PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
 				BossLivesMax[companion]=1;
 			}
+			Debug("%N is playing as %s with %i lives", companion, companionName, BossLivesMax[companion]);
 
 			playersNeeded++;
 			FindCompanion(companion, players, omit);  //Make sure this companion doesn't have a companion of their own
