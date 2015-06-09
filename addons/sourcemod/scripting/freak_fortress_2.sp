@@ -6682,8 +6682,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 				if(operating)  //Something like (5*)
 				{
 					LogError("[FF2 Bosses] %s's %s formula has an invalid operator at character %i", bossName, key, i+1);
-					SetArrayCell(sumArray, 0, 0.0);
-					break;
+					return defaultValue;
 				}
 
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
@@ -6691,8 +6690,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 				if(--bracket<0)  //Something like (5))
 				{
 					LogError("[FF2 Bosses] %s's %s formula has an unbalanced parentheses at character %i", bossName, key, i+1);
-					SetArrayCell(sumArray, 0, 0.0);
-					break;
+					return defaultValue;
 				}
 
 				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
