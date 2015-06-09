@@ -2264,11 +2264,11 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		BossInfoTimer[boss][1]=INVALID_HANDLE;
 		if(Boss[boss])
 		{
+			CreateTimer(0.3, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
 			BossInfoTimer[boss][0]=CreateTimer(30.2, BossInfoTimer_Begin, boss, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 
-	CreateTimer(0.3, MakeBoss, 0, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(3.5, StartResponseTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(9.1, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(9.6, MessageTimer, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -6591,17 +6591,17 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 		case Operator_Add:
 		{
 			SetArrayCell(sumArray, bracket, sum+value);
-			Debug("sumArray for bracket %i is now %f", sum+value);
+			Debug("sumArray for bracket %i is now %f", bracket, sum+value);
 		}
 		case Operator_Subtract:
 		{
 			SetArrayCell(sumArray, bracket, sum-value);
-			Debug("sumArray for bracket %i is now %f", sum-value);
+			Debug("sumArray for bracket %i is now %f", bracket, sum-value);
 		}
 		case Operator_Multiply:
 		{
 			SetArrayCell(sumArray, bracket, sum*value);
-			Debug("sumArray for bracket %i is now %f", sum*value);
+			Debug("sumArray for bracket %i is now %f", bracket, sum*value);
 		}
 		case Operator_Divide:
 		{
@@ -6612,12 +6612,12 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 				return;
 			}
 			SetArrayCell(sumArray, bracket, sum/value);
-			Debug("sumArray for bracket %i is now %f", sum/value);
+			Debug("sumArray for bracket %i is now %f", bracket, sum/value);
 		}
 		case Operator_Exponent:
 		{
 			SetArrayCell(sumArray, bracket, Pow(sum, value));
-			Debug("sumArray for bracket %i is now %f", Pow(sum, value));
+			Debug("sumArray for bracket %i is now %f", bracket, Pow(sum, value));
 		}
 		default:
 		{
