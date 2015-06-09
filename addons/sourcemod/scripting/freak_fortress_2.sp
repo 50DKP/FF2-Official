@@ -2227,7 +2227,6 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
 			}
 		}
-		return Plugin_Continue;
 	}
 
 	PickCharacter(0, 0);
@@ -4403,9 +4402,12 @@ public OnClientDisconnect(client)
 				Boss[boss]=GetClientWithMostQueuePoints(omit);
 				omit[Boss[boss]]=true;
 
-				CreateTimer(0.1, MakeBoss);
-				CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
-				CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
+				if(Boss[boss])
+				{
+					CreateTimer(0.1, MakeBoss);
+					CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
+					CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
+				}
 			}
 		}
 
