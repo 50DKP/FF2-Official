@@ -6585,19 +6585,23 @@ stock GetBossIndex(client)
 stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 {
 	new Float:sum=GetArrayCell(sumArray, bracket);
+	Debug("Sum for bracket %i is %f, value is %f", bracket, sum, value);
 	switch(GetArrayCell(_operator, bracket))
 	{
 		case Operator_Add:
 		{
 			SetArrayCell(sumArray, bracket, sum+value);
+			Debug("sumArray for bracket %i is now %f", sum+value);
 		}
 		case Operator_Subtract:
 		{
 			SetArrayCell(sumArray, bracket, sum-value);
+			Debug("sumArray for bracket %i is now %f", sum-value);
 		}
 		case Operator_Multiply:
 		{
 			SetArrayCell(sumArray, bracket, sum*value);
+			Debug("sumArray for bracket %i is now %f", sum*value);
 		}
 		case Operator_Divide:
 		{
@@ -6608,14 +6612,17 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 				return;
 			}
 			SetArrayCell(sumArray, bracket, sum/value);
+			Debug("sumArray for bracket %i is now %f", sum/value);
 		}
 		case Operator_Exponent:
 		{
 			SetArrayCell(sumArray, bracket, Pow(sum, value));
+			Debug("sumArray for bracket %i is now %f", Pow(sum, value));
 		}
 		default:
 		{
 			SetArrayCell(sumArray, bracket, value);  //This means we're dealing with a constant
+			Debug("sumArray for bracket %i is now %f", value);
 		}
 	}
 	SetArrayCell(_operator, bracket, Operator_None);
@@ -6642,6 +6649,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	for(new i; i<=strlen(formula); i++)
 	{
 		character[0]=formula[i];  //Find out what the next char in the formula is
+		Debug("Character: %c", character[0]);
 		switch(character[0])
 		{
 			case ' ', '\t':  //Ignore whitespace.
@@ -6651,6 +6659,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			case '(':
 			{
 				bracket++;  //We've just entered a new parentheses so increment the bracket #
+				Debug("Entered a new bracket (%i)", bracket);
 				if(GetArraySize(sumArray)<bracket+1)  //If we've reached the array limit, just increase it
 				{
 					PushArrayCell(sumArray, 0.0);
@@ -6671,6 +6680,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 					SetArrayCell(sumArray, 0, 0.0);
 					break;
 				}
+				Debug("Exited bracket %i", bracket);
 
 				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
 				SetArrayCell(sumArray, bracket+1, 0.0);
@@ -6678,6 +6688,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			}
 			case '\0':  //End of formula
 			{
+				Debug("END OF FORMULA");
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 			}
 			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
@@ -6719,6 +6730,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	}
 
 	new result=RoundFloat(GetArrayCell(sumArray, 0));
+	Debug("FINAL RESULT IS %i", result);
 	CloseHandle(sumArray);
 	CloseHandle(_operator);
 	if(result<=0)
