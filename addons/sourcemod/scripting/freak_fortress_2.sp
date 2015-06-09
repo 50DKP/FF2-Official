@@ -6633,7 +6633,7 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 
 stock OperateString(Handle:sumArray, &bracket, String:value[], size, Handle:_operator)
 {
-	if(!StrEqual(value, ""))
+	if(!StrEqual(value, ""))  //Make sure 'value' isn't blank
 	{
 		Operate(sumArray, bracket, StringToFloat(value), _operator);
 		strcopy(value, size, "");
@@ -6646,8 +6646,11 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	KvRewind(BossKV[Special[boss]]);
 	KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 	KvGetString(BossKV[Special[boss]], key, formula, sizeof(formula), defaultFormula);
-	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum.
-	new Handle:sumArray=CreateArray(_, 1), Handle:_operator=CreateArray(_, 1);
+
+	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum
+	new bool:operating;  //Whether or not we just encountered an operator
+	new Handle:sumArray=CreateArray(), Handle:_operator=CreateArray();
+
 	new String:character[2], String:value[16];  //We don't decl value because we directly append characters to it and there's no point in decl'ing character
 	for(new i; i<=strlen(formula); i++)
 	{
@@ -6655,13 +6658,13 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 		Debug("Character: %c", character[0]);
 		switch(character[0])
 		{
-			case ' ', '\t':  //Ignore whitespace.
+			case ' ', '\t':  //Ignore whitespace
 			{
 				continue;
 			}
 			case '(':
 			{
-				bracket++;  //We've just entered a new parentheses so increment the bracket #
+				bracket++;  //We've just entered a new parentheses so increment the bracket value
 				Debug("Entered a new bracket (%i)", bracket);
 				if(GetArraySize(sumArray)<bracket+1)  //If we've reached the array limit, just increase it
 				{
@@ -6676,14 +6679,21 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			}
 			case ')':
 			{
-				OperateString(sumArray, bracket, value, sizeof(value), _operator);
-				if(--bracket<0)  //Something like (5))
+				if(operating)  //Something like (5*)
 				{
-					LogError("[FF2 Bosses] %s's %s formula has unbalanced parentheses", bossName, key);
+					LogError("[FF2 Bosses] %s's %s formula has an invalid operator at character %i", bossName, key, i+1);
 					SetArrayCell(sumArray, 0, 0.0);
 					break;
 				}
+
+				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 				Debug("Exited bracket %i", bracket);
+				if(--bracket<0)  //Something like (5))
+				{
+					LogError("[FF2 Bosses] %s's %s formula has an unbalanced parentheses at character %i", bossName, key, i+1);
+					SetArrayCell(sumArray, 0, 0.0);
+					break;
+				}
 
 				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
 				SetArrayCell(sumArray, bracket+1, 0.0);
@@ -6696,10 +6706,17 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			}
 			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
 			{
+				operating=false;
 				StrCat(value, sizeof(value), character);  //Constant?  Just add it to the current value
+			}
+			case 'n', 'x':  //n and x denote player variables
+			{
+				operating=false;
+				Operate(sumArray, bracket, float(playing), _operator);
 			}
 			case '+', '-', '*', '/', '^':
 			{
+				operating=true;
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 				switch(character[0])
 				{
@@ -6725,10 +6742,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 					}
 				}
 			}
-			case 'n', 'x':  //n and x denote player variables
-			{
-				Operate(sumArray, bracket, float(playing), _operator);
-			}
 		}
 	}
 
@@ -6738,7 +6751,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	CloseHandle(_operator);
 	if(result<=0)
 	{
-		LogError("[FF2] %s has a malformed %s formula, using default!", bossName, key);
+		LogError("[FF2] %s has an invalid %s formula, using default!", bossName, key);
 		return defaultValue;
 	}
 
