@@ -5998,13 +5998,13 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 355:  //Fan O' War
 					{
-						if(BossCharge[boss][0]>0.0)
+						if(BossCharge[boss][0]>5.0)
 						{
 							BossCharge[boss][0]-=5.0;
-							if(BossCharge[boss][0]<0.0)
-							{
-								BossCharge[boss][0]=0.0;
-							}
+						}
+						else
+						{
+							BossCharge[boss][0]=0.0;
 						}
 					}
 					case 357:  //Half-Zatoichi
@@ -8235,7 +8235,16 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 
 public Action:Timer_UseBossCharge(Handle:timer, Handle:data)
 {
-	BossCharge[ReadPackCell(data)][ReadPackCell(data)]=ReadPackFloat(data);
+	new boss=ReadPackCell(data), slot=ReadPackCell(data), Float:charge=ReadPackFloat(data);
+	BossCharge[boss][slot]=charge;
+	if(charge<0.0)
+	{
+		BossCharge[boss][slot]=0.0;
+	}
+	else if(charge>100.0)
+	{
+		BossCharge[boss][slot]=100.0;
+	}
 	return Plugin_Continue;
 }
 
@@ -8347,9 +8356,18 @@ public Native_GetBossCharge(Handle:plugin, numParams)
 	return _:BossCharge[GetNativeCell(1)][GetNativeCell(2)];
 }
 
-public Native_SetBossCharge(Handle:plugin, numParams)
+public Native_SetBossCharge(Handle:plugin, numParams)  //TODO: This duplicates logic found in Timer_UseBossCharge
 {
-	BossCharge[GetNativeCell(1)][GetNativeCell(2)]=Float:GetNativeCell(3);
+	new boss=GetNativeCell(1), slot=GetNativeCell(2), Float:charge=GetNativeCell(3);
+	BossCharge[boss][slot]=charge;
+	if(charge<0.0)
+	{
+		BossCharge[boss][slot]=0.0;
+	}
+	else if(charge>100.0)
+	{
+		BossCharge[boss][slot]=100.0;
+	}
 }
 
 public Native_GetBossRageDamage(Handle:plugin, numParams)
