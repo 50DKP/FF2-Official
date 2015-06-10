@@ -6648,7 +6648,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	KvGetString(BossKV[Special[boss]], key, formula, sizeof(formula), defaultFormula);
 
 	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum
-	new bool:operating;  //Whether or not we just encountered an operator
 	new Handle:sumArray=CreateArray(), Handle:_operator=CreateArray();
 
 	new String:character[2], String:value[16];  //We don't decl value because we directly append characters to it and there's no point in decl'ing character
@@ -6679,13 +6678,13 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			}
 			case ')':
 			{
-				if(operating)  //Something like (5*)
+				OperateString(sumArray, bracket, value, sizeof(value), _operator);
+				if(GetArrayCell(_operator, bracket)!=Operator_None)  //Something like (5*)
 				{
 					LogError("[FF2 Bosses] %s's %s formula has an invalid operator at character %i", bossName, key, i+1);
 					return defaultValue;
 				}
 
-				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 				Debug("Exited bracket %i", bracket);
 				if(--bracket<0)  //Something like (5))
 				{
@@ -6704,17 +6703,14 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			}
 			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
 			{
-				operating=false;
 				StrCat(value, sizeof(value), character);  //Constant?  Just add it to the current value
 			}
 			case 'n', 'x':  //n and x denote player variables
 			{
-				operating=false;
 				Operate(sumArray, bracket, float(playing), _operator);
 			}
 			case '+', '-', '*', '/', '^':
 			{
-				operating=true;
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 				switch(character[0])
 				{
