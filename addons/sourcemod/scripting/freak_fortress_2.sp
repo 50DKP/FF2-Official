@@ -6651,6 +6651,19 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	new Handle:sumArray=CreateArray(), Handle:_operator=CreateArray();
 
 	new String:character[2], String:value[16];  //We don't decl value because we directly append characters to it and there's no point in decl'ing character
+
+	new size=1;
+	for(new i; i<=strlen(formula); i++)  //Resize the arrays once so we don't have to worry about it later on
+	{
+		if(formula[i]=='(')
+		{
+			size++;
+		}
+	}
+	Debug("Final array size is %i", size);
+	ResizeArray(sumArray, size);
+	ResizeArray(_operator, size);
+
 	for(new i; i<=strlen(formula); i++)
 	{
 		character[0]=formula[i];  //Find out what the next char in the formula is
@@ -6665,16 +6678,8 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			{
 				bracket++;  //We've just entered a new parentheses so increment the bracket value
 				Debug("Entered a new bracket (%i)", bracket);
-				if(GetArraySize(sumArray)<bracket+1)  //If we've reached the array limit, just increase it
-				{
-					PushArrayCell(sumArray, 0.0);
-					PushArrayCell(_operator, Operator_None);
-				}
-				else
-				{
-					SetArrayCell(sumArray, bracket, 0.0);
-					SetArrayCell(_operator, bracket, Operator_None);
-				}
+				SetArrayCell(sumArray, bracket, 0.0);
+				SetArrayCell(_operator, bracket, Operator_None);
 			}
 			case ')':
 			{
@@ -7161,7 +7166,6 @@ FindCompanion(boss, players, bool:omit[])
 		omit[companion]=true;
 		if(PickCharacter(companion, boss))  //TODO: This is a bit misleading
 		{
-			Debug("PickCharacter succeeded");
 			BossRageDamage[companion]=KvGetNum(BossKV[Special[companion]], "ragedamage", 1900);
 			if(BossRageDamage[companion]<=0)
 			{
@@ -7171,6 +7175,7 @@ FindCompanion(boss, players, bool:omit[])
 				BossRageDamage[companion]=1900;
 			}
 
+			Debug("Special[%i] is %i", companion, Special[companion]);
 			BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
 			if(BossLivesMax[companion]<=0)
 			{
