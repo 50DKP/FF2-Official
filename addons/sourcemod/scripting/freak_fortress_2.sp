@@ -7058,22 +7058,22 @@ public bool:PickCharacter(boss, companion)
 	else  //'COMPANION' IS THE BOSS INDEX HERE AND 'BOSS' IS THE COMPANION CLIENT INDEX (I know, this code is just so well written)
 	{
 		decl String:bossName[64], String:companionName[64];
-		new character;
 		KvRewind(BossKV[Special[companion]]);
 		KvGetString(BossKV[Special[companion]], "companion", companionName, sizeof(companionName), "=Failed companion name=");
 
+		new character;
 		while(character<Specials)  //Loop through all the bosses to find the companion we're looking for
 		{
 			KvRewind(BossKV[character]);
 			KvGetString(BossKV[character], "name", bossName, sizeof(bossName), "=Failed name=");
-			if(!strcmp(bossName, companionName, false))
+			if(StrEqual(bossName, companionName))
 			{
 				Special[boss]=character;
 				break;
 			}
 
 			KvGetString(BossKV[character], "filename", bossName, sizeof(bossName), "=Failed name=");
-			if(!strcmp(bossName, companionName, false))
+			if(StrEqual(bossName, companionName))
 			{
 				Special[boss]=character;
 				break;
@@ -7176,6 +7176,10 @@ FindCompanion(boss, players, bool:omit[])
 			}
 
 			Debug("Special[%i] is %i", companion, Special[companion]);
+
+			decl String:test[64];
+			KvGetString(BossKV[Special[companion]], "name", test, sizeof(test));
+			Debug("%s", test);
 			BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
 			if(BossLivesMax[companion]<=0)
 			{
