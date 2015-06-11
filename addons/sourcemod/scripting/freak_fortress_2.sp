@@ -6608,7 +6608,7 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 		}
 		case Operator_Divide:
 		{
-			if(FloatCompare(value, 0.000001)==-1 && FloatCompare(value, -0.000001)==1)
+			if(!value)
 			{
 				LogError("[FF2 Bosses] Detected a divide by 0!");
 				bracket=0;
@@ -6682,6 +6682,8 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 				if(GetArrayCell(_operator, bracket)!=Operator_None)  //Something like (5*)
 				{
 					LogError("[FF2 Bosses] %s's %s formula has an invalid operator at character %i", bossName, key, i+1);
+					CloseHandle(sumArray);
+					CloseHandle(_operator);
 					return defaultValue;
 				}
 
@@ -6689,6 +6691,8 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 				if(--bracket<0)  //Something like (5))
 				{
 					LogError("[FF2 Bosses] %s's %s formula has an unbalanced parentheses at character %i", bossName, key, i+1);
+					CloseHandle(sumArray);
+					CloseHandle(_operator);
 					return defaultValue;
 				}
 
