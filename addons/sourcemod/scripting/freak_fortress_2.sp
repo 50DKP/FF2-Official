@@ -6670,6 +6670,9 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	Debug("Final array size is %i", size);
 
 	new Handle:sumArray=CreateArray(_, size), Handle:_operator=CreateArray(_, size);
+	SetArrayCell(sumArray, 0, 0.0);  //TODO:  See if these can be placed naturally in the loop
+	SetArrayCell(_operator, bracket, Operator_None);
+
 	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum
 	new String:character[2], String:value[16];  //We don't decl value because we directly append characters to it and there's no point in decl'ing character
 	for(new i; i<=strlen(formula); i++)
@@ -6710,8 +6713,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 				}
 
 				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
-				SetArrayCell(sumArray, bracket+1, 0.0);
-				SetArrayCell(_operator, bracket+1, Operator_None);
 			}
 			case '\0':  //End of formula
 			{
