@@ -6647,23 +6647,31 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 	KvGetString(BossKV[Special[boss]], key, formula, sizeof(formula), defaultFormula);
 
-	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum
-	new Handle:sumArray=CreateArray(), Handle:_operator=CreateArray();
-
-	new String:character[2], String:value[16];  //We don't decl value because we directly append characters to it and there's no point in decl'ing character
-
 	new size=1;
+	new matchingBrackets;
 	for(new i; i<=strlen(formula); i++)  //Resize the arrays once so we don't have to worry about it later on
 	{
 		if(formula[i]=='(')
 		{
-			size++;
+			if(!matchingBrackets)
+			{
+				size++;
+			}
+			else
+			{
+				matchingBrackets--;
+			}
+		}
+		else if(formula[i]==')')
+		{
+			matchingBrackets++;
 		}
 	}
 	Debug("Final array size is %i", size);
-	ResizeArray(sumArray, size);
-	ResizeArray(_operator, size);
 
+	new Handle:sumArray=CreateArray(_, size), Handle:_operator=CreateArray(_, size);
+	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum
+	new String:character[2], String:value[16];  //We don't decl value because we directly append characters to it and there's no point in decl'ing character
 	for(new i; i<=strlen(formula); i++)
 	{
 		character[0]=formula[i];  //Find out what the next char in the formula is
