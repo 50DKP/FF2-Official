@@ -7064,11 +7064,11 @@ public bool:PickCharacter(boss, companion)
 			break;
 		}
 	}
-	else  //'COMPANION' IS THE BOSS INDEX HERE AND 'BOSS' IS THE COMPANION CLIENT INDEX (I know, this code is just so well written)
+	else
 	{
 		decl String:bossName[64], String:companionName[64];
-		KvRewind(BossKV[Special[companion]]);
-		KvGetString(BossKV[Special[companion]], "companion", companionName, sizeof(companionName), "=Failed companion name=");
+		KvRewind(BossKV[Special[boss]]);
+		KvGetString(BossKV[Special[boss]], "companion", companionName, sizeof(companionName), "=Failed companion name=");
 
 		new character;
 		while(character<Specials)  //Loop through all the bosses to find the companion we're looking for
@@ -7077,14 +7077,14 @@ public bool:PickCharacter(boss, companion)
 			KvGetString(BossKV[character], "name", bossName, sizeof(bossName), "=Failed name=");
 			if(StrEqual(bossName, companionName))
 			{
-				Special[boss]=character;
+				Special[companion]=character;
 				break;
 			}
 
 			KvGetString(BossKV[character], "filename", bossName, sizeof(bossName), "=Failed name=");
 			if(StrEqual(bossName, companionName))
 			{
-				Special[boss]=character;
+				Special[companion]=character;
 				break;
 			}
 			character++;
@@ -7098,12 +7098,12 @@ public bool:PickCharacter(boss, companion)
 
 	new Action:action;
 	Call_StartForward(OnSpecialSelected);
-	Call_PushCell(boss);
-	new characterIndex=Special[boss];
+	Call_PushCell(companion);
+	new characterIndex=Special[companion];
 	Call_PushCellRef(characterIndex);
 	decl String:newName[64];
-	KvRewind(BossKV[Special[boss]]);
-	KvGetString(BossKV[Special[boss]], "name", newName, sizeof(newName));
+	KvRewind(BossKV[Special[companion]]);
+	KvGetString(BossKV[Special[companion]], "name", newName, sizeof(newName));
 	Call_PushStringEx(newName, sizeof(newName), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_Finish(action);
 	if(action==Plugin_Changed)
@@ -7141,21 +7141,21 @@ public bool:PickCharacter(boss, companion)
 
 			if(foundExactMatch)
 			{
-				Special[boss]=foundExactMatch;
+				Special[companion]=foundExactMatch;
 			}
 			else if(foundPartialMatch)
 			{
-				Special[boss]=foundPartialMatch;
+				Special[companion]=foundPartialMatch;
 			}
 			else
 			{
 				return false;
 			}
-			PrecacheCharacter(Special[boss]);
+			PrecacheCharacter(Special[companion]);
 			return true;
 		}
-		Special[boss]=characterIndex;
-		PrecacheCharacter(Special[boss]);
+		Special[companion]=characterIndex;
+		PrecacheCharacter(Special[companion]);
 		return true;
 	}
 	PrecacheCharacter(Special[boss]);
@@ -7173,7 +7173,7 @@ FindCompanion(boss, players, bool:omit[])
 		new companion=GetClientWithMostQueuePoints(omit);
 		Boss[companion]=companion;  //Woo boss indexes!
 		omit[companion]=true;
-		if(PickCharacter(companion, boss))  //TODO: This is a bit misleading
+		if(PickCharacter(boss, companion))  //TODO: This is a bit misleading
 		{
 			BossRageDamage[companion]=KvGetNum(BossKV[Special[companion]], "ragedamage", 1900);
 			if(BossRageDamage[companion]<=0)
