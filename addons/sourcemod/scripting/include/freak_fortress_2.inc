@@ -289,7 +289,14 @@ native FF2_GetAbilityArgumentString(boss, const String:pluginName[], const Strin
 native bool:FF2_RandomSound(const String:keyvalue[], String:buffer[], bufferLength, boss=0, slot=0);
 
 /**
- * Stops the Boss's music for the specified players
+ * Starts the Boss's music for the specified clients
+ *
+ * @param client	Client's index (0 for all clients)
+ */
+native FF2_StartMusic(client=0);
+
+/**
+ * Stops the Boss's music for the specified clients
  *
  * @param client	Client's index (0 for all clients)
  * @noreturn
@@ -300,8 +307,8 @@ native FF2_StopMusic(client=0);
  * Gets a Boss's KV handle
  *
  * @param boss				Boss's index
- * @param specialIndex		0 - "client" parameter means the index of the boss
- *							1 - "client" parameter means number of the boss in characters.cfg-1
+ * @param specialIndex		0 - 'boss' parameter refers to the index of the boss
+ *							1 - 'boss' parameter refers to the index of the boss in characters.cfg-1
  * @return					Handle of Boss's keyvalues
  */
 native Handle:FF2_GetSpecialKV(boss, specialIndex=0);
@@ -607,6 +614,7 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetAbilityArgumentFloat");
 	MarkNativeAsOptional("FF2_GetAbilityArgumentString");
 	MarkNativeAsOptional("FF2_RandomSound");
+	MarkNativeAsOptional("FF2_StartMusic");
 	MarkNativeAsOptional("FF2_StopMusic");
 	MarkNativeAsOptional("FF2_GetSpecialKV");
 	MarkNativeAsOptional("FF2_GetQueuePoints");

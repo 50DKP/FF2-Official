@@ -927,6 +927,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_GetClientDamage", Native_GetDamage);
 	CreateNative("FF2_GetRoundState", Native_GetRoundState);
 	CreateNative("FF2_GetSpecialKV", Native_GetSpecialKV);
+	CreateNative("FF2_StartMusic", Native_StartMusic);
 	CreateNative("FF2_StopMusic", Native_StopMusic);
 	CreateNative("FF2_GetRageDist", Native_GetRageDist);
 	CreateNative("FF2_HasAbility", Native_HasAbility);
@@ -2842,7 +2843,7 @@ public Action:Timer_MusicTheme(Handle:timer, any:userid)
 			do
 			{
 				MusicIndex++;
-				Format(music, 10, "time%i",MusicIndex);
+				Format(music, 10, "time%i", MusicIndex);
 			}
 			while(KvGetFloat(BossKV[Special[0]], music)>1);
 
@@ -8617,7 +8618,7 @@ public Native_GetSpecialKV(Handle:plugin, numParams)
 
 public Native_StartMusic(Handle:plugin, numParams)
 {
-	Timer_MusicPlay(INVALID_HANDLE,GetNativeCell(1));
+	Timer_MusicPlay(INVALID_HANDLE, GetNativeCell(1));
 }
 
 public Native_StopMusic(Handle:plugin, numParams)
