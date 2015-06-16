@@ -11,7 +11,8 @@ addons/sourcemod/translations/**
 !addons/sourcemod/translations/ff2_1st_set.phrases.txt
 !addons/sourcemod/translations/ff2_boss_selection.txt
 !addons/sourcemod/translations/freak_fortress_2.phrases.txt
-addons/sourcemod/data/
+addons/sourcemod/data/**
+!addons/sourcemod/data/ff2_changelog.txt
 addons/sourcemod/extensions/
 addons/sourcemod/gamedata/
 addons/sourcemod/logs/
