@@ -8824,11 +8824,11 @@ public Action:OnPickup(entity, client)  //Thanks friagram!
 	{
 		decl String:classname[32];
 		GetEntityClassname(entity, classname, sizeof(classname));
-		if(StrContains(classname, "item_healthkit")!=-1 && !(FF2flags[client] & FF2FLAG_ALLOW_HEALTH_PICKUPS))
+		if(!StrContains(classname, "item_healthkit") && !(FF2flags[client] & FF2FLAG_ALLOW_HEALTH_PICKUPS))
 		{
 			return Plugin_Handled;
 		}
-		else if(StrContains(classname, "item_ammopack")!=-1 || StrEqual(classname, "tf_ammo_pack") && !(FF2flags[client] & FF2FLAG_ALLOW_AMMO_PICKUPS))
+		else if((!StrContains(classname, "item_ammopack") || StrEqual(classname, "tf_ammo_pack")) && !(FF2flags[client] & FF2FLAG_ALLOW_AMMO_PICKUPS))
 		{
 			return Plugin_Handled;
 		}
