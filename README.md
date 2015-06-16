@@ -2,7 +2,7 @@
 
 Want the latest version?  Check out the [Releases](https://github.com/50DKP/FF2-Official/releases) page.  For those who always want the latest bleeding-edge features (and bugs), development builds are available on [Jenkins](http://ff2.50dkp.com/jenkins/job/FF2/).  You can also check out the [forums](https://forums.alliedmods.net/forumdisplay.php?f=154) to learn more.  Brought to you by [50DKP](http://www.50dkp.com).
 
-Some interesting stats: [![Issue Stats](http://issuestats.com/github/50DKP/FF2-Official/badge/pr)](http://issuestats.com/github/50DKP/FF2-Official) [![Issue Stats](http://issuestats.com/github/50DKP/FF2-Official/badge/issue)](http://issuestats.com/github/50DKP/FF2-Official)
+Some interesting stats: [![Issue Stats](http://issuestats.com/github/50DKP/FF2-Official/badge/pr?style=flat)](http://issuestats.com/github/50DKP/FF2-Official) [![Issue Stats](http://issuestats.com/github/50DKP/FF2-Official/badge/issue?style=flat)](http://issuestats.com/github/50DKP/FF2-Official)
 
 ### Include File Changes
 ***

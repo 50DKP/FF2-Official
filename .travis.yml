@@ -1,14 +1,21 @@
+#Use the new container-based infrastructure
+sudo: false
+
+#Install some apt packages needed for spcomp
+addons:
+    apt_packages:
+        - lib32stdc++6
+
+#Set the build environment
 env:
     - SMVERSION=1.7
     - SMVERSION=1.8
-before_install:
-    - sudo apt-get -qq update && sudo apt-get install gcc-multilib lynx lib32stdc++6
+
+#And compile!
 install:
-    - SMPATTERN="http:.*sourcemod-.*-git.*-linux.*"
-    - SMURL="http://www.sourcemod.net/smdrop/$SMVERSION/"
-    - SMPACKAGE=`lynx -dump "$SMURL" | egrep -o "$SMPATTERN" | tail -1`
-    - wget $SMPACKAGE
-    - tar -xzf $(basename "$SMPACKAGE")
+    - wget http://sourcemod.net/smdrop/$SMVERSION/ -O - | grep "\.tar\.gz" | sed 's/^.*"sourcemod/sourcemod/;s/\.tar\.gz".*$/.tar.gz/' | tail --lines=1 > sourcemod
+    - wget --input-file=sourcemod --base=http://sourcemod.net/smdrop/$SMVERSION/
+    - tar -xzf $(cat sourcemod)
 before_script:
     - cd addons/sourcemod/scripting/
     - wget "http://hg.limetech.org/projects/tf2items/tf2items_source/raw-file/tip/pawn/tf2items.inc" -O include/tf2items.inc

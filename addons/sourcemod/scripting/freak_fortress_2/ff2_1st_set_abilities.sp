@@ -758,30 +758,47 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	{
 		if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
 		{
-			if(FF2_GetAbilityArgument(boss, this_plugin_name, "special_dropprop", 3, 0))
+			decl String:model[PLATFORM_MAX_PATH];
+			FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
+			if(model[0]!='\0')  //Because you never know when someone is careless and doesn't specify a model...
 			{
-				CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"));
-			}
-
-			new prop=CreateEntityByName("prop_physics_override");
-			if(IsValidEntity(prop))
-			{
-				decl String:model[PLATFORM_MAX_PATH];
-				FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
-				SetEntityModel(prop, model);
-				SetEntityMoveType(prop, MOVETYPE_VPHYSICS);
-				SetEntProp(prop, Prop_Send, "m_CollisionGroup", 1);
-				SetEntProp(prop, Prop_Send, "m_usSolidFlags", 16);
-				DispatchSpawn(prop);
-
-				new Float:position[3];
-				GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
-				position[2]+=20;
-				TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
-				new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "special_dropprop", 2, 0.0);
-				if(duration>0.5)
+				if(!IsModelPrecached(model))  //Make sure the boss author precached the model (similar to above)
 				{
-					CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(prop));
+					new String:bossName[64];
+					FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
+					if(!FileExists(model, true))
+					{
+						LogError("[FF2 Bosses] Model '%s' doesn't exist!  Please check %s's \"mod_precache\"", bossName, model);
+						return Plugin_Continue;
+					}
+
+					LogError("[FF2 Bosses] Model '%s' isn't precached!  Please check %s's \"mod_precache\"", bossName, model);
+					PrecacheModel(model);
+				}
+
+				if(FF2_GetAbilityArgument(boss, this_plugin_name, "special_dropprop", 3, 0))
+				{
+					CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"));
+				}
+
+				new prop=CreateEntityByName("prop_physics_override");
+				if(IsValidEntity(prop))
+				{
+					SetEntityModel(prop, model);
+					SetEntityMoveType(prop, MOVETYPE_VPHYSICS);
+					SetEntProp(prop, Prop_Send, "m_CollisionGroup", 1);
+					SetEntProp(prop, Prop_Send, "m_usSolidFlags", 16);
+					DispatchSpawn(prop);
+
+					new Float:position[3];
+					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
+					position[2]+=20;
+					TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
+					new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "special_dropprop", 2, 0.0);
+					if(duration>0.5)
+					{
+						CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(prop));
+					}
 				}
 			}
 		}
