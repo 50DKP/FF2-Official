@@ -4874,14 +4874,16 @@ public Action:BossTimer(Handle:timer)
 					KvRewind(BossKV[Special[boss2]]);
 					KvGetString(BossKV[Special[boss2]], "name", name, sizeof(name), "=Failed name=");
 					//Format(bossLives, sizeof(bossLives), ((BossLives[boss2]>1) ? ("x%i", BossLives[boss2]) : ("")));
+					new String:bossLives[4];
 					if(BossLives[boss2]>1)
 					{
-						Format(message, sizeof(message), "%s\n%s's HP: %i of %ix%i", message, name, BossHealth[boss2]-BossHealthMax[boss2]*(BossLives[boss2]-1), BossHealthMax[boss2], BossLives[boss2]);
+						Format(bossLives, sizeof(bossLives), "x%i", BossLives[boss2]);
 					}
 					else
 					{
-						Format(message, sizeof(message), "%s\n%s's HP: %i of %i", message, name, BossHealth[boss2]-BossHealthMax[boss2]*(BossLives[boss2]-1), BossHealthMax[boss2]);
+						Format(bossLives, sizeof(bossLives), "");
 					}
+					Format(message, sizeof(message), "%s\n%t", message, "ff2_hp", name, BossHealth[boss2]-BossHealthMax[boss2]*(BossLives[boss2]-1), BossHealthMax[boss2], bossLives)
 				}
 			}
 
