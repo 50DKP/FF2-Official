@@ -8,7 +8,6 @@ addons:
 
 #Set the build environment
 env:
-    - SMVERSION=1.7
     - SMVERSION=1.8
 
 #And compile!
