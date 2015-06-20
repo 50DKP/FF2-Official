@@ -101,6 +101,7 @@ new BossHealthLast[MAXPLAYERS+1];
 new BossLives[MAXPLAYERS+1];
 new BossLivesMax[MAXPLAYERS+1];
 new BossRageDamage[MAXPLAYERS+1];
+new Float:BossSpeed[MAXPLAYERS+1];
 new Float:BossCharge[MAXPLAYERS+1][8];
 new Float:Stabbed[MAXPLAYERS+1];
 new Float:Marketed[MAXPLAYERS+1];
@@ -917,7 +918,7 @@ new Handle:OnLoseLife;
 new Handle:OnAlivePlayersChanged;
 
 new bool:bBlockVoice[MAXSPECIALS];
-new Float:BossSpeed[MAXSPECIALS];
+//new Float:BossSpeed[MAXSPECIALS];
 //new Float:BossRageDamage[MAXSPECIALS];
 
 new String:ChancesString[512];
@@ -1670,7 +1671,7 @@ public LoadCharacter(const String:character[])
 	KvSetString(BossKV[Specials], "filename", character);
 	KvGetString(BossKV[Specials], "name", config, PLATFORM_MAX_PATH);
 	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "sound_block_vo", 0);
-	BossSpeed[Specials]=KvGetFloat(BossKV[Specials], "maxspeed", 340.0);
+	//BossSpeed[Specials]=KvGetFloat(BossKV[Specials], "maxspeed", 340.0);
 	//BossRageDamage[Specials]=KvGetFloat(BossKV[Specials], "ragedamage", 1900.0);
 	KvGotoFirstSubKey(BossKV[Specials]);
 
@@ -2222,7 +2223,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		return Plugin_Continue;
 	}
 
-	KvRewind(BossKV[Special[0]]);
+	/*KvRewind(BossKV[Special[0]]);
 	BossRageDamage[0]=KvGetNum(BossKV[Special[0]], "ragedamage", 1900);
 	if(BossRageDamage[0]<=0)
 	{
@@ -2239,7 +2240,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 		KvGetString(BossKV[Special[0]], "name", bossName, sizeof(bossName));
 		PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", bossName);
 		BossLivesMax[0]=1;
-	}
+	}*/
 
 	FindCompanion(0, playing, omit);  //Find companions for the boss!
 
@@ -2705,10 +2706,12 @@ public Action:StartBossTimer(Handle:timer)
 	{
 		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
-			BossHealthMax[boss]=ParseFormula(boss, "health_formula", "(((760.8+n)*(n-1))^1.0341)+2046", RoundFloat(Pow((760.8+Float:playing)*(Float:playing-1.0), 1.0341)+2046.0));
-			BossLives[boss]=BossLivesMax[boss];
-			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
-			BossHealthLast[boss]=BossHealth[boss];
+			BossHealthMax[boss]=ParseFormula(boss, "health", "(((760.8+n)*(n-1))^1.0341)+2046", RoundFloat(Pow((760.8+Float:playing)*(Float:playing-1.0), 1.0341)+2046.0));
+			BossLivesMax[boss]=BossLives[boss]=ParseFormula(boss, "lives", "1", 1);
+			BossHealth[boss]=BossHealthLast[boss]=BossHealthMax[boss]*BossLivesMax[boss];
+			BossRageDamage[boss]=ParseFormula(boss, "ragedamage", "1", 1);
+			BossSpeed[boss]=ParseFormula(boss, "speed", "340", 340);
+			//BossSpeed[Special[boss]]+0.7*(100-BossHealth[boss]*100/BossLivesMax[boss]/BossHealthMax[boss])
 			Debug("%N (client index %i, boss index %i) has %i lives", Boss[boss], Boss[boss], boss, BossLivesMax[boss]);
 		}
 	}
@@ -3347,7 +3350,8 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		return Plugin_Continue;
 	}
 
-//TODO: "By Definition Index", "onhit", "ontakedamage", "removeattrib"
+	//TODO: "By Definition Index", "onhit", "ontakedamage", "removeattrib"
+	//TODO: Also support comma-delimited strings, eg "38, 457" or "tf_weapon_knife, tf_weapon_katana"
 	static Handle:weapon;
 	if(weapon!=INVALID_HANDLE)
 	{
@@ -3364,10 +3368,10 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 			Debug("Keyvalues: Entered classname (classname %s)", classname);
 			if(KvJumpToKey(kvWeaponMods, "replace"))
 			{
-				Debug("Keyvalues classname: Entered replace");
+				Debug("\tKeyvalues classname: Entered replace");
 				new String:newClass[64];
 				KvGetString(kvWeaponMods, "classname", newClass, sizeof(newClass));
-				Debug("Keyvalues classname>replace: New classname is %s", newClass);
+				Debug("\t\tKeyvalues classname>replace: New classname is %s", newClass);
 
 				new flags=OVERRIDE_ITEM_DEF|OVERRIDE_ATTRIBUTES|FORCE_GENERATION;
 				new index=KvGetNum(kvWeaponMods, "index", -1);
@@ -3408,9 +3412,9 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				TF2Items_SetClassname(weapon, classname);
 				TF2Items_SetQuality(weapon, quality);
 				TF2Items_SetLevel(weapon, level);
-				Debug("Keyvalues classname>replace: Gave new weapon with classname %s, quality %i, and level %i", classname, quality, level);
+				Debug("\t\tKeyvalues classname>replace: Gave new weapon with classname %s, quality %i, and level %i", classname, quality, level);
 				new entity=TF2Items_GiveNamedItem(client, weapon);
-				Debug("Keyvalues classname>replace: Entity was %i", entity);
+				Debug("\t\tKeyvalues classname>replace: Entity was %i", entity);
 				//CloseHandle(weapon);
 				EquipPlayerWeapon(client, entity);
 				KvGoBack(kvWeaponMods);
@@ -3418,25 +3422,25 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 
 			if(KvJumpToKey(kvWeaponMods, "removeattribs"))  //TODO: remove-all (TF2Attrib)
 			{
-				Debug("Keyvalues classname: Entered removeattribs");
+				Debug("\tKeyvalues classname: Entered removeattribs");
 				if(KvGotoFirstSubKey(kvWeaponMods, false))
 				{
-					Debug("Keyvalues classname>removeattribs: Entered first subkey");
+					Debug("\t\tKeyvalues classname>removeattribs: Entered first subkey");
 					decl attributes[64];
 					new attribCount=1;
 
 					attributes[0]=KvGetNum(kvWeaponMods, "1");
-					Debug("Keyvalues classname>removeattribs: First attrib was %i", attributes[0]);
+					Debug("\t\tKeyvalues classname>removeattribs: First attrib was %i", attributes[0]);
 
 					for(new key=2; KvGotoNextKey(kvWeaponMods, false); key++)
 					{
 						decl String:temp[4];
 						IntToString(key, temp, sizeof(temp));
 						attributes[key]=KvGetNum(kvWeaponMods, temp);
-						Debug("Keyvalues classname>removeattribs: Got attrib %i", attributes[key]);
+						Debug("\t\tKeyvalues classname>removeattribs: Got attrib %i", attributes[key]);
 						attribCount++;
 					}
-					Debug("Keyvalues classname>removeatribs: Final attrib count was %i", attribCount);
+					Debug("\t\tKeyvalues classname>removeatribs: Final attrib count was %i", attribCount);
 
 					if(attribCount>0)
 					{
@@ -3450,7 +3454,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 								return Plugin_Stop;
 							}
 
-							Debug("Keyvalues classname>removeattribs: Removed attribute %i", attributes[attribute]);
+							Debug("\t\tKeyvalues classname>removeattribs: Removed attribute %i", attributes[attribute]);
 							new entity=FindEntityByClassname(-1, classname);
 							if(entity!=-1)
 							{
@@ -3462,32 +3466,32 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				}
 				else
 				{
-					LogError("[FF2 Weapons] There was nothing under \"Removeattribs\" for classname %s!", classname);
+					LogError("[FF2 Weapons] There was nothing under \"removeattribs\" for classname %s!", classname);
 				}
 				KvGoBack(kvWeaponMods);
 			}
 
 			if(KvJumpToKey(kvWeaponMods, "addattribs"))  //TODO: Preserve attributes
 			{
-				Debug("Keyvalues classname: Entered addattribs");
+				Debug("\tKeyvalues classname: Entered addattribs");
 				if(KvGotoFirstSubKey(kvWeaponMods, false))
 				{
-					Debug("Keyvalues classname>addattribs: Entered first subkey");
+					Debug("\t\tKeyvalues classname>addattribs: Entered first subkey");
 					new String:attributes[64][64];
 					new attribCount=1;
 
 					KvGetSectionName(kvWeaponMods, attributes[0], sizeof(attributes));
 					KvGetString(kvWeaponMods, attributes[0], attributes[1], sizeof(attributes));
-					Debug("Keyvalues classname>addattribs: First attrib set was %s ; %s", attributes[0], attributes[1]);
+					Debug("\t\tKeyvalues classname>addattribs: First attrib set was %s ; %s", attributes[0], attributes[1]);
 
 					for(new key=3; KvGotoNextKey(kvWeaponMods, false); key+=2)
 					{
 						KvGetSectionName(kvWeaponMods, attributes[key], sizeof(attributes));
 						KvGetString(kvWeaponMods, attributes[key], attributes[key+1], sizeof(attributes));
-						Debug("Keyvalues classname>addattribs: Got attrib set %s ; %s", attributes[key], attributes[key+1]);
+						Debug("\t\tKeyvalues classname>addattribs: Got attrib set %s ; %s", attributes[key], attributes[key+1]);
 						attribCount++;
 					}
-					Debug("Keyvalues classname>addatribs: Final attrib count was %i", attribCount);
+					Debug("\t\tKeyvalues classname>addatribs: Final attrib count was %i", attribCount);
 
 					if(attribCount%2!=0)
 					{
@@ -3507,7 +3511,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 								return Plugin_Stop;
 							}
 
-							Debug("Keyvalues classname>addattribs: Added attrib set %s ; %s", attributes[attribute], attributes[attribute+1]);
+							Debug("\t\tKeyvalues classname>addattribs: Added attrib set %s ; %s", attributes[attribute], attributes[attribute+1]);
 							new entity=FindEntityByClassname(-1, classname);
 							{
 								TF2Attrib_SetByDefIndex(entity, StringToInt(attributes[attribute]), StringToFloat(attributes[attribute+1]));
@@ -4939,7 +4943,7 @@ public Action:BossTimer(Handle:timer)
 		}
 		validBoss=true;
 
-		SetEntPropFloat(client, Prop_Data, "m_flMaxspeed", BossSpeed[Special[boss]]+0.7*(100-BossHealth[boss]*100/BossLivesMax[boss]/BossHealthMax[boss]));
+		SetEntPropFloat(client, Prop_Data, "m_flMaxspeed", BossSpeed[boss]+0.7*(100-BossHealth[boss]*100/BossLivesMax[boss]/BossHealthMax[boss]));
 
 		if(BossHealth[boss]<=0 && IsPlayerAlive(client))  //Wat.  TODO:  Investigate
 		{
@@ -6925,7 +6929,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 		return defaultValue;
 	}
 
-	if(bMedieval)
+	if(bMedieval && StrEqual(key, "health"))
 	{
 		return RoundFloat(result/3.6);  //TODO: Make this configurable
 	}
