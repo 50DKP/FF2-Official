@@ -1731,14 +1731,14 @@ public LoadCharacter(const String:character[])
 
 public PrecacheCharacter(characterIndex)
 {
-	decl String:file[PLATFORM_MAX_PATH], String:key[PLATFORM_MAX_PATH], String:section[64];
+	decl String:file[PLATFORM_MAX_PATH], String:key[8], String:section[16];
 
 	KvRewind(BossKV[characterIndex]);
 	KvGotoFirstSubKey(BossKV[characterIndex]);
 	while(KvGotoNextKey(BossKV[characterIndex]))
 	{
 		KvGetSectionName(BossKV[characterIndex], section, sizeof(section));
-		if(!strcmp(section, "sound_bgm"))
+		if(StrEqual(section, "sound_bgm"))
 		{
 			for(new i=1; ; i++)
 			{
@@ -1754,10 +1754,11 @@ public PrecacheCharacter(characterIndex)
 		}
 		else if(StrEqual(section, "mod_precache") || !StrContains(section, "sound_") || StrEqual(section, "catch_phrase"))
 		{
+			Debug("Entered section %s", section);
 			for(new i=1; ; i++)
 			{
 				IntToString(i, key, sizeof(key));
-				KvGetString(BossKV[characterIndex], key, file, PLATFORM_MAX_PATH);
+				KvGetString(BossKV[characterIndex], key, file, sizeof(file));
 				if(!file[0])
 				{
 					break;
@@ -5057,14 +5058,16 @@ public Action:BossTimer(Handle:timer)
 					KvRewind(BossKV[Special[boss2]]);
 					KvGetString(BossKV[Special[boss2]], "name", name, sizeof(name), "=Failed name=");
 					//Format(bossLives, sizeof(bossLives), ((BossLives[boss2]>1) ? ("x%i", BossLives[boss2]) : ("")));
+					decl String:bossLives[4];
 					if(BossLives[boss2]>1)
 					{
-						Format(message, sizeof(message), "%s\n%s's HP: %i of %ix%i", message, name, BossHealth[boss2]-BossHealthMax[boss2]*(BossLives[boss2]-1), BossHealthMax[boss2], BossLives[boss2]);
+						Format(bossLives, sizeof(bossLives), "x%i", BossLives[boss2]);
 					}
 					else
 					{
-						Format(message, sizeof(message), "%s\n%s's HP: %i of %i", message, name, BossHealth[boss2]-BossHealthMax[boss2]*(BossLives[boss2]-1), BossHealthMax[boss2]);
+						Format(bossLives, sizeof(bossLives), "");
 					}
+					Format(message, sizeof(message), "%s\n%t", message, "ff2_hp", name, BossHealth[boss2]-BossHealthMax[boss2]*(BossLives[boss2]-1), BossHealthMax[boss2], bossLives);
 				}
 			}
 
@@ -6750,23 +6753,19 @@ stock GetBossIndex(client)
 stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 {
 	new Float:sum=GetArrayCell(sumArray, bracket);
-	Debug("Sum for bracket %i is %f, value is %f", bracket, sum, value);
 	switch(GetArrayCell(_operator, bracket))
 	{
 		case Operator_Add:
 		{
 			SetArrayCell(sumArray, bracket, sum+value);
-			Debug("sumArray for bracket %i is now %f", bracket, sum+value);
 		}
 		case Operator_Subtract:
 		{
 			SetArrayCell(sumArray, bracket, sum-value);
-			Debug("sumArray for bracket %i is now %f", bracket, sum-value);
 		}
 		case Operator_Multiply:
 		{
 			SetArrayCell(sumArray, bracket, sum*value);
-			Debug("sumArray for bracket %i is now %f", bracket, sum*value);
 		}
 		case Operator_Divide:
 		{
@@ -6777,17 +6776,14 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 				return;
 			}
 			SetArrayCell(sumArray, bracket, sum/value);
-			Debug("sumArray for bracket %i is now %f", bracket, sum/value);
 		}
 		case Operator_Exponent:
 		{
 			SetArrayCell(sumArray, bracket, Pow(sum, value));
-			Debug("sumArray for bracket %i is now %f", bracket, Pow(sum, value));
 		}
 		default:
 		{
 			SetArrayCell(sumArray, bracket, value);  //This means we're dealing with a constant
-			Debug("sumArray for bracket %i is now %f", bracket, value);
 		}
 	}
 	SetArrayCell(_operator, bracket, Operator_None);
@@ -6829,7 +6825,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			matchingBrackets++;
 		}
 	}
-	Debug("Final array size is %i", size);
 
 	new Handle:sumArray=CreateArray(_, size), Handle:_operator=CreateArray(_, size);
 	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum
@@ -6840,7 +6835,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	for(new i; i<=strlen(formula); i++)
 	{
 		character[0]=formula[i];  //Find out what the next char in the formula is
-		Debug("Character: %c", character[0]);
 		switch(character[0])
 		{
 			case ' ', '\t':  //Ignore whitespace
@@ -6850,7 +6844,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			case '(':
 			{
 				bracket++;  //We've just entered a new parentheses so increment the bracket value
-				Debug("Entered a new bracket (%i)", bracket);
 				SetArrayCell(sumArray, bracket, 0.0);
 				SetArrayCell(_operator, bracket, Operator_None);
 			}
@@ -6865,7 +6858,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 					return defaultValue;
 				}
 
-				Debug("Exited bracket %i", bracket);
 				if(--bracket<0)  //Something like (5))
 				{
 					LogError("[FF2 Bosses] %s's %s formula has an unbalanced parentheses at character %i", bossName, key, i+1);
@@ -6878,7 +6870,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			}
 			case '\0':  //End of formula
 			{
-				Debug("END OF FORMULA");
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 			}
 			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
@@ -6920,7 +6911,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	}
 
 	new result=RoundFloat(GetArrayCell(sumArray, 0));
-	Debug("FINAL RESULT IS %i", result);
 	CloseHandle(sumArray);
 	CloseHandle(_operator);
 	if(result<=0)
