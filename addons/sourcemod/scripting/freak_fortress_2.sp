@@ -2712,7 +2712,7 @@ public Action:StartBossTimer(Handle:timer)
 			BossHealthMax[boss]=ParseFormula(boss, "health", "(((760.8+n)*(n-1))^1.0341)+2046", RoundFloat(Pow((760.8+Float:playing)*(Float:playing-1.0), 1.0341)+2046.0));
 			BossLivesMax[boss]=BossLives[boss]=ParseFormula(boss, "lives", "1", 1);
 			BossHealth[boss]=BossHealthLast[boss]=BossHealthMax[boss]*BossLivesMax[boss];
-			BossRageDamage[boss]=ParseFormula(boss, "ragedamage", "1", 1);
+			BossRageDamage[boss]=ParseFormula(boss, "rage_damage", "1", 1);
 			BossSpeed[boss]=ParseFormula(boss, "speed", "340", 340);
 			//BossSpeed[Special[boss]]+0.7*(100-BossHealth[boss]*100/BossLivesMax[boss]/BossHealthMax[boss])
 			Debug("%N (client index %i, boss index %i) has %i lives", Boss[boss], Boss[boss], boss, BossLivesMax[boss]);
@@ -6829,7 +6829,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	}
 
 	new Handle:sumArray=CreateArray(_, size), Handle:_operator=CreateArray(_, size);
-	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum
+	new bracket, escapeCharacter;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum
 	SetArrayCell(sumArray, 0, 0.0);  //TODO:  See if these can be placed naturally in the loop
 	SetArrayCell(_operator, bracket, Operator_None);
 
@@ -8648,41 +8648,47 @@ public Native_GetRoundState(Handle:plugin, numParams)
 
 public Native_GetRageDist(Handle:plugin, numParams)
 {
-	new index=GetNativeCell(1);
-	decl String:plugin_name[64];
-	GetNativeString(2,plugin_name,64);
-	decl String:ability_name[64];
-	GetNativeString(3,ability_name,64);
+	new boss=GetNativeCell(1);
+	decl String:pluginName[64];
+	GetNativeString(2, pluginName, sizeof(pluginName));
+	decl String:abilityName[64];
+	GetNativeString(3, abilityName, sizeof(abilityName));
 
-	if(!BossKV[Special[index]]) return _:0.0;
-	KvRewind(BossKV[Special[index]]);
-	decl Float:see;
-	if(!ability_name[0])
+	if(!BossKV[Special[boss]])  //Invalid boss
 	{
-		return _:KvGetFloat(BossKV[Special[index]],"ragedist",400.0);
+		return 0.0;
 	}
-	decl String:s[10];
-	for(new i=1; i<MAXRANDOMS; i++)
+
+	KvRewind(BossKV[Special[boss]]);
+	new Float:see;
+	if(!abilityName[0])
 	{
-		Format(s,10,"ability%i",i);
-		if(KvJumpToKey(BossKV[Special[index]],s))
+		return KvGetFloat(BossKV[Special[boss]], "ragedist", 400.0);
+	}
+
+	decl String:ability[10];
+	for(new key=1; key<MAXRANDOMS; key++)
+	{
+		Format(ability, sizeof(ability), "ability%i", key);
+		if(KvJumpToKey(BossKV[Special[boss]], ability))
 		{
 			decl String:ability_name2[64];
-			KvGetString(BossKV[Special[index]], "name",ability_name2,64);
-			if(strcmp(ability_name,ability_name2))
+			KvGetString(BossKV[Special[boss]], "name", ability_name2, sizeof(ability_name2));
+			if(strcmp(abilityName, ability_name2))
 			{
-				KvGoBack(BossKV[Special[index]]);
+				KvGoBack(BossKV[Special[boss]]);
 				continue;
 			}
-			if((see=KvGetFloat(BossKV[Special[index]],"dist",-1.0))<0)
+
+			if((see=KvGetFloat(BossKV[Special[boss]], "dist", -1.0))<0)
 			{
-				KvRewind(BossKV[Special[index]]);
-				see=KvGetFloat(BossKV[Special[index]],"ragedist",400.0);
+				KvRewind(BossKV[Special[boss]]);
+				see=KvGetFloat(BossKV[Special[boss]], "ragedist", 400.0);
 			}
-			return _:see;
+			return see;
 		}
 	}
-	return _:0.0;
+	return 0.0;
 }
 
 public Native_HasAbility(Handle:plugin, numParams)
