@@ -8657,7 +8657,7 @@ public Native_GetRageDist(Handle:plugin, numParams)
 
 	if(!BossKV[Special[boss]])  //Invalid boss
 	{
-		_:return 0.0;
+		return _:0.0;
 	}
 
 	KvRewind(BossKV[Special[boss]]);
