@@ -197,7 +197,7 @@
 	"Boss Win Final Health"
 	{
 		"#format" "{1:s},{2:i},{3:i},{4:s}"
-		"en"	"{1}'s HP: {2} of {3}{4}"
+		"en"	"{1}'s health: {2} of {3}{4}"
 	}
 	"Vote for Character Set"
 	{

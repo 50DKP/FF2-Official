@@ -916,6 +916,7 @@ new Handle:OnAddQueuePoints;
 new Handle:OnLoadCharacterSet;
 new Handle:OnLoseLife;
 new Handle:OnAlivePlayersChanged;
+new Handle:OnParseUnknownVariable;
 
 new bool:bBlockVoice[MAXSPECIALS];
 //new Float:BossSpeed[MAXSPECIALS];
@@ -990,6 +991,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	OnLoadCharacterSet=CreateGlobalForward("FF2_OnLoadCharacterSet", ET_Hook, Param_CellByRef, Param_String);
 	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell);  //Boss, lives left, max lives
 	OnAlivePlayersChanged=CreateGlobalForward("FF2_OnAlivePlayersChanged", ET_Hook, Param_Cell, Param_Cell);  //Players, bosses
+	OnParseUnknownVariable=CreateGlobalForward("FF2_OnParseUnknownVariable", ET_Hook, Param_String, Param_FloatByRef);  //Variable, value
 
 	RegPluginLibrary("freak_fortress_2");
 
@@ -6831,7 +6833,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	SetArrayCell(sumArray, 0, 0.0);  //TODO:  See if these can be placed naturally in the loop
 	SetArrayCell(_operator, bracket, Operator_None);
 
-	new String:character[2], String:value[16];  //We don't decl value because we directly append characters to it and there's no point in decl'ing character
+	new String:character[2], String:value[16], String:variable[16];  //We don't decl these because we directly append characters to them and there's no point in decl'ing character
 	for(new i; i<=strlen(formula); i++)
 	{
 		character[0]=formula[i];  //Find out what the next char in the formula is
@@ -6876,9 +6878,61 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			{
 				StrCat(value, sizeof(value), character);  //Constant?  Just add it to the current value
 			}
-			case 'n', 'x':  //n and x denote player variables
+			/*case 'n', 'x':  //n and x denote player variables
 			{
 				Operate(sumArray, bracket, float(playing), _operator);
+			}*/
+			case '{':
+			{
+				escapeCharacter=true;
+			}
+			case '}':
+			{
+				if(!escapeCharacter)
+				{
+					LogError("[FF2 Bosses] %s's %s formula has an invalid escape character at character %i", bossName, key, i+1);
+					CloseHandle(sumArray);
+					CloseHandle(_operator);
+					return defaultValue;
+				}
+				escapeCharacter=false;
+
+				if(StrEqual(value, "players", false))
+				{
+					Operate(sumArray, bracket, float(playing), _operator);
+				}
+				else if(StrEqual(value, "health", false))
+				{
+					Operate(sumArray, bracket, float(BossHealth[boss]), _operator);
+				}
+				else if(StrEqual(value, "lives", false))
+				{
+					Operate(sumArray, bracket, float(BossLives[boss]), _operator);
+				}
+				else if(StrEqual(value, "speed", false))
+				{
+					Operate(sumArray, bracket, BossSpeed[boss], _operator);
+				}
+				else
+				{
+					new Action:action, Float:variableValue;
+					Call_StartForward(OnParseUnknownVariable);
+					Call_PushString(variable);
+					Call_PushFloatRef(variableValue);
+					Call_Finish();
+
+					if(action==Plugin_Changed)
+					{
+						Operate(sumArray, bracket, variableValue, _operator);
+					}
+					else
+					{
+						LogError("[FF2 Bosses] %s's %s formula has an unknown variable %s", bossName, key, variable);
+						CloseHandle(sumArray);
+						CloseHandle(_operator);
+						return defaultValue;
+					}
+				}
 			}
 			case '+', '-', '*', '/', '^':
 			{
@@ -6905,6 +6959,20 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 					{
 						SetArrayCell(_operator, bracket, Operator_Exponent);
 					}
+				}
+			}
+			default:
+			{
+				if(escapeCharacter)  //Absorb all the characters into 'variable' if we hit an escape character
+				{
+					StrCat(variable, sizeof(variable), character);
+				}
+				else
+				{
+					LogError("[FF2 Bosses] %s's %s formula has an invalid character at character %i", bossName, key, i+1);
+					CloseHandle(sumArray);
+					CloseHandle(_operator);
+					return defaultValue;
 				}
 			}
 		}
@@ -8302,11 +8370,11 @@ stock FindEntityByClassname2(startEnt, const String:classname[])
 	return FindEntityByClassname(startEnt, classname);
 }
 
-UseAbility(const String:ability_name[], const String:plugin_name[], client, slot, buttonMode=0)
+UseAbility(const String:ability_name[], const String:plugin_name[], boss, slot, buttonMode=0)
 {
 	new bool:enabled=true;
 	Call_StartForward(PreAbility);
-	Call_PushCell(client);
+	Call_PushCell(boss);
 	Call_PushString(plugin_name);
 	Call_PushString(ability_name);
 	Call_PushCell(slot);
@@ -8320,7 +8388,7 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 
 	new Action:action=Plugin_Continue;
 	Call_StartForward(OnAbility);
-	Call_PushCell(client);
+	Call_PushCell(boss);
 	Call_PushString(plugin_name);
 	Call_PushString(ability_name);
 	if(slot==-1)
@@ -8330,10 +8398,10 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 	}
 	else if(!slot)
 	{
-		FF2flags[Boss[client]]&=~FF2FLAG_BOTRAGE;
+		FF2flags[Boss[boss]]&=~FF2FLAG_BOTRAGE;
 		Call_PushCell(3);  //Status - we're assuming here a rage ability will always be in use if it gets called
 		Call_Finish(action);
-		BossCharge[client][slot]=0.0;
+		BossCharge[boss][slot]=0.0;
 	}
 	else
 	{
@@ -8351,72 +8419,72 @@ UseAbility(const String:ability_name[], const String:plugin_name[], client, slot
 			}
 		}
 
-		if(GetClientButtons(Boss[client]) & button)
+		if(GetClientButtons(Boss[boss]) & button)
 		{
-			if(!(FF2flags[Boss[client]] & FF2FLAG_USINGABILITY))
+			if(!(FF2flags[Boss[boss]] & FF2FLAG_USINGABILITY))
 			{
-				FF2flags[Boss[client]]|=FF2FLAG_USINGABILITY;
+				FF2flags[Boss[boss]]|=FF2FLAG_USINGABILITY;
 				switch(buttonMode)
 				{
 					case 2:
 					{
-						SetInfoCookies(Boss[client], 0, CheckInfoCookies(Boss[client], 0)-1);
+						SetInfoCookies(Boss[boss], 0, CheckInfoCookies(Boss[boss], 0)-1);
 					}
 					default:
 					{
-						SetInfoCookies(Boss[client], 1, CheckInfoCookies(Boss[client], 1)-1);
+						SetInfoCookies(Boss[boss], 1, CheckInfoCookies(Boss[boss], 1)-1);
 					}
 				}
 			}
 
-			if(BossCharge[client][slot]>=0.0)
+			if(BossCharge[boss][slot]>=0.0)
 			{
 				Call_PushCell(2);  //Status
 				Call_Finish(action);
-				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(client, plugin_name, ability_name, 1, 1.5);
-				if(BossCharge[client][slot]+charge<100.0)
+				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(boss, plugin_name, ability_name, 1, 1.5);
+				if(BossCharge[boss][slot]+charge<100.0)
 				{
-					BossCharge[client][slot]+=charge;
+					BossCharge[boss][slot]+=charge;
 				}
 				else
 				{
-					BossCharge[client][slot]=100.0;
+					BossCharge[boss][slot]=100.0;
 				}
 			}
 			else
 			{
 				Call_PushCell(1);  //Status
 				Call_Finish(action);
-				BossCharge[client][slot]+=0.2;
+				BossCharge[boss][slot]+=0.2;
 			}
 		}
-		else if(BossCharge[client][slot]>0.3)
+		else if(BossCharge[boss][slot]>0.3)
 		{
 			new Float:angles[3];
-			GetClientEyeAngles(Boss[client], angles);
+			GetClientEyeAngles(Boss[boss], angles);
 			if(angles[0]<-45.0)
 			{
 				Call_PushCell(3);
 				Call_Finish(action);
 				new Handle:data;
 				CreateDataTimer(0.1, Timer_UseBossCharge, data);
-				WritePackCell(data, client);
+				WritePackCell(data, boss);
 				WritePackCell(data, slot);
-				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(client, plugin_name, ability_name, 2, 5.0));
+				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(boss, plugin_name, ability_name, 2, 5.0));
 				ResetPack(data);
 			}
 			else
 			{
 				Call_PushCell(0);  //Status
 				Call_Finish(action);
-				BossCharge[client][slot]=0.0;
+				BossCharge[boss][slot]=0.0;
 			}
 		}
-		else if(BossCharge[client][slot]<0.0)
+		else if(BossCharge[boss][slot]<0.0)
 		{
 			Call_PushCell(1);  //Status
 			Call_Finish(action);
-			BossCharge[client][slot]+=0.2;
+			BossCharge[boss][slot]+=0.2;
 		}
 		else
 		{
