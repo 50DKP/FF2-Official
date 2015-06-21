@@ -30,7 +30,8 @@ First of all, thanks for considering to create an issue!  If you could just plea
 	* No spaces between parentheses or most operators (=, ==, *, |, &, etc)
 		* **Exception**: One space between &&, ||, ;, and ,
 		* *Note*: & and | formatting rules are currently not enforced
-	* Tabs, not spaces
+	* Tabs, not spaces for initial whitespace
+	* Use spaces to line up code
 	* No tabs on newline
 	* No whitespace after a line
 	* No trailing newline at the end of the file
@@ -57,6 +58,11 @@ if(markdownIsStupid)
 	}
 
 	someBitWiseThing[someNumber]=someBitWiseThing[someNumber]|coolBitWiseVariable;
+
+	new hi;  //This line uses tabs for the initial whitespace
+	new cool,  //So do these lines, but then they use spaces to line up the variable names
+	    awesome,
+		wow;
 	return;
 }
 ```
