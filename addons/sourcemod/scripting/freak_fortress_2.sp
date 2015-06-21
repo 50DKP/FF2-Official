@@ -2713,7 +2713,7 @@ public Action:StartBossTimer(Handle:timer)
 			BossLivesMax[boss]=BossLives[boss]=ParseFormula(boss, "lives", "1", 1);
 			BossHealth[boss]=BossHealthLast[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 			BossRageDamage[boss]=ParseFormula(boss, "rage_damage", "1", 1);
-			BossSpeed[boss]=ParseFormula(boss, "speed", "340", 340);
+			BossSpeed[boss]=float(ParseFormula(boss, "speed", "340", 340));
 			//BossSpeed[Special[boss]]+0.7*(100-BossHealth[boss]*100/BossLivesMax[boss]/BossHealthMax[boss])
 			Debug("%N (client index %i, boss index %i) has %i lives", Boss[boss], Boss[boss], boss, BossLivesMax[boss]);
 		}
@@ -6829,7 +6829,8 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	}
 
 	new Handle:sumArray=CreateArray(_, size), Handle:_operator=CreateArray(_, size);
-	new bracket, escapeCharacter;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum
+	new bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum
+	new bool:escapeCharacter;
 	SetArrayCell(sumArray, 0, 0.0);  //TODO:  See if these can be placed naturally in the loop
 	SetArrayCell(_operator, bracket, Operator_None);
 
@@ -8656,14 +8657,14 @@ public Native_GetRageDist(Handle:plugin, numParams)
 
 	if(!BossKV[Special[boss]])  //Invalid boss
 	{
-		return 0.0;
+		_:return 0.0;
 	}
 
 	KvRewind(BossKV[Special[boss]]);
 	new Float:see;
 	if(!abilityName[0])
 	{
-		return KvGetFloat(BossKV[Special[boss]], "ragedist", 400.0);
+		return _:KvGetFloat(BossKV[Special[boss]], "ragedist", 400.0);
 	}
 
 	decl String:ability[10];
@@ -8685,10 +8686,10 @@ public Native_GetRageDist(Handle:plugin, numParams)
 				KvRewind(BossKV[Special[boss]]);
 				see=KvGetFloat(BossKV[Special[boss]], "ragedist", 400.0);
 			}
-			return see;
+			return _:see;
 		}
 	}
-	return 0.0;
+	return _:0.0;
 }
 
 public Native_HasAbility(Handle:plugin, numParams)
