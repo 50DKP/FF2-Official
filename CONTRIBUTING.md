@@ -62,7 +62,7 @@ if(markdownIsStupid)
 	new hi;  //This line uses tabs for the initial whitespace
 	new cool,  //So do these lines, but then they use spaces to line up the variable names
 	    awesome,
-		wow;
+	    wow;
 	return;
 }
 ```
