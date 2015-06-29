@@ -1761,7 +1761,6 @@ public PrecacheCharacter(characterIndex)
 		}
 		else if(StrEqual(section, "mod_precache") || !StrContains(section, "sound_") || StrEqual(section, "catch_phrase"))
 		{
-			Debug("Entered section %s", section);
 			for(new i=1; ; i++)
 			{
 				IntToString(i, key, sizeof(key));
@@ -2725,7 +2724,6 @@ public Action:StartBossTimer(Handle:timer)
 			BossLives[boss]=BossLivesMax[boss];
 			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 			BossHealthLast[boss]=BossHealth[boss];
-			Debug("%N (client index %i, boss index %i) has %i lives", Boss[boss], Boss[boss], boss, BossLivesMax[boss]);
 		}
 	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -7175,18 +7173,12 @@ FindCompanion(boss, players, bool:omit[])
 				BossRageDamage[companion]=1900;
 			}
 
-			Debug("Special[%i] is %i", companion, Special[companion]);
-
-			decl String:test[64];
-			KvGetString(BossKV[Special[companion]], "name", test, sizeof(test));
-			Debug("%s", test);
 			BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
 			if(BossLivesMax[companion]<=0)
 			{
 				PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
 				BossLivesMax[companion]=1;
 			}
-			Debug("%N is playing as %s with %i lives", companion, companionName, BossLivesMax[companion]);
 
 			playersNeeded++;
 			FindCompanion(companion, players, omit);  //Make sure this companion doesn't have a companion of their own
