@@ -8385,7 +8385,7 @@ public Native_GetBossCharge(Handle:plugin, numParams)
 	return _:BossCharge[GetNativeCell(1)][GetNativeCell(2)];
 }
 
-public Native_SetBossCharge(Handle:plugin, numParams)
+public Native_SetBossCharge(Handle:plugin, numParams)  //TODO: This duplicates logic found in Timer_UseBossCharge
 {
 	BossCharge[GetNativeCell(1)][GetNativeCell(2)]=Float:GetNativeCell(3);
 }
