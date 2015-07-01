@@ -6574,7 +6574,7 @@ stock LastBossIndex()
 
 stock GetBossIndex(client)
 {
-	if(client>0)
+	if(client>0 && client<=MaxClients)
 	{
 		for(new boss; boss<=MaxClients; boss++)
 		{
