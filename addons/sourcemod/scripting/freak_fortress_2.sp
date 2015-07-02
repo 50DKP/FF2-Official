@@ -3182,8 +3182,6 @@ EquipBoss(boss)
 			new BossWeapon=SpawnWeapon(client, weapon, KvGetNum(BossKV[Special[boss]], "index"), 101, 5, attributes);
 			if(!KvGetNum(BossKV[Special[boss]], "show", 0))
 			{
-				SetEntProp(BossWeapon, Prop_Send, "m_iWorldModelIndex", -1);
-				SetEntProp(BossWeapon, Prop_Send, "m_nModelIndexOverrides", -1, _, 0);
 				SetEntPropFloat(BossWeapon, Prop_Send, "m_flModelScale", 0.001);
 			}
 			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", BossWeapon);
