@@ -4831,11 +4831,11 @@ public Action:BossTimer(Handle:timer)
 					continue;
 				}
 
-				KvGetString(BossKV[Special[boss]], "life", ability, 10, "");
+				KvGetString(BossKV[Special[boss]], "life", ability, sizeof(ability), "");
 				if(!ability[0])
 				{
 					decl String:ability_name[64];
-					KvGetString(BossKV[Special[boss]], "name", ability_name, 64);
+					KvGetString(BossKV[Special[boss]], "name", ability_name, sizeof(ability_name));
 					UseAbility(ability_name, plugin_name, boss, slot, buttonmode);
 				}
 				else
@@ -4846,7 +4846,7 @@ public Action:BossTimer(Handle:timer)
 						if(StringToInt(lives[n])==BossLives[boss])
 						{
 							decl String:ability_name[64];
-							KvGetString(BossKV[Special[boss]], "name", ability_name, 64);
+							KvGetString(BossKV[Special[boss]], "name", ability_name, sizeof(ability_name));
 							UseAbility(ability_name, plugin_name, boss, slot, buttonmode);
 							break;
 						}
