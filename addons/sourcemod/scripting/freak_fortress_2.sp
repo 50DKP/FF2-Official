@@ -3410,7 +3410,15 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}*/
-		case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
+		
+		/*
+			So the Gun Mettle update made the new medigun skins their own weapon ID's, 
+			which will be a complete clusterfuck to add as there are too many of them
+			Commending out old medigun code for sanity's sake.
+																			~SHADoW
+		*/
+		
+		/*case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
 				//10: +25% faster charge rate
@@ -3422,7 +3430,8 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				item=itemOverride;
 				return Plugin_Changed;
 			}
-		}
+		}*/
+		
 		case 220:  //Shortstop
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "328 ; 1.0", true);
@@ -3545,6 +3554,24 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				item=itemOverride;
 				return Plugin_Changed;
 			}
+		}
+	}
+	
+	/*
+		This should futureproof any new medigun reskins that Valve decides to make. 
+																		~SHADoW
+	*/
+	if(!StrContains(classname, "tf_weapon_medigun") && (iItemDefinitionIndex!=35 || iItemDefinitionIndex!=411 || iItemDefinitionIndex!=998))
+	{
+		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+			//10: +25% faster charge rate
+			//178: +25% faster weapon switch
+			//144: Quick-fix speed/jump effects
+			//11: +50% overheal bonus
+		if(itemOverride!=INVALID_HANDLE)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
 		}
 	}
 
@@ -3802,21 +3829,20 @@ public Action:CheckItems(Handle:timer, any:userid)
 
 		if(TF2_GetPlayerClass(client)==TFClass_Medic && GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)  //10 means the weapon is customized, so we don't want to touch those
 		{
-			switch(index)
+			switch(index) // Because Gun Mettle's update is the cause of this reversal. ~SHADoW
 			{
-				case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
+				case 35, 411, 998:  //Kritzkrieg, Quick-Fix, Vaccinator
 				{
-					//NOOP
-				}
-				default:
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 					weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
 						//Switch to regular medigun
 						//10: +25% faster charge rate
 						//178: +25% faster weapon switch
 						//144: Quick-fix speed/jump effects
 						//11: +50% overheal bonus
+				}
+				default:
+				{
+					// frog.
 				}
 			}
 			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
