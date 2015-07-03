@@ -3831,7 +3831,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 		{
 			switch(index) // Because Gun Mettle's update is the cause of this reversal. ~SHADoW
 			{
-				case 35,411,998:  //Kritzkrieg, Quick-Fix, Vaccinator
+				case 35, 411, 998:  //Kritzkrieg, Quick-Fix, Vaccinator
 				{
 					weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
 						//Switch to regular medigun
