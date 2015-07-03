@@ -8756,7 +8756,11 @@ public OnEntityCreated(entity, const String:classname[])
 		}
 	}
 
-	if(StrContains(classname, "item_healthkit")!=-1 || StrContains(classname, "item_ammopack")!=-1 || StrEqual(classname, "tf_ammo_pack"))
+	if(StrEqual(classname, "tf_dropped_weapon"))
+	{
+		AcceptEntityInput(entity, "kill");
+	}
+	else if(StrContains(classname, "item_healthkit")!=-1 || StrContains(classname, "item_ammopack")!=-1 || StrEqual(classname, "tf_ammo_pack"))
 	{
 		SDKHook(entity, SDKHook_Spawn, OnItemSpawned);
 	}
