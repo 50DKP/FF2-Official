@@ -3829,21 +3829,20 @@ public Action:CheckItems(Handle:timer, any:userid)
 
 		if(TF2_GetPlayerClass(client)==TFClass_Medic && GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)  //10 means the weapon is customized, so we don't want to touch those
 		{
-			switch(index)
+			switch(index) // Because Gun Mettle's update is the cause of this reversal. ~SHADoW
 			{
-				case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
+				case 35,411,998:  //Kritzkrieg, Quick-Fix, Vaccinator
 				{
-					//NOOP
-				}
-				default:
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 					weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
 						//Switch to regular medigun
 						//10: +25% faster charge rate
 						//178: +25% faster weapon switch
 						//144: Quick-fix speed/jump effects
 						//11: +50% overheal bonus
+				}
+				default:
+				{
+					// frog.
 				}
 			}
 			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
