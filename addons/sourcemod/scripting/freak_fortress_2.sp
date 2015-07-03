@@ -3401,7 +3401,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}
-/*		case 132, 266, 482:
+		/*case 132, 266, 482:  //Eyelander, HHHH, Nessie's Nine Iron - commented out because
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "202 ; 0.5 ; 125 ; -15", true);
 			if(itemOverride!=INVALID_HANDLE)
@@ -3410,7 +3410,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}*/
-		case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
+		/*case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Pre-Gunmettle mediguns - commented out because Gunmettle added too many (now handled below)
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
 				//10: +25% faster charge rate
@@ -3422,8 +3422,8 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				item=itemOverride;
 				return Plugin_Changed;
 			}
-		}
-		case 220:  //Shortstop
+		}*/
+		/*case 220:  //Shortstop - commented out because the 328 attrib is rather useless and reload penalty is no more since Gunmettle
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "328 ; 1.0", true);
 			if(itemOverride!=INVALID_HANDLE)
@@ -3431,7 +3431,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				item=itemOverride;
 				return Plugin_Changed;
 			}
-		}
+		}*/
 		case 226:  //Battalion's Backup
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "140 ; 10.0");
@@ -3548,7 +3548,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 	}
 
-	if(TF2_GetPlayerClass(client)==TFClass_Soldier && (!strncmp(classname, "tf_weapon_rocketlauncher", 24, false) || !strncmp(classname, "tf_weapon_shotgun", 17, false)))
+	if(TF2_GetPlayerClass(client)==TFClass_Soldier && (!StrContains(classname, "tf_weapon_rocketlauncher", false) || !StrContains(classname, "tf_weapon_shotgun", false)))
 	{
 		new Handle:itemOverride;
 		if(iItemDefinitionIndex==127)  //Direct Hit
@@ -3566,6 +3566,20 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 			return Plugin_Changed;
 		}
 	}
+
+	if(!StrContains(classname, "tf_weapon_medigun") && (iItemDefinitionIndex!=35 || iItemDefinitionIndex!=411 || iItemDefinitionIndex!=998))  //Kritzkrieg, Quick Fix, Vaccinator
+    {
+        new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+            //10: +25% faster charge rate
+            //178: +25% faster weapon switch
+            //144: Quick-fix speed/jump effects
+            //11: +50% overheal bonus
+        if(itemOverride!=INVALID_HANDLE)
+        {
+            item=itemOverride;
+            return Plugin_Changed;
+        }
+    }
 	return Plugin_Continue;
 }
 
@@ -3804,11 +3818,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 		{
 			switch(index)
 			{
-				case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Renamed/Strange, Festive, Silver Botkiller, Gold Botkiller, Rusty Botkiller, Bloody Botkiller, Carbonado Botkiller, Diamond Botkiller Mk.II, Silver Botkiller Mk.II, and Gold Botkiller Mk.II Mediguns
-				{
-					//NOOP
-				}
-				default:
+				case 35, 411, 998:  //Kritzkrieg, Quick Fix, Vaccinator
 				{
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 					weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
@@ -4512,7 +4522,7 @@ public Action:ClientTimer(Handle:timer)
 			{
 				strcopy(classname, sizeof(classname), "");
 			}
-			new bool:validwep=!strncmp(classname, "tf_wea", 6, false);
+			new bool:validwep=!StrContains(classname, "tf_weapon", false);
 
 			if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 			{
@@ -4536,7 +4546,7 @@ public Action:ClientTimer(Handle:timer)
 				{
 					new medigun=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 					decl String:mediclassname[64];
-					if(IsValidEdict(medigun) && GetEdictClassname(medigun, mediclassname, sizeof(mediclassname)) && !strcmp(mediclassname, "tf_weapon_medigun", false))
+					if(IsValidEdict(medigun) && GetEdictClassname(medigun, mediclassname, sizeof(mediclassname)) && !StrContains(mediclassname, "tf_weapon_medigun", false))
 					{
 						new charge=RoundToFloor(GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")*100);
 						SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
@@ -4609,25 +4619,18 @@ public Action:ClientTimer(Handle:timer)
 			}
 
 			new bool:addthecrit=false;
-			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee) && strcmp(classname, "tf_weapon_knife", false))
+			if(!StrContains(classname, "tf_weapon_knife", false) ||
+			  (!StrContains(classname, "tf_weapon_smg") && index!=751) ||  //Cleaner's Carbine
+			   !StrContains(classname, "tf_weapon_compound_bow") ||
+			   !StrContains(classname, "tf_weapon_crossbow") ||
+			   !StrContains(classname, "tf_weapon_pistol") ||
+			   !StrContains(classname, "tf_weapon_handgun"))
 			{
 				addthecrit=true;
-			}
-
-			switch(index)
-			{
-				case 16, 56, 203, 305, 1005, 1079, 1092, 1100, 1149:  //SMG, Huntsman, Strange SMG, Crusader's Crossbow, Festive Huntsman, Festive Crossbow, Fortified Compound, Bread Bite, Festive SMG
-				{
-					addthecrit=true;
-				}
-				case 22, 23, 160, 209, 294, 449, 773:  //Pistol (Engineer), Pistol (Scout), Lugermorph, Strange Pistol, Strange Lugermorph, Winger, Pretty Boy's Pocket Pistol
-				{
-					addthecrit=true;
-					if(class==TFClass_Scout && cond==TFCond_HalloweenCritCandy)
-					{
-						cond=TFCond_Buffed;
-					}
-				}
+				if(class==TFClass_Scout && cond==TFCond_HalloweenCritCandy)
+                {
+                    cond=TFCond_Buffed;
+                }
 			}
 
 			if(index==16 && IsValidEntity(FindPlayerBack(client, 642)))  //SMG, Cozy Camper
@@ -5788,7 +5791,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							damagetype&=~DMG_CRIT;
 						}
-						damage=620.0;
+						damage=124.0;
 						return Plugin_Changed;
 					}
 
@@ -5798,7 +5801,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							damagetype&=~DMG_CRIT;
 						}
-						damage=850.0;
+						damage=106.25;
 						return Plugin_Changed;
 					}
 
@@ -5808,7 +5811,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							damagetype&=~DMG_CRIT;
 						}
-						damage=620.0;
+						damage=124.0;
 						return Plugin_Changed;
 					}
 				}
@@ -5911,28 +5914,28 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					index=-1;
 				}
 
+				//Most sniper rifles aren't handled by the switch/case because of the amount of reskins there are
+                decl String:classname[64];
+                GetEntityClassname(weapon, classname, sizeof(classname));
+                if(!StrContains(classname, "tf_weapon_sniperrifle") && (index!=230 || index!=402 || index!=526 || index!=752))  //Sydney Sleeper, Bazaar Bargain, Machina, Hitman's Heatmaker
+                {
+                    if(CheckRoundState()!=2)
+                    {
+                        new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
+                        new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
+                        time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1.0 : 2.0) : 4.0)*(chargelevel/100.0);
+                        SetClientGlow(Boss[boss], time);
+                        if(GlowTimer[boss]>30.0)
+                        {
+                            GlowTimer[boss]=30.0;
+                        }
+                    }
+                }
+
 				switch(index)
 				{
-					case 14, 201, 230, 402, 526, 664, 752, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Sydney Sleeper, Bazaar Bargain, Machina, Festive Sniper Rifle, Hitman's Heatmaker, Botkiller Sniper Rifles
+					case 230, 402, 526, 752:  //Sydney Sleeper, Bazaar Bargain, Machina, Hitman's Heatmaker
 					{
-						switch(index)
-						{
-							case 14, 201, 664, 792, 801, 851, 881, 890, 899, 908, 957, 966:  //Sniper Rifle, Strange Sniper Rifle, Festive Sniper Rifle, Botkiller Sniper Rifles
-							{
-								if(CheckRoundState()!=2)
-								{
-									new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
-									new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
-									time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1.0 : 2.0) : 4.0)*(chargelevel/100.0);
-									SetClientGlow(Boss[boss], time);
-									if(GlowTimer[boss]>30.0)
-									{
-										GlowTimer[boss]=30.0;
-									}
-								}
-							}
-						}
-
 						if(index==752 && CheckRoundState()!=2)  //Hitman's Heatmaker
 						{
 							new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
@@ -6200,6 +6203,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					else if(index==461)  //Big Earner
 					{
 						SetEntPropFloat(attacker, Prop_Send, "m_flCloakMeter", 100.0);  //Full cloak
+						TF2_AddCondition(attacker, TFCond_SpeedBuffAlly, 3.0);  //Speed boost
 					}
 
 					if(GetIndexOfWeaponSlot(attacker, TFWeaponSlot_Primary)==525)  //Diamondback
@@ -6208,7 +6212,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 
 					decl String:sound[PLATFORM_MAX_PATH];
-					if(RandomSound("sound_stabbed", sound, PLATFORM_MAX_PATH, boss))
+					if(RandomSound("sound_stabbed", sound, sizeof(sound), boss))
 					{
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
