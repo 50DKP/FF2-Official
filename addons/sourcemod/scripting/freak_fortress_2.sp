@@ -5921,7 +5921,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 
 				//Most sniper rifles aren't handled by the switch/case because of the amount of reskins there are
-                if(!StrContains(classname, "tf_weapon_sniperrifle") && (index!=230 || index!=402 || index!=526 || index!=752))  //Sydney Sleeper, Bazaar Bargain, Machina, Hitman's Heatmaker
+				if(!StrContains(classname, "tf_weapon_sniperrifle") && (index!=230 || index!=402 || index!=526 || index!=752))  //Sydney Sleeper, Bazaar Bargain, Machina, Hitman's Heatmaker
                 {
                     if(CheckRoundState()!=2)
                     {
@@ -6099,9 +6099,9 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 								new medigun=GetPlayerWeaponSlot(healers[healer], TFWeaponSlot_Secondary);
 								if(IsValidEntity(medigun))
 								{
-									decl String:classname[64];
-									GetEdictClassname(medigun, classname, sizeof(classname));
-									if(!strcmp(classname, "tf_weapon_medigun", false))
+									decl String:medigunClassname[64];
+									GetEdictClassname(medigun, medigunClassname, sizeof(medigunClassname));
+									if(!strcmp(medigunClassname, "tf_weapon_medigun", false))
 									{
 										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healerCount);
 										new Float:max=1.0;
