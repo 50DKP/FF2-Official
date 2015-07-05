@@ -3572,18 +3572,18 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	}
 
 	if(!StrContains(classname, "tf_weapon_medigun") && (iItemDefinitionIndex!=35 || iItemDefinitionIndex!=411 || iItemDefinitionIndex!=998))  //Kritzkrieg, Quick Fix, Vaccinator
-    {
-        new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
-            //10: +25% faster charge rate
-            //178: +25% faster weapon switch
-            //144: Quick-fix speed/jump effects
-            //11: +50% overheal bonus
-        if(itemOverride!=INVALID_HANDLE)
-        {
-            item=itemOverride;
-            return Plugin_Changed;
-        }
-    }
+	{
+		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+			//10: +25% faster charge rate
+			//178: +25% faster weapon switch
+			//144: Quick-fix speed/jump effects
+			//11: +50% overheal bonus
+		if(itemOverride!=INVALID_HANDLE)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}
+	}
 	return Plugin_Continue;
 }
 
@@ -4632,9 +4632,9 @@ public Action:ClientTimer(Handle:timer)
 			{
 				addthecrit=true;
 				if(class==TFClass_Scout && cond==TFCond_HalloweenCritCandy)
-                {
-                    cond=TFCond_Buffed;
-                }
+				{
+					cond=TFCond_Buffed;
+				}
 			}
 
 			if(index==16 && IsValidEntity(FindPlayerBack(client, 642)))  //SMG, Cozy Camper
@@ -5922,19 +5922,19 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 				//Most sniper rifles aren't handled by the switch/case because of the amount of reskins there are
 				if(!StrContains(classname, "tf_weapon_sniperrifle") && (index!=230 || index!=402 || index!=526 || index!=752))  //Sydney Sleeper, Bazaar Bargain, Machina, Hitman's Heatmaker
-                {
-                    if(CheckRoundState()!=2)
-                    {
-                        new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
-                        new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
-                        time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1.0 : 2.0) : 4.0)*(chargelevel/100.0);
-                        SetClientGlow(Boss[boss], time);
-                        if(GlowTimer[boss]>30.0)
-                        {
-                            GlowTimer[boss]=30.0;
-                        }
-                    }
-                }
+				{
+					if(CheckRoundState()!=2)
+					{
+						new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
+						new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
+						time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1.0 : 2.0) : 4.0)*(chargelevel/100.0);
+						SetClientGlow(Boss[boss], time);
+						if(GlowTimer[boss]>30.0)
+						{
+							GlowTimer[boss]=30.0;
+						}
+					}
+				}
 
 				switch(index)
 				{
