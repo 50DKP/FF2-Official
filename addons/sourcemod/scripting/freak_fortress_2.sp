@@ -3349,7 +3349,11 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 39, 351, 1081:  //Flaregun, Detonator, Festive Flaregun
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "25 ; 0.5 ; 207 ; 1.33 ; 144 ; 1.0 ; 58 ; 3.2", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "25 ; 0.5 ; 58 ; 3.2 ; 144 ; 1.0 ; 207 ; 1.33", true);
+				//25: -50% ammo
+				//58: 220% self damage force
+				//144: NOPE
+				//207: +33% damage to self
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -5896,13 +5900,14 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 
 				new index;
+				decl String:classname[64];
 				if(IsValidEntity(weapon) && weapon>MaxClients && attacker<=MaxClients)
 				{
-					decl String:classname[64];
 					GetEntityClassname(weapon, classname, sizeof(classname));
 					if(!StrContains(classname, "eyeball_boss"))  //Dang spell Monoculuses
 					{
 						index=-1;
+						Format(classname, sizeof(classname), "");
 					}
 					else
 					{
@@ -5912,11 +5917,10 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				else
 				{
 					index=-1;
+					Format(classname, sizeof(classname), "");
 				}
 
 				//Most sniper rifles aren't handled by the switch/case because of the amount of reskins there are
-                decl String:classname[64];
-                GetEntityClassname(weapon, classname, sizeof(classname));
                 if(!StrContains(classname, "tf_weapon_sniperrifle") && (index!=230 || index!=402 || index!=526 || index!=752))  //Sydney Sleeper, Bazaar Bargain, Machina, Hitman's Heatmaker
                 {
                     if(CheckRoundState()!=2)
