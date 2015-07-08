@@ -4623,12 +4623,15 @@ public Action:ClientTimer(Handle:timer)
 			}
 
 			new bool:addthecrit=false;
-			if(!StrContains(classname, "tf_weapon_knife", false) ||
-			  (!StrContains(classname, "tf_weapon_smg") && index!=751) ||  //Cleaner's Carbine
-			   !StrContains(classname, "tf_weapon_compound_bow") ||
-			   !StrContains(classname, "tf_weapon_crossbow") ||
-			   !StrContains(classname, "tf_weapon_pistol") ||
-			   !StrContains(classname, "tf_weapon_handgun"))
+			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee) && strcmp(classname, "tf_weapon_knife", false))  //Every melee except knives
+			{
+				addthecrit=true;
+			}
+			else if((!StrContains(classname, "tf_weapon_smg") && index!=751) ||  //Cleaner's Carbine
+			         !StrContains(classname, "tf_weapon_compound_bow") ||
+			         !StrContains(classname, "tf_weapon_crossbow") ||
+			         !StrContains(classname, "tf_weapon_pistol") ||
+			         !StrContains(classname, "tf_weapon_handgun"))
 			{
 				addthecrit=true;
 				if(class==TFClass_Scout && cond==TFCond_HalloweenCritCandy)
