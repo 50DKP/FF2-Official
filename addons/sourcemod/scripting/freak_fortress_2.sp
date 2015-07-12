@@ -2252,6 +2252,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
 			}
 		}
+		return Plugin_Continue;  //NOTE: This is needed because event_round_start gets fired a second time once both teams have players
 	}
 
 	PickCharacter(0, 0);
