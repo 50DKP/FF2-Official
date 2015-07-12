@@ -186,6 +186,11 @@ new tf_arena_use_queue;
 new mp_teams_unbalance_limit;
 new tf_arena_first_blood;
 new mp_forcecamera;
+new tf_dropped_weapon_lifetime;
+new Float:tf_feign_death_activate_damage_scale;
+new Float:tf_feign_death_damage_scale;
+new Float:tf_stealth_damage_reduction;
+
 new Handle:cvarNextmap;
 new bool:areSubPluginsEnabled;
 
@@ -1248,6 +1253,10 @@ public OnConfigsExecuted()
 	mp_teams_unbalance_limit=GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
 	tf_arena_first_blood=GetConVarInt(FindConVar("tf_arena_first_blood"));
 	mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
+	tf_dropped_weapon_lifetime=bool:GetConVarInt(FindConVar("tf_dropped_weapon_lifetime"));
+	tf_feign_death_activate_damage_scale=GetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"));
+	tf_feign_death_damage_scale=GetConVarFloat(FindConVar("tf_feign_death_damage_scale"));
+	tf_stealth_damage_reduction=GetConVarFloat(FindConVar("tf_stealth_damage_reduction"));
 
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
@@ -1297,6 +1306,11 @@ public OnMapEnd()
 		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
 		SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
 		SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
+		SetConVarInt(FindConVar("tf_dropped_weapon_lifetime"), tf_dropped_weapon_lifetime);
+		SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), tf_feign_death_activate_damage_scale);
+		SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), tf_feign_death_damage_scale);
+		SetConVarFloat(FindConVar("tf_stealth_damage_reduction"), tf_stealth_damage_reduction);
+
 		#if defined _steamtools_included
 		if(steamtools)
 		{
@@ -1365,6 +1379,10 @@ public EnableFF2()
 	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), 0);
 	SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
 	SetConVarInt(FindConVar("mp_forcecamera"), 0);
+	SetConVarInt(FindConVar("tf_dropped_weapon_lifetime"), 0);
+	SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), 0.1);
+	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), 0.1);
+	SetConVarFloat(FindConVar("tf_stealth_damage_reduction"), 0.1);
 
 	new Float:time=Announce;
 	if(time>1.0)
@@ -1409,6 +1427,10 @@ public DisableFF2()
 	SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
 	SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
 	SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
+	SetConVarInt(FindConVar("tf_dropped_weapon_lifetime"), tf_dropped_weapon_lifetime);
+	SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), tf_feign_death_activate_damage_scale);
+	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), tf_feign_death_damage_scale);
+	SetConVarFloat(FindConVar("tf_stealth_damage_reduction"), tf_stealth_damage_reduction);
 
 	if(doorCheckTimer!=INVALID_HANDLE)
 	{
@@ -4530,7 +4552,7 @@ public Action:ClientTimer(Handle:timer)
 			}
 			new bool:validwep=!StrContains(classname, "tf_weapon", false);
 
-			if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
+			/*if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))  //Removed in Gunmettle update
 			{
 				if(GetClientCloakIndex(client)==59)  //Dead Ringer
 				{
@@ -4543,7 +4565,7 @@ public Action:ClientTimer(Handle:timer)
 				{
 					TF2_AddCondition(client, TFCond_DeadRingered, 0.3);
 				}
-			}
+			}*/
 
 			new index=(validwep ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 			if(class==TFClass_Medic)
@@ -5809,33 +5831,23 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			{
 				case TFClass_Spy:
 				{
-					if(GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked))
+					if((GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked)) || GetEntProp(client, Prop_Send, "m_bFeignDeathReady") || TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 					{
 						if(damagetype & DMG_CRIT)
 						{
 							damagetype&=~DMG_CRIT;
 						}
-						damage=124.0;
+						damage=620.0;
 						return Plugin_Changed;
 					}
 
-					if(TF2_IsPlayerInCondition(client, TFCond_Cloaked) && TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
+					if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 					{
 						if(damagetype & DMG_CRIT)
 						{
 							damagetype&=~DMG_CRIT;
 						}
-						damage=106.25;
-						return Plugin_Changed;
-					}
-
-					if(GetEntProp(client, Prop_Send, "m_bFeignDeathReady") || TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
-					{
-						if(damagetype & DMG_CRIT)
-						{
-							damagetype&=~DMG_CRIT;
-						}
-						damage=124.0;
+						TF2_IsPlayerInCondition(client, TFCond_DeadRingered) ? damage=620.0 : damage=850.0;
 						return Plugin_Changed;
 					}
 				}
@@ -8784,11 +8796,7 @@ public OnEntityCreated(entity, const String:classname[])
 		}
 	}
 
-	if(StrEqual(classname, "tf_dropped_weapon"))
-	{
-		AcceptEntityInput(entity, "kill");
-	}
-	else if(StrContains(classname, "item_healthkit")!=-1 || StrContains(classname, "item_ammopack")!=-1 || StrEqual(classname, "tf_ammo_pack"))
+	if(StrContains(classname, "item_healthkit")!=-1 || StrContains(classname, "item_ammopack")!=-1 || StrEqual(classname, "tf_ammo_pack"))
 	{
 		SDKHook(entity, SDKHook_Spawn, OnItemSpawned);
 	}
