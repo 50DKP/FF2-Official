@@ -1020,6 +1020,8 @@ public OnPluginStart()
 	HookEvent("rocket_jump", OnRocketJump);
 	HookEvent("rocket_jump_landed", OnRocketJump);
 
+	HookUserMessage(GetUserMessageId("PlayerJarated"), OnJarate);  //Used to subtract rage when a boss is jarated (not through Sydney Sleeper)
+
 	AddCommandListener(OnCallForMedic, "voicemenu");  //Used to activate rages
 	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding
 	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding
@@ -4631,7 +4633,7 @@ public Action:ClientTimer(Handle:timer)
 			         !StrContains(classname, "tf_weapon_compound_bow") ||
 			         !StrContains(classname, "tf_weapon_crossbow") ||
 			         !StrContains(classname, "tf_weapon_pistol") ||
-			         !StrContains(classname, "tf_weapon_handgun"))
+			         !StrContains(classname, "tf_weapon_handgun_scout_secondary"))
 			{
 				addthecrit=true;
 				if(class==TFClass_Scout && cond==TFCond_HalloweenCritCandy)
@@ -4979,15 +4981,6 @@ public TF2_OnConditionAdded(client, TFCond:condition)
 	if(Enabled && IsBoss(client) && (condition==TFCond_Jarated || condition==TFCond_MarkedForDeath || (condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42))))
 	{
 		TF2_RemoveCondition(client, condition);
-		new boss=GetBossIndex(client);
-		if(condition==TFCond_Jarated && BossCharge[boss][0]>0.0)
-		{
-			BossCharge[boss][0]-=8.0;  //TODO: Allow this to be customizable
-			if(BossCharge[boss][0]<0.0)
-			{
-				BossCharge[boss][0]=0.0;
-			}
-		}
 	}
 }
 
@@ -5348,6 +5341,30 @@ public Action:event_deflect(Handle:event, const String:name[], bool:dontBroadcas
 		if(BossCharge[boss][0]>100.0)
 		{
 			BossCharge[boss][0]=100.0;
+		}
+	}
+	return Plugin_Continue;
+}
+
+public Action:OnJarate(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init)
+{
+	new client=BfReadByte(bf);
+	new victim=BfReadByte(bf);
+	new boss=GetBossIndex(victim);
+	if(boss!=-1)
+	{
+		new jarate=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
+		if(jarate!=-1)
+		{
+			new index=GetEntProp(jarate, Prop_Send, "m_iItemDefinitionIndex");
+			if((index==58 || index==1083 || index==1105) && GetEntProp(jarate, Prop_Send, "m_iEntityLevel")!=-122)  //-122 is the Jar of Ants which isn't really Jarate
+			{
+				BossCharge[boss][0]-=8.0;  //TODO: Allow this to be customizable
+				if(BossCharge[boss][0]<0.0)
+				{
+					BossCharge[boss][0]=0.0;
+				}
+			}
 		}
 	}
 	return Plugin_Continue;
