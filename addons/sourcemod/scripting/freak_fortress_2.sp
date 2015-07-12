@@ -5850,7 +5850,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 						if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 						{
-							damage=620.0
+							damage=620.0;
 						}
 						else
 						{
