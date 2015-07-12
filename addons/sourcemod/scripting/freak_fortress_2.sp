@@ -1671,7 +1671,7 @@ public LoadCharacter(const String:character[])
 	FileToKeyValues(BossKV[Specials], config);
 
 	new version=KvGetNum(BossKV[Specials], "version", 1);
-	if(version!=1)
+	if(version!=MAJOR_REVISION)
 	{
 		LogError("[FF2] Character %s is only compatible with FF2 v%i!", character, version);
 		return;
