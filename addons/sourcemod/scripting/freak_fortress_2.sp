@@ -5847,7 +5847,15 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							damagetype&=~DMG_CRIT;
 						}
-						TF2_IsPlayerInCondition(client, TFCond_DeadRingered)==1 ? damage=620.0 : damage=850.0;
+
+						if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
+						{
+							damage=620.0
+						}
+						else
+						{
+							damage=850.0;
+						}
 						return Plugin_Changed;
 					}
 				}
