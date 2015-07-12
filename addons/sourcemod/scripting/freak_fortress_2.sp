@@ -1671,7 +1671,7 @@ public LoadCharacter(const String:character[])
 	FileToKeyValues(BossKV[Specials], config);
 
 	new version=KvGetNum(BossKV[Specials], "version", 1);
-	if(version!=MAJOR_REVISION)
+	if(version!=StringToInt(MAJOR_REVISION))
 	{
 		LogError("[FF2] Character %s is only compatible with FF2 v%i!", character, version);
 		return;
@@ -5847,7 +5847,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							damagetype&=~DMG_CRIT;
 						}
-						TF2_IsPlayerInCondition(client, TFCond_DeadRingered) ? damage=620.0 : damage=850.0;
+						TF2_IsPlayerInCondition(client, TFCond_DeadRingered)==1 ? damage=620.0 : damage=850.0;
 						return Plugin_Changed;
 					}
 				}
