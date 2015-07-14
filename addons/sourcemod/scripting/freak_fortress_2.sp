@@ -5622,7 +5622,6 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 		if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
 		{
 			SetEntProp(client, Prop_Data, "m_iHealth", (BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1));  //Set the health early to avoid the boss dying from fire, etc.
-			Debug("Health: %i, damage: %i, lives: %i", GetEntProp(client, Prop_Data, "m_iHealth"), damage, lives);
 
 			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
 			Call_StartForward(OnLoseLife);
@@ -5707,6 +5706,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 				EmitSoundToAll(ability);
 			}
 			UpdateHealthBar();
+			break;
 		}
 	}
 
