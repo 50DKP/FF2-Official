@@ -5680,7 +5680,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 					}
 				}
 			}
-			BossLives[boss]--;
+			BossLives[boss]=lives;
 
 			decl String:bossName[64];
 			KvRewind(BossKV[Special[boss]]);
@@ -5705,6 +5705,7 @@ public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
 				EmitSoundToAll(ability);
 				EmitSoundToAll(ability);
 			}
+
 			UpdateHealthBar();
 			break;
 		}
