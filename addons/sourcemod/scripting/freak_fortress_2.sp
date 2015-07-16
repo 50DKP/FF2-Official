@@ -4653,7 +4653,6 @@ public Action:ClientTimer(Handle:timer)
 				addthecrit=true;
 			}
 			else if((!StrContains(classname, "tf_weapon_smg") && index!=751) ||  //Cleaner's Carbine
-			         !StrContains(classname, "tf_weapon_sniperrifle") ||
 			         !StrContains(classname, "tf_weapon_compound_bow") ||
 			         !StrContains(classname, "tf_weapon_crossbow") ||
 			         !StrContains(classname, "tf_weapon_pistol") ||
