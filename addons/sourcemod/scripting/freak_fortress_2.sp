@@ -5976,6 +5976,26 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							GlowTimer[boss]=30.0;
 						}
+
+						if(!(damagetype & DMG_CRIT))  //Duplicates logic in the switch-case below :(
+						{
+							if(TF2_IsPlayerInCondition(attacker, TFCond_CritCola) || TF2_IsPlayerInCondition(attacker, TFCond_Buffed) || TF2_IsPlayerInCondition(attacker, TFCond_CritHype))
+							{
+								damage*=1.7;
+							}
+							else
+							{
+								if(BossCharge[boss][0]>90.0)
+								{
+									damage*=2.9;
+								}
+								else
+								{
+									damage*=2.4;
+								}
+							}
+							return Plugin_Changed;
+						}
 					}
 				}
 
