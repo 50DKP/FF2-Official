@@ -280,6 +280,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.4",
 	"1.10.5",
 	"1.10.6",
+	"1.10.6",
+	"1.10.6",
 	"1.10.6"
 };
 
@@ -345,27 +347,49 @@ static const String:ff2versiondates[][]=
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
 	"March 13, 2015",	//1.10.5
-	"March 26, 2015",	//1.10.6
-	"March 26, 2015"	//1.10.6
+	"July 16, 2015",	//1.10.6
+	"July 16, 2015",	//1.10.6
+	"July 16, 2015",	//1.10.6
+	"July 16, 2015"		//1.10.6
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 61:  //1.10.6
+		case 63:  //1.10.6
 		{
 			DrawPanelText(panel, "1) Updated the default health formula to match VSH's (Wliu)");
-			DrawPanelText(panel, "2) Fixed 'sound_fail' playing even when the boss won (Shadow)");
-			DrawPanelText(panel, "3) Fixed charset voting again (Wliu from Shadow)");
-			DrawPanelText(panel, "4) Fixed bravejump sounds not playing (Wliu from Maximilian_)");
-			DrawPanelText(panel, "5) [Server] Fixed 'UTIL_SetModel not precached' crashes-see #6 for the underlying fix (Shadow/Wliu)");
+			DrawPanelText(panel, "2) Fixed boss weapon animations sometimes not working (Chdata)");
+			DrawPanelText(panel, "3) Disconnecting bosses now get replaced by the person with the second-highest queue points (Shadow)");
+			DrawPanelText(panel, "4) Updated for compatability with the Gunmettle update (Wliu, Shadow, Starblaster64, Chdata, sarysa, and others)");
+			DrawPanelText(panel, "5) Fixed bosses rarely becoming 'living spectators' during the first round (Wliu/Shadow)");
+			DrawPanelText(panel, "See next page (press 1");
+		}
+		case 62:  //1.10.6
+		{
+			DrawPanelText(panel, "6) Fixed large amounts of damage insta-killing multi-life bosses (Wliu from Shadow)");
+			DrawPanelText(panel, "7) Fixed death effects triggering when FF2 wasn't active (Shadow)");
+			DrawPanelText(panel, "8) Fixed 'sound_fail' playing even when the boss won (Shadow)");
+			DrawPanelText(panel, "9) Fixed charset voting again (Wliu from Shadow)");
+			DrawPanelText(panel, "10) Fixed bravejump sounds not playing (Wliu from Maximilian_)");
+			DrawPanelText(panel, "See next page (press 1");
+		}
+		case 61:  //1.10.6
+		{
+			DrawPanelText(panel, "11) Fixed end-of-round text occasionally showing random symbols and file paths (Wliu)");
+			DrawPanelText(panel, "12) [Server] Fixed 'UTIL_SetModel not precached' crashes-see #16 for the underlying fix (Shadow/Wliu)");
+			DrawPanelText(panel, "13) [Server] Fixed Array Index Out of Bounds errors when there are more than 32 chances (Wliu from Maximilian_)");
+			DrawPanelText(panel, "14) [Server] Fixed invalid client errors in easter_abilities.sp (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 60:  //1.10.6
 		{
-			DrawPanelText(panel, "6) [Dev] FF2_GetBossIndex now makes sure the client index passed is valid (Wliu)");
-			DrawPanelText(panel, "7) [Dev] Rewrote the health formula parser and fixed a few bugs along the way (WildCard65)");
+			DrawPanelText(panel, "15) [Dev] Added FF2_StartMusic that was missing from the include file (Wliu from Shadow)");
+			DrawPanelText(panel, "16) [Dev] FF2_GetBossIndex now makes sure the client index passed is valid (Wliu)");
+			DrawPanelText(panel, "17) [Dev] Rewrote the health formula parser and fixed a few bugs along the way (WildCard65/Wliu)");
+			DrawPanelText(panel, "18) [Dev] Prioritized exact matches in OnSpecialSelected (Wliu from Shadow)");
+			DrawPanelText(panel, "19) [Dev] Removed deprecated FCVAR_PLUGIN cvar flags (Wliu)");
 		}
 		case 59:  //1.10.5
 		{
@@ -5963,21 +5987,34 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					Format(classname, sizeof(classname), "");
 				}
 
-				//Most sniper rifles aren't handled by the switch/case because of the amount of reskins there are
-				if(!StrContains(classname, "tf_weapon_sniperrifle") && (index!=230 || index!=402 || index!=526 || index!=752))  //Sydney Sleeper, Bazaar Bargain, Machina, Hitman's Heatmaker
+				//Sniper rifles aren't handled by the switch/case because of the amount of reskins there are
+				if(!StrContains(classname, "tf_weapon_sniperrifle"))
 				{
 					if(CheckRoundState()!=2)
 					{
-						new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
-						new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
-						time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1.0 : 2.0) : 4.0)*(chargelevel/100.0);
-						SetClientGlow(Boss[boss], time);
-						if(GlowTimer[boss]>30.0)
+						new Float:charge=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
+						if(index==752)  //Hitman's Heatmaker
 						{
-							GlowTimer[boss]=30.0;
+							new Float:focus=10+(charge/10);
+							if(TF2_IsPlayerInCondition(attacker, TFCond_FocusBuff))
+							{
+								focus/=3;
+							}
+							new Float:rage=GetEntPropFloat(attacker, Prop_Send, "m_flRageMeter");
+							SetEntPropFloat(attacker, Prop_Send, "m_flRageMeter", (rage+focus>100) ? 100.0 : rage+focus);
+						}
+						else if(index!=230 && index!=402 && index!=526)  //Sydney Sleeper, Bazaar Bargain, Machina
+						{
+							new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
+							time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1.0 : 2.0) : 4.0)*(charge/100.0);
+							SetClientGlow(Boss[boss], time);
+							if(GlowTimer[boss]>30.0)
+							{
+								GlowTimer[boss]=30.0;
+							}
 						}
 
-						if(!(damagetype & DMG_CRIT))  //Duplicates logic in the switch-case below :(
+						if(!(damagetype & DMG_CRIT))
 						{
 							if(TF2_IsPlayerInCondition(attacker, TFCond_CritCola) || TF2_IsPlayerInCondition(attacker, TFCond_Buffed) || TF2_IsPlayerInCondition(attacker, TFCond_CritHype))
 							{
@@ -5985,7 +6022,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 							else
 							{
-								if(BossCharge[boss][0]>90.0)
+								if(index!=230 && BossCharge[boss][0]>90.0)  //Sydney Sleeper
 								{
 									damage*=2.9;
 								}
@@ -6001,40 +6038,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 				switch(index)
 				{
-					case 230, 402, 526, 752:  //Sydney Sleeper, Bazaar Bargain, Machina, Hitman's Heatmaker
-					{
-						if(index==752 && CheckRoundState()!=2)  //Hitman's Heatmaker
-						{
-							new Float:chargelevel=(IsValidEntity(weapon) && weapon>MaxClients ? GetEntPropFloat(weapon, Prop_Send, "m_flChargedDamage") : 0.0);
-							new Float:add=10+(chargelevel/10);
-							if(TF2_IsPlayerInCondition(attacker, TFCond:46))
-							{
-								add/=3;
-							}
-							new Float:rage=GetEntPropFloat(attacker, Prop_Send, "m_flRageMeter");
-							SetEntPropFloat(attacker, Prop_Send, "m_flRageMeter", (rage+add>100) ? 100.0 : rage+add);
-						}
-
-						if(!(damagetype & DMG_CRIT))
-						{
-							if(TF2_IsPlayerInCondition(attacker, TFCond_CritCola) || TF2_IsPlayerInCondition(attacker, TFCond_Buffed) || TF2_IsPlayerInCondition(attacker, TFCond_CritHype))
-							{
-								damage*=1.7;
-							}
-							else
-							{
-								if(index!=230 || BossCharge[boss][0]>90.0)  //Sydney Sleeper
-								{
-									damage*=2.9;
-								}
-								else
-								{
-									damage*=2.4;
-								}
-							}
-							return Plugin_Changed;
-						}
-					}
 					case 61, 1006:  //Ambassador, Festive Ambassador
 					{
 						if(damagecustom==TF_CUSTOM_HEADSHOT)
