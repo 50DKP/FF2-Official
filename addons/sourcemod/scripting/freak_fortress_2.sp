@@ -6022,7 +6022,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 							else
 							{
-								if(index!=230 && BossCharge[boss][0]>90.0)  //Sydney Sleeper
+								if(index!=230 || BossCharge[boss][0]>90.0)  //Sydney Sleeper
 								{
 									damage*=2.9;
 								}
