@@ -60,6 +60,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define DISABLED_PERKS "toxic,noclip,uber,ammo,instant,jump,tinyplayer"
 
 #define OVER_9000 "saxton_hale/9000.wav"
+#define OVER_9000_PREFIX "sound/saxton_hale/9000.wav"
 
 // In rare cases, some server operators may need to undef this.
 #define FILECHECKS_ON
@@ -1614,9 +1615,9 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 		}
 	}
 
-	if(FileExists(OVER_9000, true))
+	if(FileExists(OVER_9000_PREFIX, true))
 	{
-		AddFileToDownloadsTable(OVER_9000);
+		AddFileToDownloadsTable(OVER_9000_PREFIX);
 		PrecacheSound(OVER_9000, true);
 	}
 	PrecacheSound("vo/announcer_am_capincite01.mp3", true);
@@ -1839,7 +1840,9 @@ public LoadCharacter(const String:character[])
 public PrecacheCharacter(characterIndex)
 {
 	decl String:file[PLATFORM_MAX_PATH], String:key[8], String:section[16];
-
+	#if defined FILECHECKS_ON
+	decl String:filePath[PLATFORM_MAX_PATH];
+	#endif
 	KvRewind(BossKV[characterIndex]);
 	KvGotoFirstSubKey(BossKV[characterIndex]);
 	while(KvGotoNextKey(BossKV[characterIndex]))
@@ -1856,8 +1859,15 @@ public PrecacheCharacter(characterIndex)
 				{
 					break;
 				}
-				// DO NOT PLACE FILECHECKS HERE!
-				PrecacheSound(file);				
+				#if defined FILECHECKS_ON
+				Format(filePath, sizeof(filePath), "sound/%s", file);
+				if(FileExists(filePath, true))
+				{
+					PrecacheSound(file);	
+				}
+				#else
+				PrecacheSound(file);
+				#endif
 			}
 		}
 		else if(StrEqual(section, "mod_precache") || !StrContains(section, "sound_") || StrEqual(section, "catch_phrase"))
@@ -1889,8 +1899,15 @@ public PrecacheCharacter(characterIndex)
 				}
 				else
 				{
-					// DO NOT PLACE FILECHECKS HERE!
+					#if defined FILECHECKS_ON
+					Format(filePath, sizeof(filePath), "sound/%s", file);
+					if(FileExists(filePath, true))
+					{
+						PrecacheSound(file);	
+					}
+					#else
 					PrecacheSound(file);
+					#endif
 				}
 			}
 		}
