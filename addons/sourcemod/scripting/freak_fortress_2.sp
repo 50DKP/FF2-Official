@@ -1865,6 +1865,11 @@ public PrecacheCharacter(characterIndex)
 				{
 					PrecacheSound(file);	
 				}
+				else
+				{
+					// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check '%s' in '%s' instead of the below"
+					LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", file, section);
+				}
 				#else
 				PrecacheSound(file);
 				#endif
@@ -1890,8 +1895,8 @@ public PrecacheCharacter(characterIndex)
 					}
 					else
 					{
-						// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check 'mod_precache' in '%s' instead of the below"
-						LogError("[FF2 Bosses] Cannot find '%s'! Please check 'mod_precache'!", file);
+						// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check '%s' in '%s' instead of the below"
+						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", file, section);
 					}
 					#else
 					PrecacheModel(file);
@@ -1904,6 +1909,11 @@ public PrecacheCharacter(characterIndex)
 					if(FileExists(filePath, true))
 					{
 						PrecacheSound(file);	
+					}
+					else
+					{
+						// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check '%s' in '%s' instead of the below"
+						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", file, section);
 					}
 					#else
 					PrecacheSound(file);
