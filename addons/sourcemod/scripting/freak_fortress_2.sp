@@ -1860,7 +1860,7 @@ public PrecacheCharacter(characterIndex)
 					break;
 				}
 				#if defined FILECHECKS_ON
-				Format(filePath, sizeof(filePath), "sound/%s", file);
+				Format(filePath, sizeof(filePath), "sound/%s", file); // we need to add "sound/" before the actual file name for sounds so it passes the FileExists check.
 				if(FileExists(filePath, true))
 				{
 					PrecacheSound(file);	
@@ -1868,7 +1868,7 @@ public PrecacheCharacter(characterIndex)
 				else
 				{
 					// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check '%s' in '%s' instead of the below"
-					LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", file, section);
+					LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", filePath, section);
 				}
 				#else
 				PrecacheSound(file);
@@ -1905,7 +1905,7 @@ public PrecacheCharacter(characterIndex)
 				else
 				{
 					#if defined FILECHECKS_ON
-					Format(filePath, sizeof(filePath), "sound/%s", file);
+					Format(filePath, sizeof(filePath), "sound/%s", file); // Again, we need to add "sound/" before the actual file name for sounds so it passes the FileExists check.
 					if(FileExists(filePath, true))
 					{
 						PrecacheSound(file);	
@@ -1913,7 +1913,7 @@ public PrecacheCharacter(characterIndex)
 					else
 					{
 						// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check '%s' in '%s' instead of the below"
-						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", file, section);
+						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", filePath, section);
 					}
 					#else
 					PrecacheSound(file);
