@@ -59,6 +59,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define MONOCULUS "eyeball_boss"
 #define DISABLED_PERKS "toxic,noclip,uber,ammo,instant,jump,tinyplayer"
 
+#define OVER_9000 "saxton_hale/9000.wav"
+
+// In rare cases, some server operators may need to undef this.
+#define FILECHECKS_ON
+
 #if defined _steamtools_included
 new bool:steamtools=false;
 #endif
@@ -1609,8 +1614,11 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 		}
 	}
 
-	AddFileToDownloadsTable("sound/saxton_hale/9000.wav");
-	PrecacheSound("saxton_hale/9000.wav", true);
+	if(FileExists(OVER_9000, true))
+	{
+		AddFileToDownloadsTable(OVER_9000);
+		PrecacheSound(OVER_9000, true);
+	}
 	PrecacheSound("vo/announcer_am_capincite01.mp3", true);
 	PrecacheSound("vo/announcer_am_capincite03.mp3", true);
 	PrecacheSound("vo/announcer_am_capenabled01.mp3", true);
@@ -1743,7 +1751,18 @@ public LoadCharacter(const String:character[])
 				{
 					break;
 				}
+				#if defined FILECHECKS_ON
+				if(FileExists(config, true))
+				{
+					AddFileToDownloadsTable(config);
+				}
+				else
+				{
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, config);
+				}
+				#else
 				AddFileToDownloadsTable(config);
+				#endif
 			}
 		}
 		else if(!strcmp(section, "mod_download"))
@@ -1760,7 +1779,18 @@ public LoadCharacter(const String:character[])
 				for(new extension; extension<sizeof(extensions); extension++)
 				{
 					Format(key, PLATFORM_MAX_PATH, "%s%s", config, extensions[extension]);
+					#if defined FILECHECKS_ON
+					if(FileExists(key, true))
+					{
+						AddFileToDownloadsTable(key);
+					}
+					else
+					{
+						LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
+					}
+					#else
 					AddFileToDownloadsTable(key);
+					#endif
 				}
 			}
 		}
@@ -1775,9 +1805,31 @@ public LoadCharacter(const String:character[])
 					break;
 				}
 				Format(key, PLATFORM_MAX_PATH, "%s.vtf", config);
+				#if defined FILECHECKS_ON
+				if(FileExists(key, true))
+				{
+					AddFileToDownloadsTable(key);
+				}
+				else
+				{
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
+				}
+				#else
 				AddFileToDownloadsTable(key);
+				#endif
 				Format(key, PLATFORM_MAX_PATH, "%s.vmt", config);
+				#if defined FILECHECKS_ON
+				if(FileExists(key, true))
+				{
+					AddFileToDownloadsTable(key);
+				}
+				else
+				{
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
+				}
+				#else
 				AddFileToDownloadsTable(key);
+				#endif
 			}
 		}
 	}
@@ -1804,7 +1856,8 @@ public PrecacheCharacter(characterIndex)
 				{
 					break;
 				}
-				PrecacheSound(file);
+				// DO NOT PLACE FILECHECKS HERE!
+				PrecacheSound(file);				
 			}
 		}
 		else if(StrEqual(section, "mod_precache") || !StrContains(section, "sound_") || StrEqual(section, "catch_phrase"))
@@ -1820,10 +1873,23 @@ public PrecacheCharacter(characterIndex)
 
 				if(StrEqual(section, "mod_precache"))
 				{
+					#if defined FILECHECKS_ON
+					if(FileExists(file, true))
+					{
+						PrecacheModel(file);
+					}
+					else
+					{
+						// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check 'mod_precache' in '%s' instead of the below"
+						LogError("[FF2 Bosses] Cannot find '%s'! Please check 'mod_precache'!", file);
+					}
+					#else
 					PrecacheModel(file);
+					#endif
 				}
 				else
 				{
+					// DO NOT PLACE FILECHECKS HERE!
 					PrecacheSound(file);
 				}
 			}
@@ -2636,9 +2702,9 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 public Action:Timer_NineThousand(Handle:timer)
 {
-	EmitSoundToAll("saxton_hale/9000.wav", _, _, _, _, _, _, _, _, _, false);
-	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
-	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
+	EmitSoundToAll(OVER_9000, _, _, _, _, _, _, _, _, _, false);
+	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, OVER_9000, _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
+	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, OVER_9000, _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
 	return Plugin_Continue;
 }
 
