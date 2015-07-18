@@ -59,12 +59,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define MONOCULUS "eyeball_boss"
 #define DISABLED_PERKS "toxic,noclip,uber,ammo,instant,jump,tinyplayer"
 
-#define OVER_9000 "saxton_hale/9000.wav"
-#define OVER_9000_PREFIX "sound/saxton_hale/9000.wav"
-
-// In rare cases, some server operators may need to undef this.
-#define FILECHECKS_ON
-
 #if defined _steamtools_included
 new bool:steamtools=false;
 #endif
@@ -1615,10 +1609,10 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 		}
 	}
 
-	if(FileExists(OVER_9000_PREFIX, true))
+	if(FileExists("sound/saxton_hale/9000.wav", true))
 	{
-		AddFileToDownloadsTable(OVER_9000_PREFIX);
-		PrecacheSound(OVER_9000, true);
+		AddFileToDownloadsTable("sound/saxton_hale/9000.wav");
+		PrecacheSound("saxton_hale/9000.wav", true);
 	}
 	PrecacheSound("vo/announcer_am_capincite01.mp3", true);
 	PrecacheSound("vo/announcer_am_capincite03.mp3", true);
@@ -1752,7 +1746,6 @@ public LoadCharacter(const String:character[])
 				{
 					break;
 				}
-				#if defined FILECHECKS_ON
 				if(FileExists(config, true))
 				{
 					AddFileToDownloadsTable(config);
@@ -1761,9 +1754,6 @@ public LoadCharacter(const String:character[])
 				{
 					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, config);
 				}
-				#else
-				AddFileToDownloadsTable(config);
-				#endif
 			}
 		}
 		else if(!strcmp(section, "mod_download"))
@@ -1780,7 +1770,6 @@ public LoadCharacter(const String:character[])
 				for(new extension; extension<sizeof(extensions); extension++)
 				{
 					Format(key, PLATFORM_MAX_PATH, "%s%s", config, extensions[extension]);
-					#if defined FILECHECKS_ON
 					if(FileExists(key, true))
 					{
 						AddFileToDownloadsTable(key);
@@ -1789,9 +1778,6 @@ public LoadCharacter(const String:character[])
 					{
 						LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
 					}
-					#else
-					AddFileToDownloadsTable(key);
-					#endif
 				}
 			}
 		}
@@ -1806,7 +1792,6 @@ public LoadCharacter(const String:character[])
 					break;
 				}
 				Format(key, PLATFORM_MAX_PATH, "%s.vtf", config);
-				#if defined FILECHECKS_ON
 				if(FileExists(key, true))
 				{
 					AddFileToDownloadsTable(key);
@@ -1815,11 +1800,7 @@ public LoadCharacter(const String:character[])
 				{
 					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
 				}
-				#else
-				AddFileToDownloadsTable(key);
-				#endif
 				Format(key, PLATFORM_MAX_PATH, "%s.vmt", config);
-				#if defined FILECHECKS_ON
 				if(FileExists(key, true))
 				{
 					AddFileToDownloadsTable(key);
@@ -1828,9 +1809,6 @@ public LoadCharacter(const String:character[])
 				{
 					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
 				}
-				#else
-				AddFileToDownloadsTable(key);
-				#endif
 			}
 		}
 	}
@@ -1840,9 +1818,7 @@ public LoadCharacter(const String:character[])
 public PrecacheCharacter(characterIndex)
 {
 	decl String:file[PLATFORM_MAX_PATH], String:key[8], String:section[16];
-	#if defined FILECHECKS_ON
 	decl String:filePath[PLATFORM_MAX_PATH];
-	#endif
 	KvRewind(BossKV[characterIndex]);
 	KvGotoFirstSubKey(BossKV[characterIndex]);
 	while(KvGotoNextKey(BossKV[characterIndex]))
@@ -1859,7 +1835,6 @@ public PrecacheCharacter(characterIndex)
 				{
 					break;
 				}
-				#if defined FILECHECKS_ON
 				Format(filePath, sizeof(filePath), "sound/%s", file); // we need to add "sound/" before the actual file name for sounds so it passes the FileExists check.
 				if(FileExists(filePath, true))
 				{
@@ -1870,9 +1845,6 @@ public PrecacheCharacter(characterIndex)
 					// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check '%s' in '%s' instead of the below"
 					LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", filePath, section);
 				}
-				#else
-				PrecacheSound(file);
-				#endif
 			}
 		}
 		else if(StrEqual(section, "mod_precache") || !StrContains(section, "sound_") || StrEqual(section, "catch_phrase"))
@@ -1888,7 +1860,6 @@ public PrecacheCharacter(characterIndex)
 
 				if(StrEqual(section, "mod_precache"))
 				{
-					#if defined FILECHECKS_ON
 					if(FileExists(file, true))
 					{
 						PrecacheModel(file);
@@ -1898,13 +1869,9 @@ public PrecacheCharacter(characterIndex)
 						// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check '%s' in '%s' instead of the below"
 						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", file, section);
 					}
-					#else
-					PrecacheModel(file);
-					#endif
 				}
 				else
 				{
-					#if defined FILECHECKS_ON
 					Format(filePath, sizeof(filePath), "sound/%s", file); // Again, we need to add "sound/" before the actual file name for sounds so it passes the FileExists check.
 					if(FileExists(filePath, true))
 					{
@@ -1915,9 +1882,6 @@ public PrecacheCharacter(characterIndex)
 						// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check '%s' in '%s' instead of the below"
 						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", filePath, section);
 					}
-					#else
-					PrecacheSound(file);
-					#endif
 				}
 			}
 		}
@@ -2729,9 +2693,9 @@ public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadc
 
 public Action:Timer_NineThousand(Handle:timer)
 {
-	EmitSoundToAll(OVER_9000, _, _, _, _, _, _, _, _, _, false);
-	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, OVER_9000, _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
-	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, OVER_9000, _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
+	EmitSoundToAll("saxton_hale/9000.wav", _, _, _, _, _, _, _, _, _, false);
+	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
+	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
 	return Plugin_Continue;
 }
 
