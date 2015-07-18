@@ -6110,13 +6110,13 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							if(TF2_IsPlayerInCondition(attacker, TFCond_CritCola) || TF2_IsPlayerInCondition(attacker, TFCond_Buffed) || TF2_IsPlayerInCondition(attacker, TFCond_CritHype))
 							{
-								damage*=1.7;
+								damage*=2.2;
 							}
 							else
 							{
 								if(index!=230 || BossCharge[boss][0]>90.0)  //Sydney Sleeper
 								{
-									damage*=2.9;
+									damage*=3.0;
 								}
 								else
 								{
