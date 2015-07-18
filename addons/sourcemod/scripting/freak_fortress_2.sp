@@ -1609,8 +1609,11 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 		}
 	}
 
-	AddFileToDownloadsTable("sound/saxton_hale/9000.wav");
-	PrecacheSound("saxton_hale/9000.wav", true);
+	if(FileExists("sound/saxton_hale/9000.wav", true))
+	{
+		AddFileToDownloadsTable("sound/saxton_hale/9000.wav");
+		PrecacheSound("saxton_hale/9000.wav", true);
+	}
 	PrecacheSound("vo/announcer_am_capincite01.mp3", true);
 	PrecacheSound("vo/announcer_am_capincite03.mp3", true);
 	PrecacheSound("vo/announcer_am_capenabled01.mp3", true);
@@ -1743,7 +1746,14 @@ public LoadCharacter(const String:character[])
 				{
 					break;
 				}
-				AddFileToDownloadsTable(config);
+				if(FileExists(config, true))
+				{
+					AddFileToDownloadsTable(config);
+				}
+				else
+				{
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, config);
+				}
 			}
 		}
 		else if(!strcmp(section, "mod_download"))
@@ -1760,7 +1770,14 @@ public LoadCharacter(const String:character[])
 				for(new extension; extension<sizeof(extensions); extension++)
 				{
 					Format(key, PLATFORM_MAX_PATH, "%s%s", config, extensions[extension]);
-					AddFileToDownloadsTable(key);
+					if(FileExists(key, true))
+					{
+						AddFileToDownloadsTable(key);
+					}
+					else
+					{
+						LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
+					}
 				}
 			}
 		}
@@ -1775,9 +1792,23 @@ public LoadCharacter(const String:character[])
 					break;
 				}
 				Format(key, PLATFORM_MAX_PATH, "%s.vtf", config);
-				AddFileToDownloadsTable(key);
+				if(FileExists(key, true))
+				{
+					AddFileToDownloadsTable(key);
+				}
+				else
+				{
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
+				}
 				Format(key, PLATFORM_MAX_PATH, "%s.vmt", config);
-				AddFileToDownloadsTable(key);
+				if(FileExists(key, true))
+				{
+					AddFileToDownloadsTable(key);
+				}
+				else
+				{
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
+				}
 			}
 		}
 	}
@@ -1786,8 +1817,9 @@ public LoadCharacter(const String:character[])
 
 public PrecacheCharacter(characterIndex)
 {
+	decl String:bossName[64];
 	decl String:file[PLATFORM_MAX_PATH], String:key[8], String:section[16];
-
+	decl String:filePath[PLATFORM_MAX_PATH];
 	KvRewind(BossKV[characterIndex]);
 	KvGotoFirstSubKey(BossKV[characterIndex]);
 	while(KvGotoNextKey(BossKV[characterIndex]))
@@ -1798,13 +1830,21 @@ public PrecacheCharacter(characterIndex)
 			for(new i=1; ; i++)
 			{
 				Format(key, sizeof(key), "path%d", i);
-
 				KvGetString(BossKV[characterIndex], key, file, PLATFORM_MAX_PATH);
 				if(!file[0])
 				{
 					break;
 				}
-				PrecacheSound(file);
+				Format(filePath, sizeof(filePath), "sound/%s", file); // we need to add "sound/" before the actual file name for sounds so it passes the FileExists check.
+				if(FileExists(filePath, true))
+				{
+					PrecacheSound(file);	
+				}
+				else
+				{
+					KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
+					LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s' on config '%s'!", filePath, section, bossName);
+				}
 			}
 		}
 		else if(StrEqual(section, "mod_precache") || !StrContains(section, "sound_") || StrEqual(section, "catch_phrase"))
@@ -1820,11 +1860,28 @@ public PrecacheCharacter(characterIndex)
 
 				if(StrEqual(section, "mod_precache"))
 				{
-					PrecacheModel(file);
+					if(FileExists(file, true))
+					{
+						PrecacheModel(file);
+					}
+					else
+					{
+						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
+						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", file, section, bossName);
+					}
 				}
 				else
 				{
-					PrecacheSound(file);
+					Format(filePath, sizeof(filePath), "sound/%s", file); // Again, we need to add "sound/" before the actual file name for sounds so it passes the FileExists check.
+					if(FileExists(filePath, true))
+					{
+						PrecacheSound(file);	
+					}
+					else
+					{
+						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
+						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s' on config '%s'!", filePath, section, bossName);
+					}
 				}
 			}
 		}
