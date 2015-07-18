@@ -1817,6 +1817,7 @@ public LoadCharacter(const String:character[])
 
 public PrecacheCharacter(characterIndex)
 {
+	decl String:bossName;
 	decl String:file[PLATFORM_MAX_PATH], String:key[8], String:section[16];
 	decl String:filePath[PLATFORM_MAX_PATH];
 	KvRewind(BossKV[characterIndex]);
@@ -1829,7 +1830,6 @@ public PrecacheCharacter(characterIndex)
 			for(new i=1; ; i++)
 			{
 				Format(key, sizeof(key), "path%d", i);
-
 				KvGetString(BossKV[characterIndex], key, file, PLATFORM_MAX_PATH);
 				if(!file[0])
 				{
@@ -1842,8 +1842,8 @@ public PrecacheCharacter(characterIndex)
 				}
 				else
 				{
-					// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check '%s' in '%s' instead of the below"
-					LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", filePath, section);
+					KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
+					LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s' on config '%s'!", filePath, section, bossName);
 				}
 			}
 		}
@@ -1866,8 +1866,8 @@ public PrecacheCharacter(characterIndex)
 					}
 					else
 					{
-						// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check '%s' in '%s' instead of the below"
-						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", file, section);
+						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
+						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", file, section, bossName);
 					}
 				}
 				else
@@ -1879,8 +1879,8 @@ public PrecacheCharacter(characterIndex)
 					}
 					else
 					{
-						// TO-DO: Wliu, where can i retrieve the config name from this section so it's "[FF2 Bosses] Cannot Find '%s'! Please check '%s' in '%s' instead of the below"
-						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", filePath, section);
+						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
+						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s' on config '%s'!", filePath, section, bossName);
 					}
 				}
 			}
