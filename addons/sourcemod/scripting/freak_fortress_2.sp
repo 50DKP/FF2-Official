@@ -5858,7 +5858,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			{
 				case TFClass_Spy:
 				{
-					if((GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked)) || GetEntProp(client, Prop_Send, "m_bFeignDeathReady") || TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
+					if((GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked)))
 					{
 						if(damagetype & DMG_CRIT)
 						{
@@ -5867,8 +5867,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						damage=620.0;
 						return Plugin_Changed;
 					}
-
-					if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
+					else if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 					{
 						if(damagetype & DMG_CRIT)
 						{
