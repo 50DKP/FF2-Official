@@ -1817,9 +1817,7 @@ public LoadCharacter(const String:character[])
 
 public PrecacheCharacter(characterIndex)
 {
-	decl String:bossName[64];
-	decl String:file[PLATFORM_MAX_PATH], String:key[8], String:section[16];
-	decl String:filePath[PLATFORM_MAX_PATH];
+	decl String:file[PLATFORM_MAX_PATH], filePath[PLATFORM_MAX_PATH], String:key[8], String:section[16];
 	KvRewind(BossKV[characterIndex]);
 	KvGotoFirstSubKey(BossKV[characterIndex]);
 	while(KvGotoNextKey(BossKV[characterIndex]))
@@ -1835,15 +1833,17 @@ public PrecacheCharacter(characterIndex)
 				{
 					break;
 				}
-				Format(filePath, sizeof(filePath), "sound/%s", file); // we need to add "sound/" before the actual file name for sounds so it passes the FileExists check.
+
+				Format(filePath, sizeof(filePath), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
 				if(FileExists(filePath, true))
 				{
-					PrecacheSound(file);	
+					PrecacheSound(file);
 				}
 				else
 				{
+					decl String:bossName[64];
 					KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
-					LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s' on config '%s'!", filePath, section, bossName);
+					LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 				}
 			}
 		}
@@ -1866,21 +1866,23 @@ public PrecacheCharacter(characterIndex)
 					}
 					else
 					{
+						decl String:bossName[64];
 						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
-						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s'!", file, section, bossName);
+						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 					}
 				}
 				else
 				{
-					Format(filePath, sizeof(filePath), "sound/%s", file); // Again, we need to add "sound/" before the actual file name for sounds so it passes the FileExists check.
+					Format(filePath, sizeof(filePath), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
 					if(FileExists(filePath, true))
 					{
-						PrecacheSound(file);	
+						PrecacheSound(file);
 					}
 					else
 					{
+						decl String:bossName[64];
 						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
-						LogError("[FF2 Bosses] Cannot find '%s'! Please check '%s' on config '%s'!", filePath, section, bossName);
+						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 					}
 				}
 			}
