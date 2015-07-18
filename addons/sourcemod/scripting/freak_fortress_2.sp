@@ -1817,7 +1817,7 @@ public LoadCharacter(const String:character[])
 
 public PrecacheCharacter(characterIndex)
 {
-	decl String:bossName;
+	decl String:bossName[64];
 	decl String:file[PLATFORM_MAX_PATH], String:key[8], String:section[16];
 	decl String:filePath[PLATFORM_MAX_PATH];
 	KvRewind(BossKV[characterIndex]);
