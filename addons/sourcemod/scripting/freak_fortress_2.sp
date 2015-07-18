@@ -1828,7 +1828,7 @@ public PrecacheCharacter(characterIndex)
 			for(new i=1; ; i++)
 			{
 				Format(key, sizeof(key), "path%d", i);
-				KvGetString(BossKV[characterIndex], key, file, PLATFORM_MAX_PATH);
+				KvGetString(BossKV[characterIndex], key, file, sizeof(file));
 				if(!file[0])
 				{
 					break;
@@ -1842,6 +1842,7 @@ public PrecacheCharacter(characterIndex)
 				else
 				{
 					decl String:bossName[64];
+					KvRewind(BossKV[characterIndex]);
 					KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 					LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 				}
@@ -1867,6 +1868,7 @@ public PrecacheCharacter(characterIndex)
 					else
 					{
 						decl String:bossName[64];
+						KvRewind(BossKV[characterIndex]);
 						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 					}
@@ -1881,6 +1883,7 @@ public PrecacheCharacter(characterIndex)
 					else
 					{
 						decl String:bossName[64];
+						KvRewind(BossKV[characterIndex]);
 						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 					}
