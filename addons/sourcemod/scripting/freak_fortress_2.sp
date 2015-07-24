@@ -7115,17 +7115,14 @@ public bool:PickCharacter(boss, companion)
 					{
 						KvRewind(BossKV[character]);
 						KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
-						Debug("Comparing %s to %s", newName, characterName);
 						if(StrEqual(newName, characterName, false))
 						{
 							foundExactMatch=character;
-							Debug("Exact match found (name)!");
 							break;  //If we find an exact match there's no reason to keep looping
 						}
 						else if(StrContains(newName, characterName, false)!=-1)
 						{
 							foundPartialMatch=character;
-							Debug("Partial match found (name), will keep searching");
 						}
 
 						//Do the same thing as above here, but look at the filename instead of the boss name
@@ -7133,13 +7130,11 @@ public bool:PickCharacter(boss, companion)
 						if(StrEqual(newName, characterName, false))
 						{
 							foundExactMatch=character;
-							Debug("Exact match found (filename)!");
 							break;  //If we find an exact match there's no reason to keep looping
 						}
 						else if(StrContains(newName, characterName, false)!=-1)
 						{
 							foundPartialMatch=character;
-							Debug("Partial match found (filename), will keep searching");
 						}
 					}
 
@@ -7243,14 +7238,17 @@ public bool:PickCharacter(boss, companion)
 			{
 				KvRewind(BossKV[character]);
 				KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
+				Debug("Comparing %s to %s", newName, characterName);
 				if(StrEqual(newName, characterName, false))
 				{
 					foundExactMatch=character;
+					Debug("Exact match found (name)!");
 					break;  //If we find an exact match there's no reason to keep looping
 				}
 				else if(StrContains(newName, characterName, false)!=-1)
 				{
 					foundPartialMatch=character;
+					Debug("Partial match found (name), will keep searching");
 				}
 
 				//Do the same thing as above here, but look at the filename instead of the boss name
@@ -7258,11 +7256,13 @@ public bool:PickCharacter(boss, companion)
 				if(StrEqual(newName, characterName, false))
 				{
 					foundExactMatch=character;
+					Debug("Exact match found (filename)!");
 					break;  //If we find an exact match there's no reason to keep looping
 				}
 				else if(StrContains(newName, characterName, false)!=-1)
 				{
 					foundPartialMatch=character;
+					Debug("Partial match found (filename), will keep searching");
 				}
 			}
 
