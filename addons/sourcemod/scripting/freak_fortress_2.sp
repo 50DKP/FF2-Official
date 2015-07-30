@@ -1040,6 +1040,7 @@ public OnPluginStart()
 	HookEvent("teamplay_round_start", event_round_start);
 	HookEvent("teamplay_round_win", event_round_end);
 	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
+	HookEvent("post_inventory_application", Event_PostInventoryApplication, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	HookEvent("player_chargedeployed", event_uber_deployed);
 	HookEvent("player_hurt", event_hurt, EventHookMode_Pre);
@@ -3437,6 +3438,16 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	KSpreeCount[boss]=0;
 	BossCharge[boss][0]=0.0;
 	SetClientQueuePoints(client, 0);
+	
+	// Just to ensure a player doesn't get stuck as a living spectator
+	new specMode=GetEntProp(client, Prop_Send, "m_iObserverMode");
+	Debug("Boss client %N's m_iObserverMode value: %i", client, specMode);
+	if(specMode && IsPlayerAlive(client)) // Respawn a player if they are a living spectator.
+	{
+		Debug("Boss client %N's is a living spectator with an m_iObserverMode value of %i!", client, specMode);
+		TF2_RespawnPlayer(client);
+	}
+	
 	return Plugin_Continue;
 }
 
@@ -3848,6 +3859,16 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	}
 
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
+	
+	// Just to ensure a player doesn't get stuck as a living spectator
+	new specMode=GetEntProp(client, Prop_Send, "m_iObserverMode");
+	Debug("Non-boss client %N's m_iObserverMode value: %i", client, specMode);
+	if(specMode && IsPlayerAlive(client)) // Respawn a player if they are a living spectator.
+	{
+		Debug("Non-boss client %N's is a living spectator with an m_iObserverMode value of %i!", client, specMode);
+		TF2_RespawnPlayer(client);
+	}
+	
 	return Plugin_Continue;
 }
 
@@ -4557,6 +4578,35 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
 
+	if(CheckRoundState()==1)
+	{
+		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+	}
+
+	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
+	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
+	return Plugin_Continue;
+}
+
+/*
+	Calling MakeBoss/MakeNotBoss from 'post_inventory_application' instead of 'player_spawn' 
+	avoids the whole living spectator bug entirely. Also ensures bosses / players gain their 
+	modified weapons back if using TF2_RegeneratePlayer to replenish them. Technically, it's
+	impossible for a living spectator to have a 'post_inventory_application' event fire.
+*/
+public Action:Event_PostInventoryApplication(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(!Enabled)
+	{
+		return Plugin_Continue;
+	}
+
+	new client=GetClientOfUserId(GetEventInt(event, "userid"));
+	if(!IsValidClient(client))  //I...what.  Apparently this is needed though?
+	{
+		return Plugin_Continue;
+	}
+	
 	if(IsBoss(client))
 	{
 		CreateTimer(0.1, MakeBoss, GetBossIndex(client), TIMER_FLAG_NO_MAPCHANGE);
@@ -4582,14 +4632,6 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 			CreateTimer(0.1, CheckItems, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
-
-	if(CheckRoundState()==1)
-	{
-		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
-	}
-
-	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
-	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
 }
 
