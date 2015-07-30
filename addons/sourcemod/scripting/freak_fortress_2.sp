@@ -7239,14 +7239,14 @@ public bool:PickCharacter(boss, companion)
 		{
 			KvRewind(BossKV[character]);
 			KvGetString(BossKV[character], "name", bossName, sizeof(bossName), "=Failed name=");
-			if(StrEqual(bossName, companionName))
+			if(StrEqual(bossName, companionName, false))
 			{
 				Special[companion]=character;
 				break;
 			}
 
 			KvGetString(BossKV[character], "filename", bossName, sizeof(bossName), "=Failed name=");
-			if(StrEqual(bossName, companionName))
+			if(StrEqual(bossName, companionName, false))
 			{
 				Special[companion]=character;
 				break;
