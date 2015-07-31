@@ -1039,7 +1039,6 @@ public OnPluginStart()
 
 	HookEvent("teamplay_round_start", event_round_start);
 	HookEvent("teamplay_round_win", event_round_end);
-	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
 	HookEvent("post_inventory_application", Event_PostInventoryApplication, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	HookEvent("player_chargedeployed", event_uber_deployed);
@@ -4562,38 +4561,6 @@ public OnClientDisconnect(client)
 	}
 }
 
-public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	if(!Enabled)
-	{
-		return Plugin_Continue;
-	}
-
-	new client=GetClientOfUserId(GetEventInt(event, "userid"));
-	if(!IsValidClient(client))  //I...what.  Apparently this is needed though?
-	{
-		return Plugin_Continue;
-	}
-
-	SetVariantString("");
-	AcceptEntityInput(client, "SetCustomModel");
-
-	if(CheckRoundState()==1)
-	{
-		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
-	}
-
-	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
-	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
-	return Plugin_Continue;
-}
-
-/*
-	Calling MakeBoss/MakeNotBoss from 'post_inventory_application' instead of 'player_spawn' 
-	avoids the whole living spectator bug entirely. Also ensures bosses / players gain their 
-	modified weapons back if using TF2_RegeneratePlayer to replenish them. Technically, it's
-	impossible for a living spectator to have a 'post_inventory_application' event fire.
-*/
 public Action:Event_PostInventoryApplication(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled)
@@ -4602,10 +4569,13 @@ public Action:Event_PostInventoryApplication(Handle:event, const String:name[], 
 	}
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
-	if(!IsValidClient(client))  //I...what.  Apparently this is needed though?
+	if(!IsValidClient(client))
 	{
 		return Plugin_Continue;
 	}
+	
+	SetVariantString("");
+	AcceptEntityInput(client, "SetCustomModel");
 	
 	if(IsBoss(client))
 	{
@@ -4632,6 +4602,14 @@ public Action:Event_PostInventoryApplication(Handle:event, const String:name[], 
 			CreateTimer(0.1, CheckItems, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
+	
+	if(CheckRoundState()==1)
+	{
+		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+	}
+
+	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
+	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
 }
 
