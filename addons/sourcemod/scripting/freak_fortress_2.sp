@@ -1037,14 +1037,14 @@ public OnPluginStart()
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
 
-	HookEvent("teamplay_round_start", event_round_start);
-	HookEvent("teamplay_round_win", event_round_end);
-	HookEvent("post_inventory_application", Event_PostInventoryApplication, EventHookMode_Pre);
+	HookEvent("teamplay_round_start", OnTeamplayRoundStart);
+	HookEvent("teamplay_round_win", OnTeamplayRoundWin);
+	HookEvent("post_inventory_application", OnPostInventoryApplication, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
-	HookEvent("player_chargedeployed", event_uber_deployed);
-	HookEvent("player_hurt", event_hurt, EventHookMode_Pre);
-	HookEvent("object_destroyed", event_destroy, EventHookMode_Pre);
-	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
+	HookEvent("player_chargedeployed", OnUberDeployed);
+	HookEvent("player_hurt", OnPlayerHurt, EventHookMode_Pre);
+	HookEvent("object_destroyed", OnObjectDestroy, EventHookMode_Pre);
+	HookEvent("object_deflected", OnObjectDeflected, EventHookMode_Pre);
 	HookEvent("deploy_buff_banner", OnDeployBackup);
 	HookEvent("rocket_jump", OnRocketJump);
 	HookEvent("rocket_jump_landed", OnRocketJump);
@@ -2171,7 +2171,7 @@ stock bool:CheckToChangeMapDoors()
 	CloseHandle(file);
 }
 
-public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnTeamplayRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(changeGamemode==1)
 	{
@@ -2338,7 +2338,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
 			}
 		}
-		return Plugin_Continue;  //NOTE: This is needed because event_round_start gets fired a second time once both teams have players
+		return Plugin_Continue;  //NOTE: This is needed because OnTeamplayRoundStart gets fired a second time once both teams have players
 	}
 
 	PickCharacter(0, 0);
@@ -2536,7 +2536,7 @@ public CheckArena()
 	}
 }
 
-public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnTeamplayRoundWin(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	RoundCount++;
 
@@ -4117,7 +4117,7 @@ stock FindPlayerBack(client, index)
 	return -1;
 }
 
-public Action:event_destroy(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnObjectDestroy(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(Enabled)
 	{
@@ -4135,7 +4135,7 @@ public Action:event_destroy(Handle:event, const String:name[], bool:dontBroadcas
 	return Plugin_Continue;
 }
 
-public Action:event_uber_deployed(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnUberDeployed(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	if(Enabled && IsValidClient(client) && IsPlayerAlive(client))
@@ -4561,7 +4561,7 @@ public OnClientDisconnect(client)
 	}
 }
 
-public Action:Event_PostInventoryApplication(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled)
 	{
@@ -5456,7 +5456,7 @@ public Action:Timer_Damage(Handle:timer, any:userid)
 	return Plugin_Continue;
 }
 
-public Action:event_deflect(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnObjectDeflected(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled || GetEventInt(event, "weaponid"))  //0 means that the client was airblasted, which is what we want
 	{
@@ -5686,7 +5686,7 @@ public Action:Timer_DrawGame(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled || CheckRoundState()!=1)
 	{
@@ -6278,7 +6278,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", 100.0);
 					}
-					/*case 1104:  //Air Strike-moved to event_hurt for now since OTD doesn't display the actual damage :/
+					/*case 1104:  //Air Strike-moved to OnPlayerHurt for now since OTD doesn't display the actual damage :/
 					{
 						static Float:airStrikeDamage;
 						airStrikeDamage+=damage;
