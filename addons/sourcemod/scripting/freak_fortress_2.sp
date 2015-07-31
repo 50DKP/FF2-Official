@@ -1037,14 +1037,14 @@ public OnPluginStart()
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
 
-	HookEvent("teamplay_round_start", event_round_start);
-	HookEvent("teamplay_round_win", event_round_end);
-	HookEvent("player_spawn", event_player_spawn, EventHookMode_Pre);
+	HookEvent("teamplay_round_start", OnTeamplayRoundStart);
+	HookEvent("teamplay_round_win", OnTeamplayRoundWin);
+	HookEvent("post_inventory_application", OnPostInventoryApplication, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
-	HookEvent("player_chargedeployed", event_uber_deployed);
-	HookEvent("player_hurt", event_hurt, EventHookMode_Pre);
-	HookEvent("object_destroyed", event_destroy, EventHookMode_Pre);
-	HookEvent("object_deflected", event_deflect, EventHookMode_Pre);
+	HookEvent("player_chargedeployed", OnUberDeployed);
+	HookEvent("player_hurt", OnPlayerHurt, EventHookMode_Pre);
+	HookEvent("object_destroyed", OnObjectDestroy, EventHookMode_Pre);
+	HookEvent("object_deflected", OnObjectDeflected, EventHookMode_Pre);
 	HookEvent("deploy_buff_banner", OnDeployBackup);
 	HookEvent("rocket_jump", OnRocketJump);
 	HookEvent("rocket_jump_landed", OnRocketJump);
@@ -2171,7 +2171,7 @@ stock bool:CheckToChangeMapDoors()
 	CloseHandle(file);
 }
 
-public Action:event_round_start(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnTeamplayRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(changeGamemode==1)
 	{
@@ -2338,7 +2338,7 @@ public Action:event_round_start(Handle:event, const String:name[], bool:dontBroa
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
 			}
 		}
-		return Plugin_Continue;  //NOTE: This is needed because event_round_start gets fired a second time once both teams have players
+		return Plugin_Continue;  //NOTE: This is needed because OnTeamplayRoundStart gets fired a second time once both teams have players
 	}
 
 	PickCharacter(0, 0);
@@ -2536,7 +2536,7 @@ public CheckArena()
 	}
 }
 
-public Action:event_round_end(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnTeamplayRoundWin(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	RoundCount++;
 
@@ -3437,6 +3437,16 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	KSpreeCount[boss]=0;
 	BossCharge[boss][0]=0.0;
 	SetClientQueuePoints(client, 0);
+	
+	// Just to ensure a player doesn't get stuck as a living spectator
+	new specMode=GetEntProp(client, Prop_Send, "m_iObserverMode");
+	Debug("Boss client %N's m_iObserverMode value: %i", client, specMode);
+	if(specMode && IsPlayerAlive(client)) // Respawn a player if they are a living spectator.
+	{
+		Debug("Boss client %N's is a living spectator with an m_iObserverMode value of %i!", client, specMode);
+		TF2_RespawnPlayer(client);
+	}
+	
 	return Plugin_Continue;
 }
 
@@ -3848,6 +3858,16 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	}
 
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
+	
+	// Just to ensure a player doesn't get stuck as a living spectator
+	new specMode=GetEntProp(client, Prop_Send, "m_iObserverMode");
+	Debug("Non-boss client %N's m_iObserverMode value: %i", client, specMode);
+	if(specMode && IsPlayerAlive(client)) // Respawn a player if they are a living spectator.
+	{
+		Debug("Non-boss client %N's is a living spectator with an m_iObserverMode value of %i!", client, specMode);
+		TF2_RespawnPlayer(client);
+	}
+	
 	return Plugin_Continue;
 }
 
@@ -4097,7 +4117,7 @@ stock FindPlayerBack(client, index)
 	return -1;
 }
 
-public Action:event_destroy(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnObjectDestroy(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(Enabled)
 	{
@@ -4115,7 +4135,7 @@ public Action:event_destroy(Handle:event, const String:name[], bool:dontBroadcas
 	return Plugin_Continue;
 }
 
-public Action:event_uber_deployed(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnUberDeployed(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	if(Enabled && IsValidClient(client) && IsPlayerAlive(client))
@@ -4541,7 +4561,7 @@ public OnClientDisconnect(client)
 	}
 }
 
-public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled)
 	{
@@ -4549,14 +4569,14 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 	}
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
-	if(!IsValidClient(client))  //I...what.  Apparently this is needed though?
+	if(!IsValidClient(client))
 	{
 		return Plugin_Continue;
 	}
-
+	
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
-
+	
 	if(IsBoss(client))
 	{
 		CreateTimer(0.1, MakeBoss, GetBossIndex(client), TIMER_FLAG_NO_MAPCHANGE);
@@ -4582,7 +4602,7 @@ public Action:event_player_spawn(Handle:event, const String:name[], bool:dontBro
 			CreateTimer(0.1, CheckItems, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
-
+	
 	if(CheckRoundState()==1)
 	{
 		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -5436,7 +5456,7 @@ public Action:Timer_Damage(Handle:timer, any:userid)
 	return Plugin_Continue;
 }
 
-public Action:event_deflect(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnObjectDeflected(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled || GetEventInt(event, "weaponid"))  //0 means that the client was airblasted, which is what we want
 	{
@@ -5666,7 +5686,7 @@ public Action:Timer_DrawGame(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:event_hurt(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled || CheckRoundState()!=1)
 	{
@@ -6258,7 +6278,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", 100.0);
 					}
-					/*case 1104:  //Air Strike-moved to event_hurt for now since OTD doesn't display the actual damage :/
+					/*case 1104:  //Air Strike-moved to OnPlayerHurt for now since OTD doesn't display the actual damage :/
 					{
 						static Float:airStrikeDamage;
 						airStrikeDamage+=damage;
@@ -7197,14 +7217,14 @@ public bool:PickCharacter(boss, companion)
 		{
 			KvRewind(BossKV[character]);
 			KvGetString(BossKV[character], "name", bossName, sizeof(bossName), "=Failed name=");
-			if(StrEqual(bossName, companionName))
+			if(StrEqual(bossName, companionName, false))
 			{
 				Special[companion]=character;
 				break;
 			}
 
 			KvGetString(BossKV[character], "filename", bossName, sizeof(bossName), "=Failed name=");
-			if(StrEqual(bossName, companionName))
+			if(StrEqual(bossName, companionName, false))
 			{
 				Special[companion]=character;
 				break;
