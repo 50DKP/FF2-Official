@@ -979,7 +979,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	OnAbility=CreateGlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell);  //Boss, plugin name, ability name, status
 	OnMusic=CreateGlobalForward("FF2_OnMusic", ET_Hook, Param_String, Param_FloatByRef);
 	OnTriggerHurt=CreateGlobalForward("FF2_OnTriggerHurt", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
-	OnSpecialSelected=CreateGlobalForward("FF2_OnSpecialSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String);  //Boss, character index, character name
+	OnSpecialSelected=CreateGlobalForward("FF2_OnSpecialSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String, Param_Cell);  //Boss, character index, character name, preset
 	OnAddQueuePoints=CreateGlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
 	OnLoadCharacterSet=CreateGlobalForward("FF2_OnLoadCharacterSet", ET_Hook, Param_CellByRef, Param_String);
 	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell);  //Boss, lives left, max lives
@@ -1037,13 +1037,13 @@ public OnPluginStart()
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
 
-	HookEvent("teamplay_round_start", OnTeamplayRoundStart);
-	HookEvent("teamplay_round_win", OnTeamplayRoundWin);
+	HookEvent("teamplay_round_start", OnRoundStart);
+	HookEvent("teamplay_round_win", OnRoundEnd);
 	HookEvent("post_inventory_application", OnPostInventoryApplication, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	HookEvent("player_chargedeployed", OnUberDeployed);
 	HookEvent("player_hurt", OnPlayerHurt, EventHookMode_Pre);
-	HookEvent("object_destroyed", OnObjectDestroy, EventHookMode_Pre);
+	HookEvent("object_destroyed", OnObjectDestroyed, EventHookMode_Pre);
 	HookEvent("object_deflected", OnObjectDeflected, EventHookMode_Pre);
 	HookEvent("deploy_buff_banner", OnDeployBackup);
 	HookEvent("rocket_jump", OnRocketJump);
@@ -2171,7 +2171,7 @@ stock bool:CheckToChangeMapDoors()
 	CloseHandle(file);
 }
 
-public Action:OnTeamplayRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(changeGamemode==1)
 	{
@@ -2338,7 +2338,7 @@ public Action:OnTeamplayRoundStart(Handle:event, const String:name[], bool:dontB
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
 			}
 		}
-		return Plugin_Continue;  //NOTE: This is needed because OnTeamplayRoundStart gets fired a second time once both teams have players
+		return Plugin_Continue;  //NOTE: This is needed because OnRoundStart gets fired a second time once both teams have players
 	}
 
 	PickCharacter(0, 0);
@@ -2536,7 +2536,7 @@ public CheckArena()
 	}
 }
 
-public Action:OnTeamplayRoundWin(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	RoundCount++;
 
@@ -3437,7 +3437,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	KSpreeCount[boss]=0;
 	BossCharge[boss][0]=0.0;
 	SetClientQueuePoints(client, 0);
-	
+
 	// Just to ensure a player doesn't get stuck as a living spectator
 	new specMode=GetEntProp(client, Prop_Send, "m_iObserverMode");
 	Debug("Boss client %N's m_iObserverMode value: %i", client, specMode);
@@ -3446,7 +3446,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		Debug("Boss client %N's is a living spectator with an m_iObserverMode value of %i!", client, specMode);
 		TF2_RespawnPlayer(client);
 	}
-	
+
 	return Plugin_Continue;
 }
 
@@ -3858,7 +3858,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	}
 
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
-	
+
 	// Just to ensure a player doesn't get stuck as a living spectator
 	new specMode=GetEntProp(client, Prop_Send, "m_iObserverMode");
 	Debug("Non-boss client %N's m_iObserverMode value: %i", client, specMode);
@@ -3867,7 +3867,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		Debug("Non-boss client %N's is a living spectator with an m_iObserverMode value of %i!", client, specMode);
 		TF2_RespawnPlayer(client);
 	}
-	
+
 	return Plugin_Continue;
 }
 
@@ -4117,7 +4117,7 @@ stock FindPlayerBack(client, index)
 	return -1;
 }
 
-public Action:OnObjectDestroy(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnObjectDestroyed(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(Enabled)
 	{
@@ -4573,10 +4573,10 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 	{
 		return Plugin_Continue;
 	}
-	
+
 	SetVariantString("");
 	AcceptEntityInput(client, "SetCustomModel");
-	
+
 	if(IsBoss(client))
 	{
 		CreateTimer(0.1, MakeBoss, GetBossIndex(client), TIMER_FLAG_NO_MAPCHANGE);
@@ -4602,7 +4602,7 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 			CreateTimer(0.1, CheckItems, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
-	
+
 	if(CheckRoundState()==1)
 	{
 		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -7124,6 +7124,7 @@ public bool:PickCharacter(boss, companion)
 			KvRewind(BossKV[Special[boss]]);
 			KvGetString(BossKV[Special[boss]], "name", newName, sizeof(newName));
 			Call_PushStringEx(newName, sizeof(newName), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+			Call_PushCell(true);  //Preset
 			Call_Finish(action);
 			if(action==Plugin_Changed)
 			{
@@ -7247,6 +7248,7 @@ public bool:PickCharacter(boss, companion)
 	KvRewind(BossKV[Special[companion]]);
 	KvGetString(BossKV[Special[companion]], "name", newName, sizeof(newName));
 	Call_PushStringEx(newName, sizeof(newName), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+	Call_PushCell(false);  //Not preset
 	Call_Finish(action);
 	if(action==Plugin_Changed)
 	{
