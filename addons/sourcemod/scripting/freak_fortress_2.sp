@@ -1817,8 +1817,9 @@ public LoadCharacter(const String:character[])
 
 public PrecacheCharacter(characterIndex)
 {
-	decl String:file[PLATFORM_MAX_PATH], String:filePath[PLATFORM_MAX_PATH], String:key[8], String:section[16];
+	decl String:file[PLATFORM_MAX_PATH], String:filePath[PLATFORM_MAX_PATH], String:key[8], String:section[16], String:bossName[64];
 	KvRewind(BossKV[characterIndex]);
+	KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 	KvGotoFirstSubKey(BossKV[characterIndex]);
 	while(KvGotoNextKey(BossKV[characterIndex]))
 	{
@@ -1841,9 +1842,6 @@ public PrecacheCharacter(characterIndex)
 				}
 				else
 				{
-					decl String:bossName[64];
-					KvRewind(BossKV[characterIndex]);
-					KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 					LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 				}
 			}
@@ -1867,9 +1865,6 @@ public PrecacheCharacter(characterIndex)
 					}
 					else
 					{
-						decl String:bossName[64];
-						KvRewind(BossKV[characterIndex]);
-						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 					}
 				}
@@ -1882,9 +1877,6 @@ public PrecacheCharacter(characterIndex)
 					}
 					else
 					{
-						decl String:bossName[64];
-						KvRewind(BossKV[characterIndex]);
-						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 					}
 				}
