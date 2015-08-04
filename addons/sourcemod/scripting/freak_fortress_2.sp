@@ -4749,6 +4749,10 @@ public Action:ClientTimer(Handle:timer)
 			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee) && strcmp(classname, "tf_weapon_knife", false))  //Every melee except knives
 			{
 				addthecrit=true;
+				if(index==416)  //Market Gardener
+				{
+					addthecrit=FF2flags[client] & FF2FLAG_ROCKET_JUMPING ? true : false;
+				}
 			}
 			else if((!StrContains(classname, "tf_weapon_smg") && index!=751) ||  //Cleaner's Carbine
 			         !StrContains(classname, "tf_weapon_compound_bow") ||
