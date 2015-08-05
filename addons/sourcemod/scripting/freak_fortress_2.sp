@@ -1820,7 +1820,7 @@ public PrecacheCharacter(characterIndex)
 	decl String:file[PLATFORM_MAX_PATH], String:filePath[PLATFORM_MAX_PATH], String:key[8], String:section[16], String:bossName[64];
 	KvRewind(BossKV[characterIndex]);
 	KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
-	Debug("Precaching character %N (%i)", bossName, characterIndex);
+	Debug("Precaching character %s (%i)", bossName, characterIndex);
 	KvGotoFirstSubKey(BossKV[characterIndex]);
 	while(KvGotoNextKey(BossKV[characterIndex]))
 	{
