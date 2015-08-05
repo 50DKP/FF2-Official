@@ -1820,7 +1820,6 @@ public PrecacheCharacter(characterIndex)
 	decl String:file[PLATFORM_MAX_PATH], String:filePath[PLATFORM_MAX_PATH], String:key[8], String:section[16], String:bossName[64];
 	KvRewind(BossKV[characterIndex]);
 	KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
-	Debug("Precaching character %s (%i)", bossName, characterIndex);
 	KvGotoFirstSubKey(BossKV[characterIndex]);
 	while(KvGotoNextKey(BossKV[characterIndex]))
 	{
@@ -7128,7 +7127,7 @@ public bool:PickCharacter(boss, companion)
 				if(newName[0])
 				{
 					decl String:characterName[64];
-					new foundExactMatch, foundPartialMatch;
+					new foundExactMatch=-1, foundPartialMatch=-1;
 					for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 					{
 						KvRewind(BossKV[character]);
@@ -7156,11 +7155,11 @@ public bool:PickCharacter(boss, companion)
 						}
 					}
 
-					if(foundExactMatch)
+					if(foundExactMatch!=-1)
 					{
 						Special[boss]=foundExactMatch;
 					}
-					else if(foundPartialMatch)
+					else if(foundPartialMatch!=-1)
 					{
 						Special[boss]=foundPartialMatch;
 					}
@@ -7252,22 +7251,19 @@ public bool:PickCharacter(boss, companion)
 		if(newName[0])
 		{
 			decl String:characterName[64];
-			new foundExactMatch, foundPartialMatch;
+			new foundExactMatch=-1, foundPartialMatch=-1;
 			for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 			{
 				KvRewind(BossKV[character]);
 				KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
-				Debug("Comparing %s to %s", newName, characterName);
 				if(StrEqual(newName, characterName, false))
 				{
 					foundExactMatch=character;
-					Debug("Exact match found (name)!");
 					break;  //If we find an exact match there's no reason to keep looping
 				}
 				else if(StrContains(newName, characterName, false)!=-1)
 				{
 					foundPartialMatch=character;
-					Debug("Partial match found (name), will keep searching");
 				}
 
 				//Do the same thing as above here, but look at the filename instead of the boss name
@@ -7275,21 +7271,19 @@ public bool:PickCharacter(boss, companion)
 				if(StrEqual(newName, characterName, false))
 				{
 					foundExactMatch=character;
-					Debug("Exact match found (filename)!");
 					break;  //If we find an exact match there's no reason to keep looping
 				}
 				else if(StrContains(newName, characterName, false)!=-1)
 				{
 					foundPartialMatch=character;
-					Debug("Partial match found (filename), will keep searching");
 				}
 			}
 
-			if(foundExactMatch)
+			if(foundExactMatch!=-1)
 			{
 				Special[companion]=foundExactMatch;
 			}
-			else if(foundPartialMatch)
+			else if(foundPartialMatch!=-1)
 			{
 				Special[companion]=foundPartialMatch;
 			}
