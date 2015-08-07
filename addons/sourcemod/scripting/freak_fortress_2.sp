@@ -1815,8 +1815,9 @@ public LoadCharacter(const String:character[])
 
 public PrecacheCharacter(characterIndex)
 {
-	decl String:file[PLATFORM_MAX_PATH], String:filePath[PLATFORM_MAX_PATH], String:key[8], String:section[16];
+	decl String:file[PLATFORM_MAX_PATH], String:filePath[PLATFORM_MAX_PATH], String:key[8], String:section[16], String:bossName[64];
 	KvRewind(BossKV[characterIndex]);
+	KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 	KvGotoFirstSubKey(BossKV[characterIndex]);
 	while(KvGotoNextKey(BossKV[characterIndex]))
 	{
@@ -1839,9 +1840,6 @@ public PrecacheCharacter(characterIndex)
 				}
 				else
 				{
-					decl String:bossName[64];
-					KvRewind(BossKV[characterIndex]);
-					KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 					LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 				}
 			}
@@ -1865,9 +1863,6 @@ public PrecacheCharacter(characterIndex)
 					}
 					else
 					{
-						decl String:bossName[64];
-						KvRewind(BossKV[characterIndex]);
-						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 					}
 				}
@@ -1880,9 +1875,6 @@ public PrecacheCharacter(characterIndex)
 					}
 					else
 					{
-						decl String:bossName[64];
-						KvRewind(BossKV[characterIndex]);
-						KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 					}
 				}
@@ -3643,7 +3635,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 772:  //Baby Face's Blaster
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.25 ; 109 ; 0.5 ; 125 ; -25 ; 394 ; 0.85 ; 418 ; 1 ; 419 ; 1 ; 532 ; 0.5 ; 651 ; 0.5 ; 709 ; 1", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.25 ; 109 ; 0.5 ; 125 ; -25 ; 394 ; 0.85 ; 418 ; 1 ; 419 ; 100 ; 532 ; 0.5 ; 651 ; 0.5 ; 709 ; 1", true);
 				//2: +25% damage bonus
 				//109: -50% health from packs on wearer
 				//125: -25 max health
@@ -4755,6 +4747,10 @@ public Action:ClientTimer(Handle:timer)
 			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee) && strcmp(classname, "tf_weapon_knife", false))  //Every melee except knives
 			{
 				addthecrit=true;
+				if(index==416)  //Market Gardener
+				{
+					addthecrit=FF2flags[client] & FF2FLAG_ROCKET_JUMPING ? true : false;
+				}
 			}
 			else if((!StrContains(classname, "tf_weapon_smg") && index!=751) ||  //Cleaner's Carbine
 			         !StrContains(classname, "tf_weapon_compound_bow") ||
@@ -7127,7 +7123,7 @@ public bool:PickCharacter(boss, companion)
 				if(newName[0])
 				{
 					decl String:characterName[64];
-					new foundExactMatch, foundPartialMatch;
+					new foundExactMatch=-1, foundPartialMatch=-1;
 					for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 					{
 						KvRewind(BossKV[character]);
@@ -7155,11 +7151,11 @@ public bool:PickCharacter(boss, companion)
 						}
 					}
 
-					if(foundExactMatch)
+					if(foundExactMatch!=-1)
 					{
 						Special[boss]=foundExactMatch;
 					}
-					else if(foundPartialMatch)
+					else if(foundPartialMatch!=-1)
 					{
 						Special[boss]=foundPartialMatch;
 					}
@@ -7251,22 +7247,19 @@ public bool:PickCharacter(boss, companion)
 		if(newName[0])
 		{
 			decl String:characterName[64];
-			new foundExactMatch, foundPartialMatch;
+			new foundExactMatch=-1, foundPartialMatch=-1;
 			for(new character; BossKV[character] && character<MAXSPECIALS; character++)
 			{
 				KvRewind(BossKV[character]);
 				KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
-				Debug("Comparing %s to %s", newName, characterName);
 				if(StrEqual(newName, characterName, false))
 				{
 					foundExactMatch=character;
-					Debug("Exact match found (name)!");
 					break;  //If we find an exact match there's no reason to keep looping
 				}
 				else if(StrContains(newName, characterName, false)!=-1)
 				{
 					foundPartialMatch=character;
-					Debug("Partial match found (name), will keep searching");
 				}
 
 				//Do the same thing as above here, but look at the filename instead of the boss name
@@ -7274,21 +7267,19 @@ public bool:PickCharacter(boss, companion)
 				if(StrEqual(newName, characterName, false))
 				{
 					foundExactMatch=character;
-					Debug("Exact match found (filename)!");
 					break;  //If we find an exact match there's no reason to keep looping
 				}
 				else if(StrContains(newName, characterName, false)!=-1)
 				{
 					foundPartialMatch=character;
-					Debug("Partial match found (filename), will keep searching");
 				}
 			}
 
-			if(foundExactMatch)
+			if(foundExactMatch!=-1)
 			{
 				Special[companion]=foundExactMatch;
 			}
-			else if(foundPartialMatch)
+			else if(foundPartialMatch!=-1)
 			{
 				Special[companion]=foundPartialMatch;
 			}
