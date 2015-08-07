@@ -1039,6 +1039,7 @@ public OnPluginStart()
 
 	HookEvent("teamplay_round_start", OnRoundStart);
 	HookEvent("teamplay_round_win", OnRoundEnd);
+	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Pre);
 	HookEvent("post_inventory_application", OnPostInventoryApplication, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
 	HookEvent("player_chargedeployed", OnUberDeployed);
@@ -1836,7 +1837,6 @@ public PrecacheCharacter(characterIndex)
 				Format(filePath, sizeof(filePath), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
 				if(FileExists(filePath, true))
 				{
-					Debug("Precaching %s", filePath);
 					PrecacheSound(file);
 				}
 				else
@@ -1860,7 +1860,6 @@ public PrecacheCharacter(characterIndex)
 				{
 					if(FileExists(file, true))
 					{
-						Debug("Precaching %s", file);
 						PrecacheModel(file);
 					}
 					else
@@ -1873,7 +1872,6 @@ public PrecacheCharacter(characterIndex)
 					Format(filePath, sizeof(filePath), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
 					if(FileExists(filePath, true))
 					{
-						Debug("Precaching %s", filePath);
 						PrecacheSound(file);
 					}
 					else
@@ -4554,6 +4552,15 @@ public OnClientDisconnect(client)
 	}
 }
 
+public Action:OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(Enabled && CheckRoundState()==1)
+	{
+		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+	}
+	return Plugin_Continue;
+}
+
 public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if(!Enabled)
@@ -4594,11 +4601,6 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 		{
 			CreateTimer(0.1, CheckItems, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
-	}
-
-	if(CheckRoundState()==1)
-	{
-		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
@@ -7297,7 +7299,7 @@ public bool:PickCharacter(boss, companion)
 		PrecacheCharacter(Special[companion]);
 		return true;
 	}
-	PrecacheCharacter(Special[boss]);
+	PrecacheCharacter(Special[companion]);
 	return true;
 }
 
