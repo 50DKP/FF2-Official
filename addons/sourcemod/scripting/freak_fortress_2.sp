@@ -1836,6 +1836,7 @@ public PrecacheCharacter(characterIndex)
 				Format(filePath, sizeof(filePath), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
 				if(FileExists(filePath, true))
 				{
+					Debug("Precaching %s", filePath);
 					PrecacheSound(file);
 				}
 				else
@@ -1859,6 +1860,7 @@ public PrecacheCharacter(characterIndex)
 				{
 					if(FileExists(file, true))
 					{
+						Debug("Precaching %s", file);
 						PrecacheModel(file);
 					}
 					else
@@ -1871,6 +1873,7 @@ public PrecacheCharacter(characterIndex)
 					Format(filePath, sizeof(filePath), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
 					if(FileExists(filePath, true))
 					{
+						Debug("Precaching %s", filePath);
 						PrecacheSound(file);
 					}
 					else
@@ -2781,7 +2784,7 @@ public Action:Timer_CalcQueuePoints(Handle:timer)
 public Action:StartResponseTimer(Handle:timer)
 {
 	decl String:sound[PLATFORM_MAX_PATH];
-	if(RandomSound("sound_begin", sound, PLATFORM_MAX_PATH))
+	if(RandomSound("sound_begin", sound, sizeof(sound)))
 	{
 		EmitSoundToAll(sound);
 		EmitSoundToAll(sound);
@@ -4115,7 +4118,7 @@ public Action:OnObjectDestroyed(Handle:event, const String:name[], bool:dontBroa
 		if(!GetRandomInt(0, 2) && IsBoss(attacker))
 		{
 			decl String:sound[PLATFORM_MAX_PATH];
-			if(RandomSound("sound_kill_buildable", sound, PLATFORM_MAX_PATH))
+			if(RandomSound("sound_kill_buildable", sound, sizeof(sound)))
 			{
 				EmitSoundToAll(sound);
 				EmitSoundToAll(sound);
@@ -4918,7 +4921,7 @@ public Action:BossTimer(Handle:timer)
 				FF2_ShowSyncHudText(client, rageHUD, "%t", "do_rage");
 
 				decl String:sound[PLATFORM_MAX_PATH];
-				if(RandomSound("sound_full_rage", sound, PLATFORM_MAX_PATH, boss) && emitRageSound[boss])
+				if(RandomSound("sound_full_rage", sound, sizeof(sound), boss) && emitRageSound[boss])
 				{
 					new Float:position[3];
 					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
@@ -5194,7 +5197,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 
 		decl String:sound[PLATFORM_MAX_PATH];
-		if(RandomSoundAbility("sound_ability", sound, PLATFORM_MAX_PATH, boss))
+		if(RandomSoundAbility("sound_ability", sound, sizeof(sound), boss))
 		{
 			FF2flags[Boss[boss]]|=FF2FLAG_TALKING;
 			EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
@@ -5351,7 +5354,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			new boss=GetBossIndex(attacker);
 			if(firstBlood)  //TF_DEATHFLAG_FIRSTBLOOD is broken
 			{
-				if(RandomSound("sound_first_blood", sound, PLATFORM_MAX_PATH, boss))
+				if(RandomSound("sound_first_blood", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAll(sound);
 					EmitSoundToAll(sound);
@@ -5359,7 +5362,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				firstBlood=false;
 			}
 
-			if(RandomSound("sound_hit", sound, PLATFORM_MAX_PATH, boss))
+			if(RandomSound("sound_hit", sound, sizeof(sound), boss))
 			{
 				EmitSoundToAll(sound);
 				EmitSoundToAll(sound);
@@ -5398,7 +5401,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			return Plugin_Continue;
 		}
 
-		if(RandomSound("sound_death", sound, PLATFORM_MAX_PATH, boss))
+		if(RandomSound("sound_death", sound, sizeof(sound), boss))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
@@ -5445,7 +5448,7 @@ public Action:PlaySoundKill(Handle:timer, Handle:data)
 		new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
 		decl String:class[32], String:sound[PLATFORM_MAX_PATH];
 		Format(class, sizeof(class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
-		if(RandomSound(class, sound, PLATFORM_MAX_PATH, ReadPackCell(data)))
+		if(RandomSound(class, sound, sizeof(sound), ReadPackCell(data)))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
@@ -5552,7 +5555,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 	else if(RedAlivePlayers==1 && BlueAlivePlayers && Boss[0] && !DrawGameTimer)
 	{
 		decl String:sound[PLATFORM_MAX_PATH];
-		if(RandomSound("sound_lastman", sound, PLATFORM_MAX_PATH))
+		if(RandomSound("sound_lastman", sound, sizeof(sound)))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
@@ -5792,12 +5795,12 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 				}
 			}
 
-			if(BossLives[boss]==1 && RandomSound("sound_last_life", ability, PLATFORM_MAX_PATH, boss))
+			if(BossLives[boss]==1 && RandomSound("sound_last_life", ability, sizeof(sound), boss))
 			{
 				EmitSoundToAll(ability);
 				EmitSoundToAll(ability);
 			}
-			else if(RandomSound("sound_nextlife", ability, PLATFORM_MAX_PATH, boss))
+			else if(RandomSound("sound_nextlife", ability, sizeof(sound), boss))
 			{
 				EmitSoundToAll(ability);
 				EmitSoundToAll(ability);
@@ -7046,7 +7049,7 @@ stock bool:RandomSound(const String:sound[], String:file[], length, boss=0)
 
 stock bool:RandomSoundAbility(const String:sound[], String:file[], length, boss=0, slot=0)
 {
-	if(boss==-1 || Special[boss]==-1 || !BossKV[Special[boss]])
+	if(boss<0 || Special[boss]<0 || !BossKV[Special[boss]])
 	{
 		return false;
 	}
