@@ -1046,8 +1046,6 @@ public OnPluginStart()
 	HookEvent("object_destroyed", OnObjectDestroyed, EventHookMode_Pre);
 	HookEvent("object_deflected", OnObjectDeflected, EventHookMode_Pre);
 	HookEvent("deploy_buff_banner", OnDeployBackup);
-	HookEvent("rocket_jump", OnRocketJump);
-	HookEvent("rocket_jump_landed", OnRocketJump);
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), OnJarate);  //Used to subtract rage when a boss is jarated (not through Sydney Sleeper)
 
@@ -5103,17 +5101,31 @@ stock GetIndexOfWeaponSlot(client, slot)
 
 public TF2_OnConditionAdded(client, TFCond:condition)
 {
-	if(Enabled && IsBoss(client) && (condition==TFCond_Jarated || condition==TFCond_MarkedForDeath || (condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42))))
+	if(Enabled)
 	{
-		TF2_RemoveCondition(client, condition);
+		if(IsBoss(client) && (condition==TFCond_Jarated || condition==TFCond_MarkedForDeath || (condition==TFCond_Dazed && TF2_IsPlayerInCondition(client, TFCond:42))))
+		{
+			TF2_RemoveCondition(client, condition);
+		}
+		else if(!IsBoss(client) && condition==TFCond_BlastJumping)
+		{
+			FF2flags[client]|=FF2FLAG_ROCKET_JUMPING;
+		}
 	}
 }
 
 public TF2_OnConditionRemoved(client, TFCond:condition)
 {
-	if(Enabled && TF2_GetPlayerClass(client)==TFClass_Scout && condition==TFCond_CritHype)
+	if(Enabled)
 	{
-		TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
+		if(TF2_GetPlayerClass(client)==TFClass_Scout && condition==TFCond_CritHype)
+		{
+			TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
+		}
+		else if(!IsBoss(client) && condition==TFCond_BlastJumping)
+		{
+			FF2flags[client]&=~FF2FLAG_ROCKET_JUMPING;
+		}
 	}
 }
 
@@ -5500,22 +5512,6 @@ public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadca
 	if(Enabled && GetEventInt(event, "buff_type")==2)
 	{
 		FF2flags[GetClientOfUserId(GetEventInt(event, "buff_owner"))]|=FF2FLAG_ISBUFFED;
-	}
-	return Plugin_Continue;
-}
-
-public Action:OnRocketJump(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	if(Enabled)
-	{
-		if(StrEqual(name, "rocket_jump", false))
-		{
-			FF2flags[GetClientOfUserId(GetEventInt(event, "userid"))]|=FF2FLAG_ROCKET_JUMPING;
-		}
-		else
-		{
-			FF2flags[GetClientOfUserId(GetEventInt(event, "userid"))]&=~FF2FLAG_ROCKET_JUMPING;
-		}
 	}
 	return Plugin_Continue;
 }
