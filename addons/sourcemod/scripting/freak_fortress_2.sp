@@ -5795,12 +5795,12 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 				}
 			}
 
-			if(BossLives[boss]==1 && RandomSound("sound_last_life", ability, sizeof(sound), boss))
+			if(BossLives[boss]==1 && RandomSound("sound_last_life", ability, sizeof(ability), boss))
 			{
 				EmitSoundToAll(ability);
 				EmitSoundToAll(ability);
 			}
-			else if(RandomSound("sound_nextlife", ability, sizeof(sound), boss))
+			else if(RandomSound("sound_nextlife", ability, sizeof(ability), boss))
 			{
 				EmitSoundToAll(ability);
 				EmitSoundToAll(ability);
