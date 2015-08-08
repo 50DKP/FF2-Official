@@ -347,10 +347,10 @@ static const String:ff2versiondates[][]=
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
 	"March 13, 2015",	//1.10.5
-	"July 16, 2015",	//1.10.6
-	"July 16, 2015",	//1.10.6
-	"July 16, 2015",	//1.10.6
-	"July 16, 2015"		//1.10.6
+	"August 7, 2015",	//1.10.6
+	"August 7, 2015",	//1.10.6
+	"August 7, 2015",	//1.10.6
+	"August 7, 2015"	//1.10.6
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -360,9 +360,9 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 63:  //1.10.6
 		{
 			DrawPanelText(panel, "1) Updated the default health formula to match VSH's (Wliu)");
-			DrawPanelText(panel, "2) Fixed boss weapon animations sometimes not working (Chdata)");
-			DrawPanelText(panel, "3) Disconnecting bosses now get replaced by the person with the second-highest queue points (Shadow)");
-			DrawPanelText(panel, "4) Updated for compatability with the Gunmettle update (Wliu, Shadow, Starblaster64, Chdata, sarysa, and others)");
+			DrawPanelText(panel, "2) Updated for compatability with the Gunmettle update (Wliu, Shadow, Starblaster64, Chdata, sarysa, and others)");
+			DrawPanelText(panel, "3) Fixed boss weapon animations sometimes not working (Chdata)");
+			DrawPanelText(panel, "4) Disconnecting bosses now get replaced by the person with the second-highest queue points (Shadow)");
 			DrawPanelText(panel, "5) Fixed bosses rarely becoming 'living spectators' during the first round (Wliu/Shadow)");
 			DrawPanelText(panel, "See next page (press 1");
 		}
@@ -378,18 +378,20 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 61:  //1.10.6
 		{
 			DrawPanelText(panel, "11) Fixed end-of-round text occasionally showing random symbols and file paths (Wliu)");
-			DrawPanelText(panel, "12) [Server] Fixed 'UTIL_SetModel not precached' crashes-see #16 for the underlying fix (Shadow/Wliu)");
-			DrawPanelText(panel, "13) [Server] Fixed Array Index Out of Bounds errors when there are more than 32 chances (Wliu from Maximilian_)");
-			DrawPanelText(panel, "14) [Server] Fixed invalid client errors in easter_abilities.sp (Wliu)");
+			DrawPanelText(panel, "12) Updated Russian translations (Maximilian_)")
+			DrawPanelText(panel, "13) [Server] Fixed 'UTIL_SetModel not precached' crashes-see #16 for the underlying fix (Shadow/Wliu)");
+			DrawPanelText(panel, "14) [Server] Fixed Array Index Out of Bounds errors when there are more than 32 chances (Wliu from Maximilian_)");
+			DrawPanelText(panel, "15) [Server] Fixed invalid client errors in easter_abilities.sp (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
 		case 60:  //1.10.6
 		{
-			DrawPanelText(panel, "15) [Dev] Added FF2_StartMusic that was missing from the include file (Wliu from Shadow)");
-			DrawPanelText(panel, "16) [Dev] FF2_GetBossIndex now makes sure the client index passed is valid (Wliu)");
-			DrawPanelText(panel, "17) [Dev] Rewrote the health formula parser and fixed a few bugs along the way (WildCard65/Wliu)");
-			DrawPanelText(panel, "18) [Dev] Prioritized exact matches in OnSpecialSelected (Wliu from Shadow)");
-			DrawPanelText(panel, "19) [Dev] Removed deprecated FCVAR_PLUGIN cvar flags (Wliu)");
+			DrawPanelText(panel, "16) [Server] Missing boss files are now logged (Shadow)");
+			DrawPanelText(panel, "17) [Dev] Added FF2_StartMusic that was missing from the include file (Wliu from Shadow)");
+			DrawPanelText(panel, "18) [Dev] FF2_GetBossIndex now makes sure the client index passed is valid (Wliu)");
+			DrawPanelText(panel, "19) [Dev] Rewrote the health formula parser and fixed a few bugs along the way (WildCard65/Wliu)");
+			DrawPanelText(panel, "20) [Dev] Prioritized exact matches in OnSpecialSelected and added a 'preset' bool (Wliu from Shadow)");
+			DrawPanelText(panel, "21) [Dev] Removed deprecated FCVAR_PLUGIN cvar flags (Wliu)");
 		}
 		case 59:  //1.10.5
 		{
