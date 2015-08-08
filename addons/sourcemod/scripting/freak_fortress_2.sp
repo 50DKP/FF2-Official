@@ -378,8 +378,8 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 61:  //1.10.6
 		{
 			DrawPanelText(panel, "11) Fixed end-of-round text occasionally showing random symbols and file paths (Wliu)");
-			DrawPanelText(panel, "12) Updated Russian translations (Maximilian_)")
-			DrawPanelText(panel, "13) [Server] Fixed 'UTIL_SetModel not precached' crashes-see #16 for the underlying fix (Shadow/Wliu)");
+			DrawPanelText(panel, "12) Updated Russian translations (Maximilian_)");
+			DrawPanelText(panel, "13) [Server] Fixed 'UTIL_SetModel not precached' crashes-see #18 for the underlying fix (Shadow/Wliu)");
 			DrawPanelText(panel, "14) [Server] Fixed Array Index Out of Bounds errors when there are more than 32 chances (Wliu from Maximilian_)");
 			DrawPanelText(panel, "15) [Server] Fixed invalid client errors in easter_abilities.sp (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
