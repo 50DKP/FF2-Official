@@ -3855,7 +3855,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	{
 		Debug("Non-boss client %N is a living spectator!", client);
 		TF2_RespawnPlayer(client);
-		CreateTimer(0.1, MakeNotBoss, userid, TIMER_FLAG_NO_MAPCHANGE)
+		CreateTimer(0.1, MakeNotBoss, userid, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	return Plugin_Continue;
 }
