@@ -8165,7 +8165,9 @@ public Handler_VoteCharset(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else */if(action==MenuAction_VoteEnd)
 	{
-		FF2CharSet=param1 ? param1-1 : validCharsets[GetRandomInt(0, FF2CharSet)];
+		Debug("param1 is %i", param1);
+		FF2CharSet=param1 ? param1-1 : validCharsets[GetRandomInt(0, FF2CharSet)];  //If param1 is 0 then we need to find a random charset
+		Debug("FF2CharSet is %i", FF2CharSet);
 
 		decl String:nextmap[32];
 		GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
@@ -8177,7 +8179,6 @@ public Handler_VoteCharset(Handle:menu, MenuAction:action, param1, param2)
 	{
 		CloseHandle(menu);
 	}
-	return;
 }
 
 /*public Handler_VoteCharset(Handle:menu, votes, clients, const clientInfo[][2], items, const itemInfo[][2])
@@ -8202,7 +8203,7 @@ public Handler_VoteCharset(Handle:menu, MenuAction:action, param1, param2)
 
 public CvarChangeNextmap(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	CreateTimer(0.1, Timer_DisplayCharsetVote);
+	CreateTimer(0.1, Timer_DisplayCharsetVote, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action:Timer_DisplayCharsetVote(Handle:timer)
@@ -8223,7 +8224,7 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 	//SetVoteResultCallback(menu, Handler_VoteCharset);
 
 	decl String:config[PLATFORM_MAX_PATH], String:charset[64];
-	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
 
 	new Handle:Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, config);
@@ -8233,11 +8234,13 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 	do
 	{
 		total++;
+		Debug("Found %i total charsets so far", total);
 		if(KvGetNum(Kv, "hidden", 0))  //Hidden charsets are hidden for a reason :P
 		{
 			continue;
 		}
 		charsets++;
+		Debug("Found %i valid charsets so far", charsets);
 		validCharsets[charsets]=total;
 
 		KvGetSectionName(Kv, charset, sizeof(charset));
