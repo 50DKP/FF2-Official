@@ -7185,11 +7185,13 @@ public bool:PickCharacter(boss, companion)
 		{
 			if(ChancesString[0])
 			{
-				new i=GetRandomInt(0, chances[chancesIndex-1]);
-				while(chancesIndex>=2 && i<chances[chancesIndex-1])
+				new characterIndex=chancesIndex;  //Don't touch chancesIndex since it doesn't get reset
+				new i=GetRandomInt(0, chances[characterIndex-1]);
+
+				while(characterIndex>=2 && i<chances[characterIndex-1])
 				{
-					Special[boss]=chances[chancesIndex-2]-1;
-					chancesIndex-=2;
+					Special[boss]=chances[characterIndex-2]-1;
+					characterIndex-=2;
 				}
 			}
 			else
