@@ -8152,6 +8152,62 @@ stock bool:IsValidClient(client, bool:replaycheck=true)
 	return true;
 }
 
+public CvarChangeNextmap(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	CreateTimer(0.1, Timer_DisplayCharsetVote, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action:Timer_DisplayCharsetVote(Handle:timer)
+{
+	if(isCharSetSelected)
+	{
+		return Plugin_Continue;
+	}
+
+	if(IsVoteInProgress())
+	{
+		CreateTimer(5.0, Timer_DisplayCharsetVote, _, TIMER_FLAG_NO_MAPCHANGE);  //Try again in 5 seconds if there's a different vote going on
+		return Plugin_Continue;
+	}
+
+	new Handle:menu=CreateMenu(Handler_VoteCharset, MenuAction:MENU_ACTIONS_ALL);
+	SetMenuTitle(menu, "%t", "select_charset");  //"Please vote for the character set for the next map."
+	//SetVoteResultCallback(menu, Handler_VoteCharset);
+
+	decl String:config[PLATFORM_MAX_PATH], String:charset[64];
+	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
+
+	new Handle:Kv=CreateKeyValues("");
+	FileToKeyValues(Kv, config);
+	//AddMenuItem(menu, "0 Random", "Random");
+	AddMenuItem(menu, "Random", "Random");
+	new total, charsets;
+	do
+	{
+		total++;
+		if(KvGetNum(Kv, "hidden", 0))  //Hidden charsets are hidden for a reason :P
+		{
+			continue;
+		}
+		charsets++;
+		validCharsets[charsets]=total;
+
+		KvGetSectionName(Kv, charset, sizeof(charset));
+		//Format(charset, sizeof(charset), "%i %s", charsets, config);
+		//AddMenuItem(menu, charset, config);
+		AddMenuItem(menu, charset, charset);
+	}
+	while(KvGotoNextKey(Kv));
+	CloseHandle(Kv);
+
+	if(charsets>1)  //We have enough to call a vote
+	{
+		FF2CharSet=charsets;  //Temporary so that if the vote result is random we know how many valid charsets are in the validCharset array
+		new Handle:voteDuration=FindConVar("sm_mapvote_voteduration");
+		VoteMenuToAll(menu, voteDuration ? GetConVarInt(voteDuration) : 20);
+	}
+	return Plugin_Continue;
+}
 public Handler_VoteCharset(Handle:menu, MenuAction:action, param1, param2)
 {
 	/*if(action==MenuAction_Select && param2==1)
@@ -8165,9 +8221,7 @@ public Handler_VoteCharset(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else */if(action==MenuAction_VoteEnd)
 	{
-		Debug("param1 is %i", param1);
-		FF2CharSet=param1 ? param1-1 : validCharsets[GetRandomInt(0, FF2CharSet)];  //If param1 is 0 then we need to find a random charset
-		Debug("FF2CharSet is %i", FF2CharSet);
+		FF2CharSet=param1 ? param1-1 : validCharsets[GetRandomInt(1, FF2CharSet)]-1;  //If param1 is 0 then we need to find a random charset
 
 		decl String:nextmap[32];
 		GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
@@ -8200,65 +8254,6 @@ public Handler_VoteCharset(Handle:menu, MenuAction:action, param1, param2)
 	CPrintToChatAll("{olive}[FF2]{default} %t", "nextmap_charset", nextmap, FF2CharSetString);  //display
 	isCharSetSelected=true;
 }*/
-
-public CvarChangeNextmap(Handle:convar, const String:oldValue[], const String:newValue[])
-{
-	CreateTimer(0.1, Timer_DisplayCharsetVote, _, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public Action:Timer_DisplayCharsetVote(Handle:timer)
-{
-	if(isCharSetSelected)
-	{
-		return Plugin_Continue;
-	}
-
-	if(IsVoteInProgress())
-	{
-		CreateTimer(5.0, Timer_DisplayCharsetVote, _, TIMER_FLAG_NO_MAPCHANGE);  //Try again in 5 seconds if there's a different vote going on
-		return Plugin_Continue;
-	}
-
-	new Handle:menu=CreateMenu(Handler_VoteCharset, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(menu, "%t", "select_charset");  //"Please vote for the character set for the next map."
-	//SetVoteResultCallback(menu, Handler_VoteCharset);
-
-	decl String:config[PLATFORM_MAX_PATH], String:charset[64];
-	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
-
-	new Handle:Kv=CreateKeyValues("");
-	FileToKeyValues(Kv, config);
-	//AddMenuItem(menu, "0 Random", "Random");
-	AddMenuItem(menu, "0", "Random");
-	new total, charsets;
-	do
-	{
-		total++;
-		Debug("Found %i total charsets so far", total);
-		if(KvGetNum(Kv, "hidden", 0))  //Hidden charsets are hidden for a reason :P
-		{
-			continue;
-		}
-		charsets++;
-		Debug("Found %i valid charsets so far", charsets);
-		validCharsets[charsets]=total;
-
-		KvGetSectionName(Kv, charset, sizeof(charset));
-		//Format(charset, sizeof(charset), "%i %s", charsets, config);
-		//AddMenuItem(menu, charset, config);
-		AddMenuItem(menu, charset, charset);
-	}
-	while(KvGotoNextKey(Kv));
-	CloseHandle(Kv);
-
-	if(charsets>1)  //We have enough to call a vote
-	{
-		FF2CharSet=charsets;  //Temporary so that if the vote result is random we know how many valid charsets are in the validCharset array
-		new Handle:voteDuration=FindConVar("sm_mapvote_voteduration");
-		VoteMenuToAll(menu, voteDuration ? GetConVarInt(voteDuration) : 20);
-	}
-	return Plugin_Continue;
-}
 
 public Action:Command_Nextmap(client, args)
 {
