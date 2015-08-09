@@ -3431,15 +3431,13 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	BossCharge[boss][0]=0.0;
 	SetClientQueuePoints(client, 0);
 
-	// Just to ensure a player doesn't get stuck as a living spectator
-	new specMode=GetEntProp(client, Prop_Send, "m_iObserverMode");
-	Debug("Boss client %N's m_iObserverMode value: %i", client, specMode);
-	if(specMode && IsPlayerAlive(client)) // Respawn a player if they are a living spectator.
+	//Just to ensure a player doesn't get stuck as a living spectator
+	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
 	{
-		Debug("Boss client %N's is a living spectator with an m_iObserverMode value of %i!", client, specMode);
+		Debug("Boss client %N is a living spectator!", client);
 		TF2_RespawnPlayer(client);
+		CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
 	}
-
 	return Plugin_Continue;
 }
 
@@ -3852,15 +3850,13 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
 
-	// Just to ensure a player doesn't get stuck as a living spectator
-	new specMode=GetEntProp(client, Prop_Send, "m_iObserverMode");
-	Debug("Non-boss client %N's m_iObserverMode value: %i", client, specMode);
-	if(specMode && IsPlayerAlive(client)) // Respawn a player if they are a living spectator.
+	//Just to ensure a player doesn't get stuck as a living spectator
+	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
 	{
-		Debug("Non-boss client %N's is a living spectator with an m_iObserverMode value of %i!", client, specMode);
+		Debug("Non-boss client %N is a living spectator!", client);
 		TF2_RespawnPlayer(client);
+		CreateTimer(0.1, MakeNotBoss, userid, TIMER_FLAG_NO_MAPCHANGE)
 	}
-
 	return Plugin_Continue;
 }
 
