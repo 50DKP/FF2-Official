@@ -347,10 +347,10 @@ static const String:ff2versiondates[][]=
 	"March 1, 2015",	//1.10.4
 	"March 1, 2015",	//1.10.4
 	"March 13, 2015",	//1.10.5
-	"August 7, 2015",	//1.10.6
-	"August 7, 2015",	//1.10.6
-	"August 7, 2015",	//1.10.6
-	"August 7, 2015"	//1.10.6
+	"August 10, 2015",	//1.10.6
+	"August 10, 2015",	//1.10.6
+	"August 10, 2015",	//1.10.6
+	"August 10, 2015"	//1.10.6
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -363,7 +363,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Updated for compatability with the Gunmettle update (Wliu, Shadow, Starblaster64, Chdata, sarysa, and others)");
 			DrawPanelText(panel, "3) Fixed boss weapon animations sometimes not working (Chdata)");
 			DrawPanelText(panel, "4) Disconnecting bosses now get replaced by the person with the second-highest queue points (Shadow)");
-			DrawPanelText(panel, "5) Fixed bosses rarely becoming 'living spectators' during the first round (Wliu/Shadow)");
+			DrawPanelText(panel, "5) Fixed bosses rarely becoming 'living spectators' during the first round (Shadow/Wliu)");
 			DrawPanelText(panel, "See next page (press 1");
 		}
 		case 62:  //1.10.6
