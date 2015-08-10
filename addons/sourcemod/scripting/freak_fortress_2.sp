@@ -7197,8 +7197,8 @@ public bool:PickCharacter(boss, companion)
 			new Action:action;
 			Call_StartForward(OnSpecialSelected);
 			Call_PushCell(boss);
-			new characterIndex=character[boss];
-			Call_PushCellRef(characterIndex);
+			new newCharacter=character[boss];
+			Call_PushCellRef(newCharacter);
 			decl String:newName[64];
 			KvRewind(BossKV[character[boss]]);
 			KvGetString(BossKV[character[boss]], "name", newName, sizeof(newName));
@@ -7252,7 +7252,7 @@ public bool:PickCharacter(boss, companion)
 					PrecacheCharacter(character[boss]);
 					return true;
 				}
-				character[boss]=characterIndex;
+				character[boss]=newCharacter;
 				PrecacheCharacter(character[boss]);
 				return true;
 			}
@@ -7320,8 +7320,8 @@ public bool:PickCharacter(boss, companion)
 	new Action:action;
 	Call_StartForward(OnSpecialSelected);
 	Call_PushCell(companion);
-	new characterIndex=character[companion];
-	Call_PushCellRef(characterIndex);
+	new newCharacter=character[companion];
+	Call_PushCellRef(newCharacter);
 	decl String:newName[64];
 	KvRewind(BossKV[character[companion]]);
 	KvGetString(BossKV[character[companion]], "name", newName, sizeof(newName));
@@ -7333,30 +7333,30 @@ public bool:PickCharacter(boss, companion)
 		{
 			decl String:characterName[64];
 			new foundExactMatch, foundPartialMatch;
-			for(new character; BossKV[character] && character<MAXSPECIALS; character++)
+			for(new characterIndex; BossKV[characterIndex] && characterIndex<MAXSPECIALS; characterIndex++)
 			{
-				KvRewind(BossKV[character]);
-				KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
+				KvRewind(BossKV[characterIndex]);
+				KvGetString(BossKV[characterIndex], "name", characterName, sizeof(characterName));
 				if(StrEqual(newName, characterName, false))
 				{
-					foundExactMatch=character;
+					foundExactMatch=characterIndex;
 					break;  //If we find an exact match there's no reason to keep looping
 				}
 				else if(StrContains(newName, characterName, false)!=-1)
 				{
-					foundPartialMatch=character;
+					foundPartialMatch=characterIndex;
 				}
 
 				//Do the same thing as above here, but look at the filename instead of the boss name
-				KvGetString(BossKV[character], "filename", characterName, sizeof(characterName));
+				KvGetString(BossKV[characterIndex], "filename", characterName, sizeof(characterName));
 				if(StrEqual(newName, characterName, false))
 				{
-					foundExactMatch=character;
+					foundExactMatch=characterIndex;
 					break;  //If we find an exact match there's no reason to keep looping
 				}
 				else if(StrContains(newName, characterName, false)!=-1)
 				{
-					foundPartialMatch=character;
+					foundPartialMatch=characterIndex;
 				}
 			}
 
@@ -7375,7 +7375,7 @@ public bool:PickCharacter(boss, companion)
 			PrecacheCharacter(character[companion]);
 			return true;
 		}
-		character[companion]=characterIndex;
+		character[companion]=newCharacter;
 		PrecacheCharacter(character[companion]);
 		return true;
 	}
