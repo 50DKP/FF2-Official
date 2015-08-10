@@ -54,6 +54,7 @@ deploy:
     file:
         - freak_fortress_2.zip
         - freak_fortress_2.tar.gz
+    skip_cleanup: true
     on:
         repo: 50DKP/FF2-Official
         tags: true
