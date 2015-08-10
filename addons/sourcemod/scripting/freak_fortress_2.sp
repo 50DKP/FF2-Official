@@ -1507,7 +1507,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	for(new i=1; i<MAXSPECIALS; i++)
 	{
 		IntToString(i, key, sizeof(key));
-		KvGetString(Kv, key, config, PLATFORM_MAX_PATH);
+		KvGetString(Kv, key, config, sizeof(config));
 		if(!config[0])  //TODO: Make this more user-friendly (don't immediately break-they might have missed a number)
 		{
 			break;
@@ -1627,15 +1627,15 @@ DisableSubPlugins(bool:force=false)
 	//TODO
 }*/
 
-public LoadCharacter(const String:character[])
+public LoadCharacter(const String:characterName[])
 {
 	new String:extensions[][]={".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd"};
 	decl String:config[PLATFORM_MAX_PATH];
 
-	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/%s.cfg", character);
+	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/%s.cfg", characterName);
 	if(!FileExists(config))
 	{
-		LogError("[FF2] Character %s does not exist!", character);
+		LogError("[FF2] Character %s does not exist!", characterName);
 		return;
 	}
 	BossKV[Specials]=CreateKeyValues("character");
@@ -1644,7 +1644,7 @@ public LoadCharacter(const String:character[])
 	new version=KvGetNum(BossKV[Specials], "version", 1);
 	if(version!=1)
 	{
-		LogError("[FF2] Character %s is only compatible with FF2 v%i!", character, version);
+		LogError("[FF2] Character %s is only compatible with FF2 v%i!", characterName, version);
 		return;
 	}
 
@@ -1658,7 +1658,7 @@ public LoadCharacter(const String:character[])
 			BuildPath(Path_SM, config, sizeof(config), "plugins/freak_fortress_2/%s.smx", plugin_name);
 			if(!FileExists(config))
 			{
-				LogError("[FF2] Character %s needs plugin %s!", character, plugin_name);
+				LogError("[FF2] Character %s needs plugin %s!", characterName, plugin_name);
 				return;
 			}
 		}
@@ -1670,7 +1670,7 @@ public LoadCharacter(const String:character[])
 	KvRewind(BossKV[Specials]);
 
 	decl String:key[PLATFORM_MAX_PATH], String:section[64];
-	KvSetString(BossKV[Specials], "filename", character);
+	KvSetString(BossKV[Specials], "filename", characterName);
 	KvGetString(BossKV[Specials], "name", config, PLATFORM_MAX_PATH);
 	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "sound_block_vo", 0);
 	//BossSpeed[Specials]=KvGetFloat(BossKV[Specials], "maxspeed", 340.0);
@@ -6834,11 +6834,11 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	SetArrayCell(sumArray, 0, 0.0);  //TODO:  See if these can be placed naturally in the loop
 	SetArrayCell(_operator, bracket, Operator_None);
 
-	new String:character[2], String:value[16], String:variable[16];  //We don't decl these because we directly append characters to them and there's no point in decl'ing character
+	new String:currentCharacter[2], String:value[16], String:variable[16];  //We don't decl these because we directly append characters to them and there's no point in decl'ing currentCharacter
 	for(new i; i<=strlen(formula); i++)
 	{
-		character[0]=formula[i];  //Find out what the next char in the formula is
-		switch(character[0])
+		currentCharacter[0]=formula[i];  //Find out what the next char in the formula is
+		switch(currentCharacter[0])
 		{
 			case ' ', '\t':  //Ignore whitespace
 			{
@@ -6877,7 +6877,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			}
 			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
 			{
-				StrCat(value, sizeof(value), character);  //Constant?  Just add it to the current value
+				StrCat(value, sizeof(value), currentCharacter);  //Constant?  Just add it to the current value
 			}
 			/*case 'n', 'x':  //n and x denote player variables
 			{
@@ -6938,7 +6938,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			case '+', '-', '*', '/', '^':
 			{
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
-				switch(character[0])
+				switch(currentCharacter[0])
 				{
 					case '+':
 					{
@@ -6966,7 +6966,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 			{
 				if(escapeCharacter)  //Absorb all the characters into 'variable' if we hit an escape character
 				{
-					StrCat(variable, sizeof(variable), character);
+					StrCat(variable, sizeof(variable), currentCharacter);
 				}
 				else
 				{
@@ -7210,30 +7210,30 @@ public bool:PickCharacter(boss, companion)
 				{
 					decl String:characterName[64];
 					new foundExactMatch, foundPartialMatch;
-					for(new character; BossKV[character] && character<MAXSPECIALS; character++)
+					for(new characterIndex; BossKV[characterIndex] && characterIndex<MAXSPECIALS; characterIndex++)
 					{
-						KvRewind(BossKV[character]);
-						KvGetString(BossKV[character], "name", characterName, sizeof(characterName));
+						KvRewind(BossKV[characterIndex]);
+						KvGetString(BossKV[characterIndex], "name", characterName, sizeof(characterName));
 						if(StrEqual(newName, characterName, false))
 						{
-							foundExactMatch=character;
+							foundExactMatch=characterIndex;
 							break;  //If we find an exact match there's no reason to keep looping
 						}
 						else if(StrContains(newName, characterName, false)!=-1)
 						{
-							foundPartialMatch=character;
+							foundPartialMatch=characterIndex;
 						}
 
 						//Do the same thing as above here, but look at the filename instead of the boss name
-						KvGetString(BossKV[character], "filename", characterName, sizeof(characterName));
+						KvGetString(BossKV[characterIndex], "filename", characterName, sizeof(characterName));
 						if(StrEqual(newName, characterName, false))
 						{
-							foundExactMatch=character;
+							foundExactMatch=characterIndex;
 							break;  //If we find an exact match there's no reason to keep looping
 						}
 						else if(StrContains(newName, characterName, false)!=-1)
 						{
-							foundPartialMatch=character;
+							foundPartialMatch=characterIndex;
 						}
 					}
 
@@ -7291,27 +7291,27 @@ public bool:PickCharacter(boss, companion)
 		KvRewind(BossKV[character[boss]]);
 		KvGetString(BossKV[character[boss]], "companion", companionName, sizeof(companionName), "=Failed companion name=");
 
-		new character;
-		while(character<Specials)  //Loop through all the bosses to find the companion we're looking for
+		new characterIndex;
+		while(characterIndex<Specials)  //Loop through all the bosses to find the companion we're looking for
 		{
-			KvRewind(BossKV[character]);
-			KvGetString(BossKV[character], "name", bossName, sizeof(bossName), "=Failed name=");
+			KvRewind(BossKV[characterIndex]);
+			KvGetString(BossKV[characterIndex], "name", bossName, sizeof(bossName), "=Failed name=");
 			if(StrEqual(bossName, companionName))
 			{
-				character[companion]=character;
+				character[companion]=characterIndex;
 				break;
 			}
 
-			KvGetString(BossKV[character], "filename", bossName, sizeof(bossName), "=Failed name=");
+			KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName), "=Failed name=");
 			if(StrEqual(bossName, companionName))
 			{
-				character[companion]=character;
+				character[companion]=characterIndex;
 				break;
 			}
-			character++;
+			characterIndex++;
 		}
 
-		if(character==Specials)  //Companion not found
+		if(characterIndex==Specials)  //Companion not found
 		{
 			return false;
 		}
