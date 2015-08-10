@@ -2328,7 +2328,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 		{
 			if(IsValidClient(client) && !IsBoss(client) && GetClientTeam(client)!=OtherTeam)
 			{
-				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client));
+				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 		return Plugin_Continue;  //NOTE: This is needed because OnRoundStart gets fired a second time once both teams have players
@@ -2816,7 +2816,7 @@ public Action:StartBossTimer(Handle:timer)
 		if(IsValidClient(client) && !IsBoss(client) && IsPlayerAlive(client))
 		{
 			playing++;
-			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client));  //TODO:  Is this needed?
+			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);  //TODO:  Is this needed?
 		}
 	}
 
@@ -3154,7 +3154,7 @@ public Action:Timer_Move(Handle:timer)
 
 public Action:StartRound(Handle:timer)
 {
-	CreateTimer(10.0, Timer_NextBossPanel);
+	CreateTimer(10.0, Timer_NextBossPanel, _, TIMER_FLAG_NO_MAPCHANGE);
 	UpdateHealthBar();
 	return Plugin_Handled;
 }
@@ -3198,7 +3198,7 @@ public Action:MessageTimer(Handle:timer)
 
 		if(doorCheckTimer==INVALID_HANDLE)
 		{
-			doorCheckTimer=CreateTimer(5.0, Timer_CheckDoors, _, TIMER_FLAG_NO_MAPCHANGE|TIMER_REPEAT);
+			doorCheckTimer=CreateTimer(5.0, Timer_CheckDoors, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 
@@ -4182,7 +4182,7 @@ public Action:Timer_Uber(Handle:timer, any:medigunid)
 
 		if(charge<=0.05)
 		{
-			CreateTimer(3.0, Timer_ResetUberCharge, EntIndexToEntRef(medigun));
+			CreateTimer(3.0, Timer_ResetUberCharge, EntIndexToEntRef(medigun), TIMER_FLAG_NO_MAPCHANGE);
 			FF2flags[client]&=~FF2FLAG_UBERREADY;
 			return Plugin_Stop;
 		}
@@ -4536,7 +4536,7 @@ public OnClientDisconnect(client)
 
 				if(Boss[boss])
 				{
-					CreateTimer(0.1, MakeBoss);
+					CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
 					CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
 					CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
 				}
@@ -4545,7 +4545,7 @@ public OnClientDisconnect(client)
 
 		if(IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==1)
 		{
-			CreateTimer(0.1, CheckAlivePlayers);
+			CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 }
@@ -4593,7 +4593,7 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 				TF2_RegeneratePlayer(client);
 				CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
-			CreateTimer(0.2, MakeNotBoss, GetClientUserId(client));
+			CreateTimer(0.2, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
 		else
 		{
@@ -5340,13 +5340,13 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid")), attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	decl String:sound[PLATFORM_MAX_PATH];
-	CreateTimer(0.1, CheckAlivePlayers);
+	CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 	DoOverlay(client, "");
 	if(!IsBoss(client))
 	{
 		if(!(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
-			CreateTimer(1.0, Timer_Damage, GetClientUserId(client));
+			CreateTimer(1.0, Timer_Damage, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
 
 		if(IsBoss(attacker))
@@ -6334,7 +6334,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 					if(index==225 || index==574)  //Your Eternal Reward, Wanga Prick
 					{
-						CreateTimer(0.3, Timer_DisguiseBackstab, GetClientUserId(attacker));
+						CreateTimer(0.3, Timer_DisguiseBackstab, GetClientUserId(attacker), TIMER_FLAG_NO_MAPCHANGE);
 					}
 					else if(index==356)  //Conniver's Kunai
 					{
