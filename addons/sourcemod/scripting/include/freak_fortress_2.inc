@@ -413,12 +413,13 @@ forward Action:FF2_OnMusic(String:path[], &Float:time);
 /**
  * Called when FF2 picks a character for a Boss
  *
- * @param boss          Boss index
- * @param character     Character index
- * @param characterName Character name
- * @return              You can NOT use Plugin_Stop to prevent this, but you can change specialName and use Plugin_Changed to change the boss.  If you want to change 'character', then make 'characterName' null.
+ * @param boss			Boss index
+ * @param character   	Character index
+ * @param characterName	Character name
+ * @param preset        True if the boss was set using a command such as ff2_special
+ * @return				You can NOT use Plugin_Stop to prevent this, but you can change specialName and use Plugin_Changed to change the boss.  If you want to change 'character', then make 'characterName' null.
  */
-forward Action:FF2_OnSpecialSelected(boss, &character, String:characterName[]);
+forward Action:FF2_OnSpecialSelected(boss, &character, String:characterName[], bool:preset);
 
 /**
  * Called when FF2 adds queue points
