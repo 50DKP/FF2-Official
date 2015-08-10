@@ -4736,7 +4736,7 @@ public OnClientDisconnect(client)
 
 public Action:OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(Enabled && CheckRoundState()==1)
+	if(Enabled && CheckRoundState()==FF2RoundState_RoundRunning)
 	{
 		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
