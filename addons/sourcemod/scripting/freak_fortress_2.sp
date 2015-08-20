@@ -35,11 +35,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "6"
-//#define DEV_REVISION "Beta"
+#define STABLE_REVISION "7"
+#define DEV_REVISION "Beta"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.6
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.7
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..." (build "...BUILD_NUMBER...")"
 #endif
@@ -3539,15 +3539,16 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}*/
-		/*case 220:  //Shortstop - commented out because the 328 attrib is rather useless and reload penalty is no more since Gunmettle
+		case 220:  //Shortstop
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "328 ; 1.0", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "241 ; 0.0", true);
+				//241: No reload penalty
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
 				return Plugin_Changed;
 			}
-		}*/
+		}
 		case 226:  //Battalion's Backup
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "140 ; 10.0");
