@@ -7237,6 +7237,7 @@ public bool:PickCharacter(boss, companion)
 		}
 	}
 
+	//All of the following uses `companion` because it will always be the boss index we want
 	new Action:action;
 	Call_StartForward(OnSpecialSelected);
 	Call_PushCell(companion);

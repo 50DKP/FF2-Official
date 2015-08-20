@@ -26,7 +26,7 @@
 			"Plugin"	"Path_SM/plugins/freaks/easter_abilities.ff2"
 			"Plugin"	"Path_SM/translations/freak_fortress_2.phrases.txt"
 			"Plugin"	"Path_SM/translations/ff2_1st_set.phrases.txt"
-			"Plugin"	"Path_SM/translations/ff2_boss_selection.phrases.txt"
+			"Plugin"	"Path_SM/translations/ff2_boss_selection.txt"
 			"Plugin"	"Path_SM/translations/ru/freak_fortress_2.phrases.txt"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
 			"Source"	"Path_SM/scripting/freaks/default_abilities.sp"
