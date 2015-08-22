@@ -3541,7 +3541,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}*/
 		case 220:  //Shortstop
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "241 ; 0.0", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "241 ; 1.0");
 				//241: No reload penalty
 			if(itemOverride!=INVALID_HANDLE)
 			{
