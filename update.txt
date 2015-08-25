@@ -4,16 +4,13 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.10.6"
-			"Previous"	"1.10.5"
+			"Latest"	"1.10.7"
+			"Previous"	"1.10.6"
 		}
 
-		"Notes"			"Updated the default health formula to match VSH's"
-		"Notes"			"Updated for the Gunmettle update"
-		"Notes"			"Disconnecting bosses now get replaced by the player with the second-highest queue points"
-		"Notes"			"Many bugs and crashes fixed"
-		"Notes"			"Removed the need to download HHH's BGM since it is now bundled with TF2 again"
-		"Notes"			"Added FF2_StartMusic"
+		"Notes"			"Fixed companions always having default rage damage and lives, even if specified otherwise"
+		"Notes"			"Removed Shortstop reload penalty"
+		"Notes"			"Large amounts of lives are no longer cut off"
 	}
 
 	"Files"
@@ -21,19 +18,7 @@
 		"Patch"
 		{
 			"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
-			"Plugin"	"Path_SM/plugins/freaks/default_abilities.ff2"
-			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
-			"Plugin"	"Path_SM/plugins/freaks/easter_abilities.ff2"
-			"Plugin"	"Path_SM/translations/freak_fortress_2.phrases.txt"
-			"Plugin"	"Path_SM/translations/ff2_1st_set.phrases.txt"
-			"Plugin"	"Path_SM/translations/ff2_boss_selection.txt"
-			"Plugin"	"Path_SM/translations/ru/freak_fortress_2.phrases.txt"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
-			"Source"	"Path_SM/scripting/freaks/default_abilities.sp"
-			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
-			"Source"	"Path_SM/scripting/freaks/easter_abilities.sp"
-			"Source"	"Path_SM/scripting/include/freak_fortress_2.inc"
-			"Source"	"Path_SM/scripting/include/freak_fortress_2_subplugin.inc"
 		}
 
 		"Plugin"		"Path_SM/plugins/freak_fortress_2.smx"
