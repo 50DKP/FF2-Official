@@ -7218,6 +7218,7 @@ public bool:PickCharacter(boss, companion)
 			KvGetString(BossKV[character], "name", bossName, sizeof(bossName), "=Failed name=");
 			if(StrEqual(bossName, companionName, false))
 			{
+				Debug("Character %i is a perfect match for companion %s", character, companionName);
 				Special[companion]=character;
 				break;
 			}
@@ -7316,14 +7317,14 @@ FindCompanion(boss, players, bool:omit[])
 		new companion=GetClientWithMostQueuePoints(omit);
 		Boss[companion]=companion;  //Woo boss indexes!
 		omit[companion]=true;
+		Debug("Companion is %N (index %i) as boss %s", companion, companion, companionName);
 		if(PickCharacter(boss, companion))  //TODO: This is a bit misleading
 		{
+			Debug("Special[%i] is %i", companion, Special[companion]);
 			BossRageDamage[companion]=KvGetNum(BossKV[Special[companion]], "ragedamage", 1900);
 			if(BossRageDamage[companion]<=0)
 			{
-				decl String:bossName[64];
-				KvGetString(BossKV[Special[companion]], "name", bossName, sizeof(bossName));
-				PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is below 0, setting to 1900", bossName);
+				PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is below 0, setting to 1900", companionName);
 				BossRageDamage[companion]=1900;
 			}
 
