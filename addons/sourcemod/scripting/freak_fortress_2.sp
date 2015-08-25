@@ -1696,6 +1696,7 @@ public LoadCharacter(const String:character[])
 		return;
 	}
 	BossKV[Specials]=CreateKeyValues("character");
+	Debug("BossKV[%i] is %X", Specials, BossKV[Specials]);
 	FileToKeyValues(BossKV[Specials], config);
 
 	new version=KvGetNum(BossKV[Specials], "version", 1);
@@ -7322,7 +7323,8 @@ FindCompanion(boss, players, bool:omit[])
 		if(PickCharacter(boss, companion))  //TODO: This is a bit misleading
 		{
 			Debug("Special[%i] is %i", companion, Special[companion]);
-			Debug("%i %s %X", BossKV[Special[companion]], BossKV[Special[companion]], BossKV[Special[companion]]);  //Not sure which one is right
+			Debug("BossKV[Special[companion]] is %X", BossKV[Special[companion]]);
+			KvRewind(BossKV[Special[companion]]);
 			BossRageDamage[companion]=KvGetNum(BossKV[Special[companion]], "ragedamage", 1900);
 			if(BossRageDamage[companion]<=0)
 			{
