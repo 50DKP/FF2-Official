@@ -10,7 +10,7 @@
 
 		"Notes"			"Fixed companions always having default rage damage and lives, even if specified otherwise"
 		"Notes"			"Removed Shortstop reload penalty"
-		"Notes"			"Large amounts of lives are no longer cut off"
+		"Notes"			"Fixed large amounts of lives being cut off when being displayed"
 	}
 
 	"Files"
