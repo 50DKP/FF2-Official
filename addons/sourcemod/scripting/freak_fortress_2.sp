@@ -1747,6 +1747,7 @@ public LoadCharacter(const String:character[])
 				{
 					break;
 				}
+
 				if(FileExists(config, true))
 				{
 					AddFileToDownloadsTable(config);
@@ -2598,7 +2599,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	if(isBossAlive)
 	{
 		new String:text[128];  //Do not decl this
-		decl String:bossName[64], String:lives[4];
+		decl String:bossName[64], String:lives[8];
 		for(new target; target<=MaxClients; target++)
 		{
 			if(IsBoss(target))
@@ -2606,7 +2607,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 				boss=Boss[target];
 				KvRewind(BossKV[Special[boss]]);
 				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
-				BossLives[boss]>1 ? Format(lives, 4, "x%i", BossLives[boss]) : strcopy(lives, 2, "");
+				BossLives[boss]>1 ? Format(lives, sizeof(lives), "x%i", BossLives[boss]) : strcopy(lives, 2, "");
 				Format(text, sizeof(text), "%s\n%t", text, "ff2_alive", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
 		}
@@ -3205,7 +3206,7 @@ public Action:MessageTimer(Handle:timer)
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	new String:text[512];  //Do not decl this
 	decl String:textChat[512];
-	decl String:lives[4];
+	decl String:lives[8];
 	decl String:name[64];
 	for(new client; client<=MaxClients; client++)
 	{
@@ -3216,7 +3217,7 @@ public Action:MessageTimer(Handle:timer)
 			KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
 			if(BossLives[boss]>1)
 			{
-				Format(lives, 4, "x%i", BossLives[boss]);
+				Format(lives, sizeof(lives), "x%i", BossLives[boss]);
 			}
 			else
 			{
@@ -4221,7 +4222,7 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 	if(IsBoss(client) || GetGameTime()>=HPTime)
 	{
 		new String:text[512];  //Do not decl this
-		decl String:lives[4], String:name[64];
+		decl String:lives[8], String:name[64];
 		for(new target; target<=MaxClients; target++)
 		{
 			if(IsBoss(target))
@@ -7321,6 +7322,7 @@ FindCompanion(boss, players, bool:omit[])
 		if(PickCharacter(boss, companion))  //TODO: This is a bit misleading
 		{
 			Debug("Special[%i] is %i", companion, Special[companion]);
+			Debug("%i %s %X", BossKV[Special[companion]], BossKV[Special[companion]], BossKV[Special[companion]]);  //Not sure which one is right
 			BossRageDamage[companion]=KvGetNum(BossKV[Special[companion]], "ragedamage", 1900);
 			if(BossRageDamage[companion]<=0)
 			{
@@ -7329,6 +7331,7 @@ FindCompanion(boss, players, bool:omit[])
 			}
 
 			BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
+			Debug("BossLivesMax[companion] is %i", BossLivesMax[companion]);
 			if(BossLivesMax[companion]<=0)
 			{
 				PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
