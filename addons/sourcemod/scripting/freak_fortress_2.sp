@@ -363,7 +363,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "1) Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
 			DrawPanelText(panel, "2) Removed Shortstop reload penalty (Starblaster64)");
-			DrawPanelText(panel, "3) Large amounts of lives are no longer cut off (Wliu)");
+			DrawPanelText(panel, "3) Fixed large amounts of lives being cut off when being displayed (Wliu)");
 		}
 		case 63:  //1.10.6
 		{
