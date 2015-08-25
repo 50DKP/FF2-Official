@@ -1696,7 +1696,6 @@ public LoadCharacter(const String:character[])
 		return;
 	}
 	BossKV[Specials]=CreateKeyValues("character");
-	Debug("BossKV[%i] is %X", Specials, BossKV[Specials]);
 	FileToKeyValues(BossKV[Specials], config);
 
 	new version=KvGetNum(BossKV[Specials], "version", 1);
@@ -7220,7 +7219,6 @@ public bool:PickCharacter(boss, companion)
 			KvGetString(BossKV[character], "name", bossName, sizeof(bossName), "=Failed name=");
 			if(StrEqual(bossName, companionName, false))
 			{
-				Debug("Character %i is a perfect match for companion %s", character, companionName);
 				Special[companion]=character;
 				break;
 			}
@@ -7319,11 +7317,8 @@ FindCompanion(boss, players, bool:omit[])
 		new companion=GetClientWithMostQueuePoints(omit);
 		Boss[companion]=companion;  //Woo boss indexes!
 		omit[companion]=true;
-		Debug("Companion is %N (index %i) as boss %s", companion, companion, companionName);
 		if(PickCharacter(boss, companion))  //TODO: This is a bit misleading
 		{
-			Debug("Special[%i] is %i", companion, Special[companion]);
-			Debug("BossKV[Special[companion]] is %X", BossKV[Special[companion]]);
 			KvRewind(BossKV[Special[companion]]);
 			BossRageDamage[companion]=KvGetNum(BossKV[Special[companion]], "ragedamage", 1900);
 			if(BossRageDamage[companion]<=0)
@@ -7333,7 +7328,6 @@ FindCompanion(boss, players, bool:omit[])
 			}
 
 			BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
-			Debug("BossLivesMax[companion] is %i", BossLivesMax[companion]);
 			if(BossLivesMax[companion]<=0)
 			{
 				PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
