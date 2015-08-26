@@ -352,7 +352,7 @@ static const String:ff2versiondates[][]=
 	"August 10, 2015",	//1.10.6
 	"August 10, 2015",	//1.10.6
 	"August 10, 2015",	//1.10.6
-	"August 25, 2015"	//1.10.7
+	"August 26, 2015"	//1.10.7
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -362,8 +362,9 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 64:  //1.10.7
 		{
 			DrawPanelText(panel, "1) Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
-			DrawPanelText(panel, "2) Removed Shortstop reload penalty (Starblaster64)");
-			DrawPanelText(panel, "3) Fixed large amounts of lives being cut off when being displayed (Wliu)");
+			DrawPanelText(panel, "2) Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive (Shadow from Spyper)");
+			DrawPanelText(panel, "3) Removed Shortstop reload penalty (Starblaster64)");
+			DrawPanelText(panel, "4) Fixed large amounts of lives being cut off when being displayed (Wliu)");
 		}
 		case 63:  //1.10.6
 		{
@@ -4531,18 +4532,12 @@ public OnClientDisconnect(client)
 	{
 		if(IsBoss(client))
 		{
-			if(CheckRoundState()==1)
-			{
-				ForceTeamWin(OtherTeam);
-			}
-
 			if(GetConVarBool(cvarPreroundBossDisconnect) && !CheckRoundState())
 			{
 				new boss=GetBossIndex(client);
 				new bool:omit[MaxClients+1];
 				omit[client]=true;
 				Boss[boss]=GetClientWithMostQueuePoints(omit);
-				omit[Boss[boss]]=true;
 
 				if(Boss[boss])
 				{
