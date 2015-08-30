@@ -1020,7 +1020,7 @@ public OnPluginStart()
 	cvarAliveToEnable=CreateConVar("ff2_point_alive", "5", "The control point will only activate when there are this many people or less left alive");
 	cvarAnnounce=CreateConVar("ff2_announce", "120", "Amount of seconds to wait until FF2 info is displayed again.  0 to disable", _, true, 0.0);
 	cvarEnabled=CreateConVar("ff2_enabled", "1", "0-Disable FF2 (WHY?), 1-Enable FF2", FCVAR_DONTRECORD, true, 0.0, true, 1.0);
-	cvarCrits=CreateConVar("ff2_crits", "1", "Can Boss get crits?", _, true, 0.0, true, 1.0);
+	cvarCrits=CreateConVar("ff2_crits", "0", "Can the boss get random crits?", _, true, 0.0, true, 1.0);
 	cvarFirstRound=CreateConVar("ff2_first_round", "-1", "This cvar is deprecated.  Please use 'ff2_arena_rounds' instead by setting this cvar to -1", _, true, -1.0, true, 1.0);  //DEPRECATED
 	cvarArenaRounds=CreateConVar("ff2_arena_rounds", "1", "Number of rounds to make arena before switching to FF2 (helps for slow-loading players)", _, true, 0.0);
 	cvarCircuitStun=CreateConVar("ff2_circuit_stun", "2", "Amount of seconds the Short Circuit stuns the boss for.  0 to disable", _, true, 0.0);
@@ -4052,7 +4052,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
-		CPrintToChat(client, "{olive}[FF2]{default} Respawning you because you have no weapons!");
+		Debug("Respawning %N to avoid civilian bug");
 		TF2_RespawnPlayer(client);
 	}
 	civilianCheck[client]=0;
@@ -4530,21 +4530,18 @@ public OnClientDisconnect(client)
 {
 	if(Enabled)
 	{
-		if(IsBoss(client))
+		if(IsBoss(client) && !CheckRoundState() && GetConVarBool(cvarPreroundBossDisconnect))
 		{
-			if(GetConVarBool(cvarPreroundBossDisconnect) && !CheckRoundState())
-			{
-				new boss=GetBossIndex(client);
-				new bool:omit[MaxClients+1];
-				omit[client]=true;
-				Boss[boss]=GetClientWithMostQueuePoints(omit);
+			new boss=GetBossIndex(client);
+			new bool:omit[MaxClients+1];
+			omit[client]=true;
+			Boss[boss]=GetClientWithMostQueuePoints(omit);
 
-				if(Boss[boss])
-				{
-					CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
-					CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
-					CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
-				}
+			if(Boss[boss])
+			{
+				CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
+				CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
+				CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
 			}
 		}
 
@@ -5403,6 +5400,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		new boss=GetBossIndex(client);
 		if(boss==-1 || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
+			Debug("hi");
 			return Plugin_Continue;
 		}
 
