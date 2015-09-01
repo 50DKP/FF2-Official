@@ -75,8 +75,8 @@ new bool:steamtools=false;
 new bool:goomba=false;
 #endif*/
 
-new OtherTeam=2;
-new BossTeam=3;
+new TFTeam:OtherTeam=TFTeam_Red;
+new TFTeam:BossTeam=TFTeam_Blue;
 new playing;
 new healthcheckused;
 new RedAlivePlayers;
@@ -2204,17 +2204,17 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 
 	if(blueBoss)
 	{
-		SetTeamScore(_:TFTeam_Red, GetTeamScore(OtherTeam));
-		SetTeamScore(_:TFTeam_Blue, GetTeamScore(BossTeam));
-		OtherTeam=_:TFTeam_Red;
-		BossTeam=_:TFTeam_Blue;
+		SetTeamScore(_:TFTeam_Red, GetTeamScore(_:OtherTeam));
+		SetTeamScore(_:TFTeam_Blue, GetTeamScore(_:BossTeam));
+		OtherTeam=TFTeam_Red;
+		BossTeam=TFTeam_Blue;
 	}
 	else
 	{
-		SetTeamScore(_:TFTeam_Red, GetTeamScore(BossTeam));
-		SetTeamScore(_:TFTeam_Blue, GetTeamScore(OtherTeam));
-		OtherTeam=_:TFTeam_Blue;
-		BossTeam=_:TFTeam_Red;
+		SetTeamScore(_:TFTeam_Red, GetTeamScore(_:BossTeam));
+		SetTeamScore(_:TFTeam_Blue, GetTeamScore(_:OtherTeam));
+		OtherTeam=TFTeam_Blue;
+		BossTeam=TFTeam_Red;
 	}
 
 	playing=0;
@@ -2223,7 +2223,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 		Damage[client]=0;
 		uberTarget[client]=-1;
 		emitRageSound[client]=true;
-		if(IsValidClient(client) && GetClientTeam(client)>_:TFTeam_Spectator)
+		if(IsValidClient(client) && TF2_GetClientTeam(client)>TFTeam_Spectator)
 		{
 			playing++;
 		}
@@ -2248,16 +2248,16 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 		new TFTeam:team;
 		for(new client; client<=MaxClients; client++)
 		{
-			if(IsValidClient(client) && (team=TFTeam:GetClientTeam(client))>TFTeam_Spectator)
+			if(IsValidClient(client) && (team=TF2_GetClientTeam(client))>TFTeam_Spectator)
 			{
 				SetEntProp(client, Prop_Send, "m_lifeState", 2);
 				if(toRed && team!=TFTeam_Red)
 				{
-					ChangeClientTeam(client, _:TFTeam_Red);
+					TF2_ChangeClientTeam(client, TFTeam_Red);
 				}
 				else if(!toRed && team!=TFTeam_Blue)
 				{
-					ChangeClientTeam(client, _:TFTeam_Blue);
+					TF2_ChangeClientTeam(client, TFTeam_Blue);
 				}
 				SetEntProp(client, Prop_Send, "m_lifeState", 0);
 				TF2_RespawnPlayer(client);
@@ -2289,7 +2289,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	{
 		if(IsValidClient(client))
 		{
-			new TFTeam:team=TFTeam:GetClientTeam(client);
+			new TFTeam:team=TF2_GetClientTeam(client);
 			if(team>TFTeam_Spectator)
 			{
 				teamHasPlayers[team]=true;
@@ -2304,17 +2304,17 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 
 	if(!teamHasPlayers[TFTeam_Blue] || !teamHasPlayers[TFTeam_Red])  //If there's an empty team make sure it gets populated
 	{
-		if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
+		if(IsValidClient(Boss[0]) && TF2_GetClientTeam(Boss[0])!=BossTeam)
 		{
 			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 2);
-			ChangeClientTeam(Boss[0], BossTeam);
+			TF2_ChangeClientTeam(Boss[0], BossTeam);
 			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 0);
 			TF2_RespawnPlayer(Boss[0]);
 		}
 
 		for(new client=1; client<=MaxClients; client++)
 		{
-			if(IsValidClient(client) && !IsBoss(client) && GetClientTeam(client)!=OtherTeam)
+			if(IsValidClient(client) && !IsBoss(client) && TF2_GetClientTeam(client)!=OtherTeam)
 			{
 				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
@@ -2530,7 +2530,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	executed2=false;
 	new bool:bossWin=false;
 	decl String:sound[PLATFORM_MAX_PATH];
-	if((GetEventInt(event, "team")==BossTeam))
+	if(TFTeam:(GetEventInt(event, "team")==BossTeam))
 	{
 		bossWin=true;
 		if(RandomSound("sound_win", sound, sizeof(sound)))
@@ -2720,7 +2720,7 @@ public Action:Timer_CalcQueuePoints(Handle:timer)
 					add_points2[client]=add_points[client];
 				}
 			}
-			else if(!IsFakeClient(client) && (GetClientTeam(client)>_:TFTeam_Spectator || SpecForceBoss))
+			else if(!IsFakeClient(client) && (TF2_GetClientTeam(client)>TFTeam_Spectator || SpecForceBoss))
 			{
 				add_points[client]=10;
 				add_points2[client]=10;
@@ -3313,7 +3313,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		}
 	}
 
-	if(GetClientTeam(client)!=BossTeam)
+	if(TF2_GetClientTeam(client)!=BossTeam)
 	{
 		if(TF2_GetPlayerClass(client)==TFClass_Unknown)  //Make sure when we respawn them they have a class
 		{
@@ -3321,7 +3321,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 			TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[character[boss]], "class", 1), _, false);
 		}
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
-		ChangeClientTeam(client, BossTeam);
+		TF2_ChangeClientTeam(client, BossTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
 		TF2_RespawnPlayer(client);
 	}
@@ -4017,10 +4017,10 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 
 	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overhealh bug
 	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
-	if(GetClientTeam(client)==BossTeam)
+	if(TF2_GetClientTeam(client)==BossTeam)
 	{
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
-		ChangeClientTeam(client, OtherTeam);
+		TF2_ChangeClientTeam(client, OtherTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
 		TF2_RespawnPlayer(client);
 	}
@@ -5265,7 +5265,7 @@ stock OnlyScoutsLeft()
 	new scouts;
 	for(new client; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
+		if(IsValidClient(client) && IsPlayerAlive(client) && TF2_GetClientTeam(client)!=BossTeam)
 		{
 			if(TF2_GetPlayerClass(client)!=TFClass_Scout)
 			{
@@ -5464,16 +5464,16 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		return Plugin_Continue;
 	}
 
-	new team=_:TFTeam_Unassigned, oldTeam=GetClientTeam(client), String:teamString[10];
+	new TFTeam:team=TFTeam_Unassigned, oldTeam=TF2_GetClientTeam(client), String:teamString[10];
 	GetCmdArg(1, teamString, sizeof(teamString));
 
 	if(StrEqual(teamString, "red", false))
 	{
-		team=_:TFTeam_Red;
+		team=TFTeam_Red;
 	}
 	else if(StrEqual(teamString, "blue", false))
 	{
-		team=_:TFTeam_Blue;
+		team=TFTeam_Blue;
 	}
 	else if(StrEqual(teamString, "auto", false))
 	{
@@ -5481,7 +5481,7 @@ public Action:OnJoinTeam(client, const String:command[], args)
 	}
 	else if(StrEqual(teamString, "spectate", false) && !IsBoss(client) && GetConVarBool(FindConVar("mp_allowspectators")))
 	{
-		team=_:TFTeam_Spectator;
+		team=TFTeam_Spectator;
 	}
 
 	if(team==BossTeam && !IsBoss(client))
@@ -5493,9 +5493,9 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		team=BossTeam;
 	}
 
-	if(team>_:TFTeam_Unassigned && team!=oldTeam)
+	if(team>TFTeam_Unassigned && team!=oldTeam)
 	{
-		ChangeClientTeam(client, team);
+		TF2_ChangeClientTeam(client, team);
 	}
 
 	if(CheckRoundState()!=FF2RoundState_RoundRunning && !IsBoss(client) || !IsPlayerAlive(client))  //No point in showing the VGUI if they can't change teams
@@ -5716,7 +5716,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 	{
 		if(IsClientInGame(client) && IsPlayerAlive(client))
 		{
-			if(GetClientTeam(client)==OtherTeam)
+			if(TF2_GetClientTeam(client)==OtherTeam)
 			{
 				RedAlivePlayers++;
 			}
@@ -5857,7 +5857,7 @@ public Action:Timer_DrawGame(Handle:timer)
 			}
 			else
 			{
-				ForceTeamWin(0);  //Stalemate
+				ForceTeamWin(TFTeam_Unassigned);  //Stalemate
 			}
 			return Plugin_Stop;
 		}
@@ -6309,7 +6309,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					}
 					case 317:  //Candycane
 					{
-						SpawnSmallHealthPackAt(client, GetClientTeam(attacker));
+						SpawnSmallHealthPackAt(client, TF2_GetClientTeam(attacker));
 					}
 					case 355:  //Fan O' War
 					{
@@ -6724,7 +6724,7 @@ stock GetClientCloakIndex(client)
 	return GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 }
 
-stock SpawnSmallHealthPackAt(client, team=0)
+stock SpawnSmallHealthPackAt(client, TFTeam:team)
 {
 	if(!IsValidClient(client, false) || !IsPlayerAlive(client))
 	{
@@ -6738,7 +6738,7 @@ stock SpawnSmallHealthPackAt(client, team=0)
 	{
 		DispatchKeyValue(healthpack, "OnPlayerTouch", "!self,Kill,,0,-1");
 		DispatchSpawn(healthpack);
-		SetEntProp(healthpack, Prop_Send, "m_iTeamNum", team, 4);
+		SetEntProp(healthpack, Prop_Send, "m_iTeamNum", _:team, 4);
 		SetEntityMoveType(healthpack, MOVETYPE_VPHYSICS);
 		new Float:velocity[3];//={float(GetRandomInt(-10, 10)), float(GetRandomInt(-10, 10)), 50.0};  //Q_Q
 		velocity[0]=float(GetRandomInt(-10, 10)), velocity[1]=float(GetRandomInt(-10, 10)), velocity[2]=50.0;  //I did this because setting it on the creation of the vel variable was creating a compiler error for me.
@@ -6801,12 +6801,12 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 	if(IsValidClient(client) && IsPlayerAlive(client))
 	{
 		new disguiseTarget=-1;
-		new team=GetClientTeam(client);
+		new TFTeam:team=TF2_GetClientTeam(client);
 
 		new Handle:disguiseArray=CreateArray();
 		for(new clientcheck; clientcheck<=MaxClients; clientcheck++)
 		{
-			if(IsValidClient(clientcheck) && GetClientTeam(clientcheck)==team && clientcheck!=client)
+			if(IsValidClient(clientcheck) && TF2_GetClientTeam(clientcheck)==team && clientcheck!=client)
 			{
 				PushArrayCell(disguiseArray, clientcheck);
 			}
@@ -6831,12 +6831,12 @@ stock RandomlyDisguise(client)	//Original code was mecha's, but the original cod
 
 		if(TF2_GetPlayerClass(client)==TFClass_Spy)
 		{
-			TF2_DisguisePlayer(client, TFTeam:team, classArray[class], disguiseTarget);
+			TF2_DisguisePlayer(client, team, classArray[class], disguiseTarget);
 		}
 		else
 		{
 			TF2_AddCondition(client, TFCond_Disguised, -1.0);
-			SetEntProp(client, Prop_Send, "m_nDisguiseTeam", team);
+			SetEntProp(client, Prop_Send, "m_nDisguiseTeam", _:team);
 			SetEntProp(client, Prop_Send, "m_nDisguiseClass", classArray[class]);
 			SetEntProp(client, Prop_Send, "m_iDisguiseTargetIndex", disguiseTarget);
 			SetEntProp(client, Prop_Send, "m_iDisguiseHealth", 200);
@@ -6861,7 +6861,7 @@ stock GetClientWithMostQueuePoints(bool:omit[])
 	{
 		if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(winner) && !omit[client])
 		{
-			if(SpecForceBoss || GetClientTeam(client)>_:TFTeam_Spectator)
+			if(SpecForceBoss || TF2_GetClientTeam(client)>TFTeam_Spectator)
 			{
 				winner=client;
 			}
@@ -7318,7 +7318,7 @@ stock bool:RandomSoundAbility(const String:sound[], String:file[], length, boss=
 	return true;
 }
 
-ForceTeamWin(team)
+ForceTeamWin(TFTeam:team)
 {
 	new entity=FindEntityByClassname2(-1, "team_control_point_master");
 	if(entity==-1)
@@ -7327,7 +7327,7 @@ ForceTeamWin(team)
 		DispatchSpawn(entity);
 		AcceptEntityInput(entity, "Enable");
 	}
-	SetVariantInt(team);
+	SetVariantInt(_:team);
 	AcceptEntityInput(entity, "SetWinner");
 }
 
@@ -8679,7 +8679,7 @@ public Native_GetIndex(Handle:plugin, numParams)
 
 public Native_GetTeam(Handle:plugin, numParams)
 {
-	return BossTeam;
+	return _:BossTeam;
 }
 
 public Native_GetSpecial(Handle:plugin, numParams)

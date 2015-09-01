@@ -66,10 +66,10 @@ native FF2_GetBossUserId(boss=0);
 native FF2_GetBossIndex(client);
 
 /**
- * Gets current team of Boss
- * @return          Number of boss's team
+ * Gets the boss's team
+ * @return          Boss's team
  */
-native FF2_GetBossTeam();
+native TFTeam:FF2_GetBossTeam();
 
 /**
  * Gets the character name of the Boss
