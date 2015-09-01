@@ -11,7 +11,7 @@ rage_overlay:	arg0 - slot (def.0)
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-new BossTeam=_:TFTeam_Blue;
+new TFTeam:BossTeam=TFTeam_Blue;
 
 #define PLUGIN_VERSION "1.9.2"
 
@@ -57,7 +57,7 @@ Rage_Overlay(boss, const String:ability_name[])
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(new target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+		if(IsClientInGame(target) && IsPlayerAlive(target) && TF2_GetClientTeam(target)!=BossTeam)
 		{
 			ClientCommand(target, overlay);
 		}
@@ -72,7 +72,7 @@ public Action:Timer_Remove_Overlay(Handle:timer)
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(new target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+		if(IsClientInGame(target) && IsPlayerAlive(target) && TF2_GetClientTeam(target)!=BossTeam)
 		{
 			ClientCommand(target, "r_screenoverlay \"\"");
 		}

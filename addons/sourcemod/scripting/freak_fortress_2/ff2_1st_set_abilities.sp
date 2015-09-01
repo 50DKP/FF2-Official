@@ -39,7 +39,7 @@ new Handle:OnHaleRage=INVALID_HANDLE;
 new Handle:cvarTimeScale;
 new Handle:cvarCheats;
 new Handle:cvarKAC;
-new BossTeam=_:TFTeam_Blue;
+new TFTeam:BossTeam=TFTeam_Blue;
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -255,7 +255,7 @@ Rage_Clone(const String:ability_name[], boss)
 		RemoveFromArray(players, temp);
 
 		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM);
-		ChangeClientTeam(clone, BossTeam);
+		TF2_ChangeClientTeam(clone, BossTeam);
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=boss;
 		TF2_SetPlayerClass(clone, (class ? (TFClassType:class) : (TFClassType:KvGetNum(bossKV[config], "class", 0))), _, false);
@@ -330,7 +330,7 @@ Rage_Clone(const String:ability_name[], boss)
 	new entity, owner;
 	while((entity=FindEntityByClassname(entity, "tf_wearable"))!=-1)
 	{
-		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
+		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && TF2_GetClientTeam(owner)==BossTeam)
 		{
 			TF2_RemoveWearable(owner, entity);
 		}
@@ -338,7 +338,7 @@ Rage_Clone(const String:ability_name[], boss)
 
 	while((entity=FindEntityByClassname(entity, "tf_wearable_demoshield"))!=-1)
 	{
-		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
+		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && TF2_GetClientTeam(owner)==BossTeam)
 		{
 			TF2_RemoveWearable(owner, entity);
 		}
@@ -346,7 +346,7 @@ Rage_Clone(const String:ability_name[], boss)
 
 	while((entity=FindEntityByClassname(entity, "tf_powerup_bottle"))!=-1)
 	{
-		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
+		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && TF2_GetClientTeam(owner)==BossTeam)
 		{
 			TF2_RemoveWearable(owner, entity);
 		}
@@ -390,7 +390,7 @@ public Action:SaveMinion(client, &attacker, &inflictor, &Float:damage, &damagety
 			new bool:otherTeamIsAlive;
 			for(new clone=1; clone<=MaxClients; clone++)
 			{
-				if(IsValidEdict(clone) && IsClientInGame(clone) && IsPlayerAlive(clone) && GetClientTeam(clone)!=BossTeam)
+				if(IsValidEdict(clone) && IsClientInGame(clone) && IsPlayerAlive(clone) && TF2_GetClientTeam(clone)!=BossTeam)
 				{
 					otherTeamIsAlive=true;
 					break;
@@ -407,7 +407,7 @@ public Action:SaveMinion(client, &attacker, &inflictor, &Float:damage, &damagety
 					return Plugin_Continue;
 				}
 			}
-			while(otherTeamIsAlive && (!IsValidEdict(target) || GetClientTeam(target)==BossTeam || !IsPlayerAlive(target)));
+			while(otherTeamIsAlive && (!IsValidEdict(target) || TF2_GetClientTeam(target)==BossTeam || !IsPlayerAlive(target)));
 
 			GetEntPropVector(target, Prop_Data, "m_vecOrigin", position);
 			TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
@@ -432,7 +432,7 @@ public Action:Timer_Demopan_Rage(Handle:timer, any:count)  //TODO: Make this rag
 		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);  //Allow normal players to use r_screenoverlay
 		for(new client=1; client<=MaxClients; client++)
 		{
-			if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
+			if(IsClientInGame(client) && IsPlayerAlive(client) && TF2_GetClientTeam(client)!=BossTeam)
 			{
 				ClientCommand(client, overlay);
 			}
@@ -458,12 +458,12 @@ Rage_Bow(boss)
 	TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 	new weapon=SpawnWeapon(client, "tf_weapon_compound_bow", 1005, 100, 5, "6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19");
 	SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
-	new TFTeam:team=(FF2_GetBossTeam()==_:TFTeam_Blue ? TFTeam_Red:TFTeam_Blue);
+	new TFTeam:team=(FF2_GetBossTeam()==TFTeam_Blue ? TFTeam_Red : TFTeam_Blue);
 
 	new otherTeamAlivePlayers;
 	for(new target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && TFTeam:GetClientTeam(target)==team && IsPlayerAlive(target))
+		if(IsClientInGame(target) && TF2_GetClientTeam(target)==team && IsPlayerAlive(target))
 		{
 			otherTeamAlivePlayers++;
 		}
@@ -579,7 +579,7 @@ Rage_Slowmo(boss, const String:ability_name[])
 	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	if(client)
 	{
-		CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, BossTeam==_:TFTeam_Blue ? "scout_dodge_blue" : "scout_dodge_red", 75.0)));
+		CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, BossTeam==TFTeam_Blue ? "scout_dodge_blue" : "scout_dodge_red", 75.0)));
 	}
 
 	EmitSoundToAll(SOUND_SLOW_MO_START, _, _, _, _, _, _, _, _, _, false);
@@ -834,18 +834,18 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	{
 		for(new target=1; target<=MaxClients; target++)
 		{
-			if(CloneOwnerIndex[target]==boss && IsClientInGame(target) && GetClientTeam(target)==BossTeam)
+			if(CloneOwnerIndex[target]==boss && IsClientInGame(target) && TF2_GetClientTeam(target)==BossTeam)
 			{
 				CloneOwnerIndex[target]=-1;
-				ChangeClientTeam(target, (BossTeam==_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
+				TF2_ChangeClientTeam(target, (BossTeam==TFTeam_Blue) ? (TFTeam_Red) : (TFTeam_Blue));
 			}
 		}
 	}
 
-	if(CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)
+	if(CloneOwnerIndex[client]!=-1 && TF2_GetClientTeam(client)==BossTeam)
 	{
 		CloneOwnerIndex[client]=-1;
-		ChangeClientTeam(client, (BossTeam==_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
+		TF2_ChangeClientTeam(client, (BossTeam==TFTeam_Blue) ? (TFTeam_Red) : (TFTeam_Blue));
 	}
 	return Plugin_Continue;
 }

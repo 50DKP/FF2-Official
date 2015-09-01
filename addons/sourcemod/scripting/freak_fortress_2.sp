@@ -2530,7 +2530,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	executed2=false;
 	new bool:bossWin=false;
 	decl String:sound[PLATFORM_MAX_PATH];
-	if(TFTeam:(GetEventInt(event, "team")==BossTeam))
+	if((TFTeam:GetEventInt(event, "team")==BossTeam))
 	{
 		bossWin=true;
 		if(RandomSound("sound_win", sound, sizeof(sound)))
@@ -5464,7 +5464,7 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		return Plugin_Continue;
 	}
 
-	new TFTeam:team=TFTeam_Unassigned, oldTeam=TF2_GetClientTeam(client), String:teamString[10];
+	new TFTeam:team=TFTeam_Unassigned, TFTeam:oldTeam=TF2_GetClientTeam(client), String:teamString[10];
 	GetCmdArg(1, teamString, sizeof(teamString));
 
 	if(StrEqual(teamString, "red", false))

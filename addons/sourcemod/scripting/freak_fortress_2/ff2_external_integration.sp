@@ -55,23 +55,23 @@ public void CvarChange(Handle convar, const char[] oldValue, const char[] newVal
 {
 	if(convar==cvarGoomba)
 	{
-		goomba=view_as<bool>StringToInt(newValue);
+		goomba=view_as<bool>(StringToInt(newValue));
 	}
 	else if(convar==cvarGoombaDamage)
 	{
-		goombaDamage=StringToFloat(newValue);
+		goombaDamage=(StringToFloat(newValue));
 	}
 	else if(convar==cvarGoombaRebound)
 	{
-		goombaRebound=StringToFloat(newValue);
+		goombaRebound=(StringToFloat(newValue));
 	}
 	else if(convar==cvarRTD)
 	{
-		rtd=view_as<bool>StringToInt(newValue);
+		rtd=view_as<bool>(StringToInt(newValue));
 	}
 	else if(convar==cvarBossRTD)
 	{
-		canBossRTD=view_as<bool>StringToInt(newValue);
+		canBossRTD=view_as<bool>(StringToInt(newValue));
 	}
 }
 

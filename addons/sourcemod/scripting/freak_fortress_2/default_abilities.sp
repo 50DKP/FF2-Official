@@ -28,7 +28,7 @@ new Handle:jumpHUD;
 
 new bool:enableSuperDuperJump[MAXPLAYERS+1];
 new Float:UberRageCount[MAXPLAYERS+1];
-new BossTeam=_:TFTeam_Blue;
+new TFTeam:BossTeam=TFTeam_Blue;
 
 new Handle:cvarOldJump;
 new Handle:cvarBaseJumperStun;
@@ -210,7 +210,7 @@ Rage_Stun(const String:ability_name[], boss)
 
 	for(new target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+		if(IsClientInGame(target) && IsPlayerAlive(target) && TF2_GetClientTeam(target)!=BossTeam)
 		{
 			GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPosition);
 			if(!TF2_IsPlayerInCondition(target, TFCond_Ubercharged) && (GetVectorDistance(bossPosition, targetPosition)<=distance))
