@@ -5869,169 +5869,12 @@ public Action:Timer_DrawGame(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)
+public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast)  //TODO: Can this be removed?
 {
-	if(!Enabled || CheckRoundState()!=FF2RoundState_RoundRunning)
+	if(Enabled && CheckRoundState()==FF2RoundState_RoundRunning && GetEventBool(event, "minicrit") && GetEventBool(event, "allseecrit"))
 	{
-		return Plugin_Continue;
-	}
-
-	new client=GetClientOfUserId(GetEventInt(event, "userid"));
-	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
-	new boss=GetBossIndex(client);
-	new damage=GetEventInt(event, "damageamount");
-	new custom=GetEventInt(event, "custom");
-	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]) || client==attacker)
-	{
-		return Plugin_Continue;
-	}
-
-	if(custom==TF_CUSTOM_TELEFRAG)
-	{
-		damage=IsPlayerAlive(attacker) ? 9001 : 1;
-	}
-	else if(custom==TF_CUSTOM_BOOTS_STOMP)
-	{
-		damage*=5;
-	}
-
-	if(GetEventBool(event, "minicrit") && GetEventBool(event, "allseecrit"))
-	{
+		Debug("allseecrit removed");
 		SetEventBool(event, "allseecrit", false);
-	}
-
-	if(custom==TF_CUSTOM_TELEFRAG || custom==TF_CUSTOM_BOOTS_STOMP)
-	{
-		SetEventInt(event, "damageamount", damage);
-	}
-
-	for(new lives=1; lives<BossLives[boss]; lives++)
-	{
-		if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
-		{
-			SetEntProp(client, Prop_Data, "m_iHealth", (BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1));  //Set the health early to avoid the boss dying from fire, etc.
-
-			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
-			Call_StartForward(OnLoseLife);
-			Call_PushCell(boss);
-			Call_PushCellRef(bossLives);
-			Call_PushCell(BossLivesMax[boss]);
-			Call_Finish(action);
-			if(action==Plugin_Stop || action==Plugin_Handled)
-			{
-				return action;
-			}
-			else if(action==Plugin_Changed)
-			{
-				if(bossLives>BossLivesMax[boss])
-				{
-					BossLivesMax[boss]=bossLives;
-				}
-				BossLives[boss]=bossLives;
-			}
-
-			decl String:ability[PLATFORM_MAX_PATH];
-			for(new n=1; n<MAXRANDOMS; n++)
-			{
-				Format(ability, 10, "ability%i", n);
-				KvRewind(BossKV[character[boss]]);
-				if(KvJumpToKey(BossKV[character[boss]], ability))
-				{
-					if(KvGetNum(BossKV[character[boss]], "arg0", 0)!=-1)
-					{
-						continue;
-					}
-
-					KvGetString(BossKV[character[boss]], "life", ability, 10);
-					if(!ability[0])
-					{
-						decl String:abilityName[64], String:pluginName[64];
-						KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
-						KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
-						UseAbility(abilityName, pluginName, boss, -1);
-					}
-					else
-					{
-						decl String:stringLives[MAXRANDOMS][3];
-						new count=ExplodeString(ability, " ", stringLives, MAXRANDOMS, 3);
-						for(new j; j<count; j++)
-						{
-							if(StringToInt(stringLives[j])==BossLives[boss])
-							{
-								decl String:abilityName[64], String:pluginName[64];
-								KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
-								KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
-								UseAbility(abilityName, pluginName, boss, -1);
-								break;
-							}
-						}
-					}
-				}
-			}
-			BossLives[boss]=lives;
-
-			decl String:bossName[64];
-			KvRewind(BossKV[character[boss]]);
-			KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
-
-			strcopy(ability, sizeof(ability), BossLives[boss]==1 ? "ff2_life_left" : "ff2_lives_left");
-			for(new target=1; target<=MaxClients; target++)
-			{
-				if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
-				{
-					PrintCenterText(target, "%t", ability, bossName, BossLives[boss]);
-				}
-			}
-
-			if(BossLives[boss]==1 && RandomSound("sound_last_life", ability, sizeof(ability), boss))
-			{
-				EmitSoundToAll(ability);
-				EmitSoundToAll(ability);
-			}
-			else if(RandomSound("sound_nextlife", ability, sizeof(ability), boss))
-			{
-				EmitSoundToAll(ability);
-				EmitSoundToAll(ability);
-			}
-
-			UpdateHealthBar();
-			break;
-		}
-	}
-
-	BossHealth[boss]-=damage;
-	BossCharge[boss][0]+=damage*100.0/BossRageDamage[boss];
-	Damage[attacker]+=damage;
-
-	new healers[MAXPLAYERS];
-	new healerCount;
-	for(new target; target<=MaxClients; target++)
-	{
-		if(IsValidClient(target) && IsPlayerAlive(target) && (GetHealingTarget(target, true)==attacker))
-		{
-			healers[healerCount]=target;
-			healerCount++;
-		}
-	}
-
-	for(new target; target<healerCount; target++)
-	{
-		if(IsValidClient(healers[target]) && IsPlayerAlive(healers[target]))
-		{
-			if(damage<10 || uberTarget[healers[target]]==attacker)
-			{
-				Damage[healers[target]]+=damage;
-			}
-			else
-			{
-				Damage[healers[target]]+=damage/(healerCount+1);
-			}
-		}
-	}
-
-	if(BossCharge[boss][0]>100.0)
-	{
-		BossCharge[boss][0]=100.0;
 	}
 	return Plugin_Continue;
 }
@@ -6600,6 +6443,142 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 		}
 	}
 	return Plugin_Continue;
+}
+
+public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damage, damagetype)
+{
+	if(Enabled && IsBoss(client))
+	{
+		for(new lives=1; lives<BossLives[boss]; lives++)
+		{
+			if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
+			{
+				SetEntProp(client, Prop_Data, "m_iHealth", (BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1));  //Set the health early to avoid the boss dying from fire, etc.
+
+				new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
+				Call_StartForward(OnLoseLife);
+				Call_PushCell(boss);
+				Call_PushCellRef(bossLives);
+				Call_PushCell(BossLivesMax[boss]);
+				Call_Finish(action);
+				if(action==Plugin_Stop || action==Plugin_Handled)
+				{
+					return action;
+				}
+				else if(action==Plugin_Changed)
+				{
+					if(bossLives>BossLivesMax[boss])
+					{
+						BossLivesMax[boss]=bossLives;
+					}
+					BossLives[boss]=bossLives;
+				}
+
+				decl String:ability[PLATFORM_MAX_PATH];
+				for(new n=1; n<MAXRANDOMS; n++)
+				{
+					Format(ability, 10, "ability%i", n);
+					KvRewind(BossKV[character[boss]]);
+					if(KvJumpToKey(BossKV[character[boss]], ability))
+					{
+						if(KvGetNum(BossKV[character[boss]], "arg0", 0)!=-1)
+						{
+							continue;
+						}
+
+						KvGetString(BossKV[character[boss]], "life", ability, 10);
+						if(!ability[0])
+						{
+							decl String:abilityName[64], String:pluginName[64];
+							KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
+							KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
+							UseAbility(abilityName, pluginName, boss, -1);
+						}
+						else
+						{
+							decl String:stringLives[MAXRANDOMS][3];
+							new count=ExplodeString(ability, " ", stringLives, MAXRANDOMS, 3);
+							for(new j; j<count; j++)
+							{
+								if(StringToInt(stringLives[j])==BossLives[boss])
+								{
+									decl String:abilityName[64], String:pluginName[64];
+									KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
+									KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
+									UseAbility(abilityName, pluginName, boss, -1);
+									break;
+								}
+							}
+						}
+					}
+				}
+				BossLives[boss]=lives;
+
+				decl String:bossName[64];
+				KvRewind(BossKV[character[boss]]);
+				KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
+
+				strcopy(ability, sizeof(ability), BossLives[boss]==1 ? "ff2_life_left" : "ff2_lives_left");
+				for(new target=1; target<=MaxClients; target++)
+				{
+					if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
+					{
+						PrintCenterText(target, "%t", ability, bossName, BossLives[boss]);
+					}
+				}
+
+				if(BossLives[boss]==1 && RandomSound("sound_last_life", ability, sizeof(ability), boss))
+				{
+					EmitSoundToAll(ability);
+					EmitSoundToAll(ability);
+				}
+				else if(RandomSound("sound_nextlife", ability, sizeof(ability), boss))
+				{
+					EmitSoundToAll(ability);
+					EmitSoundToAll(ability);
+				}
+
+				UpdateHealthBar();
+				break;
+			}
+		}
+
+		BossHealth[boss]-=damage;
+		BossCharge[boss][0]+=damage*100.0/BossRageDamage[boss];
+		Damage[attacker]+=damage;
+
+		new healers[MaxClients+1];
+		new healerCount;
+		for(new target; target<=MaxClients; target++)
+		{
+			if(IsValidClient(target) && IsPlayerAlive(target) && (GetHealingTarget(target, true)==attacker))
+			{
+				healers[healerCount]=target;
+				healerCount++;
+			}
+		}
+
+		for(new target; target<healerCount; target++)
+		{
+			if(IsValidClient(healers[target]) && IsPlayerAlive(healers[target]))
+			{
+				if(damage<10 || uberTarget[healers[target]]==attacker)
+				{
+					Damage[healers[target]]+=damage;
+				}
+				else
+				{
+					Damage[healers[target]]+=damage/(healerCount+1);
+				}
+			}
+		}
+
+		if(BossCharge[boss][0]>100.0)
+		{
+			BossCharge[boss][0]=100.0;
+		}
+		UpdateHealthBar();
+	}
 }
 
 public Action:TF2_OnPlayerTeleport(client, teleporter, &bool:result)
@@ -8996,14 +8975,6 @@ public Native_SetClientGlow(Handle:plugin, numParams)
 public Native_Debug(Handle:plugin, numParams)
 {
 	return GetConVarBool(cvarDebug);
-}
-
-public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damage, damagetype)
-{
-	if(Enabled && IsBoss(client))
-	{
-		UpdateHealthBar();
-	}
 }
 
 public OnEntityCreated(entity, const String:classname[])
