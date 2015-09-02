@@ -5988,7 +5988,6 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 		{
 			if(attacker<=MaxClients)
 			{
-
 				new index;
 				decl String:classname[64];
 				if(IsValidEntity(weapon) && weapon>MaxClients && attacker<=MaxClients)
