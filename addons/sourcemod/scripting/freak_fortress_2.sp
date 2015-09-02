@@ -4681,8 +4681,8 @@ stock SetArenaCapEnableTime(Float:time)
 
 public OnClientPutInServer(client)
 {
-	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
-	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+	SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamageAlive);
+	SDKHook(client, SDKHook_OnTakeDamageAlivePost, OnTakeDamageAlivePost);
 
 	FF2flags[client]=0;
 	Damage[client]=0;
@@ -6025,21 +6025,6 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 		}
 	}
 
-	if(IsValidClient(attacker))
-	{
-		new weapon=GetPlayerWeaponSlot(attacker, TFWeaponSlot_Primary);
-		if(IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==1104)  //Air Strike-moved from OTD
-		{
-			static airStrikeDamage;
-			airStrikeDamage+=damage;
-			if(airStrikeDamage>=200)
-			{
-				SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
-				airStrikeDamage-=200;
-			}
-		}
-	}
-
 	if(BossCharge[boss][0]>100.0)
 	{
 		BossCharge[boss][0]=100.0;
@@ -6047,7 +6032,7 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 	return Plugin_Continue;
 }
 
-public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damagetype, &weapon, Float:damageForce[3], Float:damagePosition[3], damagecustom)
+public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &damagetype, &weapon, Float:damageForce[3], Float:damagePosition[3], damagecustom)
 {
 	if(!Enabled || !IsValidEdict(attacker))
 	{
@@ -6066,7 +6051,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 	if(CheckRoundState()==FF2RoundState_Setup && IsBoss(client))
 	{
-		damage*=0.0;
+		damage=0.0;
 		return Plugin_Changed;
 	}
 
@@ -6086,7 +6071,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			if(TF2_IsPlayerInCondition(client, TFCond_DefenseBuffMmmph))
 			{
 				damage*=9;
-				TF2_AddCondition(client, TFCond_Bonked, 0.1);
+				TF2_AddCondition(client, TFCond_Bonked, 0.1);  //In other words, no damage is actually taken
 				return Plugin_Changed;
 			}
 
@@ -6118,7 +6103,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							damagetype&=~DMG_CRIT;
 						}
-						damage=620.0;
+						damage=62.0;
 						return Plugin_Changed;
 					}
 					else if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
@@ -6130,11 +6115,11 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 						if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 						{
-							damage=620.0;
+							damage=62.0;
 						}
 						else
 						{
-							damage=850.0;
+							damage=85.0;
 						}
 						return Plugin_Changed;
 					}
@@ -6146,12 +6131,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 					}
 				}
-			}
-
-			if(damage<=160.0)  //TODO: Wat
-			{
-				damage*=3;
-				return Plugin_Changed;
 			}
 		}
 	}
@@ -6252,22 +6231,15 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							}
 						}
 
-						if(!(damagetype & DMG_CRIT))
+						if(!(damagetype & DMG_CRIT) && !TF2_IsPlayerInCondition(attacker, TFCond_CritCola) && !TF2_IsPlayerInCondition(attacker, TFCond_Buffed))
 						{
-							if(TF2_IsPlayerInCondition(attacker, TFCond_CritCola) || TF2_IsPlayerInCondition(attacker, TFCond_Buffed))
+							if(index!=230 || BossCharge[boss][0]>90.0)  //Sydney Sleeper
 							{
-								damage*=2.2;
+								damage*=3.0;
 							}
 							else
 							{
-								if(index!=230 || BossCharge[boss][0]>90.0)  //Sydney Sleeper
-								{
-									damage*=3.0;
-								}
-								else
-								{
-									damage*=2.4;
-								}
+								damage*=2.4;
 							}
 							return Plugin_Changed;
 						}
@@ -6280,7 +6252,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						if(damagecustom==TF_CUSTOM_HEADSHOT)
 						{
-							damage=85.0;  //Final damage 255
+							damage=255.0;
 						}
 					}
 					case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander
@@ -6342,6 +6314,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							SetEntProp(attacker, Prop_Data, "m_iHealth", newhealth);
 							SetEntProp(attacker, Prop_Send, "m_iHealth", newhealth);
 						}
+
 						if(TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
 						{
 							TF2_RemoveCondition(attacker, TFCond_OnFire);
@@ -6351,7 +6324,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						if(FF2flags[attacker] & FF2FLAG_ROCKET_JUMPING)
 						{
-							damage=(Pow(float(BossHealthMax[boss]), 0.74074)+512.0-(Marketed[client]/128.0*float(BossHealthMax[boss])))/3.0;
+							damage=(Pow(float(BossHealthMax[boss]), 0.74074)+512.0-(Marketed[client]/128.0*float(BossHealthMax[boss])));
 							damagetype|=DMG_CRIT;
 
 							if(Marketed[client]<5)
@@ -6371,7 +6344,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						if(GetEntProp(attacker, Prop_Send, "m_iRevengeCrits"))  //If a revenge crit was used, give a damage bonus
 						{
-							damage=85.0;  //255 final damage
+							damage=255.0;
 						}
 					}
 					case 528:  //Short Circuit
@@ -6435,7 +6408,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", 100.0);
 					}
-					/*case 1104:  //Air Strike-moved to OnPlayerHurt for now since OTD doesn't display the actual damage :/
+					case 1104:
 					{
 						static Float:airStrikeDamage;
 						airStrikeDamage+=damage;
@@ -6444,12 +6417,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
 							airStrikeDamage-=200.0;
 						}
-					}*/
+					}
 				}
 
 				if(damagecustom==TF_CUSTOM_BACKSTAB)
 				{
-					damage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90)/3;
+					damage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90);
 					damagetype|=DMG_CRIT;
 					damagecustom=0;
 
@@ -6563,7 +6536,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						}
 						BossHealth[boss]-=RoundFloat(damage);
 						BossCharge[boss][0]+=damage*100.0/BossRageDamage[boss];
-						if(BossHealth[boss]<=0)  //Wat
+						if(BossHealth[boss]<=0)  //TODO: Wat
 						{
 							damage*=5;
 						}
@@ -6603,7 +6576,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				}
 			}
 
-			if(IsValidClient(client, false) && TF2_GetPlayerClass(client)==TFClass_Soldier)  //TODO: LOOK AT THIS
+			if(IsValidClient(client, false) && TF2_GetPlayerClass(client)==TFClass_Soldier)  //TODO: Wat
 			{
 				if(damagetype & DMG_FALL)
 				{
@@ -9016,7 +8989,7 @@ public Native_Debug(Handle:plugin, numParams)
 	return GetConVarBool(cvarDebug);
 }
 
-public OnTakeDamagePost(client, attacker, inflictor, Float:damage, damagetype)
+public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damage, damagetype)
 {
 	if(Enabled && IsBoss(client))
 	{
