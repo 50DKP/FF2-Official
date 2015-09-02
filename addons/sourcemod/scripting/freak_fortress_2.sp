@@ -39,7 +39,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define STABLE_REVISION "0"
 #define DEV_REVISION "alpha.3"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
-#ifndef DEV_REVISION
+#if !defined DEV_REVISION
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //2.0.0
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..."-"...DEV_REVISION..."+"...BUILD_NUMBER  //semver.org
