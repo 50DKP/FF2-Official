@@ -6913,6 +6913,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	KvRewind(BossKV[character[boss]]);
 	KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 	KvGetString(BossKV[character[boss]], key, formula, sizeof(formula), defaultFormula);
+	Debug("Key: %s, formula: %s, default value: %i", key, formula, defaultValue);
 
 	new size=1;
 	new matchingBrackets;
@@ -6945,6 +6946,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	for(new i; i<=strlen(formula); i++)
 	{
 		currentCharacter[0]=formula[i];  //Find out what the next char in the formula is
+		Debug("currentCharacter is %s", currentCharacter);
 		switch(currentCharacter[0])
 		{
 			case ' ', '\t':  //Ignore whitespace
