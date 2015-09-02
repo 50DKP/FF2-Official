@@ -5888,7 +5888,7 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 
 	if(custom==TF_CUSTOM_TELEFRAG)
 	{
-		damage=(IsPlayerAlive(attacker) ? 9001 : 1);
+		damage=IsPlayerAlive(attacker) ? 9001 : 1;
 	}
 	else if(custom==TF_CUSTOM_BOOTS_STOMP)
 	{
@@ -6145,37 +6145,6 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 		{
 			if(attacker<=MaxClients)
 			{
-				if(damagecustom==TF_CUSTOM_TELEFRAG)
-				{
-					damagecustom=0;
-					if(!IsPlayerAlive(attacker))
-					{
-						damage=1.0;
-						return Plugin_Changed;
-					}
-					damage=(BossHealth[boss]>9001 ? 9001.0 : float(GetEntProp(Boss[boss], Prop_Send, "m_iHealth"))+90.0);
-
-					new teleowner=FindTeleOwner(attacker);
-					if(IsValidClient(teleowner) && teleowner!=attacker)
-					{
-						Damage[teleowner]+=9001*3/5;
-						if(!(FF2flags[teleowner] & FF2FLAG_HUDDISABLED))
-						{
-							PrintHintText(teleowner, "TELEFRAG ASSIST!  Nice job setting it up!");
-						}
-					}
-
-					if(!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
-					{
-						PrintHintText(attacker, "TELEFRAG! You are a pro!");
-					}
-
-					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
-					{
-						PrintHintText(client, "TELEFRAG! Be careful around quantum tunneling devices!");
-					}
-					return Plugin_Changed;
-				}
 
 				new index;
 				decl String:classname[64];
@@ -6507,6 +6476,42 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 					{
 						Stabbed[boss]++;
 					}
+					return Plugin_Changed;
+				}
+				else if(damagecustom==TF_CUSTOM_TELEFRAG)
+				{
+					damagecustom=0;
+					if(!IsPlayerAlive(attacker))
+					{
+						damage=1.0;
+						return Plugin_Changed;
+					}
+					damage=(BossHealth[boss]>9001 ? 9001.0 : float(GetEntProp(Boss[boss], Prop_Send, "m_iHealth"))+90.0);
+
+					new teleowner=FindTeleOwner(attacker);
+					if(IsValidClient(teleowner) && teleowner!=attacker)
+					{
+						Damage[teleowner]+=9001*3/5;
+						if(!(FF2flags[teleowner] & FF2FLAG_HUDDISABLED))
+						{
+							PrintHintText(teleowner, "TELEFRAG ASSIST!  Nice job setting it up!");
+						}
+					}
+
+					if(!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
+					{
+						PrintHintText(attacker, "TELEFRAG! You are a pro!");
+					}
+
+					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
+					{
+						PrintHintText(client, "TELEFRAG! Be careful around quantum tunneling devices!");
+					}
+					return Plugin_Changed;
+				}
+				else if(damagecustom==TF_CUSTOM_BOOTS_STOMP)
+				{
+					damage*=5;
 					return Plugin_Changed;
 				}
 			}
