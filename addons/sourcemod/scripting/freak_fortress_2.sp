@@ -2826,7 +2826,7 @@ public Action:StartBossTimer(Handle:timer)
 			BossHealthMax[boss]=ParseFormula(boss, "health", "(((760.8+{players})*({players}-1))^1.0341)+2046", RoundFloat(Pow((760.8+float(playing))*(float(playing)-1.0), 1.0341)+2046.0));
 			BossLivesMax[boss]=BossLives[boss]=ParseFormula(boss, "lives", "1", 1);
 			BossHealth[boss]=BossHealthLast[boss]=BossHealthMax[boss]*BossLivesMax[boss];
-			BossRageDamage[boss]=ParseFormula(boss, "rage_damage", "1", 1);
+			BossRageDamage[boss]=ParseFormula(boss, "rage_damage", "1900", 1900);
 			BossSpeed[boss]=float(ParseFormula(boss, "speed", "340", 340));
 		}
 	}
