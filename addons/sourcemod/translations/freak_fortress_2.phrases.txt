@@ -36,7 +36,7 @@
 		"#format" "{1:i},{2:i}"
 		"en"	"{1} out of {2} lives left"
 	}
-	"Rage Activation"
+	"Activate Rage"
 	{
 		"en"		"Call for medic to activate your \"RAGE\" ability!"
 	}
@@ -196,8 +196,8 @@
 	}
 	"Boss Win Final Health"
 	{
-		"#format" "{1:s},{2:i},{3:i},{4:s}"
-		"en"	"{1}'s health: {2} of {3}{4}"
+		"#format" "{1:s},{2:N},{3:i},{4:i},{5:s}"
+		"en"	"{1} ({2}) won with {3} out of {4}{5} hp left"
 	}
 	"Vote for Character Set"
 	{

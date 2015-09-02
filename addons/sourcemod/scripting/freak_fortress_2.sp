@@ -2029,7 +2029,7 @@ public Action:Timer_Announce(Handle:timer)
 			case 5:
 			{
 				announcecount=0;
-				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxVersion]);
+				CPrintToChatAll("{olive}[FF2]{default} %t", "Last FF2 Update", PLUGIN_VERSION, ff2versiondates[maxVersion]);
 			}
 			default:
 			{
@@ -2606,7 +2606,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 				KvRewind(BossKV[character[boss]]);
 				KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 				BossLives[boss]>1 ? Format(lives, sizeof(lives), "x%i", BossLives[boss]) : strcopy(lives, 2, "");
-				Format(text, sizeof(text), "%s\n%t", text, "ff2_alive", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				Format(text, sizeof(text), "%s\n%t", text, "Boss Win Final Health", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
 		}
 
@@ -5105,7 +5105,7 @@ public Action:BossTimer(Handle:timer)
 			else
 			{
 				SetHudTextParams(-1.0, 0.83, 0.15, 255, 64, 64, 255);
-				FF2_ShowSyncHudText(client, rageHUD, "%t", "do_rage");
+				FF2_ShowSyncHudText(client, rageHUD, "%t", "Activate Rage");
 
 				decl String:sound[PLATFORM_MAX_PATH];
 				if(RandomSound("sound_full_rage", sound, sizeof(sound), boss) && emitRageSound[boss])
@@ -5133,7 +5133,7 @@ public Action:BossTimer(Handle:timer)
 		else
 		{
 			SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255);
-			FF2_ShowSyncHudText(client, rageHUD, "%t", "rage_meter", RoundFloat(BossCharge[boss][0]));
+			FF2_ShowSyncHudText(client, rageHUD, "%t", "Rage Meter", RoundFloat(BossCharge[boss][0]));
 		}
 		SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 
@@ -5205,7 +5205,7 @@ public Action:BossTimer(Handle:timer)
 					{
 						Format(bossLives, sizeof(bossLives), "");
 					}
-					Format(message, sizeof(message), "%s\n%t", message, "ff2_hp", name, BossHealth[boss2]-BossHealthMax[boss2]*(BossLives[boss2]-1), BossHealthMax[boss2], bossLives);
+					Format(message, sizeof(message), "%s\n%t", message, "Boss Current Health", name, BossHealth[boss2]-BossHealthMax[boss2]*(BossLives[boss2]-1), BossHealthMax[boss2], bossLives);
 				}
 			}
 
@@ -6519,7 +6519,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damage, damagety
 				KvRewind(BossKV[character[boss]]);
 				KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 
-				strcopy(ability, sizeof(ability), BossLives[boss]==1 ? "ff2_life_left" : "ff2_lives_left");
+				strcopy(ability, sizeof(ability), BossLives[boss]==1 ? "Boss with Multiple Lives Left" : "Boss with 1 Life Left");
 				for(new target=1; target<=MaxClients; target++)
 				{
 					if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
@@ -7649,7 +7649,7 @@ public Action:QueuePanelCmd(client, args)
 	}
 	while(items<9);
 
-	Format(text, sizeof(text), "%t (%t)", "Your Queue Points", GetClientQueuePoints(client), "to0");  //"Your queue point(s) is {1} (set to 0)"
+	Format(text, sizeof(text), "%t (%t)", "Your Queue Points", GetClientQueuePoints(client), "Reset Queue Points");  //"Your queue point(s) is {1} (set to 0)"
 	DrawPanelItem(panel, text);
 
 	SendPanelToClient(panel, client, QueuePanelH, MENU_TIME_FOREVER);
@@ -8025,7 +8025,7 @@ public ClassinfoTogglePanelH(Handle:menu, MenuAction:action, param1, param2)
 			else
 				Format(s,24,"%s %s %s 1 %s %s %s",ff2cookies_values[0],ff2cookies_values[1],ff2cookies_values[2],ff2cookies_values[4],ff2cookies_values[5],ff2cookies_values[6],ff2cookies_values[7]);
 			SetClientCookie(param1, FF2Cookies,s);
-			CPrintToChat(param1,"{olive}[VSH]{default} %t","ff2_classinfo", param2==2 ? "off" : "on");
+			CPrintToChat(param1,"{olive}[FF2]{default} %t","FF2 Class Info", param2==2 ? "off" : "on");
 		}
 	}
 }
@@ -8242,10 +8242,10 @@ public VoiceTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 				SetClientSoundOptions(client, SOUNDEXCEPT_VOICE, true);
 			}
 
-			CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_voice", selection==2 ? "off" : "on");
+			CPrintToChat(client, "{olive}[FF2]{default} %t", "FF2 Voice", selection==2 ? "off" : "on");
 			if(selection==2)
 			{
-				CPrintToChat(client, "%t", "ff2_voice2");
+				CPrintToChat(client, "%t", "FF2 Voice 2");
 			}
 		}
 	}
@@ -8410,7 +8410,7 @@ public Handler_VoteCharset(Handle:menu, MenuAction:action, param1, param2)
 		decl String:nextmap[32];
 		GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
 		GetMenuItem(menu, param1, FF2CharSetString, sizeof(FF2CharSetString));
-		CPrintToChatAll("{olive}[FF2]{default} %t", "nextmap_charset", nextmap, FF2CharSetString);  //"The character set for {1} will be {2}."
+		CPrintToChatAll("{olive}[FF2]{default} %t", "Character Set Next Map", nextmap, FF2CharSetString);  //"The character set for {1} will be {2}."
 		isCharSetSelected=true;
 	}
 	else if(action==MenuAction_End)
