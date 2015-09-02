@@ -2823,7 +2823,7 @@ public Action:StartBossTimer(Handle:timer)
 	{
 		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
-			BossHealthMax[boss]=ParseFormula(boss, "health", "(((760.8+n)*(n-1))^1.0341)+2046", RoundFloat(Pow((760.8+Float:playing)*(Float:playing-1.0), 1.0341)+2046.0));
+			BossHealthMax[boss]=ParseFormula(boss, "health", "(((760.8+{players})*({players}-1))^1.0341)+2046", RoundFloat(Pow((760.8+float(playing))*(float(playing)-1.0), 1.0341)+2046.0));
 			BossLivesMax[boss]=BossLives[boss]=ParseFormula(boss, "lives", "1", 1);
 			BossHealth[boss]=BossHealthLast[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 			BossRageDamage[boss]=ParseFormula(boss, "rage_damage", "1", 1);
@@ -6913,7 +6913,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	KvRewind(BossKV[character[boss]]);
 	KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 	KvGetString(BossKV[character[boss]], key, formula, sizeof(formula), defaultFormula);
-	Debug("Key: %s, formula: %s, default value: %i", key, formula, defaultValue);
 
 	new size=1;
 	new matchingBrackets;
@@ -6946,7 +6945,6 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	for(new i; i<=strlen(formula); i++)
 	{
 		currentCharacter[0]=formula[i];  //Find out what the next char in the formula is
-		Debug("currentCharacter is %s", currentCharacter);
 		switch(currentCharacter[0])
 		{
 			case ' ', '\t':  //Ignore whitespace
