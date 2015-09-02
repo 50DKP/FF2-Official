@@ -314,7 +314,7 @@ Rage_Clone(const String:ability_name[], boss)
 		velocity[2]=GetRandomFloat(300.0, 500.0);
 		TeleportEntity(clone, position, NULL_VECTOR, velocity);
 
-		PrintHintText(clone, "%t", "seeldier_rage_message", bossName);
+		PrintHintText(clone, "%t", "Seeldier Rage Message", bossName);
 
 		SetEntProp(clone, Prop_Data, "m_takedamage", 0);
 		SDKHook(clone, SDKHook_OnTakeDamage, SaveMinion);

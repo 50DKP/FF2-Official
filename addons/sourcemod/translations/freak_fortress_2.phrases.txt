@@ -45,7 +45,7 @@
 		"#format"	"{1:i}"
 		"en"		"Rage is {1} percent ready"
 	}
-	"Super Duper Jump Ready"
+	"Super Duper Jump"
 	{
 		"en"		"Super Duper Jump is ready!"
 	}

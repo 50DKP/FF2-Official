@@ -273,7 +273,7 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 		case 1:
 		{
 			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-			FF2_ShowSyncHudText(client, jumpHUD, "%t", "jump_status_2", -RoundFloat(charge));
+			FF2_ShowSyncHudText(client, jumpHUD, "%t", "Super Jump Cooldown", -RoundFloat(charge));
 		}
 		case 2:
 		{
@@ -281,11 +281,11 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 			if(enableSuperDuperJump[boss])
 			{
 				SetHudTextParams(-1.0, 0.88, 0.15, 255, 64, 64, 255);
-				FF2_ShowSyncHudText(client, jumpHUD, "%t", "super_duper_jump");
+				FF2_ShowSyncHudText(client, jumpHUD, "%t", "Super Duper Jump");
 			}
 			else
 			{
-				FF2_ShowSyncHudText(client, jumpHUD, "%t", "jump_status", RoundFloat(charge));
+				FF2_ShowSyncHudText(client, jumpHUD, "%t", "Super Jump Charge", RoundFloat(charge));
 			}
 		}
 		case 3:
@@ -371,12 +371,12 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 		case 1:
 		{
 			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-			FF2_ShowSyncHudText(client, jumpHUD, "%t", "teleport_status_2", -RoundFloat(charge));
+			FF2_ShowSyncHudText(client, jumpHUD, "%t", "Teleportation Cooldown", -RoundFloat(charge));
 		}
 		case 2:
 		{
 			SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
-			FF2_ShowSyncHudText(client, jumpHUD, "%t", "teleport_status", RoundFloat(charge));
+			FF2_ShowSyncHudText(client, jumpHUD, "%t", "Teleportation Charge", RoundFloat(charge));
 		}
 		case 3:
 		{

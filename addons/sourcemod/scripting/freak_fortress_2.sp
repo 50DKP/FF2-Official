@@ -2472,18 +2472,18 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 		SetGlobalTransTarget(Boss[boss]);
 		if(need_info_bout_rmb)
 		{
-			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t\n%t", "Ability Uses Reload", "Ability Uses Right Mouse");
+			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t\n%t", "Ability uses Reload", "Ability uses Right Mouse");
 		}
 		else
 		{
-			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "Ability Uses Reload");
+			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "Ability uses Reload");
 		}
 	}
 	else if(need_info_bout_rmb)
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[boss]);
-		FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "Ability Uses Right Mouse");
+		FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "Ability uses Right Mouse");
 	}
 	else
 	{
@@ -2674,11 +2674,11 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			//TODO:  Clear HUD text here
 			if(IsBoss(client))
 			{
-				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", text, "Top 3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], (bossWin ? "boss_win" : "boss_lose"));
+				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", text, "Top 3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], (bossWin ? "Boss Victory" : "Boss Defeat"));
 			}
 			else
 			{
-				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", text, " Top 3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
+				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", text, "Top 3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "Total Damage Dealt", Damage[client], "Points Earned", RoundFloat(Damage[client]/600.0));
 			}
 		}
 	}
