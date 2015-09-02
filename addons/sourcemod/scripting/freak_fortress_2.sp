@@ -37,12 +37,12 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define MAJOR_REVISION "2"
 #define MINOR_REVISION "0"
 #define STABLE_REVISION "0"
-#define DEV_REVISION "Alpha 2"
+#define DEV_REVISION "alpha.3"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
-#if !defined DEV_REVISION
+#ifndef DEV_REVISION
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //2.0.0
 #else
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..." (build "...BUILD_NUMBER...")"
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..."-"...DEV_REVISION..."+"...BUILD_NUMBER  //semver.org
 #endif
 
 #define UPDATE_URL "http://ff2.50dkp.com/updater/ff2-official/update.txt"
@@ -6444,11 +6444,12 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 	return Plugin_Continue;
 }
 
-public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damage, damagetype)
+public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, damagetype)
 {
 	if(Enabled && IsBoss(client))
 	{
 		new boss=GetBossIndex(client);
+		new damage=RoundFloat(damageFloat);
 		for(new lives=1; lives<BossLives[boss]; lives++)
 		{
 			if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
