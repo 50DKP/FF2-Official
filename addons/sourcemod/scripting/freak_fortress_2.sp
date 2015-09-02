@@ -2823,11 +2823,11 @@ public Action:StartBossTimer(Handle:timer)
 	{
 		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
-			BossHealthMax[boss]=ParseFormula(boss, "health", "(((760.8+{players})*({players}-1))^1.0341)+2046", RoundFloat(Pow((760.8+float(playing))*(float(playing)-1.0), 1.0341)+2046.0));
-			BossLivesMax[boss]=BossLives[boss]=ParseFormula(boss, "lives", "1", 1);
+			BossHealthMax[boss]=ParseFormula(boss, "health", RoundFloat(Pow((760.8+float(playing))*(float(playing)-1.0), 1.0341)+2046.0));
+			BossLivesMax[boss]=BossLives[boss]=ParseFormula(boss, "lives", 1);
 			BossHealth[boss]=BossHealthLast[boss]=BossHealthMax[boss]*BossLivesMax[boss];
-			BossRageDamage[boss]=ParseFormula(boss, "rage_damage", "1900", 1900);
-			BossSpeed[boss]=float(ParseFormula(boss, "speed", "340", 340));
+			BossRageDamage[boss]=ParseFormula(boss, "rage_damage", 1900);
+			BossSpeed[boss]=float(ParseFormula(boss, "speed", 340));
 		}
 	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
@@ -6908,12 +6908,16 @@ stock OperateString(Handle:sumArray, &bracket, String:value[], size, Handle:_ope
 	}
 }
 
-stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defaultValue)
+stock ParseFormula(boss, const String:key[], defaultValue)
 {
 	decl String:formula[1024], String:bossName[64];
 	KvRewind(BossKV[character[boss]]);
 	KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
-	KvGetString(BossKV[character[boss]], key, formula, sizeof(formula), defaultFormula);
+	KvGetString(BossKV[character[boss]], key, formula, sizeof(formula));
+	if(!formula[0])
+	{
+		return defaultValue;
+	}
 
 	new size=1;
 	new matchingBrackets;
