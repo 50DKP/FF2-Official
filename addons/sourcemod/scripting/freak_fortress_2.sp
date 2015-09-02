@@ -6449,6 +6449,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damage, damagety
 {
 	if(Enabled && IsBoss(client))
 	{
+		boss=GetBossIndex(client);
 		for(new lives=1; lives<BossLives[boss]; lives++)
 		{
 			if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
@@ -6463,7 +6464,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damage, damagety
 				Call_Finish(action);
 				if(action==Plugin_Stop || action==Plugin_Handled)
 				{
-					return action;
+					return/* action*/;  //TODO: Fix this forward or move it back into OnPlayerHurt if necessary
 				}
 				else if(action==Plugin_Changed)
 				{
