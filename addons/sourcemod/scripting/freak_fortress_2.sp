@@ -40,7 +40,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define DEV_REVISION "Alpha 2"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.6
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //2.0.0
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..." (build "...BUILD_NUMBER...")"
 #endif
@@ -319,7 +319,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.6",
 	"1.10.6",
 	"1.10.6",
-	"1.10.6"
+	"1.10.6",
+	"1.10.7"
 };
 
 static const String:ff2versiondates[][]=
@@ -387,13 +388,22 @@ static const String:ff2versiondates[][]=
 	"August 10, 2015",	//1.10.6
 	"August 10, 2015",	//1.10.6
 	"August 10, 2015",	//1.10.6
-	"August 10, 2015"	//1.10.6
+	"August 10, 2015",	//1.10.6
+	"September 1, 2015"	//1.10.7
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 64:  //1.10.7
+		{
+			DrawPanelText(panel, "1) Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
+			DrawPanelText(panel, "2) Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive (Shadow from Spyper)");
+			DrawPanelText(panel, "3) Minions no longer die after their summoner is killed (Wliu)");
+			DrawPanelText(panel, "4) Removed Shortstop reload penalty (Starblaster64)");
+			DrawPanelText(panel, "5) Fixed large amounts of lives being cut off when being displayed (Wliu)");
+		}
 		case 63:  //1.10.6
 		{
 			DrawPanelText(panel, "1) Updated the default health formula to match VSH's (Wliu)");
@@ -1042,7 +1052,7 @@ public OnPluginStart()
 	cvarAliveToEnable=CreateConVar("ff2_point_alive", "5", "The control point will only activate when there are this many people or less left alive");
 	cvarAnnounce=CreateConVar("ff2_announce", "120", "Amount of seconds to wait until FF2 info is displayed again.  0 to disable", _, true, 0.0);
 	cvarEnabled=CreateConVar("ff2_enabled", "1", "0-Disable FF2 (WHY?), 1-Enable FF2", FCVAR_DONTRECORD, true, 0.0, true, 1.0);
-	cvarCrits=CreateConVar("ff2_crits", "1", "Can Boss get crits?", _, true, 0.0, true, 1.0);
+	cvarCrits=CreateConVar("ff2_crits", "0", "Can the boss get random crits?", _, true, 0.0, true, 1.0);
 	cvarArenaRounds=CreateConVar("ff2_arena_rounds", "1", "Number of rounds to make arena before switching to FF2 (helps for slow-loading players)", _, true, 0.0);
 	cvarCircuitStun=CreateConVar("ff2_circuit_stun", "2", "Amount of seconds the Short Circuit stuns the boss for.  0 to disable", _, true, 0.0);
 	cvarCountdownPlayers=CreateConVar("ff2_countdown_players", "1", "Amount of players until the countdown timer starts (0 to disable)", _, true, 0.0);
@@ -1742,6 +1752,7 @@ public LoadCharacter(const String:characterName[])
 				{
 					break;
 				}
+
 				if(FileExists(config, true))
 				{
 					AddFileToDownloadsTable(config);
@@ -2586,7 +2597,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	if(isBossAlive)
 	{
 		new String:text[128];  //Do not decl this
-		decl String:bossName[64], String:lives[4];
+		decl String:bossName[64], String:lives[8];
 		for(new target; target<=MaxClients; target++)
 		{
 			if(IsBoss(target))
@@ -2594,7 +2605,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 				boss=Boss[target];
 				KvRewind(BossKV[character[boss]]);
 				KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
-				BossLives[boss]>1 ? Format(lives, 4, "x%i", BossLives[boss]) : strcopy(lives, 2, "");
+				BossLives[boss]>1 ? Format(lives, sizeof(lives), "x%i", BossLives[boss]) : strcopy(lives, 2, "");
 				Format(text, sizeof(text), "%s\n%t", text, "ff2_alive", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
 		}
@@ -3194,7 +3205,7 @@ public Action:MessageTimer(Handle:timer)
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
 	new String:text[512];  //Do not decl this
 	decl String:textChat[512];
-	decl String:lives[4];
+	decl String:lives[8];
 	decl String:name[64];
 	for(new client; client<=MaxClients; client++)
 	{
@@ -3205,7 +3216,7 @@ public Action:MessageTimer(Handle:timer)
 			KvGetString(BossKV[character[boss]], "name", name, sizeof(name), "=Failed name=");
 			if(BossLives[boss]>1)
 			{
-				Format(lives, 4, "x%i", BossLives[boss]);
+				Format(lives, sizeof(lives), "x%i", BossLives[boss]);
 			}
 			else
 			{
@@ -3737,15 +3748,16 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}*/
-		/*case 220:  //Shortstop - commented out because the 328 attrib is rather useless and reload penalty is no more since Gunmettle
+		case 220:  //Shortstop
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "328 ; 1.0", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "241 ; 1.0");
+				//241: No reload penalty
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
 				return Plugin_Changed;
 			}
-		}*/
+		}
 		case 226:  //Battalion's Backup
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "140 ; 10.0");
@@ -4213,7 +4225,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
-		CPrintToChat(client, "{olive}[FF2]{default} Respawning you because you have no weapons!");
+		Debug("Respawning %N to avoid civilian bug");
 		TF2_RespawnPlayer(client);
 	}
 	civilianCheck[client]=0;
@@ -4392,7 +4404,7 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 	if(IsBoss(client) || GetGameTime()>=HPTime)
 	{
 		new String:text[512];  //Do not decl this
-		decl String:lives[4], String:name[64];
+		decl String:lives[8], String:name[64];
 		for(new target; target<=MaxClients; target++)
 		{
 			if(IsBoss(target))
@@ -4703,27 +4715,18 @@ public OnClientDisconnect(client)
 {
 	if(Enabled)
 	{
-		if(IsBoss(client))
+		if(IsBoss(client) && !CheckRoundState() && GetConVarBool(cvarPreroundBossDisconnect))
 		{
-			if(CheckRoundState()==FF2RoundState_RoundRunning)
-			{
-				ForceTeamWin(OtherTeam);
-			}
+			new boss=GetBossIndex(client);
+			new bool:omit[MaxClients+1];
+			omit[client]=true;
+			Boss[boss]=GetClientWithMostQueuePoints(omit);
 
-			if(GetConVarBool(cvarPreroundBossDisconnect) && CheckRoundState()==FF2RoundState_Setup)
+			if(Boss[boss])
 			{
-				new boss=GetBossIndex(client);
-				new bool:omit[MaxClients+1];
-				omit[client]=true;
-				Boss[boss]=GetClientWithMostQueuePoints(omit);
-				omit[Boss[boss]]=true;
-
-				if(Boss[boss])
-				{
-					CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
-					CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
-					CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
-				}
+				CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
+				CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
+				CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
 			}
 		}
 
@@ -5582,6 +5585,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		new boss=GetBossIndex(client);
 		if(boss==-1 || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
+			Debug("hi");
 			return Plugin_Continue;
 		}
 
@@ -7438,6 +7442,7 @@ public bool:PickCharacter(boss, companion)
 		}
 	}
 
+	//All of the following uses `companion` because it will always be the boss index we want
 	new Action:action;
 	Call_StartForward(OnSpecialSelected);
 	Call_PushCell(companion);
@@ -7518,12 +7523,11 @@ FindCompanion(boss, players, bool:omit[])
 		omit[companion]=true;
 		if(PickCharacter(boss, companion))  //TODO: This is a bit misleading
 		{
+			KvRewind(BossKV[character[companion]]);
 			BossRageDamage[companion]=KvGetNum(BossKV[character[companion]], "ragedamage", 1900);
 			if(BossRageDamage[companion]<=0)
 			{
-				decl String:bossName[64];
-				KvGetString(BossKV[character[companion]], "name", bossName, sizeof(bossName));
-				PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is below 0, setting to 1900", bossName);
+				PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is below 0, setting to 1900", companionName);
 				BossRageDamage[companion]=1900;
 			}
 
