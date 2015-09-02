@@ -6449,7 +6449,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damage, damagety
 {
 	if(Enabled && IsBoss(client))
 	{
-		boss=GetBossIndex(client);
+		new boss=GetBossIndex(client);
 		for(new lives=1; lives<BossLives[boss]; lives++)
 		{
 			if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
