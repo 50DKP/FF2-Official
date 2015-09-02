@@ -2024,7 +2024,7 @@ public Action:Timer_Announce(Handle:timer)
 			}
 			case 4:
 			{
-				CPrintToChatAll("{olive}[FF2]{default} %t", "type_ff2_to_open_menu");
+				CPrintToChatAll("{olive}[FF2]{default} %t", "Type ff2 to Open Menu");
 			}
 			case 5:
 			{
@@ -2033,7 +2033,7 @@ public Action:Timer_Announce(Handle:timer)
 			}
 			default:
 			{
-				CPrintToChatAll("{olive}[FF2]{default} %t", "type_ff2_to_open_menu");
+				CPrintToChatAll("{olive}[FF2]{default} %t", "Type ff2 to Open Menu");
 			}
 		}
 	}
@@ -2472,18 +2472,18 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 		SetGlobalTransTarget(Boss[boss]);
 		if(need_info_bout_rmb)
 		{
-			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t\n%t", "ff2_buttons_reload", "ff2_buttons_rmb");
+			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t\n%t", "Ability Uses Reload", "Ability Uses Right Mouse");
 		}
 		else
 		{
-			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "ff2_buttons_reload");
+			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "Ability Uses Reload");
 		}
 	}
 	else if(need_info_bout_rmb)
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[boss]);
-		FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "ff2_buttons_rmb");
+		FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "Ability Uses Right Mouse");
 	}
 	else
 	{
@@ -2674,11 +2674,11 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			//TODO:  Clear HUD text here
 			if(IsBoss(client))
 			{
-				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", text, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], (bossWin ? "boss_win" : "boss_lose"));
+				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t", text, "Top 3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], (bossWin ? "boss_win" : "boss_lose"));
 			}
 			else
 			{
-				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", text, "top_3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
+				FF2_ShowSyncHudText(client, infoHUD, "%s\n%t:\n1) %i-%s\n2) %i-%s\n3) %i-%s\n\n%t\n%t", text, " Top 3", Damage[top[0]], leaders[0], Damage[top[1]], leaders[1], Damage[top[2]], leaders[2], "damage_fx", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
 			}
 		}
 	}
@@ -4420,8 +4420,8 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 				{
 					strcopy(lives, 2, "");
 				}
-				Format(text, sizeof(text), "%s\n%t", text, "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
-				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_hp", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				Format(text, sizeof(text), "%s\n%t", text, "Boss Current Health", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Current Health", name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 				BossHealthLast[boss]=BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1);
 			}
 		}
@@ -5650,7 +5650,7 @@ public Action:Timer_Damage(Handle:timer, any:userid)
 	new client=GetClientOfUserId(userid);
 	if(IsValidClient(client, false))
 	{
-		CPrintToChat(client, "{olive}[FF2] %t. %t{default}", "damage", Damage[client], "scores", RoundFloat(Damage[client]/600.0));
+		CPrintToChat(client, "{olive}[FF2] %t. %t{default}", "Total Damage Dealt", Damage[client], "Points Earned", RoundFloat(Damage[client]/600.0));
 	}
 	return Plugin_Continue;
 }

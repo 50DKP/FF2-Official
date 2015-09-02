@@ -31,10 +31,10 @@
 	{
 		"en"		"Ubercharge rate"
 	}
-	"Boss Health"
+	"Boss Lives Left"
 	{
-		"#format"	"{1:i},{2:i}"
-		"en"		"Health: {1} out of {2}"
+		"#format" "{1:i},{2:i}"
+		"en"	"{1} out of {2} lives left"
 	}
 	"Rage Activation"
 	{
@@ -312,10 +312,6 @@
 	{
 		"#format"	"{1:s}"
 		"en"		"Now you are {1}'s minion! Go attack the other team!"
-	}
-	"No Weapons Respawn"
-	{
-		"en"		"Respawning you because you have no weapons!"
 	}
 	"VSH and FF2 Group"
 	{

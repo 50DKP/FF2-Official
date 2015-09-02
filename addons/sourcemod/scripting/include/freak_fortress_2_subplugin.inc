@@ -4,7 +4,7 @@ GetThisPluginName()
 {
 	decl String:pluginName[80];
 	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
-	ReplaceString(pluginName, sizeof(pluginName), ".ff2", "", false);
+	ReplaceString(pluginName, sizeof(pluginName), ".smx", "", false);
 	new forwardSlash=-1;
 	new backwardSlash=-1;
 	new finalPluginName=-1;
