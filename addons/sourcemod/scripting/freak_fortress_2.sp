@@ -6462,9 +6462,10 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damage, damagety
 				Call_PushCellRef(bossLives);
 				Call_PushCell(BossLivesMax[boss]);
 				Call_Finish(action);
-				if(action==Plugin_Stop || action==Plugin_Handled)
+				if(action==Plugin_Stop || action==Plugin_Handled)  //TODO: Make sure this works
 				{
-					return/* action*/;  //TODO: Fix this forward or move it back into OnPlayerHurt if necessary
+					SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]);
+					return;
 				}
 				else if(action==Plugin_Changed)
 				{
