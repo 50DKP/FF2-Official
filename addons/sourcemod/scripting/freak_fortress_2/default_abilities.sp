@@ -116,7 +116,7 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 	{
 		if(!boss)  //Boss indexes are just so amazing
 		{
-			new Float:distance=FF2_GetRageDist(boss, this_plugin_name, ability_name);
+			new Float:distance=FF2_GetBossRageDistance(boss, this_plugin_name, ability_name);
 			new Float:newDistance=distance;
 			new Action:action=Plugin_Continue;
 
@@ -169,7 +169,7 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 
 		for(new target=1; target<=MaxClients; target++)
 		{
-			if(IsClientInGame(target) && IsPlayerAlive(target) && target!=client && !(FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+			if(IsClientInGame(target) && IsPlayerAlive(target) && target!=client && !(FF2_GetFF2Flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 			{
 				otherTeamIsAlive=true;
 				break;
@@ -191,7 +191,7 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 				return Plugin_Continue;
 			}
 		}
-		while(!IsValidEdict(target) || target==client || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target));
+		while(!IsValidEdict(target) || target==client || (FF2_GetFF2Flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target));
 
 		GetEntPropVector(target, Prop_Data, "m_vecOrigin", position);
 		TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
@@ -205,7 +205,7 @@ Rage_Stun(const String:ability_name[], boss)
 	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	new Float:bossPosition[3], Float:targetPosition[3];
 	new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 5.0);
-	new Float:distance=FF2_GetRageDist(boss, this_plugin_name, ability_name);
+	new Float:distance=FF2_GetBossRageDistance(boss, this_plugin_name, ability_name);
 	GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition);
 
 	for(new target=1; target<=MaxClients; target++)
@@ -237,7 +237,7 @@ Rage_StunSentry(const String:ability_name[], boss)
 	new Float:bossPosition[3], Float:sentryPosition[3];
 	GetEntPropVector(GetClientOfUserId(FF2_GetBossUserId(boss)), Prop_Send, "m_vecOrigin", bossPosition);
 	new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 7.0);
-	new Float:distance=FF2_GetRageDist(boss, this_plugin_name, ability_name);
+	new Float:distance=FF2_GetBossRageDistance(boss, this_plugin_name, ability_name);
 
 	new sentry;
 	while((sentry=FindEntityByClassname(sentry, "obj_sentrygun"))!=-1)
@@ -344,7 +344,7 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 
 			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, velocity);
 			decl String:sound[PLATFORM_MAX_PATH];
-			if(FF2_RandomSound("sound_ability", sound, PLATFORM_MAX_PATH, boss, slot))
+			if(FF2_RandomSound("sound_ability", sound, sizeof(sound), boss, slot))
 			{
 				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
@@ -408,7 +408,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 			new bool:otherTeamIsAlive;
 			for(new target=1; target<=MaxClients; target++)
 			{
-				if(IsClientInGame(target) && IsPlayerAlive(target) && target!=client && !(FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+				if(IsClientInGame(target) && IsPlayerAlive(target) && target!=client && !(FF2_GetFF2Flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 				{
 					otherTeamIsAlive=true;
 					break;
@@ -425,7 +425,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 					return;
 				}
 			}
-			while(otherTeamIsAlive && (!IsValidEdict(target) || target==client || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target)));
+			while(otherTeamIsAlive && (!IsValidEdict(target) || target==client || (FF2_GetFF2Flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target)));
 
 			decl String:particle[PLATFORM_MAX_PATH];
 			FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, particle, sizeof(particle));
@@ -463,7 +463,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 			}
 
 			decl String:sound[PLATFORM_MAX_PATH];
-			if(FF2_RandomSound("sound_ability", sound, PLATFORM_MAX_PATH, boss, slot))
+			if(FF2_RandomSound("sound_ability", sound, sizeof(sound), boss, slot))
 			{
 				EmitSoundToAll(sound, boss, _, _, _, _, _, boss, position);
 				EmitSoundToAll(sound, boss, _, _, _, _, _, boss, position);

@@ -9040,28 +9040,26 @@ public Native_StopMusic(Handle:plugin, numParams)
 
 public bool:ReturnRandomSound(const String:kv[], kvLength, String:sound[], length, boss, slot)
 {
-	decl String:keyvalue[kvLength];
 	new bool:soundExists;
 	if(StrEqual(keyvalue, "sound_ability"))
 	{
-		soundExists=RandomSoundAbility(keyvalue, sound, length, boss, slot);
+		soundExists=RandomSoundAbility(kv, sound, length, boss, slot);
 	}
 	else
 	{
-		soundExists=RandomSound(keyvalue, sound, length, boss);
+		soundExists=RandomSound(kv, sound, length, boss);
 	}
 	return soundExists;
 }
 
 public Native_RandomSound(Handle:plugin, numParams)
 {
-	new kvLength=GetNativeCell(2);
-	decl String:kv[kvLength];
-	GetNativeString(1, kv, kvLength);
+	decl String:kv[64];
+	GetNativeString(1, kv, sizeof(kv));
 
 	new length=GetNativeCell(4);
 	decl String:sound[length];
-	new bool:soundExists=ReturnRandomSound(kv, kvLength, sound, length, GetNativeCell(5), GetNativeCell(6));
+	new bool:soundExists=ReturnRandomSound(kv, sound, length, GetNativeCell(5), GetNativeCell(6));
 	SetNativeString(3, sound, GetNativeCell(4));
 	return soundExists;
 }

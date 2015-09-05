@@ -133,7 +133,7 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 		{
 			new Action:action=Plugin_Continue;
 			Call_StartForward(OnHaleRage);
-			new Float:distance=FF2_GetRageDist(boss, this_plugin_name, ability_name);
+			new Float:distance=FF2_GetBossRageDistance(boss, this_plugin_name, ability_name);
 			new Float:newDistance=distance;
 			Call_PushFloatRef(newDistance);
 			Call_Finish(action);
@@ -254,7 +254,7 @@ Rage_Clone(const String:ability_name[], boss)
 		clone=GetArrayCell(players, temp);
 		RemoveFromArray(players, temp);
 
-		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM);
+		FF2_SetFF2Flags(clone, FF2_GetFF2Flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM);
 		TF2_ChangeClientTeam(clone, BossTeam);
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=boss;
@@ -373,7 +373,7 @@ public Action:Timer_Enable_Damage(Handle:timer, any:userid)
 	if(client)
 	{
 		SetEntProp(client, Prop_Data, "m_takedamage", 2);
-		FF2_SetFF2flags(client, FF2_GetFF2flags(client) & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM);
+		FF2_SetFF2Flags(client, FF2_GetFF2Flags(client) & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM);
 		SDKUnhook(client, SDKHook_OnTakeDamage, SaveMinion);
 	}
 	return Plugin_Continue;
@@ -569,7 +569,7 @@ public Action:Timer_Rage_Explosive_Dance(Handle:timer, any:boss)
 
 Rage_Slowmo(boss, const String:ability_name[])
 {
-	FF2_SetFF2flags(boss, FF2_GetFF2flags(boss)|FF2FLAG_CHANGECVAR);
+	FF2_SetFF2Flags(boss, FF2_GetFF2Flags(boss)|FF2FLAG_CHANGECVAR);
 	SetConVarFloat(cvarTimeScale, FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 2, 0.1));
 	new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 1.0)+1.0;
 	SlowMoTimer=CreateTimer(duration, Timer_StopSlowMo, boss);
@@ -594,7 +594,7 @@ public Action:Timer_StopSlowMo(Handle:timer, any:boss)
 	UpdateClientCheatValue(0);
 	if(boss!=-1)
 	{
-		FF2_SetFF2flags(boss, FF2_GetFF2flags(boss) & ~FF2FLAG_CHANGECVAR);
+		FF2_SetFF2Flags(boss, FF2_GetFF2Flags(boss) & ~FF2FLAG_CHANGECVAR);
 		FF2Flags[boss]&=~FLAG_ONSLOWMO;
 	}
 	EmitSoundToAll(SOUND_SLOW_MO_END, _, _, _, _, _, _, _, _, _, false);
