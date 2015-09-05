@@ -92,7 +92,7 @@ new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
 
-new FF2flags[MAXPLAYERS+1];
+new FF2Flags[MAXPLAYERS+1];
 
 new Boss[MAXPLAYERS+1];
 new BossHealthMax[MAXPLAYERS+1];
@@ -1317,7 +1317,7 @@ public OnMapStart()
 	for(new client; client<=MaxClients; client++)
 	{
 		KSpreeTimer[client]=0.0;
-		FF2flags[client]=0;
+		FF2Flags[client]=0;
 		Incoming[client]=-1;
 	}
 
@@ -1996,7 +1996,7 @@ public Action:SMAC_OnCheatDetected(client, const String:module[], DetectionType:
 		decl String:cvar[PLATFORM_MAX_PATH];
 		KvGetString(info, "cvar", cvar, sizeof(cvar));
 		Debug("Cvar was %s", cvar);
-		if((StrEqual(cvar, "sv_cheats") || StrEqual(cvar, "host_timescale")) && !(FF2flags[Boss[client]] & FF2FLAG_CHANGECVAR))
+		if((StrEqual(cvar, "sv_cheats") || StrEqual(cvar, "host_timescale")) && !(FF2Flags[Boss[client]] & FF2FLAG_CHANGECVAR))
 		{
 			Debug("SMAC: Ignoring violation");
 			return Plugin_Stop;
@@ -2281,7 +2281,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	for(new client; client<=MaxClients; client++)
 	{
 		Boss[client]=0;
-		if(IsValidClient(client) && IsPlayerAlive(client) && !(FF2flags[client] & FF2FLAG_HASONGIVED))
+		if(IsValidClient(client) && IsPlayerAlive(client) && !(FF2Flags[client] & FF2FLAG_HASONGIVED))
 		{
 			TF2_RespawnPlayer(client);
 		}
@@ -2431,7 +2431,7 @@ public Action:BossInfoTimer_Begin(Handle:timer, any:boss)
 
 public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 {
-	if((FF2flags[Boss[boss]] & FF2FLAG_USINGABILITY))
+	if((FF2Flags[Boss[boss]] & FF2FLAG_USINGABILITY))
 	{
 		BossInfoTimer[boss][1]=INVALID_HANDLE;
 		return Plugin_Stop;
@@ -3347,15 +3347,15 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	{
 		case 1:
 		{
-			FF2flags[client]|=FF2FLAG_ALLOW_HEALTH_PICKUPS;
+			FF2Flags[client]|=FF2FLAG_ALLOW_HEALTH_PICKUPS;
 		}
 		case 2:
 		{
-			FF2flags[client]|=FF2FLAG_ALLOW_AMMO_PICKUPS;
+			FF2Flags[client]|=FF2FLAG_ALLOW_AMMO_PICKUPS;
 		}
 		case 3:
 		{
-			FF2flags[client]|=FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS;
+			FF2Flags[client]|=FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS;
 		}
 	}
 
@@ -4015,12 +4015,12 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 public Action:MakeNotBoss(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
-	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==FF2RoundState_RoundEnd || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==FF2RoundState_RoundEnd || IsBoss(client) || (FF2Flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		return Plugin_Continue;
 	}
 
-	if(!IsVoteInProgress() && GetClientClassinfoCookie(client) && !(FF2flags[client] & FF2FLAG_CLASSHELPED))
+	if(!IsVoteInProgress() && GetClientClassinfoCookie(client) && !(FF2Flags[client] & FF2FLAG_CLASSHELPED))
 	{
 		HelpPanelClass(client);
 	}
@@ -4052,7 +4052,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 public Action:CheckItems(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
-	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==FF2RoundState_RoundEnd || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==FF2RoundState_RoundEnd || IsBoss(client) || (FF2Flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		return Plugin_Continue;
 	}
@@ -4367,7 +4367,7 @@ public Action:Timer_Uber(Handle:timer, any:medigunid)
 		if(charge<=0.05)
 		{
 			CreateTimer(3.0, Timer_ResetUberCharge, EntIndexToEntRef(medigun), TIMER_FLAG_NO_MAPCHANGE);
-			FF2flags[client]&=~FF2FLAG_UBERREADY;
+			FF2Flags[client]&=~FF2FLAG_UBERREADY;
 			return Plugin_Stop;
 		}
 	}
@@ -4428,7 +4428,7 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 
 		for(new target; target<=MaxClients; target++)
 		{
-			if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
+			if(IsValidClient(target) && !(FF2Flags[target] & FF2FLAG_HUDDISABLED))
 			{
 				SetGlobalTransTarget(target);
 				PrintCenterText(target, text);
@@ -4696,7 +4696,7 @@ public OnClientPutInServer(client)
 	SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamageAlive);
 	SDKHook(client, SDKHook_OnTakeDamageAlivePost, OnTakeDamageAlivePost);
 
-	FF2flags[client]=0;
+	FF2Flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
 
@@ -4767,13 +4767,13 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 		CreateTimer(0.1, MakeBoss, GetBossIndex(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 
-	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+	if(!(FF2Flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
 		if(CheckRoundState()!=FF2RoundState_RoundRunning)
 		{
-			if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
+			if(!(FF2Flags[client] & FF2FLAG_HASONGIVED))
 			{
-				FF2flags[client]|=FF2FLAG_HASONGIVED;
+				FF2Flags[client]|=FF2FLAG_HASONGIVED;
 				RemovePlayerBack(client, {57, 133, 405, 444, 608, 642}, 7);
 				RemovePlayerTarge(client);
 				TF2_RemoveAllWeapons(client);
@@ -4788,8 +4788,8 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 		}
 	}
 
-	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
-	FF2flags[client]|=FF2FLAG_USEBOSSTIMER;
+	FF2Flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
+	FF2Flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
 }
 
@@ -4813,7 +4813,7 @@ public Action:ClientTimer(Handle:timer)
 	new TFCond:cond;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && !IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
+		if(IsValidClient(client) && !IsBoss(client) && !(FF2Flags[client] & FF2FLAG_CLASSTIMERDISABLED))
 		{
 			SetHudTextParams(-1.0, 0.88, 0.35, 90, 255, 90, 255, 0, 0.35, 0.0, 0.1);
 			if(!IsPlayerAlive(client))
@@ -4867,10 +4867,10 @@ public Action:ClientTimer(Handle:timer)
 						SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
 						FF2_ShowSyncHudText(client, jumpHUD, "%T: %i", "Ubercharge", client, charge);
 
-						if(charge==100 && !(FF2flags[client] & FF2FLAG_UBERREADY))
+						if(charge==100 && !(FF2Flags[client] & FF2FLAG_UBERREADY))
 						{
 							FakeClientCommandEx(client, "voicemenu 1 7");
-							FF2flags[client]|=FF2FLAG_UBERREADY;
+							FF2Flags[client]|=FF2FLAG_UBERREADY;
 						}
 					}
 				}
@@ -4885,9 +4885,9 @@ public Action:ClientTimer(Handle:timer)
 			}
 			else if(class==TFClass_Soldier)
 			{
-				if((FF2flags[client] & FF2FLAG_ISBUFFED) && !(GetEntProp(client, Prop_Send, "m_bRageDraining")))
+				if((FF2Flags[client] & FF2FLAG_ISBUFFED) && !(GetEntProp(client, Prop_Send, "m_bRageDraining")))
 				{
-					FF2flags[client]&=~FF2FLAG_ISBUFFED;
+					FF2Flags[client]&=~FF2FLAG_ISBUFFED;
 				}
 			}
 
@@ -4939,7 +4939,7 @@ public Action:ClientTimer(Handle:timer)
 				addthecrit=true;
 				if(index==416)  //Market Gardener
 				{
-					addthecrit=FF2flags[client] & FF2FLAG_ROCKET_JUMPING ? true : false;
+					addthecrit=FF2Flags[client] & FF2FLAG_ROCKET_JUMPING ? true : false;
 				}
 			}
 			else if((!StrContains(classname, "tf_weapon_smg") && index!=751) ||  //Cleaner's Carbine
@@ -4972,10 +4972,10 @@ public Action:ClientTimer(Handle:timer)
 							SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
 							new charge=RoundToFloor(GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")*100);
 							FF2_ShowHudText(client, -1, "%T: %i", "Ubercharge", client, charge);
-							if(charge==100 && !(FF2flags[client] & FF2FLAG_UBERREADY))
+							if(charge==100 && !(FF2Flags[client] & FF2FLAG_UBERREADY))
 							{
 								FakeClientCommand(client, "voicemenu 1 7");  //"I am fully charged!"
-								FF2flags[client]|= FF2FLAG_UBERREADY;
+								FF2Flags[client]|= FF2FLAG_UBERREADY;
 							}
 						}
 					}
@@ -5076,7 +5076,7 @@ public Action:BossTimer(Handle:timer)
 	for(new boss; boss<=MaxClients; boss++)
 	{
 		new client=Boss[boss];
-		if(!IsValidClient(client) || !IsPlayerAlive(client) || !(FF2flags[client] & FF2FLAG_USEBOSSTIMER))
+		if(!IsValidClient(client) || !IsPlayerAlive(client) || !(FF2Flags[client] & FF2FLAG_USEBOSSTIMER))
 		{
 			continue;
 		}
@@ -5097,10 +5097,10 @@ public Action:BossTimer(Handle:timer)
 
 		if(RoundFloat(BossCharge[boss][0])==100.0)
 		{
-			if(IsFakeClient(client) && !(FF2flags[client] & FF2FLAG_BOTRAGE))
+			if(IsFakeClient(client) && !(FF2Flags[client] & FF2FLAG_BOTRAGE))
 			{
 				CreateTimer(1.0, Timer_BotRage, boss, TIMER_FLAG_NO_MAPCHANGE);
-				FF2flags[client]|=FF2FLAG_BOTRAGE;
+				FF2Flags[client]|=FF2FLAG_BOTRAGE;
 			}
 			else
 			{
@@ -5113,7 +5113,7 @@ public Action:BossTimer(Handle:timer)
 					new Float:position[3];
 					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 
-					FF2flags[client]|=FF2FLAG_TALKING;
+					FF2Flags[client]|=FF2FLAG_TALKING;
 					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 
@@ -5125,7 +5125,7 @@ public Action:BossTimer(Handle:timer)
 							EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
 						}
 					}
-					FF2flags[client]&=~FF2FLAG_TALKING;
+					FF2Flags[client]&=~FF2FLAG_TALKING;
 					emitRageSound[boss]=false;
 				}
 			}
@@ -5211,7 +5211,7 @@ public Action:BossTimer(Handle:timer)
 
 			for(new target; target<=MaxClients; target++)
 			{
-				if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
+				if(IsValidClient(target) && !(FF2Flags[target] & FF2FLAG_HUDDISABLED))
 				{
 					SetGlobalTransTarget(target);
 					PrintCenterText(target, message);
@@ -5299,7 +5299,7 @@ public TF2_OnConditionAdded(client, TFCond:condition)
 		}
 		else if(!IsBoss(client) && condition==TFCond_BlastJumping)
 		{
-			FF2flags[client]|=FF2FLAG_ROCKET_JUMPING;
+			FF2Flags[client]|=FF2FLAG_ROCKET_JUMPING;
 		}
 	}
 }
@@ -5314,7 +5314,7 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 		}
 		else if(!IsBoss(client) && condition==TFCond_BlastJumping)
 		{
-			FF2flags[client]&=~FF2FLAG_ROCKET_JUMPING;
+			FF2Flags[client]&=~FF2FLAG_ROCKET_JUMPING;
 		}
 	}
 }
@@ -5386,7 +5386,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 		decl String:sound[PLATFORM_MAX_PATH];
 		if(RandomSoundAbility("sound_ability", sound, sizeof(sound), boss))
 		{
-			FF2flags[Boss[boss]]|=FF2FLAG_TALKING;
+			FF2Flags[Boss[boss]]|=FF2FLAG_TALKING;
 			EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 			EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 
@@ -5398,7 +5398,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 					EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
 				}
 			}
-			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
+			FF2Flags[Boss[boss]]&=~FF2FLAG_TALKING;
 		}
 		emitRageSound[boss]=true;
 	}
@@ -5702,7 +5702,7 @@ public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadca
 {
 	if(Enabled && GetEventInt(event, "buff_type")==2)
 	{
-		FF2flags[GetClientOfUserId(GetEventInt(event, "buff_owner"))]|=FF2FLAG_ISBUFFED;
+		FF2Flags[GetClientOfUserId(GetEventInt(event, "buff_owner"))]|=FF2FLAG_ISBUFFED;
 	}
 	return Plugin_Continue;
 }
@@ -5724,7 +5724,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			{
 				RedAlivePlayers++;
 			}
-			else if(IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+			else if(IsBoss(client) || (FF2Flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 			{
 				BlueAlivePlayers++;
 			}
@@ -5973,7 +5973,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 				}
 				case TFClass_Soldier:
 				{
-					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
+					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2Flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
 					{
 						SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 					}
@@ -6137,7 +6137,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 					}
 					case 416:  //Market Gardener (courtesy of Chdata)
 					{
-						if(FF2flags[attacker] & FF2FLAG_ROCKET_JUMPING)
+						if(FF2Flags[attacker] & FF2FLAG_ROCKET_JUMPING)
 						{
 							damage=(Pow(float(BossHealthMax[boss]), 0.74074)+512.0-(Marketed[client]/128.0*float(BossHealthMax[boss])));
 							damagetype|=DMG_CRIT;
@@ -6272,12 +6272,12 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 						SetEntProp(viewmodel, Prop_Send, "m_nSequence", animation);
 					}
 
-					if(!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
+					if(!(FF2Flags[attacker] & FF2FLAG_HUDDISABLED))
 					{
 						PrintHintText(attacker, "%t", "Backstab");
 					}
 
-					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
+					if(!(FF2Flags[client] & FF2FLAG_HUDDISABLED))
 					{
 						PrintHintText(client, "%t", "Backstabbed");
 					}
@@ -6334,18 +6334,18 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 					if(IsValidClient(teleowner) && teleowner!=attacker)
 					{
 						Damage[teleowner]+=9001*3/5;
-						if(!(FF2flags[teleowner] & FF2FLAG_HUDDISABLED))
+						if(!(FF2Flags[teleowner] & FF2FLAG_HUDDISABLED))
 						{
 							PrintHintText(teleowner, "TELEFRAG ASSIST!  Nice job setting it up!");
 						}
 					}
 
-					if(!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
+					if(!(FF2Flags[attacker] & FF2FLAG_HUDDISABLED))
 					{
 						PrintHintText(attacker, "TELEFRAG! You are a pro!");
 					}
 
-					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
+					if(!(FF2Flags[client] & FF2FLAG_HUDDISABLED))
 					{
 						PrintHintText(client, "TELEFRAG! Be careful around quantum tunneling devices!");
 					}
@@ -6523,7 +6523,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 				strcopy(ability, sizeof(ability), BossLives[boss]==1 ? "Boss with Multiple Lives Left" : "Boss with 1 Life Left");
 				for(new target=1; target<=MaxClients; target++)
 				{
-					if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
+					if(IsValidClient(target) && !(FF2Flags[target] & FF2FLAG_HUDDISABLED))
 					{
 						PrintCenterText(target, "%t", ability, bossName, BossLives[boss]);
 					}
@@ -7567,7 +7567,7 @@ public HintPanelH(Handle:menu, MenuAction:action, client, selection)
 {
 	if(IsValidClient(client) && (action==MenuAction_Select || (action==MenuAction_Cancel && selection==MenuCancel_Exit)))
 	{
-		FF2flags[client]|=FF2FLAG_CLASSHELPED;
+		FF2Flags[client]|=FF2FLAG_CLASSHELPED;
 	}
 	return;
 }
@@ -8248,7 +8248,7 @@ public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH
 		return Plugin_Continue;
 	}
 
-	if(!StrContains(sound, "vo") && !(FF2flags[Boss[boss]] & FF2FLAG_TALKING))
+	if(!StrContains(sound, "vo") && !(FF2Flags[Boss[boss]] & FF2FLAG_TALKING))
 	{
 		decl String:newSound[PLATFORM_MAX_PATH];
 		if(RandomSound("catch_phrase", newSound, PLATFORM_MAX_PATH, boss))
@@ -8894,7 +8894,7 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 	}
 	else if(!slot)
 	{
-		FF2flags[Boss[boss]]&=~FF2FLAG_BOTRAGE;
+		FF2Flags[Boss[boss]]&=~FF2FLAG_BOTRAGE;
 		Call_PushCell(3);  //Status - we're assuming here a rage ability will always be in use if it gets called
 		Call_Finish(action);
 		BossCharge[boss][slot]=0.0;
@@ -8917,9 +8917,9 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 
 		if(GetClientButtons(Boss[boss]) & button)
 		{
-			if(!(FF2flags[Boss[boss]] & FF2FLAG_USINGABILITY))
+			if(!(FF2Flags[Boss[boss]] & FF2FLAG_USINGABILITY))
 			{
-				FF2flags[Boss[boss]]|=FF2FLAG_USINGABILITY;
+				FF2Flags[Boss[boss]]|=FF2FLAG_USINGABILITY;
 				switch(buttonMode)
 				{
 					case 2:
@@ -9000,7 +9000,7 @@ public Native_UseAbility(Handle:plugin, numParams)
 
 public GetFF2Flags(client)
 {
-	return FF2flags[client];
+	return FF2Flags[client];
 }
 
 public Native_GetFF2Flags(Handle:plugin, numParams)
@@ -9010,7 +9010,7 @@ public Native_GetFF2Flags(Handle:plugin, numParams)
 
 public SetFF2Flags(client, flags)
 {
-	FF2flags[client]=flags;
+	FF2Flags[client]=flags;
 }
 
 public Native_SetFF2Flags(Handle:plugin, numParams)
@@ -9038,10 +9038,10 @@ public Native_StopMusic(Handle:plugin, numParams)
 	StopMusic(GetNativeCell(1));
 }
 
-public bool:ReturnRandomSound(const String:kv[], kvLength, String:sound[], length, boss, slot)
+public bool:ReturnRandomSound(const String:kv[], String:sound[], length, boss, slot)
 {
 	new bool:soundExists;
-	if(StrEqual(keyvalue, "sound_ability"))
+	if(StrEqual(kv, "sound_ability"))
 	{
 		soundExists=RandomSoundAbility(kv, sound, length, boss, slot);
 	}
@@ -9162,11 +9162,11 @@ public Action:OnPickup(entity, client)  //Thanks friagram!
 	{
 		decl String:classname[32];
 		GetEntityClassname(entity, classname, sizeof(classname));
-		if(!StrContains(classname, "item_healthkit") && !(FF2flags[client] & FF2FLAG_ALLOW_HEALTH_PICKUPS))
+		if(!StrContains(classname, "item_healthkit") && !(FF2Flags[client] & FF2FLAG_ALLOW_HEALTH_PICKUPS))
 		{
 			return Plugin_Handled;
 		}
-		else if((!StrContains(classname, "item_ammopack") || StrEqual(classname, "tf_ammo_pack")) && !(FF2flags[client] & FF2FLAG_ALLOW_AMMO_PICKUPS))
+		else if((!StrContains(classname, "item_ammopack") || StrEqual(classname, "tf_ammo_pack")) && !(FF2Flags[client] & FF2FLAG_ALLOW_AMMO_PICKUPS))
 		{
 			return Plugin_Handled;
 		}
