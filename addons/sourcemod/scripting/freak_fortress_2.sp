@@ -3273,12 +3273,12 @@ EquipBoss(boss)
 	new client=Boss[boss];
 	DoOverlay(client, "");
 	TF2_RemoveAllWeapons(client);
-	decl String:weapon[64], String:attributes[256];
+	decl String:key[10], String:classname[64], String:attributes[256];
 	for(new i=1; ; i++)
 	{
 		KvRewind(BossKV[Special[boss]]);
-		Format(weapon, 10, "weapon%i", i);
-		if(KvJumpToKey(BossKV[Special[boss]], weapon))
+		Format(key, sizeof(key), "weapon%i", i);
+		if(KvJumpToKey(BossKV[Special[boss]], key))
 		{
 			KvGetString(BossKV[Special[boss]], "name", classname, sizeof(classname));
 			KvGetString(BossKV[Special[boss]], "attributes", attributes, sizeof(attributes));
