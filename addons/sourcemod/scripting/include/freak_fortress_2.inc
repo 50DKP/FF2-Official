@@ -84,6 +84,16 @@ native TFTeam:FF2_GetBossTeam();
 native bool:FF2_GetBossSpecial(boss=0, String:buffer[], bufferLength, clientMeaning=0);
 
 /**
+ * Gets a Boss's KV handle
+ *
+ * @param boss              Boss's index
+ * @param bossMeaning       0 - 'boss' parameter refers to the index of the boss
+ *                          1 - 'boss' parameter refers to the index of the boss in characters.cfg-1
+ * @return                  Handle of Boss's keyvalues
+ */
+native Handle:FF2_GetSpecialKV(boss, bossMeaning=0);
+
+/**
  * Gets the current health value of the Boss
  *
  * @param boss      Boss's index
@@ -194,14 +204,6 @@ native FF2_GetBossRageDamage(boss);
 native FF2_SetBossRageDamage(boss, damage);
 
 /**
- * Gets damage dealt by this client
- *
- * @param client    Client's index
- * @return          Damage dealt
- */
-native FF2_GetClientDamage(client);
-
-/**
  * Gets an ability's rage distance
  *
  * @param boss          Boss's index
@@ -209,7 +211,15 @@ native FF2_GetClientDamage(client);
  * @param abilityName   Name of ability (use null string if you want get boss's global "ragedist" value)
  * @return              Ability's rage distance
  */
-native Float:FF2_GetRageDist(boss=0, const String:pluginName[]="", const String:abilityName[]="");
+native Float:FF2_GetBossRageDistance(boss=0, const String:pluginName[]="", const String:abilityName[]="");
+
+/**
+ * Gets damage dealt by this client
+ *
+ * @param client    Client's index
+ * @return          Damage dealt
+ */
+native FF2_GetClientDamage(client);
 
 /**
  * Finds if a Boss has a certain ability
@@ -220,24 +230,6 @@ native Float:FF2_GetRageDist(boss=0, const String:pluginName[]="", const String:
  * @return              True if the boss has this ability, false if it doesn't
  */
 native bool:FF2_HasAbility(boss, const String:pluginName[], const String:abilityName[]);
-
-/**
- * Determines how the Boss should use a certain ability
- *
- * @param boss          Boss's index
- * @param pluginName    Name of plugin with this ability
- * @param abilityName   Name of ability
- * @param slot          Slot of charge meter
- *                          0 - rage
- *                          1 - as usual, used for brave jump or teleport
- *                          2 - other charged abilities
- * @param buttonMode    How to activate the ability
- *                          0 - by taunt
- *                          1 - by right mouse button or duck
- *                          2 - by reload button
- * @noreturn
- */
-native FF2_DoAbility(boss, const String:pluginName[], const String:abilityName[], slot, buttonMode=0);
 
 /**
  * Gets the integer value of an ability argument
@@ -277,41 +269,22 @@ native Float:FF2_GetAbilityArgumentFloat(boss, const String:plugin_name[], const
 native FF2_GetAbilityArgumentString(boss, const String:pluginName[], const String:abilityName[], argument, String:buffer[], bufferLength);
 
 /**
- * Starts a random Boss sound from its config file
+ * Determines how the Boss should use a certain ability
  *
- * @param keyvalue      Name of sound container
- * @param buffer        Buffer for result sound path
- * @param bufferLength  Length of buffer
  * @param boss          Boss's index
- * @param slot          Only for "sound_ability" - slot of ability
- * @return              True if sound has been found, false otherwise
- */
-native bool:FF2_RandomSound(const String:keyvalue[], String:buffer[], bufferLength, boss=0, slot=0);
-
-/**
- * Starts the Boss's music for the specified clients
- *
- * @param client    Client's index (0 for all clients)
- */
-native FF2_StartMusic(client=0);
-
-/**
- * Stops the Boss's music for the specified clients
- *
- * @param client    Client's index (0 for all clients)
+ * @param pluginName    Name of plugin with this ability
+ * @param abilityName   Name of ability
+ * @param slot          Slot of charge meter
+ *                          0 - rage
+ *                          1 - as usual, used for brave jump or teleport
+ *                          2 - other charged abilities
+ * @param buttonMode    How to activate the ability
+ *                          0 - by taunt
+ *                          1 - by right mouse button or duck
+ *                          2 - by reload button
  * @noreturn
  */
-native FF2_StopMusic(client=0);
-
-/**
- * Gets a Boss's KV handle
- *
- * @param boss              Boss's index
- * @param bossIndex         0 - 'boss' parameter refers to the index of the boss
- *                          1 - 'boss' parameter refers to the index of the boss in characters.cfg-1
- * @return                  Handle of Boss's keyvalues
- */
-native Handle:FF2_GetSpecialKV(boss, bossIndex=0);
+native FF2_UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, buttonMode=0);
 
 /**
  * Gets a client's flags for FF2
@@ -319,7 +292,7 @@ native Handle:FF2_GetSpecialKV(boss, bossIndex=0);
  * @param client    Client's index
  * @return          Client's FF2 flags
  */
-native FF2_GetFF2flags(client);
+native FF2_GetFF2Flags(client);
 
 /**
  * Sets a client's flags for FF2
@@ -328,7 +301,7 @@ native FF2_GetFF2flags(client);
  * @param flags     New flag values
  * @noreturn
  */
-native FF2_SetFF2flags(client, flags);
+native FF2_SetFF2Flags(client, flags);
 
 /**
  * Gets a client's queue points
@@ -346,6 +319,34 @@ native FF2_GetQueuePoints(client);
  * @noreturn
  */
 native FF2_SetQueuePoints(client, value);
+
+/**
+ * Starts the Boss's music for the specified clients
+ *
+ * @param client    Client's index (0 for all clients)
+ */
+native FF2_StartMusic(client=0);
+
+/**
+ * Stops the Boss's music for the specified clients
+ *
+ * @param client    Client's index (0 for all clients)
+ * @noreturn
+ */
+native FF2_StopMusic(client=0);
+
+/**
+ * Starts a random Boss sound from its config file
+ *
+ * @param kv            Name of sound container
+ * @param kvLength      Length of kv
+ * @param sound         Buffer for result sound path
+ * @param length        Length of sound
+ * @param boss          Boss's index
+ * @param slot          Only for "sound_ability" - slot of ability
+ * @return              True if sound has been found, false otherwise
+ */
+native bool:FF2_RandomSound(const String:kv[], kvLength, String:sound[], length, boss=0, slot=0);
 
 /**
  * Gets a client's glow timer
@@ -584,7 +585,7 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_SetBossRageDamage");
 	MarkNativeAsOptional("FF2_GetClientDamage");
 	MarkNativeAsOptional("FF2_GetRoundState");
-	MarkNativeAsOptional("FF2_GetRageDist");
+	MarkNativeAsOptional("FF2_GetRageDistance");
 	MarkNativeAsOptional("FF2_HasAbility");
 	MarkNativeAsOptional("FF2_GetAbilityArgument");
 	MarkNativeAsOptional("FF2_GetAbilityArgumentFloat");
@@ -597,7 +598,7 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_SetQueuePoints");
 	MarkNativeAsOptional("FF2_GetFF2flags");
 	MarkNativeAsOptional("FF2_SetFF2flags");
-	MarkNativeAsOptional("FF2_DoAbility");
+	MarkNativeAsOptional("FF2_UseAbility");
 	MarkNativeAsOptional("FF2_GetClientGlow");
 	MarkNativeAsOptional("FF2_SetClientGlow");
 }

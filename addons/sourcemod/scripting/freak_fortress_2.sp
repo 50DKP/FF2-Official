@@ -985,12 +985,14 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 		return APLRes_Failure;
 	}
 
-	CreateNative("FF2_IsFF2Enabled", Native_IsEnabled);
-	CreateNative("FF2_GetFF2Version", Native_FF2Version);
-	CreateNative("FF2_GetBossUserId", Native_GetBoss);
-	CreateNative("FF2_GetBossIndex", Native_GetIndex);
-	CreateNative("FF2_GetBossTeam", Native_GetTeam);
-	CreateNative("FF2_GetBossSpecial", Native_GetSpecial);
+	CreateNative("FF2_IsFF2Enabled", Native_IsFF2Enabled);
+	CreateNative("FF2_GetFF2Version", Native_GetFF2Version);
+	CreateNative("FF2_GetRoundState", Native_GetRoundState);
+	CreateNative("FF2_GetBossUserId", Native_GetBossUserId);
+	CreateNative("FF2_GetBossIndex", Native_GetBossIndex);
+	CreateNative("FF2_GetBossTeam", Native_GetBossTeam);
+	CreateNative("FF2_GetBossSpecial", Native_GetBossSpecial);
+	CreateNative("FF2_GetSpecialKV", Native_GetSpecialKV);
 	CreateNative("FF2_GetBossHealth", Native_GetBossHealth);
 	CreateNative("FF2_SetBossHealth", Native_SetBossHealth);
 	CreateNative("FF2_GetBossMaxHealth", Native_GetBossMaxHealth);
@@ -1003,22 +1005,20 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_SetBossCharge", Native_SetBossCharge);
 	CreateNative("FF2_GetBossRageDamage", Native_GetBossRageDamage);
 	CreateNative("FF2_SetBossRageDamage", Native_SetBossRageDamage);
-	CreateNative("FF2_GetClientDamage", Native_GetDamage);
-	CreateNative("FF2_GetRoundState", Native_GetRoundState);
-	CreateNative("FF2_GetSpecialKV", Native_GetSpecialKV);
-	CreateNative("FF2_StartMusic", Native_StartMusic);
-	CreateNative("FF2_StopMusic", Native_StopMusic);
-	CreateNative("FF2_GetRageDist", Native_GetRageDist);
+	CreateNative("FF2_GetBossRageDistance", Native_GetBossRageDistance);
+	CreateNative("FF2_GetClientDamage", Native_GetClientDamage);
 	CreateNative("FF2_HasAbility", Native_HasAbility);
-	CreateNative("FF2_DoAbility", Native_DoAbility);
 	CreateNative("FF2_GetAbilityArgument", Native_GetAbilityArgument);
 	CreateNative("FF2_GetAbilityArgumentFloat", Native_GetAbilityArgumentFloat);
 	CreateNative("FF2_GetAbilityArgumentString", Native_GetAbilityArgumentString);
-	CreateNative("FF2_RandomSound", Native_RandomSound);
-	CreateNative("FF2_GetFF2flags", Native_GetFF2flags);
-	CreateNative("FF2_SetFF2flags", Native_SetFF2flags);
+	CreateNative("FF2_UseAbility", Native_UseAbility);
+	CreateNative("FF2_GetFF2Flags", Native_GetFF2Flags);
+	CreateNative("FF2_SetFF2Flags", Native_SetFF2Flags);
 	CreateNative("FF2_GetQueuePoints", Native_GetQueuePoints);
 	CreateNative("FF2_SetQueuePoints", Native_SetQueuePoints);
+	CreateNative("FF2_StartMusic", Native_StartMusic);
+	CreateNative("FF2_StopMusic", Native_StopMusic);
+	CreateNative("FF2_RandomSound", Native_RandomSound);
 	CreateNative("FF2_GetClientGlow", Native_GetClientGlow);
 	CreateNative("FF2_SetClientGlow", Native_SetClientGlow);
 	CreateNative("FF2_Debug", Native_Debug);
@@ -5147,8 +5147,8 @@ public Action:BossTimer(Handle:timer)
 			KvRewind(BossKV[character[boss]]);
 			if(KvJumpToKey(BossKV[character[boss]], ability))
 			{
-				decl String:plugin_name[64];
-				KvGetString(BossKV[character[boss]], "plugin_name", plugin_name, sizeof(plugin_name));
+				decl String:pluginName[64];
+				KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
 				new slot=KvGetNum(BossKV[character[boss]], "arg0", 0);
 				new buttonmode=KvGetNum(BossKV[character[boss]], "buttonmode", 0);
 				if(slot<1)
@@ -5159,9 +5159,9 @@ public Action:BossTimer(Handle:timer)
 				KvGetString(BossKV[character[boss]], "life", ability, sizeof(ability), "");
 				if(!ability[0])
 				{
-					decl String:ability_name[64];
-					KvGetString(BossKV[character[boss]], "name", ability_name, sizeof(ability_name));
-					UseAbility(ability_name, plugin_name, boss, slot, buttonmode);
+					decl String:abilityName[64];
+					KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
+					UseAbility(boss, pluginName, abilityName, slot, buttonmode);
 				}
 				else
 				{
@@ -5170,9 +5170,9 @@ public Action:BossTimer(Handle:timer)
 					{
 						if(StringToInt(lives[n])==BossLives[boss])
 						{
-							decl String:ability_name[64];
-							KvGetString(BossKV[character[boss]], "name", ability_name, sizeof(ability_name));
-							UseAbility(ability_name, plugin_name, boss, slot, buttonmode);
+							decl String:abilityName[64];
+							KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
+							UseAbility(boss, pluginName, abilityName, slot, buttonmode);
 							break;
 						}
 					}
@@ -5360,7 +5360,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 					decl String:abilityName[64], String:pluginName[64];
 					KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
 					KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
-					UseAbility(abilityName, pluginName, boss, 0);
+					UseAbility(boss, pluginName, abilityName, 0);
 				}
 				else
 				{
@@ -5372,7 +5372,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 							decl String:abilityName[64], String:pluginName[64];
 							KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
 							KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
-							UseAbility(abilityName, pluginName, boss, 0);
+							UseAbility(boss, pluginName, abilityName, 0);
 							break;
 						}
 					}
@@ -6494,7 +6494,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 							decl String:abilityName[64], String:pluginName[64];
 							KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
 							KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
-							UseAbility(abilityName, pluginName, boss, -1);
+							UseAbility(boss, pluginName, abilityName, -1);
 						}
 						else
 						{
@@ -6507,7 +6507,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 									decl String:abilityName[64], String:pluginName[64];
 									KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
 									KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
-									UseAbility(abilityName, pluginName, boss, -1);
+									UseAbility(boss, pluginName, abilityName, -1);
 									break;
 								}
 							}
@@ -6845,21 +6845,6 @@ stock LastBossIndex()
 	return 0;
 }
 
-stock GetBossIndex(client)
-{
-	if(client>0 && client<=MaxClients)
-	{
-		for(new boss; boss<=MaxClients; boss++)
-		{
-			if(Boss[boss]==client)
-			{
-				return boss;
-			}
-		}
-	}
-	return -1;
-}
-
 stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 {
 	new Float:sum=GetArrayCell(sumArray, bracket);
@@ -7105,105 +7090,6 @@ stock ParseFormula(boss, const String:key[], defaultValue)
 		return RoundFloat(result/3.6);  //TODO: Make this configurable
 	}
 	return result;
-}
-
-stock GetAbilityArgument(index,const String:plugin_name[],const String:ability_name[],arg,defvalue=0)
-{
-	if(index==-1 || character[index]==-1 || !BossKV[character[index]])
-		return 0;
-	KvRewind(BossKV[character[index]]);
-	decl String:s[10];
-	for(new i=1; i<MAXRANDOMS; i++)
-	{
-		Format(s,10,"ability%i",i);
-		if(KvJumpToKey(BossKV[character[index]],s))
-		{
-			decl String:ability_name2[64];
-			KvGetString(BossKV[character[index]], "name",ability_name2,64);
-			if(strcmp(ability_name,ability_name2))
-			{
-				KvGoBack(BossKV[character[index]]);
-				continue;
-			}
-			decl String:plugin_name2[64];
-			KvGetString(BossKV[character[index]], "plugin_name",plugin_name2,64);
-			if(plugin_name[0] && plugin_name2[0] && strcmp(plugin_name,plugin_name2))
-			{
-				KvGoBack(BossKV[character[index]]);
-				continue;
-			}
-			Format(s,10,"arg%i",arg);
-			return KvGetNum(BossKV[character[index]], s,defvalue);
-		}
-	}
-	return 0;
-}
-
-stock Float:GetAbilityArgumentFloat(index,const String:plugin_name[],const String:ability_name[],arg,Float:defvalue=0.0)
-{
-	if(index==-1 || character[index]==-1 || !BossKV[character[index]])
-		return 0.0;
-	KvRewind(BossKV[character[index]]);
-	decl String:s[10];
-	for(new i=1; i<MAXRANDOMS; i++)
-	{
-		Format(s,10,"ability%i",i);
-		if(KvJumpToKey(BossKV[character[index]],s))
-		{
-			decl String:ability_name2[64];
-			KvGetString(BossKV[character[index]], "name",ability_name2,64);
-			if(strcmp(ability_name,ability_name2))
-			{
-				KvGoBack(BossKV[character[index]]);
-				continue;
-			}
-			decl String:plugin_name2[64];
-			KvGetString(BossKV[character[index]], "plugin_name",plugin_name2,64);
-			if(plugin_name[0] && plugin_name2[0] && strcmp(plugin_name,plugin_name2))
-			{
-				KvGoBack(BossKV[character[index]]);
-				continue;
-			}
-			Format(s,10,"arg%i",arg);
-			new Float:see=KvGetFloat(BossKV[character[index]], s,defvalue);
-			return see;
-		}
-	}
-	return 0.0;
-}
-
-stock GetAbilityArgumentString(index,const String:plugin_name[],const String:ability_name[],arg,String:buffer[],buflen,const String:defvalue[]="")
-{
-	if(index==-1 || character[index]==-1 || !BossKV[character[index]])
-	{
-		strcopy(buffer,buflen,"");
-		return;
-	}
-	KvRewind(BossKV[character[index]]);
-	decl String:s[10];
-	for(new i=1; i<MAXRANDOMS; i++)
-	{
-		Format(s,10,"ability%i",i);
-		if(KvJumpToKey(BossKV[character[index]],s))
-		{
-			decl String:ability_name2[64];
-			KvGetString(BossKV[character[index]], "name",ability_name2,64);
-			if(strcmp(ability_name,ability_name2))
-			{
-				KvGoBack(BossKV[character[index]]);
-				continue;
-			}
-			decl String:plugin_name2[64];
-			KvGetString(BossKV[character[index]], "plugin_name",plugin_name2,64);
-			if(plugin_name[0] && plugin_name2[0] && strcmp(plugin_name,plugin_name2))
-			{
-				KvGoBack(BossKV[character[index]]);
-				continue;
-			}
-			Format(s,10,"arg%i",arg);
-			KvGetString(BossKV[character[index]], s,buffer,buflen,defvalue);
-		}
-	}
 }
 
 stock bool:RandomSound(const String:sound[], String:file[], length, boss=0)
@@ -8480,13 +8366,496 @@ stock FindEntityByClassname2(startEnt, const String:classname[])
 	return FindEntityByClassname(startEnt, classname);
 }
 
-UseAbility(const String:ability_name[], const String:plugin_name[], boss, slot, buttonMode=0)
+public Action:Timer_UseBossCharge(Handle:timer, Handle:data)
+{
+	BossCharge[ReadPackCell(data)][ReadPackCell(data)]=ReadPackFloat(data);
+	return Plugin_Continue;
+}
+
+//Natives aren't inlined because of https://github.com/50DKP/FF2-Official/issues/263
+
+public bool:IsFF2Enabled()
+{
+	return Enabled;
+}
+
+public Native_IsFF2Enabled(Handle:plugin, numParams)
+{
+	return IsFF2Enabled();
+}
+
+public bool:GetFF2Version()
+{
+	new version[3];  //Blame the compiler for this mess -.-
+	version[0]=StringToInt(MAJOR_REVISION);
+	version[1]=StringToInt(MINOR_REVISION);
+	version[2]=StringToInt(STABLE_REVISION);
+	SetNativeArray(1, version, sizeof(version));
+	#if !defined DEV_REVISION
+		return false;
+	#else
+		return true;
+	#endif
+}
+
+public Native_FF2Version(Handle:plugin, numParams)
+{
+	return GetFF2Version();
+}
+
+public Native_GetRoundState(Handle:plugin, numParams)
+{
+	return _:CheckRoundState();
+}
+
+public GetBossUserId(boss)
+{
+	if(boss>=0 && boss<=MaxClients && IsValidClient(Boss[boss]))
+	{
+		return GetClientUserId(Boss[boss]);
+	}
+	return -1;
+}
+
+public Native_GetBossUserId(Handle:plugin, numParams)
+{
+	return GetBossUserId(GetNativeCell(1));
+}
+
+public GetBossIndex(client)
+{
+	if(client>0 && client<=MaxClients)
+	{
+		for(new boss; boss<=MaxClients; boss++)
+		{
+			if(Boss[boss]==client)
+			{
+				return boss;
+			}
+		}
+	}
+	return -1;
+}
+
+public Native_GetBossIndex(Handle:plugin, numParams)
+{
+	return GetBossIndex(GetNativeCell(1));
+}
+
+public Native_GetBossTeam()
+{
+	return _:BossTeam;
+}
+
+public Native_GetBossTeam(Handle:plugin, numParams)
+{
+	return Native_GetBossTeam;
+}
+
+public bool:GetBossSpecial(boss, const String:bossName[], length, clientMeaning)
+{
+	if(clientMeaning)  //characters.cfg
+	{
+		if(boss<0 || !BossKV[boss])
+		{
+			return false;
+		}
+		KvRewind(BossKV[boss]);
+		KvGetString(BossKV[boss], "name", bossName, length);
+	}
+	else  //character[] array
+	{
+		if(boss<0 || character[boss]<0 || !BossKV[character[boss]])
+		{
+			return false;
+		}
+		KvRewind(BossKV[character[boss]]);
+		KvGetString(BossKV[character[boss]], "name", bossName, length);
+	}
+	return true;
+}
+
+public Native_GetBossSpecial(Handle:plugin, numParams)
+{
+	decl String:bossName[GetNativeCell(3)];
+	new bool:bossExists=GetBossSpecial(GetNativeCell(1), bossName, sizeof(bossName), GetNativeCell(4));
+	SetNativeString(2, bossName, sizeof(bossName));
+	return bossExists;
+}
+
+public Handle:GetSpecialKV(boss, bool:bossMeaning)
+{
+	if(bossMeaning)  //characters.cfg
+	{
+		if(boss!=-1 && boss<Specials)
+		{
+			if(BossKV[boss]!=INVALID_HANDLE)
+			{
+				KvRewind(BossKV[boss]);
+			}
+			return BossKV[boss];
+		}
+	}
+	else  //character[] array
+	{
+		if(boss!=-1 && boss<=MaxClients && character[boss]!=-1 && character[boss]<MAXSPECIALS)
+		{
+			if(BossKV[character[boss]]!=INVALID_HANDLE)
+			{
+				KvRewind(BossKV[character[boss]]);
+			}
+			return _:BossKV[character[boss]];
+		}
+	}
+	return INVALID_HANDLE;
+}
+
+public Native_GetSpecialKV(Handle:plugin, numParams)
+{
+	return _:GetSpecialKV(GetNativeCell(1), bool:GetNativeCell(2));
+}
+
+public GetBossHealth(boss)
+{
+	return BossHealth[boss];
+}
+
+public Native_GetBossHealth(Handle:plugin, numParams)
+{
+	return GetBossHealth(boss);
+}
+
+public SetBossHealth(boss, health)
+{
+	BossHealth[boss]=health;
+}
+
+public Native_SetBossHealth(Handle:plugin, numParams)
+{
+	SetBossHealth(GetNativeCell(1), GetNativeCell(2));
+}
+
+public GetBossMaxHealth(boss)
+{
+	return BossHealthMax[boss];
+}
+
+public Native_GetBossMaxHealth(Handle:plugin, numParams)
+{
+	return GetBossMaxHealth(GetNativeCell(1));
+}
+
+public SetBossMaxHealth(boss, health)
+{
+	BossHealthMax[boss]=health;
+}
+
+public Native_SetBossMaxHealth(Handle:plugin, numParams)
+{
+	SetBossMaxHealth(GetNativeCell(1), GetNativeCell(2));
+}
+
+public GetBossLives(boss)
+{
+	return BossLives[boss];
+}
+
+public Native_GetBossLives(Handle:plugin, numParams)
+{
+	return GetBossLives(GetNativeCell(1));
+}
+
+public SetBossLives(boss, lives)
+{
+	BossLives[boss]=lives;
+}
+
+public Native_SetBossLives(Handle:plugin, numParams)
+{
+	SetBossLives(GetNativeCell(1), GetNativeCell(2));
+}
+
+public GetBossMaxLives(boss)
+{
+	return BossLivesMax[boss];
+}
+
+public Native_GetBossMaxLives(Handle:plugin, numParams)
+{
+	return GetBossMaxLives(GetNativeCell(1));
+}
+
+public SetBossMaxLives(boss, lives)
+{
+	BossLivesMax[boss]=lives;
+}
+
+public Native_SetBossMaxLives(Handle:plugin, numParams)
+{
+	SetBossMaxLives(GetNativeCell(1), GetNativeCell(2));
+}
+
+public Float:GetBossCharge(boss, slot)
+{
+	return BossCharge[boss][slot];
+}
+
+public Native_GetBossCharge(Handle:plugin, numParams)
+{
+	return _:GetBossCharge(GetNativeCell(1), GetNativeCell(2));
+}
+
+public SetBossCharge(boss, slot, Float:charge)  //FIXME: This duplicates logic found in Timer_UseBossCharge
+{
+	BossCharge[boss][slot]=charge;
+}
+
+public Native_SetBossCharge(Handle:plugin, numParams)
+{
+	SetBossCharge(GetNativeCell(1), GetNativeCell(2), Float:GetNativeCell(3));
+}
+
+public GetBossRageDamage(boss)
+{
+	return BossRageDamage[boss];
+}
+
+public Native_GetBossRageDamage(Handle:plugin, numParams)
+{
+	return GetBossRageDamage(GetNativeCell(1));
+}
+
+public SetBossRageDamage(boss, damage)
+{
+	BossRageDamage[boss]=damage;
+}
+
+public Native_SetBossRageDamage(Handle:plugin, numParams)
+{
+	SetBossRageDamage(GetNativeCell(1), GetNativeCell(2));
+}
+
+public Float:GetBossRageDistance(boss, const String:pluginName[], const String:abilityName[])
+{
+	if(!BossKV[character[boss]])  //Invalid boss
+	{
+		return 0.0;
+	}
+
+	KvRewind(BossKV[character[boss]]);
+	if(!abilityName[0])  //Return the global rage distance if there's no ability specified
+	{
+		return KvGetFloat(BossKV[character[boss]], "ragedist", 400.0);
+	}
+
+	decl String:ability[10];
+	new Float:distance;
+	for(new key=1; key<MAXRANDOMS; key++)
+	{
+		Format(ability, sizeof(ability), "ability%i", key);
+		if(KvJumpToKey(BossKV[character[boss]], ability))
+		{
+			decl String:possibleMatch[64];  //See if the ability that we're currently in matches the specified ability
+			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
+			if(StrEqual(abilityName, possibleMatch))
+			{
+				if((distance=KvGetFloat(BossKV[character[boss]], "dist", -1.0))<0)  //Dist doesn't exist, return the global rage distance instead
+				{
+					KvRewind(BossKV[character[boss]]);
+					distance=KvGetFloat(BossKV[character[boss]], "ragedist", 400.0);
+				}
+				return distance;
+			}
+			KvGoBack(BossKV[character[boss]]);
+		}
+	}
+	return 0.0;
+}
+
+public Native_GetBossRageDistance(Handle:plugin, numParams)
+{
+	decl String:pluginName[64], abilityName[64];
+	GetNativeString(2, pluginName, sizeof(pluginName));
+	GetNativeString(3, abilityName, sizeof(abilityName));
+	return _:GetBossRageDistance(GetNativeCell(1), pluginName, abilityName);
+}
+
+public GetClientDamage(client)
+{
+	return Damage[client];
+}
+
+public Native_GetClientDamage(Handle:plugin, numParams)
+{
+	return GetClientDamage(GetNativeCell(1));
+}
+
+public bool:HasAbility(boss, const String:pluginName[], const String:abilityName[])
+{
+	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
+	{
+		return false;
+	}
+
+	KvRewind(BossKV[character[boss]]);
+
+	decl String:ability[10];
+	for(new i=1; i<MAXRANDOMS; i++)
+	{
+		Format(ability, sizeof(ability), "ability%i", i);
+		if(KvJumpToKey(BossKV[character[boss]], ability))
+		{
+			decl String:possibleMatch[64];  //See if the ability that we're currently in matches the specified ability
+			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
+			if(StrEqual(abilityName, possibleMatch))
+			{
+				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
+				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))  //Make sure the plugin names are equal
+				{
+					return true;
+				}
+			}
+			KvGoBack(BossKV[character[boss]]);
+		}
+	}
+	return false;
+}
+
+public Native_HasAbility(Handle:plugin, numParams)
+{
+	decl String:pluginName[64], String:abilityName[64];
+	GetNativeString(2, pluginName, sizeof(pluginName));
+	GetNativeString(3, abilityName, sizeof(abilityName));
+	return HasAbility(GetNativeCell(1), pluginName, abilityName);
+}
+
+public GetAbilityArgument(boss, const String:pluginName[], const String:abilityName[], arg, defaultValue=0)
+{
+	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
+	{
+		return 0;
+	}
+
+	KvRewind(BossKV[character[boss]]);
+	decl String:ability[10];
+	for(new i=1; i<MAXRANDOMS; i++)
+	{
+		Format(ability, sizeof(ability), "ability%i", i);
+		if(KvJumpToKey(BossKV[character[boss]], ability))
+		{
+			decl String:possibleMatch[64];
+			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
+			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
+			{
+				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
+				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
+				{
+					Format(ability, sizeof(ability), "arg%i", arg);
+					return KvGetNum(BossKV[character[boss]], ability, defaultValue);
+				}
+			}
+			KvGoBack(BossKV[character[boss]]);
+		}
+	}
+	return 0;
+}
+
+public Native_GetAbilityArgument(Handle:plugin, numParams)
+{
+	decl String:pluginName[64], String:abilityName[64];
+	GetNativeString(2, pluginName, sizeof(pluginName));
+	GetNativeString(3, abilityName, sizeof(abilityName));
+	return GetAbilityArgument(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), GetNativeCell(5));
+}
+
+public Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const String:abilityName[], arg, Float:defaultValue=0.0)
+{
+	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
+	{
+		return 0.0;
+	}
+
+	KvRewind(BossKV[character[boss]]);
+	decl String:ability[10];
+	for(new i=1; i<MAXRANDOMS; i++)
+	{
+		Format(ability, sizeof(ability), "ability%i", i);
+		if(KvJumpToKey(BossKV[character[boss]], ability))
+		{
+			decl String:possibleMatch[64];
+			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
+			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
+			{
+				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
+				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
+				{
+					Format(ability, sizeof(ability), "arg%i", arg);
+					return KvGetFloat(BossKV[character[boss]], ability, defaultValue);
+				}
+			}
+			KvGoBack(BossKV[character[boss]]);
+		}
+	}
+	return 0.0;
+}
+
+public Native_GetAbilityArgumentFloat(Handle:plugin, numParams)
+{
+	decl String:pluginName[64], abilityName[64];
+	GetNativeString(2, pluginName, sizeof(pluginName));
+	GetNativeString(3, abilityName, sizeof(abilityName));
+	return _:GetAbilityArgumentFloat(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), GetNativeCell(5));
+}
+
+public GetAbilityArgumentString(boss, const String:pluginName[], const String:abilityName[], arg, String:abilityString[], length, const String:defaultValue[]="")
+{
+	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
+	{
+		strcopy(abilityString, length, "");
+		return;
+	}
+
+	KvRewind(BossKV[character[boss]]);
+	decl String:ability[10];
+	for(new i=1; i<MAXRANDOMS; i++)
+	{
+		Format(ability, sizeof(ability), "ability%i", i);
+		if(KvJumpToKey(BossKV[character[boss]], ability))
+		{
+			decl String:possibleMatch[64];
+			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
+			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
+			{
+				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
+				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
+				{
+					Format(ability, sizeof(ability), "arg%i", arg);
+					KvGetString(BossKV[character[boss]], ability, abilityString, length, defaultValue);
+				}
+			}
+			KvGoBack(BossKV[character[boss]]);
+		}
+	}
+}
+
+public Native_GetAbilityArgumentString(Handle:plugin, numParams)
+{
+	decl String:pluginName[64], String:abilityName[64];
+	GetNativeString(2, pluginName, sizeof(pluginName));
+	GetNativeString(3, abilityName, sizeof(abilityName));
+	new length=GetNativeCell(6);
+	decl String:abilityString[length];
+	GetAbilityArgumentString(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), abilityString, length);
+	SetNativeString(5, abilityString, length);
+}
+
+UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, buttonMode=0)
 {
 	new bool:enabled=true;
 	Call_StartForward(PreAbility);
 	Call_PushCell(boss);
-	Call_PushString(plugin_name);
-	Call_PushString(ability_name);
+	Call_PushString(pluginName);
+	Call_PushString(abilityName);
 	Call_PushCell(slot);
 	Call_PushCellRef(enabled);
 	Call_Finish();
@@ -8499,8 +8868,8 @@ UseAbility(const String:ability_name[], const String:plugin_name[], boss, slot, 
 	new Action:action=Plugin_Continue;
 	Call_StartForward(OnAbility);
 	Call_PushCell(boss);
-	Call_PushString(plugin_name);
-	Call_PushString(ability_name);
+	Call_PushString(pluginName);
+	Call_PushString(abilityName);
 	if(slot==-1)
 	{
 		Call_PushCell(3);  //Status - we're assuming here a life-loss ability will always be in use if it gets called
@@ -8551,7 +8920,7 @@ UseAbility(const String:ability_name[], const String:plugin_name[], boss, slot, 
 			{
 				Call_PushCell(2);  //Status
 				Call_Finish(action);
-				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(boss, plugin_name, ability_name, 1, 1.5);
+				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(boss, pluginName, abilityName, 1, 1.5);
 				if(BossCharge[boss][slot]+charge<100.0)
 				{
 					BossCharge[boss][slot]+=charge;
@@ -8580,7 +8949,7 @@ UseAbility(const String:ability_name[], const String:plugin_name[], boss, slot, 
 				CreateDataTimer(0.1, Timer_UseBossCharge, data);
 				WritePackCell(data, boss);
 				WritePackCell(data, slot);
-				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(boss, plugin_name, ability_name, 2, 5.0));
+				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(boss, pluginName, abilityName, 2, 5.0));
 				ResetPack(data);
 			}
 			else
@@ -8604,284 +8973,32 @@ UseAbility(const String:ability_name[], const String:plugin_name[], boss, slot, 
 	}
 }
 
-public Action:Timer_UseBossCharge(Handle:timer, Handle:data)
-{
-	BossCharge[ReadPackCell(data)][ReadPackCell(data)]=ReadPackFloat(data);
-	return Plugin_Continue;
-}
-
-public Native_IsEnabled(Handle:plugin, numParams)
-{
-	return Enabled;
-}
-
-public Native_FF2Version(Handle:plugin, numParams)
-{
-	new version[3];  //Blame the compiler for this mess -.-
-	version[0]=StringToInt(MAJOR_REVISION);
-	version[1]=StringToInt(MINOR_REVISION);
-	version[2]=StringToInt(STABLE_REVISION);
-	SetNativeArray(1, version, sizeof(version));
-	#if !defined DEV_REVISION
-		return false;
-	#else
-		return true;
-	#endif
-}
-
-public Native_GetBoss(Handle:plugin, numParams)
-{
-	new boss=GetNativeCell(1);
-	if(boss>=0 && boss<=MaxClients && IsValidClient(Boss[boss]))
-	{
-		return GetClientUserId(Boss[boss]);
-	}
-	return -1;
-}
-
-public Native_GetIndex(Handle:plugin, numParams)
-{
-	return GetBossIndex(GetNativeCell(1));
-}
-
-public Native_GetTeam(Handle:plugin, numParams)
-{
-	return _:BossTeam;
-}
-
-public Native_GetSpecial(Handle:plugin, numParams)
-{
-	new index=GetNativeCell(1), dstrlen=GetNativeCell(3), see=GetNativeCell(4);
-	decl String:s[dstrlen];
-	if(see)
-	{
-		if(index<0) return false;
-		if(!BossKV[index]) return false;
-		KvRewind(BossKV[index]);
-		KvGetString(BossKV[index], "name", s, dstrlen);
-		SetNativeString(2, s,dstrlen);
-	}
-	else
-	{
-		if(index<0) return false;
-		if(character[index]<0) return false;
-		if(!BossKV[character[index]]) return false;
-		KvRewind(BossKV[character[index]]);
-		KvGetString(BossKV[character[index]], "name", s, dstrlen);
-		SetNativeString(2, s,dstrlen);
-	}
-	return true;
-}
-
-public Native_GetBossHealth(Handle:plugin, numParams)
-{
-	return BossHealth[GetNativeCell(1)];
-}
-
-public Native_SetBossHealth(Handle:plugin, numParams)
-{
-	BossHealth[GetNativeCell(1)]=GetNativeCell(2);
-}
-
-public Native_GetBossMaxHealth(Handle:plugin, numParams)
-{
-	return BossHealthMax[GetNativeCell(1)];
-}
-
-public Native_SetBossMaxHealth(Handle:plugin, numParams)
-{
-	BossHealthMax[GetNativeCell(1)]=GetNativeCell(2);
-}
-
-public Native_GetBossLives(Handle:plugin, numParams)
-{
-	return BossLives[GetNativeCell(1)];
-}
-
-public Native_SetBossLives(Handle:plugin, numParams)
-{
-	BossLives[GetNativeCell(1)]=GetNativeCell(2);
-}
-
-public Native_GetBossMaxLives(Handle:plugin, numParams)
-{
-	return BossLivesMax[GetNativeCell(1)];
-}
-
-public Native_SetBossMaxLives(Handle:plugin, numParams)
-{
-	BossLivesMax[GetNativeCell(1)]=GetNativeCell(2);
-}
-
-public Native_GetBossCharge(Handle:plugin, numParams)
-{
-	return _:BossCharge[GetNativeCell(1)][GetNativeCell(2)];
-}
-
-public Native_SetBossCharge(Handle:plugin, numParams)  //TODO: This duplicates logic found in Timer_UseBossCharge
-{
-	BossCharge[GetNativeCell(1)][GetNativeCell(2)]=Float:GetNativeCell(3);
-}
-
-public Native_GetBossRageDamage(Handle:plugin, numParams)
-{
-	return BossRageDamage[GetNativeCell(1)];
-}
-
-public Native_SetBossRageDamage(Handle:plugin, numParams)
-{
-	BossRageDamage[GetNativeCell(1)]=GetNativeCell(2);
-}
-
-public Native_GetRoundState(Handle:plugin, numParams)
-{
-	return CheckRoundState()==FF2RoundState_Loading ? 0 : _:CheckRoundState();  //Make sure this stays as 0 or else...COMPILER ERRORS!
-}
-
-public Native_GetRageDist(Handle:plugin, numParams)
-{
-	new boss=GetNativeCell(1);
-	decl String:pluginName[64];
-	GetNativeString(2, pluginName, sizeof(pluginName));
-	decl String:abilityName[64];
-	GetNativeString(3, abilityName, sizeof(abilityName));
-
-	if(!BossKV[character[boss]])  //Invalid boss
-	{
-		return _:0.0;
-	}
-
-	KvRewind(BossKV[character[boss]]);
-	new Float:see;
-	if(!abilityName[0])
-	{
-		return _:KvGetFloat(BossKV[character[boss]], "ragedist", 400.0);
-	}
-
-	decl String:ability[10];
-	for(new key=1; key<MAXRANDOMS; key++)
-	{
-		Format(ability, sizeof(ability), "ability%i", key);
-		if(KvJumpToKey(BossKV[character[boss]], ability))
-		{
-			decl String:ability_name2[64];
-			KvGetString(BossKV[character[boss]], "name", ability_name2, sizeof(ability_name2));
-			if(strcmp(abilityName, ability_name2))
-			{
-				KvGoBack(BossKV[character[boss]]);
-				continue;
-			}
-
-			if((see=KvGetFloat(BossKV[character[boss]], "dist", -1.0))<0)
-			{
-				KvRewind(BossKV[character[boss]]);
-				see=KvGetFloat(BossKV[character[boss]], "ragedist", 400.0);
-			}
-			return _:see;
-		}
-	}
-	return _:0.0;
-}
-
-public Native_HasAbility(Handle:plugin, numParams)
+public Native_UseAbility(Handle:plugin, numParams)
 {
 	decl String:pluginName[64], String:abilityName[64];
-
-	new boss=GetNativeCell(1);
-	GetNativeString(2, pluginName, sizeof(pluginName));
-	GetNativeString(3, abilityName, sizeof(abilityName));
-	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])
-	{
-		return false;
-	}
-
-	KvRewind(BossKV[character[boss]]);
-	if(!BossKV[character[boss]])
-	{
-		LogError("Failed KV: %i %i", boss, character[boss]);
-		return false;
-	}
-
-	decl String:ability[12];
-	for(new i=1; i<MAXRANDOMS; i++)
-	{
-		Format(ability, sizeof(ability), "ability%i", i);
-		if(KvJumpToKey(BossKV[character[boss]], ability))  //Does this ability number exist?
-		{
-			decl String:abilityName2[64];
-			KvGetString(BossKV[character[boss]], "name", abilityName2, sizeof(abilityName2));
-			if(StrEqual(abilityName, abilityName2))  //Make sure the ability names are equal
-			{
-				decl String:pluginName2[64];
-				KvGetString(BossKV[character[boss]], "plugin_name", pluginName2, sizeof(pluginName2));
-				if(!pluginName[0] || !pluginName2[0] || StrEqual(pluginName, pluginName2))  //Make sure the plugin names are equal
-				{
-					return true;
-				}
-			}
-			KvGoBack(BossKV[character[boss]]);
-		}
-	}
-	return false;
+	GetNativeString(2, pluginName, sizeof(pluginName);
+	GetNativeString(3, abilityName, sizeof(abilityName);
+	UseAbility(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), GetNativeCell(5));
 }
 
-public Native_DoAbility(Handle:plugin, numParams)
+public GetFF2Flags(client)
 {
-	decl String:plugin_name[64];
-	decl String:ability_name[64];
-	GetNativeString(2,plugin_name,64);
-	GetNativeString(3,ability_name,64);
-	UseAbility(ability_name,plugin_name, GetNativeCell(1), GetNativeCell(4), GetNativeCell(5));
+	return FF2flags[client];
 }
 
-public Native_GetAbilityArgument(Handle:plugin, numParams)
+public Native_GetFF2Flags(Handle:plugin, numParams)
 {
-	decl String:plugin_name[64];
-	decl String:ability_name[64];
-	GetNativeString(2,plugin_name,64);
-	GetNativeString(3,ability_name,64);
-	return GetAbilityArgument(GetNativeCell(1),plugin_name,ability_name,GetNativeCell(4),GetNativeCell(5));
+	return GetFF2Flags(GetNativeCell(1));
 }
 
-public Native_GetAbilityArgumentFloat(Handle:plugin, numParams)
+public SetFF2Flags(client, flags)
 {
-	decl String:plugin_name[64];
-	decl String:ability_name[64];
-	GetNativeString(2,plugin_name,64);
-	GetNativeString(3,ability_name,64);
-	return _:GetAbilityArgumentFloat(GetNativeCell(1),plugin_name,ability_name,GetNativeCell(4),GetNativeCell(5));
+	FF2Flags[client]=flags;
 }
 
-public Native_GetAbilityArgumentString(Handle:plugin, numParams)
+public Native_SetFF2Flags(Handle:plugin, numParams)
 {
-	decl String:plugin_name[64];
-	GetNativeString(2,plugin_name,64);
-	decl String:ability_name[64];
-	GetNativeString(3,ability_name,64);
-	new dstrlen=GetNativeCell(6);
-	new String:s[dstrlen+1];
-	GetAbilityArgumentString(GetNativeCell(1),plugin_name,ability_name,GetNativeCell(4),s,dstrlen);
-	SetNativeString(5,s,dstrlen);
-}
-
-public Native_GetDamage(Handle:plugin, numParams)
-{
-	new client=GetNativeCell(1);
-	if(!IsValidClient(client))
-	{
-		return 0;
-	}
-	return Damage[client];
-}
-
-public Native_GetFF2flags(Handle:plugin, numParams)
-{
-	return FF2flags[GetNativeCell(1)];
-}
-
-public Native_SetFF2flags(Handle:plugin, numParams)
-{
-	FF2flags[GetNativeCell(1)]=GetNativeCell(2);
+	SetFF2Flags(GetNativeCell(1), GetNativeCell(2));
 }
 
 public Native_GetQueuePoints(Handle:plugin, numParams)
@@ -8894,35 +9011,6 @@ public Native_SetQueuePoints(Handle:plugin, numParams)
 	SetClientQueuePoints(GetNativeCell(1), GetNativeCell(2));
 }
 
-public Native_GetSpecialKV(Handle:plugin, numParams)
-{
-	new index=GetNativeCell(1);
-	new bool:isNumOfSpecial=bool:GetNativeCell(2);
-	if(isNumOfSpecial)
-	{
-		if(index!=-1 && index<Specials)
-		{
-			if(BossKV[index]!=INVALID_HANDLE)
-			{
-				KvRewind(BossKV[index]);
-			}
-			return _:BossKV[index];
-		}
-	}
-	else
-	{
-		if(index!=-1 && index<=MaxClients && character[index]!=-1 && character[index]<MAXSPECIALS)
-		{
-			if(BossKV[character[index]]!=INVALID_HANDLE)
-			{
-				KvRewind(BossKV[character[index]]);
-			}
-			return _:BossKV[character[index]];
-		}
-	}
-	return _:INVALID_HANDLE;
-}
-
 public Native_StartMusic(Handle:plugin, numParams)
 {
 	Timer_MusicPlay(INVALID_HANDLE, GetNativeCell(1));
@@ -8933,22 +9021,11 @@ public Native_StopMusic(Handle:plugin, numParams)
 	StopMusic(GetNativeCell(1));
 }
 
-public Native_RandomSound(Handle:plugin, numParams)
+public bool:RandomSound(const String:kv[], kvLength, String:sound[], length, boss, slot)
 {
-	new length=GetNativeCell(3)+1;
-	new boss=GetNativeCell(4);
-	new slot=GetNativeCell(5);
-	new String:sound[length];
-	new kvLength;
-
-	GetNativeStringLength(1, kvLength);
-	kvLength++;
-
 	decl String:keyvalue[kvLength];
-	GetNativeString(1, keyvalue, kvLength);
-
 	new bool:soundExists;
-	if(!strcmp(keyvalue, "sound_ability"))
+	if(StrEqual(keyvalue, "sound_ability"))
 	{
 		soundExists=RandomSoundAbility(keyvalue, sound, length, boss, slot);
 	}
@@ -8956,20 +9033,46 @@ public Native_RandomSound(Handle:plugin, numParams)
 	{
 		soundExists=RandomSound(keyvalue, sound, length, boss);
 	}
-	SetNativeString(2, sound, length);
 	return soundExists;
+}
+
+public Native_RandomSound(Handle:plugin, numParams)
+{
+	decl String:sound[GetNativeCell(4)];
+	new bool:soundExists=RandomSound(GetNativeString(1, GetNativeCell(2)), GetNativeCell(2), sound, GetNativeCell(4), GetNativeCell(5), GetNativeCell(6));
+	SetNativeString(3, sound, GetNativeCell(4));
+	return soundExists;
+}
+
+public Float:GetClientGlow(client)
+{
+	return GlowTimer[client];
 }
 
 public Native_GetClientGlow(Handle:plugin, numParams)
 {
-	new client=GetNativeCell(1);
+	return _:GetClientGlow(GetNativeCell(1));
+}
+
+SetClientGlow(client, Float:time1, Float:time2=-1.0)
+{
 	if(IsValidClient(client))
 	{
-		return _:GlowTimer[client];
-	}
-	else
-	{
-		return -1;
+		GlowTimer[client]+=time1;
+		if(time2>=0)
+		{
+			GlowTimer[client]=time2;
+		}
+
+		if(GlowTimer[client]<=0.0)
+		{
+			GlowTimer[client]=0.0;
+			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
+		}
+		else
+		{
+			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
+		}
 	}
 }
 
@@ -9127,26 +9230,4 @@ UpdateHealthBar()
 		}
 	}
 	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);
-}
-
-SetClientGlow(client, Float:time1, Float:time2=-1.0)
-{
-	if(IsValidClient(client))
-	{
-		GlowTimer[client]+=time1;
-		if(time2>=0)
-		{
-			GlowTimer[client]=time2;
-		}
-
-		if(GlowTimer[client]<=0.0)
-		{
-			GlowTimer[client]=0.0;
-			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
-		}
-		else
-		{
-			SetEntProp(client, Prop_Send, "m_bGlowEnabled", 1);
-		}
-	}
 }
