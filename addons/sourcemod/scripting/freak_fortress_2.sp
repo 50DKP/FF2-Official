@@ -352,7 +352,7 @@ static const String:ff2versiondates[][]=
 	"August 10, 2015",	//1.10.6
 	"August 10, 2015",	//1.10.6
 	"August 10, 2015",	//1.10.6
-	"September 1, 2015"	//1.10.7
+	"September 5, 2015"	//1.10.7
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -363,9 +363,10 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "1) Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
 			DrawPanelText(panel, "2) Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive (Shadow from Spyper)");
-			DrawPanelText(panel, "3) Minions no longer die after their summoner is killed (Wliu)");
-			DrawPanelText(panel, "4) Removed Shortstop reload penalty (Starblaster64)");
-			DrawPanelText(panel, "5) Fixed large amounts of lives being cut off when being displayed (Wliu)");
+			DrawPanelText(panel, "3) Fixed minions receiving benefits intended only for normal players (Wliu)");
+			DrawPanelText(panel, "4) Minions no longer die after their summoner is killed (Wliu)");
+			DrawPanelText(panel, "5) Removed Shortstop reload penalty (Starblaster64)");
+			DrawPanelText(panel, "6) Fixed large amounts of lives being cut off when being displayed (Wliu)");
 		}
 		case 63:  //1.10.6
 		{
@@ -4629,7 +4630,7 @@ public Action:ClientTimer(Handle:timer)
 	new TFCond:cond;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && !IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
+		if(IsValidClient(client) && !IsBoss(client) && !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
 		{
 			SetHudTextParams(-1.0, 0.88, 0.35, 90, 255, 90, 255, 0, 0.35, 0.0, 0.1);
 			if(!IsPlayerAlive(client))
