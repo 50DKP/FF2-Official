@@ -3297,21 +3297,21 @@ EquipBoss(boss)
 
 			new index=KvGetNum(BossKV[Special[boss]], "index");
 			new weapon=SpawnWeapon(client, classname, index, 101, 5, attributes);
-			if(StrEquals(classname, "tf_weapon_builder", false) && index!=735)  //PDA, normal sapper
+			if(StrEqual(classname, "tf_weapon_builder", false) && index!=735)  //PDA, normal sapper
 			{
-				SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
-				SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 1);
-				SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 2);
-				SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 3);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 1);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 2);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 3);
 			}
-			else if(StrEquals(classname, "tf_weapon_sapper", false) || index==735)  //Sappers
+			else if(StrEqual(classname, "tf_weapon_sapper", false) || index==735)  //Sappers
 			{
-				SetEntProp(BossWeapon, Prop_Send, "m_iObjectType", 3);
-				SetEntProp(BossWeapon, Prop_Data, "m_iSubType", 3);
-				SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 0);
-				SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 1);
-				SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 2);
-				SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
+				SetEntProp(weapon, Prop_Send, "m_iObjectType", 3);
+				SetEntProp(weapon, Prop_Data, "m_iSubType", 3);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 0);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 1);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 2);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
 			}
 
 			if(!KvGetNum(BossKV[Special[boss]], "show", 0))
