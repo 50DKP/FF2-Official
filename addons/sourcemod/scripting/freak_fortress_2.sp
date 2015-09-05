@@ -5402,7 +5402,6 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		new boss=GetBossIndex(client);
 		if(boss==-1 || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
-			Debug("hi");
 			return Plugin_Continue;
 		}
 
