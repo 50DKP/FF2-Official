@@ -105,7 +105,16 @@ public OnProjectileSpawned(entity)
 			{
 				decl String:model[PLATFORM_MAX_PATH];
 				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 2, model, sizeof(model));
-				SetEntityModel(entity, model);
+				if(IsModelPrecached(model))
+				{
+					SetEntityModel(entity, model);
+				}
+				else
+				{
+					decl String:bossName[64];
+					FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
+					LogError("[FF2 Bosses] Model %s (used by boss %s for ability %s) isn't precached!", model, bossName, PROJECTILE);
+				}
 			}
 		}
 	}
