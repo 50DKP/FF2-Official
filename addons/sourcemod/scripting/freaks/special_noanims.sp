@@ -85,7 +85,26 @@ Rage_New_Weapon(boss, const String:ability_name[])
 
 	new slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 4);
 	TF2_RemoveWeaponSlot(client, slot);
-	new weapon=SpawnWeapon(client, classname, FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2), 101, 5, attributes);
+
+	new index=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2);
+	new weapon=SpawnWeapon(client, classname, index, 101, 5, attributes);
+	if(StrEqual(classname, "tf_weapon_builder") && index!=735)  //PDA, normal sapper
+	{
+		SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
+		SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 1);
+		SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 2);
+		SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 3);
+	}
+	else if(StrEqual(classname, "tf_weapon_sapper") || index==735)  //Sappers, normal sapper
+	{
+		SetEntProp(BossWeapon, Prop_Send, "m_iObjectType", 3);
+		SetEntProp(BossWeapon, Prop_Data, "m_iSubType", 3);
+		SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 0);
+		SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 1);
+		SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 2);
+		SetEntProp(BossWeapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
+	}
+
 	if(FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 6))
 	{
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
