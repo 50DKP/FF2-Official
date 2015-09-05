@@ -75,13 +75,13 @@ native TFTeam:FF2_GetBossTeam();
  * Gets the character name of the Boss
  *
  * @param boss              Boss's index
- * @param buffer            Buffer for boss' character name
- * @param bufferLength      Length of buffer string
+ * @param bossName          Buffer for boss' character name
+ * @param length            Length of buffer string
  * @param clientMeaning     0 - 'client' parameter means index of current Boss
  *                          1 - 'client' parameter means number of Boss in characters.cfg-1
  * @return                  True if boss exists, false if not
  */
-native bool:FF2_GetBossSpecial(boss=0, String:buffer[], bufferLength, clientMeaning=0);
+native bool:FF2_GetBossSpecial(boss=0, String:bossName[], length, clientMeaning=0);
 
 /**
  * Gets a Boss's KV handle
@@ -509,7 +509,7 @@ stock FF2_SetAmmo(client, weapon, ammo=-1, clip=-1)
  */
 stock FF2_ShowSyncHudText(client, Handle:sync, const String:buffer[], any:...)
 {
-	if(!(FF2_GetFF2flags(client) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
+	if(!(FF2_GetFF2Flags(client) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
 	{
 		decl String:message[256];
 		VFormat(message, sizeof(message), buffer, 4);
@@ -567,10 +567,12 @@ public __pl_FF2_SetNTVOptional()
 {
 	MarkNativeAsOptional("FF2_IsFF2Enabled");
 	MarkNativeAsOptional("FF2_GetFF2Version");
+	MarkNativeAsOptional("FF2_GetRoundState");
 	MarkNativeAsOptional("FF2_GetBossUserId");
 	MarkNativeAsOptional("FF2_GetBossIndex");
 	MarkNativeAsOptional("FF2_GetBossTeam");
 	MarkNativeAsOptional("FF2_GetBossSpecial");
+	MarkNativeAsOptional("FF2_GetSpecialKV");
 	MarkNativeAsOptional("FF2_GetBossHealth");
 	MarkNativeAsOptional("FF2_SetBossHealth");
 	MarkNativeAsOptional("FF2_GetBossMaxHealth");
@@ -583,23 +585,22 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_SetBossCharge");
 	MarkNativeAsOptional("FF2_GetBossRageDamage");
 	MarkNativeAsOptional("FF2_SetBossRageDamage");
+	MarkNativeAsOptional("FF2_GetBossRageDistance");
 	MarkNativeAsOptional("FF2_GetClientDamage");
-	MarkNativeAsOptional("FF2_GetRoundState");
-	MarkNativeAsOptional("FF2_GetRageDistance");
 	MarkNativeAsOptional("FF2_HasAbility");
 	MarkNativeAsOptional("FF2_GetAbilityArgument");
 	MarkNativeAsOptional("FF2_GetAbilityArgumentFloat");
 	MarkNativeAsOptional("FF2_GetAbilityArgumentString");
-	MarkNativeAsOptional("FF2_RandomSound");
-	MarkNativeAsOptional("FF2_StartMusic");
-	MarkNativeAsOptional("FF2_StopMusic");
-	MarkNativeAsOptional("FF2_GetSpecialKV");
+    MarkNativeAsOptional("FF2_UseAbility");
+    MarkNativeAsOptional("FF2_GetFF2Flags");
+    MarkNativeAsOptional("FF2_SetFF2Flags");
 	MarkNativeAsOptional("FF2_GetQueuePoints");
 	MarkNativeAsOptional("FF2_SetQueuePoints");
-	MarkNativeAsOptional("FF2_GetFF2flags");
-	MarkNativeAsOptional("FF2_SetFF2flags");
-	MarkNativeAsOptional("FF2_UseAbility");
+	MarkNativeAsOptional("FF2_StartMusic");
+	MarkNativeAsOptional("FF2_StopMusic");
+	MarkNativeAsOptional("FF2_RandomSound");
 	MarkNativeAsOptional("FF2_GetClientGlow");
 	MarkNativeAsOptional("FF2_SetClientGlow");
+    MarkNativeAsOptional("FF2_Debug");
 }
 #endif

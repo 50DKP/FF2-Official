@@ -5724,7 +5724,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			{
 				RedAlivePlayers++;
 			}
-			else if(IsBoss(client) || (FF2_GetFF2flags(client) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+			else if(IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 			{
 				BlueAlivePlayers++;
 			}
@@ -8398,7 +8398,7 @@ public bool:GetFF2Version()
 	#endif
 }
 
-public Native_FF2Version(Handle:plugin, numParams)
+public Native_GetFF2Version(Handle:plugin, numParams)
 {
 	return GetFF2Version();
 }
@@ -8442,17 +8442,17 @@ public Native_GetBossIndex(Handle:plugin, numParams)
 	return GetBossIndex(GetNativeCell(1));
 }
 
-public Native_GetBossTeam()
+public TFTeam:GetBossTeam()
 {
-	return _:BossTeam;
+	return BossTeam;
 }
 
 public Native_GetBossTeam(Handle:plugin, numParams)
 {
-	return Native_GetBossTeam;
+	return _:GetBossTeam();
 }
 
-public bool:GetBossSpecial(boss, const String:bossName[], length, clientMeaning)
+public bool:GetBossSpecial(boss, String:bossName[], length, clientMeaning)
 {
 	if(clientMeaning)  //characters.cfg
 	{
@@ -8477,9 +8477,10 @@ public bool:GetBossSpecial(boss, const String:bossName[], length, clientMeaning)
 
 public Native_GetBossSpecial(Handle:plugin, numParams)
 {
-	decl String:bossName[GetNativeCell(3)];
-	new bool:bossExists=GetBossSpecial(GetNativeCell(1), bossName, sizeof(bossName), GetNativeCell(4));
-	SetNativeString(2, bossName, sizeof(bossName));
+	new length=GetNativeCell(3);
+	decl String:bossName[length];
+	new bool:bossExists=GetBossSpecial(GetNativeCell(1), bossName, length, GetNativeCell(4));
+	SetNativeString(2, bossName, length);
 	return bossExists;
 }
 
@@ -8504,7 +8505,7 @@ public Handle:GetSpecialKV(boss, bool:bossMeaning)
 			{
 				KvRewind(BossKV[character[boss]]);
 			}
-			return _:BossKV[character[boss]];
+			return BossKV[character[boss]];
 		}
 	}
 	return INVALID_HANDLE;
@@ -8522,7 +8523,7 @@ public GetBossHealth(boss)
 
 public Native_GetBossHealth(Handle:plugin, numParams)
 {
-	return GetBossHealth(boss);
+	return GetBossHealth(GetNativeCell(1));
 }
 
 public SetBossHealth(boss, health)
@@ -8674,7 +8675,7 @@ public Float:GetBossRageDistance(boss, const String:pluginName[], const String:a
 
 public Native_GetBossRageDistance(Handle:plugin, numParams)
 {
-	decl String:pluginName[64], abilityName[64];
+	decl String:pluginName[64], String:abilityName[64];
 	GetNativeString(2, pluginName, sizeof(pluginName));
 	GetNativeString(3, abilityName, sizeof(abilityName));
 	return _:GetBossRageDistance(GetNativeCell(1), pluginName, abilityName);
@@ -8801,7 +8802,7 @@ public Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const Stri
 
 public Native_GetAbilityArgumentFloat(Handle:plugin, numParams)
 {
-	decl String:pluginName[64], abilityName[64];
+	decl String:pluginName[64], String:abilityName[64];
 	GetNativeString(2, pluginName, sizeof(pluginName));
 	GetNativeString(3, abilityName, sizeof(abilityName));
 	return _:GetAbilityArgumentFloat(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), GetNativeCell(5));
@@ -8976,8 +8977,8 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 public Native_UseAbility(Handle:plugin, numParams)
 {
 	decl String:pluginName[64], String:abilityName[64];
-	GetNativeString(2, pluginName, sizeof(pluginName);
-	GetNativeString(3, abilityName, sizeof(abilityName);
+	GetNativeString(2, pluginName, sizeof(pluginName));
+	GetNativeString(3, abilityName, sizeof(abilityName));
 	UseAbility(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), GetNativeCell(5));
 }
 
@@ -8993,7 +8994,7 @@ public Native_GetFF2Flags(Handle:plugin, numParams)
 
 public SetFF2Flags(client, flags)
 {
-	FF2Flags[client]=flags;
+	FF2flags[client]=flags;
 }
 
 public Native_SetFF2Flags(Handle:plugin, numParams)
@@ -9021,7 +9022,7 @@ public Native_StopMusic(Handle:plugin, numParams)
 	StopMusic(GetNativeCell(1));
 }
 
-public bool:RandomSound(const String:kv[], kvLength, String:sound[], length, boss, slot)
+public bool:ReturnRandomSound(const String:kv[], kvLength, String:sound[], length, boss, slot)
 {
 	decl String:keyvalue[kvLength];
 	new bool:soundExists;
@@ -9039,7 +9040,7 @@ public bool:RandomSound(const String:kv[], kvLength, String:sound[], length, bos
 public Native_RandomSound(Handle:plugin, numParams)
 {
 	decl String:sound[GetNativeCell(4)];
-	new bool:soundExists=RandomSound(GetNativeString(1, GetNativeCell(2)), GetNativeCell(2), sound, GetNativeCell(4), GetNativeCell(5), GetNativeCell(6));
+	new bool:soundExists=ReturnRandomSound(GetNativeString(1, GetNativeCell(2)), GetNativeCell(2), sound, GetNativeCell(4), GetNativeCell(5), GetNativeCell(6));
 	SetNativeString(3, sound, GetNativeCell(4));
 	return soundExists;
 }
