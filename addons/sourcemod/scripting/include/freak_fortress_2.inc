@@ -238,10 +238,10 @@ native bool:FF2_HasAbility(boss, const String:pluginName[], const String:ability
  * @param pluginName    Name of plugin with this ability
  * @param abilityName   Name of ability
  * @param argument      Number of argument
- * @param defValue      Returns if argument is not defined
+ * @param defaultValue  Value to return if argument does not exist
  * @return              Value of argument
  */
-native FF2_GetAbilityArgument(boss, const String:pluginName[], const String:abilityName[], argument, defValue=0);
+native FF2_GetAbilityArgument(boss, const String:pluginName[], const String:abilityName[], argument, defaultValue=0);
 
 /**
  * Gets the float value of an ability argument
@@ -250,10 +250,10 @@ native FF2_GetAbilityArgument(boss, const String:pluginName[], const String:abil
  * @param pluginName    Name of plugin with this ability
  * @param abilityName   Name of ability
  * @param argument      Number of argument
- * @param defValue      Returns if argument is not defined
+ * @param defaultValue  Value to return if argument does not exist
  * @return              Value of argument
  */
-native Float:FF2_GetAbilityArgumentFloat(boss, const String:plugin_name[], const String:ability_name[], argument, Float:defValue=0.0);
+native Float:FF2_GetAbilityArgumentFloat(boss, const String:plugin_name[], const String:ability_name[], argument, Float:defaultValue=0.0);
 
 /**
  * Gets the string value of an ability argument
@@ -264,9 +264,10 @@ native Float:FF2_GetAbilityArgumentFloat(boss, const String:plugin_name[], const
  * @param argument      Number of argument
  * @param buffer        Buffer for value of argument
  * @param bufferLength  Length of buffer string
+ * @param defaultValue  Value to return if argument does not exist
  * @noreturn
  */
-native FF2_GetAbilityArgumentString(boss, const String:pluginName[], const String:abilityName[], argument, String:buffer[], bufferLength);
+native FF2_GetAbilityArgumentString(boss, const String:pluginName[], const String:abilityName[], argument, String:buffer[], bufferLength, String:defaultValue[]="");
 
 /**
  * Determines how the Boss should use a certain ability
@@ -525,7 +526,7 @@ stock FF2_ShowSyncHudText(client, Handle:sync, const String:buffer[], any:...)
  */
 stock FF2_ShowHudText(client, channel, const String:buffer[], any:...)
 {
-	if(!(FF2_GetFF2flags(client) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
+	if(!(FF2_GetFF2Flags(client) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
 	{
 		decl String:message[256];
 		VFormat(message, sizeof(message), buffer, 4);

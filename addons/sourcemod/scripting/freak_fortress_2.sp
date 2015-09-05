@@ -7092,6 +7092,99 @@ stock ParseFormula(boss, const String:key[], defaultValue)
 	return result;
 }
 
+stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityName[], arg, defaultValue=0)
+{
+	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
+	{
+		return 0;
+	}
+
+	KvRewind(BossKV[character[boss]]);
+	decl String:ability[10];
+	for(new i=1; i<MAXRANDOMS; i++)
+	{
+		Format(ability, sizeof(ability), "ability%i", i);
+		if(KvJumpToKey(BossKV[character[boss]], ability))
+		{
+			decl String:possibleMatch[64];
+			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
+			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
+			{
+				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
+				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
+				{
+					Format(ability, sizeof(ability), "arg%i", arg);
+					return KvGetNum(BossKV[character[boss]], ability, defaultValue);
+				}
+			}
+			KvGoBack(BossKV[character[boss]]);
+		}
+	}
+	return 0;
+}
+
+stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const String:abilityName[], arg, Float:defaultValue=0.0)
+{
+	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
+	{
+		return 0.0;
+	}
+
+	KvRewind(BossKV[character[boss]]);
+	decl String:ability[10];
+	for(new i=1; i<MAXRANDOMS; i++)
+	{
+		Format(ability, sizeof(ability), "ability%i", i);
+		if(KvJumpToKey(BossKV[character[boss]], ability))
+		{
+			decl String:possibleMatch[64];
+			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
+			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
+			{
+				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
+				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
+				{
+					Format(ability, sizeof(ability), "arg%i", arg);
+					return KvGetFloat(BossKV[character[boss]], ability, defaultValue);
+				}
+			}
+			KvGoBack(BossKV[character[boss]]);
+		}
+	}
+	return 0.0;
+}
+
+stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abilityName[], arg, String:abilityString[], length, const String:defaultValue[]="")
+{
+	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
+	{
+		strcopy(abilityString, length, "");
+		return;
+	}
+
+	KvRewind(BossKV[character[boss]]);
+	decl String:ability[10];
+	for(new i=1; i<MAXRANDOMS; i++)
+	{
+		Format(ability, sizeof(ability), "ability%i", i);
+		if(KvJumpToKey(BossKV[character[boss]], ability))
+		{
+			decl String:possibleMatch[64];
+			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
+			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
+			{
+				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
+				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
+				{
+					Format(ability, sizeof(ability), "arg%i", arg);
+					KvGetString(BossKV[character[boss]], ability, abilityString, length, defaultValue);
+				}
+			}
+			KvGoBack(BossKV[character[boss]]);
+		}
+	}
+}
+
 stock bool:RandomSound(const String:sound[], String:file[], length, boss=0)
 {
 	if(boss<0 || character[boss]<0 || !BossKV[character[boss]])
@@ -8730,35 +8823,9 @@ public Native_HasAbility(Handle:plugin, numParams)
 	return HasAbility(GetNativeCell(1), pluginName, abilityName);
 }
 
-public GetAbilityArgument(boss, const String:pluginName[], const String:abilityName[], arg, defaultValue=0)
+public GetAbilityArgumentWrapper(boss, const String:pluginName[], const String:abilityName[], arg, defaultValue)
 {
-	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
-	{
-		return 0;
-	}
-
-	KvRewind(BossKV[character[boss]]);
-	decl String:ability[10];
-	for(new i=1; i<MAXRANDOMS; i++)
-	{
-		Format(ability, sizeof(ability), "ability%i", i);
-		if(KvJumpToKey(BossKV[character[boss]], ability))
-		{
-			decl String:possibleMatch[64];
-			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
-			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
-			{
-				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
-				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
-				{
-					Format(ability, sizeof(ability), "arg%i", arg);
-					return KvGetNum(BossKV[character[boss]], ability, defaultValue);
-				}
-			}
-			KvGoBack(BossKV[character[boss]]);
-		}
-	}
-	return 0;
+	return GetAbilityArgument(boss, pluginName, abilityName, arg, defaultValue);
 }
 
 public Native_GetAbilityArgument(Handle:plugin, numParams)
@@ -8766,38 +8833,12 @@ public Native_GetAbilityArgument(Handle:plugin, numParams)
 	decl String:pluginName[64], String:abilityName[64];
 	GetNativeString(2, pluginName, sizeof(pluginName));
 	GetNativeString(3, abilityName, sizeof(abilityName));
-	return GetAbilityArgument(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), GetNativeCell(5));
+	return GetAbilityArgumentWrapper(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), GetNativeCell(5));
 }
 
-public Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const String:abilityName[], arg, Float:defaultValue=0.0)
+public Float:GetAbilityArgumentFloatWrapper(boss, const String:pluginName[], const String:abilityName[], arg, Float:defaultValue)
 {
-	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
-	{
-		return 0.0;
-	}
-
-	KvRewind(BossKV[character[boss]]);
-	decl String:ability[10];
-	for(new i=1; i<MAXRANDOMS; i++)
-	{
-		Format(ability, sizeof(ability), "ability%i", i);
-		if(KvJumpToKey(BossKV[character[boss]], ability))
-		{
-			decl String:possibleMatch[64];
-			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
-			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
-			{
-				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
-				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
-				{
-					Format(ability, sizeof(ability), "arg%i", arg);
-					return KvGetFloat(BossKV[character[boss]], ability, defaultValue);
-				}
-			}
-			KvGoBack(BossKV[character[boss]]);
-		}
-	}
-	return 0.0;
+	return GetAbilityArgumentFloat(boss, pluginName, abilityName, arg, defaultValue);
 }
 
 public Native_GetAbilityArgumentFloat(Handle:plugin, numParams)
@@ -8805,48 +8846,23 @@ public Native_GetAbilityArgumentFloat(Handle:plugin, numParams)
 	decl String:pluginName[64], String:abilityName[64];
 	GetNativeString(2, pluginName, sizeof(pluginName));
 	GetNativeString(3, abilityName, sizeof(abilityName));
-	return _:GetAbilityArgumentFloat(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), GetNativeCell(5));
+	return _:GetAbilityArgumentFloatWrapper(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), Float:GetNativeCell(5));
 }
 
-public GetAbilityArgumentString(boss, const String:pluginName[], const String:abilityName[], arg, String:abilityString[], length, const String:defaultValue[]="")
+public GetAbilityArgumentStringWrapper(boss, const String:pluginName[], const String:abilityName[], arg, String:abilityString[], length, const String:defaultValue[])
 {
-	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
-	{
-		strcopy(abilityString, length, "");
-		return;
-	}
-
-	KvRewind(BossKV[character[boss]]);
-	decl String:ability[10];
-	for(new i=1; i<MAXRANDOMS; i++)
-	{
-		Format(ability, sizeof(ability), "ability%i", i);
-		if(KvJumpToKey(BossKV[character[boss]], ability))
-		{
-			decl String:possibleMatch[64];
-			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
-			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
-			{
-				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
-				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
-				{
-					Format(ability, sizeof(ability), "arg%i", arg);
-					KvGetString(BossKV[character[boss]], ability, abilityString, length, defaultValue);
-				}
-			}
-			KvGoBack(BossKV[character[boss]]);
-		}
-	}
+	GetAbilityArgumentString(boss, pluginName, abilityName, arg, abilityString, length, defaultValue);
 }
 
 public Native_GetAbilityArgumentString(Handle:plugin, numParams)
 {
-	decl String:pluginName[64], String:abilityName[64];
+	decl String:pluginName[64], String:abilityName[64], String:defaultValue[64];
 	GetNativeString(2, pluginName, sizeof(pluginName));
 	GetNativeString(3, abilityName, sizeof(abilityName));
+	GetNativeString(7, defaultValue, sizeof(defaultValue));
 	new length=GetNativeCell(6);
 	decl String:abilityString[length];
-	GetAbilityArgumentString(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), abilityString, length);
+	GetAbilityArgumentStringWrapper(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), abilityString, length, defaultValue);
 	SetNativeString(5, abilityString, length);
 }
 
@@ -9039,8 +9055,13 @@ public bool:ReturnRandomSound(const String:kv[], kvLength, String:sound[], lengt
 
 public Native_RandomSound(Handle:plugin, numParams)
 {
-	decl String:sound[GetNativeCell(4)];
-	new bool:soundExists=ReturnRandomSound(GetNativeString(1, GetNativeCell(2)), GetNativeCell(2), sound, GetNativeCell(4), GetNativeCell(5), GetNativeCell(6));
+	new kvLength=GetNativeCell(2);
+	decl String:kv[kvLength];
+	GetNativeString(1, kv, kvLength);
+
+	new length=GetNativeCell(4);
+	decl String:sound[length];
+	new bool:soundExists=ReturnRandomSound(kv, kvLength, sound, length, GetNativeCell(5), GetNativeCell(6));
 	SetNativeString(3, sound, GetNativeCell(4));
 	return soundExists;
 }
