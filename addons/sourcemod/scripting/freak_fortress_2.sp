@@ -289,72 +289,72 @@ static const String:ff2versiontitles[][]=
 
 static const String:ff2versiondates[][]=
 {
-	"6 April 2012",		//1.0
-	"14 April 2012",	//1.01
-	"14 April 2012",	//1.01
-	"17 April 2012",	//1.02
-	"19 April 2012",	//1.03
-	"21 April 2012",	//1.04
-	"29 April 2012",	//1.05
-	"29 April 2012",	//1.05
-	"1 May 2012",		//1.06
-	"22 June 2012",		//1.06c
-	"3 July 2012",		//1.06d
-	"24 Aug 2012",		//1.06e
-	"5 Sep 2012",		//1.06f
-	"5 Sep 2012",		//1.06g
-	"6 Sep 2012",		//1.06h
-	"8 Oct 2012",		//1.07 beta 1
-	"8 Oct 2012",		//1.07 beta 1
-	"8 Oct 2012",		//1.07 beta 1
-	"8 Oct 2012",		//1.07 beta 1
-	"8 Oct 2012",		//1.07 beta 1
-	"11 Oct 2012",		//1.07 beta 4
-	"18 Oct 2012",		//1.07 beta 5
-	"9 Nov 2012",		//1.07 beta 6
-	"14 Dec 2012",		//1.07
-	"October 30, 2013",	//1.0.8
-	"October 30, 2013",	//1.0.8
-	"October 30, 2013",	//1.0.8
-	"October 30, 2013",	//1.0.8
-	"October 30, 2013",	//1.0.8
-	"March 6, 2014",	//1.9.0
-	"March 6, 2014",	//1.9.0
-	"March 18, 2014",	//1.9.1
-	"March 22, 2014",	//1.9.2
-	"March 22, 2014",	//1.9.2
-	"April 5, 2014",	//1.9.3
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"August 28, 2014",	//1.10.1
-	"August 28, 2014",	//1.10.1
-	"August 28, 2014",	//1.10.1
-	"August 28, 2014",	//1.10.1
-	"August 28, 2014",	//1.10.1
-	"August 28, 2014",	//1.10.2
-	"November 6, 2014",	//1.10.3
-	"November 6, 2014",	//1.10.3
-	"November 6, 2014",	//1.10.3
-	"November 6, 2014",	//1.10.3
-	"November 6, 2014",	//1.10.3
-	"March 1, 2015",	//1.10.4
-	"March 1, 2015",	//1.10.4
-	"March 1, 2015",	//1.10.4
-	"March 1, 2015",	//1.10.4
-	"March 1, 2015",	//1.10.4
-	"March 13, 2015",	//1.10.5
-	"August 10, 2015",	//1.10.6
-	"August 10, 2015",	//1.10.6
-	"August 10, 2015",	//1.10.6
-	"August 10, 2015",	//1.10.6
-	"September 5, 2015",//1.10.7
-	"September 5, 2015"	//1.10.7
+	"6 April 2012",			//1.0
+	"14 April 2012",		//1.01
+	"14 April 2012",		//1.01
+	"17 April 2012",		//1.02
+	"19 April 2012",		//1.03
+	"21 April 2012",		//1.04
+	"29 April 2012",		//1.05
+	"29 April 2012",		//1.05
+	"1 May 2012",			//1.06
+	"22 June 2012",			//1.06c
+	"3 July 2012",			//1.06d
+	"24 Aug 2012",			//1.06e
+	"5 Sep 2012",			//1.06f
+	"5 Sep 2012",			//1.06g
+	"6 Sep 2012",			//1.06h
+	"8 Oct 2012",			//1.07 beta 1
+	"8 Oct 2012",			//1.07 beta 1
+	"8 Oct 2012",			//1.07 beta 1
+	"8 Oct 2012",			//1.07 beta 1
+	"8 Oct 2012",			//1.07 beta 1
+	"11 Oct 2012",			//1.07 beta 4
+	"18 Oct 2012",			//1.07 beta 5
+	"9 Nov 2012",			//1.07 beta 6
+	"14 Dec 2012",			//1.07
+	"October 30, 2013",		//1.0.8
+	"October 30, 2013",		//1.0.8
+	"October 30, 2013",		//1.0.8
+	"October 30, 2013",		//1.0.8
+	"October 30, 2013",		//1.0.8
+	"March 6, 2014",		//1.9.0
+	"March 6, 2014",		//1.9.0
+	"March 18, 2014",		//1.9.1
+	"March 22, 2014",		//1.9.2
+	"March 22, 2014",		//1.9.2
+	"April 5, 2014",		//1.9.3
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"August 28, 2014",		//1.10.1
+	"August 28, 2014",		//1.10.1
+	"August 28, 2014",		//1.10.1
+	"August 28, 2014",		//1.10.1
+	"August 28, 2014",		//1.10.1
+	"August 28, 2014",		//1.10.2
+	"November 6, 2014",		//1.10.3
+	"November 6, 2014",		//1.10.3
+	"November 6, 2014",		//1.10.3
+	"November 6, 2014",		//1.10.3
+	"November 6, 2014",		//1.10.3
+	"March 1, 2015",		//1.10.4
+	"March 1, 2015",		//1.10.4
+	"March 1, 2015",		//1.10.4
+	"March 1, 2015",		//1.10.4
+	"March 1, 2015",		//1.10.4
+	"March 13, 2015",		//1.10.5
+	"August 10, 2015",		//1.10.6
+	"August 10, 2015",		//1.10.6
+	"August 10, 2015",		//1.10.6
+	"August 10, 2015",		//1.10.6
+	"September 6, 2015",	//1.10.7
+	"September 6, 2015"		//1.10.7
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -374,7 +374,8 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "6) Fixed large amounts of lives being cut off when being displayed (Wliu)");
 			DrawPanelText(panel, "7) [Server] Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace' (Wliu from Shadow)");
-			DrawPanelText(panel, "8) [Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)");
+			DrawPanelText(panel, "8) [Server] 'ff2_crits' now defaults to 0 instead of 1 (Wliu from Spyper)");
+			DrawPanelText(panel, "9) [Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)");
 		}
 		case 63:  //1.10.6
 		{
