@@ -283,6 +283,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.6",
 	"1.10.6",
 	"1.10.6",
+	"1.10.7",
 	"1.10.7"
 };
 
@@ -352,6 +353,7 @@ static const String:ff2versiondates[][]=
 	"August 10, 2015",	//1.10.6
 	"August 10, 2015",	//1.10.6
 	"August 10, 2015",	//1.10.6
+	"September 5, 2015",//1.10.7
 	"September 5, 2015"	//1.10.7
 };
 
@@ -359,14 +361,20 @@ stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 64:  //1.10.7
+		case 65:  //1.10.7
 		{
 			DrawPanelText(panel, "1) Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
 			DrawPanelText(panel, "2) Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive (Shadow from Spyper)");
 			DrawPanelText(panel, "3) Fixed minions receiving benefits intended only for normal players (Wliu)");
 			DrawPanelText(panel, "4) Minions no longer die after their summoner is killed (Wliu)");
 			DrawPanelText(panel, "5) Removed Shortstop reload penalty (Starblaster64)");
+			DrawPanelText(panel, "See next page (press 1)");
+		}
+		case 64:  //1.10.7
+		{
 			DrawPanelText(panel, "6) Fixed large amounts of lives being cut off when being displayed (Wliu)");
+			DrawPanelText(panel, "7) [Server] Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace' (Wliu from Shadow)");
+			DrawPanelText(panel, "8) [Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)");
 		}
 		case 63:  //1.10.6
 		{
