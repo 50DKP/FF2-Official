@@ -19,7 +19,7 @@ rage_new_weapon:	arg0 - slot (def.0)
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-#define PLUGIN_VERSION "1.10.3"
+#define PLUGIN_VERSION "1.10.7"
 
 public Plugin:myinfo=
 {

@@ -15,7 +15,7 @@
 #define SOUND_SLOW_MO_END "replay/exitperformancemode.wav"  //Used when Ninja Spy exits slow mo
 #define SOUND_DEMOPAN_RAGE "ui/notification_alert.wav"  //Used when Demopan rages
 
-#define PLUGIN_VERSION "1.10.4"
+#define PLUGIN_VERSION "1.10.7"
 
 public Plugin:myinfo=
 {
