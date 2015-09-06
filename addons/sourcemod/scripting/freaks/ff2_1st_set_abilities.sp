@@ -254,7 +254,7 @@ Rage_Clone(const String:ability_name[], boss)
 		clone=GetArrayCell(players, temp);
 		RemoveFromArray(players, temp);
 
-		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM);
+		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_CLASSTIMERDISABLED);
 		ChangeClientTeam(clone, BossTeam);
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=boss;
@@ -860,9 +860,10 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 		}
 	}*/
 
-	if(CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)
+	if(CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)  //Switch clones back to the other team after they die
 	{
 		CloneOwnerIndex[client]=-1;
+		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone) & ~FF2FLAG_CLASSTIMERDISABLED);
 		ChangeClientTeam(client, (BossTeam==_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
 	}
 	return Plugin_Continue;

@@ -4657,7 +4657,7 @@ public Action:ClientTimer(Handle:timer)
 	new TFCond:cond;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && !IsBoss(client) && !(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
+		if(IsValidClient(client) && !IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
 		{
 			SetHudTextParams(-1.0, 0.88, 0.35, 90, 255, 90, 255, 0, 0.35, 0.0, 0.1);
 			if(!IsPlayerAlive(client))
@@ -5567,7 +5567,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			{
 				RedAlivePlayers++;
 			}
-			else if(IsBoss(client) || (FF2_GetFF2flags(client) & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+			else if(GetClientTeam(client)==BossTeam)
 			{
 				BlueAlivePlayers++;
 			}
