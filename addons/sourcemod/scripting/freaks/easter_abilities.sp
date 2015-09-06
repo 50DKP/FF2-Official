@@ -11,7 +11,7 @@
 #define OBJECTS			"spawn_many_objects_on_kill"
 #define OBJECTS_DEATH	"spawn_many_objects_on_death"
 
-#define PLUGIN_VERSION "1.10.4"
+#define PLUGIN_VERSION "1.10.7"
 
 public Plugin:myinfo=
 {
