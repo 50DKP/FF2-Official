@@ -5040,7 +5040,7 @@ public Action:BossTimer(Handle:timer)
 					KvRewind(BossKV[Special[boss2]]);
 					KvGetString(BossKV[Special[boss2]], "name", name, sizeof(name), "=Failed name=");
 					//Format(bossLives, sizeof(bossLives), ((BossLives[boss2]>1) ? ("x%i", BossLives[boss2]) : ("")));
-					decl String:bossLives[4];
+					decl String:bossLives[10];
 					if(BossLives[boss2]>1)
 					{
 						Format(bossLives, sizeof(bossLives), "x%i", BossLives[boss2]);
