@@ -3370,6 +3370,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 			KvRewind(BossKV[Special[boss]]);
 			TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
 		}
+		SetEntProp(client, Prop_Send, "m_iObserverMode", 0);  //Try to force them out of spectate mode, UNTESTED
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, BossTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
@@ -3878,7 +3879,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);  //This really shouldn't be needed but I've been noticing players who still have glow
 
-	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overhealh bug
+	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overheal bug
 	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
 	if(GetClientTeam(client)==BossTeam)
 	{
@@ -3894,6 +3895,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
 	{
 		Debug("Non-boss client %N is a living spectator!", client);
+		SetEntProp(client, Prop_Send, "m_iObserverMode", 0);  //Try to force them out of spectate mode, UNTESTED
 		TF2_RespawnPlayer(client);
 		CreateTimer(0.1, MakeNotBoss, userid, TIMER_FLAG_NO_MAPCHANGE);
 	}
