@@ -373,8 +373,7 @@ native FF2_SetClientGlow(client, Float:time1, Float:time2=-1.0);
 native bool:FF2_Debug();
 
 /**
- * FF2_ONABILITY IS KNOWN TO BE BUGGED AND WILL NOT BE FIXED TO PRESERVE BACKWARDS COMPATABILITY.  DO NOT USE IT.
- * Called when a Boss uses an ability (Rage, jump, teleport, etc)
+ * Called whenever a boss uses an ability (Rage, jump, teleport, etc)
  * Called every 0.2 seconds for charge abilities
  *
  * Use FF2_PreAbility with enabled=false ONLY to prevent FF2_OnAbility!
@@ -382,12 +381,17 @@ native bool:FF2_Debug();
  * @param boss          Boss's index
  * @param pluginName    Name of plugin with this ability
  * @param abilityName   Name of ability
- * @param slot          Slot of ability (THIS DOES NOT RETURN WHAT YOU THINK IT RETURNS FOR FF2_ONABILITY-if you insist on using this, refer to freak_fortress_2.sp to see what it actually does)
- *                          0 - Rage or life-loss
+ * @param slot          Slot of ability
+ *                         -1 - Life-loss
+ *                          0 - Rage
  *                          1 - Jump or teleport
  *                          2 - Other
- * @param status        Status of ability (DO NOT ACCESS THIS.  IT DOES NOT EXIST AND MIGHT CRASH YOUR SERVER)
- * @return              Plugin_Stop can not prevent the ability. Use FF2_PreAbility with enabled=false
+ * @param status        Status of ability
+ *                          0 - Not in use
+ *                          1 - Recharging
+ *                          2 - Ready
+ *                          3 - In use
+ * @return              Return enabled=false in FF2_PreAbility to simulate Plugin_Stop
  */
 forward FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[], slot, &bool:enabled);
 forward Action:FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[], slot, status);

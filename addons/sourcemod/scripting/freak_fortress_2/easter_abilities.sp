@@ -11,7 +11,7 @@
 #define OBJECTS			"spawn_many_objects_on_kill"
 #define OBJECTS_DEATH	"spawn_many_objects_on_death"
 
-#define PLUGIN_VERSION "1.10.4"
+#define PLUGIN_VERSION "2.0.0"
 
 public Plugin:myinfo=
 {
@@ -154,7 +154,7 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, 
 	}
 }
 
-public Action:FF2_OnAbility2(index, const String:plugin_name[], const String:ability_name[], action)
+public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
 	//NOOP
 }

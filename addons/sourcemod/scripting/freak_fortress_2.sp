@@ -1024,7 +1024,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_Debug", Native_Debug);
 
 	PreAbility=CreateGlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);  //Boss, plugin name, ability name, slot, enabled
-	OnAbility=CreateGlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell);  //Boss, plugin name, ability name, status
+	OnAbility=CreateGlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_Cell);  //Boss, plugin name, ability name, slot, status
 	OnMusic=CreateGlobalForward("FF2_OnMusic", ET_Hook, Param_String, Param_FloatByRef);
 	OnTriggerHurt=CreateGlobalForward("FF2_OnTriggerHurt", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
 	OnSpecialSelected=CreateGlobalForward("FF2_OnSpecialSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String, Param_Cell);  //Boss, character index, character name, preset
@@ -8887,15 +8887,16 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 	Call_PushCell(boss);
 	Call_PushString(pluginName);
 	Call_PushString(abilityName);
+	Call_PushCell(slot);
 	if(slot==-1)
 	{
-		Call_PushCell(3);  //Status - we're assuming here a life-loss ability will always be in use if it gets called
+		Call_PushCell(3);  //We're assuming here a life-loss ability will always be in use if it gets called
 		Call_Finish(action);
 	}
 	else if(!slot)
 	{
 		FF2Flags[Boss[boss]]&=~FF2FLAG_BOTRAGE;
-		Call_PushCell(3);  //Status - we're assuming here a rage ability will always be in use if it gets called
+		Call_PushCell(3);  //We're assuming here a rage ability will always be in use if it gets called
 		Call_Finish(action);
 		BossCharge[boss][slot]=0.0;
 	}
@@ -8935,7 +8936,7 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 
 			if(BossCharge[boss][slot]>=0.0)
 			{
-				Call_PushCell(2);  //Status
+				Call_PushCell(2);  //Ready
 				Call_Finish(action);
 				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(boss, pluginName, abilityName, 1, 1.5);
 				if(BossCharge[boss][slot]+charge<100.0)
@@ -8949,7 +8950,7 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 			}
 			else
 			{
-				Call_PushCell(1);  //Status
+				Call_PushCell(1);  //Recharging
 				Call_Finish(action);
 				BossCharge[boss][slot]+=0.2;
 			}
@@ -8960,7 +8961,7 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 			GetClientEyeAngles(Boss[boss], angles);
 			if(angles[0]<-45.0)
 			{
-				Call_PushCell(3);
+				Call_PushCell(3);  //In use
 				Call_Finish(action);
 				new Handle:data;
 				CreateDataTimer(0.1, Timer_UseBossCharge, data);
@@ -8971,20 +8972,20 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 			}
 			else
 			{
-				Call_PushCell(0);  //Status
+				Call_PushCell(0);  //Not in use
 				Call_Finish(action);
 				BossCharge[boss][slot]=0.0;
 			}
 		}
 		else if(BossCharge[boss][slot]<0.0)
 		{
-			Call_PushCell(1);  //Status
+			Call_PushCell(1);  //Recharging
 			Call_Finish(action);
 			BossCharge[boss][slot]+=0.2;
 		}
 		else
 		{
-			Call_PushCell(0);  //Status
+			Call_PushCell(0);  //Not in use
 			Call_Finish(action);
 		}
 	}

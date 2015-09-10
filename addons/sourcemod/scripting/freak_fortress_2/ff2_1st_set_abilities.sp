@@ -15,7 +15,7 @@
 #define SOUND_SLOW_MO_END "replay/exitperformancemode.wav"  //Used when Ninja Spy exits slow mo
 #define SOUND_DEMOPAN_RAGE "ui/notification_alert.wav"  //Used when Demopan rages
 
-#define PLUGIN_VERSION "1.10.4"
+#define PLUGIN_VERSION "2.0.0"
 
 public Plugin:myinfo=
 {
@@ -124,9 +124,8 @@ public Action:Timer_GetBossTeam(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], status)
+public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
-	new slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 0);
 	if(!slot)  //Rage
 	{
 		if(!boss)
@@ -148,9 +147,9 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 		}
 	}
 
-	if(!strcmp(ability_name, "special_democharge"))
+	if(StrEqual(ability_name, "special_democharge"))
 	{
-		if(status>0)
+		if(status)
 		{
 			new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 			new Float:charge=FF2_GetBossCharge(boss, 0);
@@ -162,19 +161,19 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 			}
 		}
 	}
-	else if(!strcmp(ability_name, "rage_cloneattack"))
+	else if(StrEqual(ability_name, "rage_cloneattack"))
 	{
 		Rage_Clone(ability_name, boss);
 	}
-	else if(!strcmp(ability_name, "rage_tradespam"))
+	else if(StrEqual(ability_name, "rage_tradespam"))
 	{
 		CreateTimer(0.0, Timer_Demopan_Rage, 1);
 	}
-	else if(!strcmp(ability_name, "rage_cbs_bowrage"))
+	else if(StrEqual(ability_name, "rage_cbs_bowrage"))
 	{
 		Rage_Bow(boss);
 	}
-	else if(!strcmp(ability_name, "rage_explosive_dance"))
+	else if(StrEqual(ability_name, "rage_explosive_dance"))
 	{
 		SetEntityMoveType(GetClientOfUserId(FF2_GetBossUserId(boss)), MOVETYPE_NONE);
 		new Handle:data;
@@ -183,7 +182,7 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 		WritePackCell(data, boss);
 		ResetPack(data);
 	}
-	else if(!strcmp(ability_name, "rage_matrix_attack"))
+	else if(StrEqual(ability_name, "rage_matrix_attack"))
 	{
 		Rage_Slowmo(boss, ability_name);
 	}

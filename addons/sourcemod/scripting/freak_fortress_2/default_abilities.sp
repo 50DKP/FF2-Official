@@ -8,7 +8,7 @@
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-#define PLUGIN_VERSION "1.10.4"
+#define PLUGIN_VERSION "2.0.0"
 
 public Plugin:myinfo=
 {
@@ -109,9 +109,8 @@ public Action:Timer_GetBossTeam(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], status)
+public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
-	new slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 0);
 	if(!slot)  //Rage
 	{
 		if(!boss)  //Boss indexes are just so amazing
@@ -134,34 +133,34 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 		}
 	}
 
-	if(!strcmp(ability_name, "charge_weightdown"))
+	if(StrEqual(ability_name, "charge_weightdown"))
 	{
 		Charge_WeighDown(boss, slot);
 	}
-	else if(!strcmp(ability_name, "charge_bravejump"))
+	else if(StrEqual(ability_name, "charge_bravejump"))
 	{
 		Charge_BraveJump(ability_name, boss, slot, status);
 	}
-	else if(!strcmp(ability_name, "charge_teleport"))
+	else if(StrEqual(ability_name, "charge_teleport"))
 	{
 		Charge_Teleport(ability_name, boss, slot, status);
 	}
-	else if(!strcmp(ability_name, "rage_uber"))
+	else if(StrEqual(ability_name, "rage_uber"))
 	{
 		new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 		TF2_AddCondition(client, TFCond_Ubercharged, FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 5.0));
 		SetEntProp(client, Prop_Data, "m_takedamage", 0);
 		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 5.0), Timer_StopUber, boss);
 	}
-	else if(!strcmp(ability_name, "rage_stun"))
+	else if(StrEqual(ability_name, "rage_stun"))
 	{
 		Rage_Stun(ability_name, boss);
 	}
-	else if(!strcmp(ability_name, "rage_stunsg"))
+	else if(StrEqual(ability_name, "rage_stunsg"))
 	{
 		Rage_StunSentry(ability_name, boss);
 	}
-	else if(!strcmp(ability_name, "rage_instant_teleport"))
+	else if(StrEqual(ability_name, "rage_instant_teleport"))
 	{
 		new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 		new Float:position[3];

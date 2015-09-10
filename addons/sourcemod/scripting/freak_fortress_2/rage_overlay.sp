@@ -13,7 +13,7 @@ rage_overlay:	arg0 - slot (def.0)
 
 new TFTeam:BossTeam=TFTeam_Blue;
 
-#define PLUGIN_VERSION "1.9.2"
+#define PLUGIN_VERSION "2.0.0"
 
 public Plugin:myinfo=
 {
@@ -40,9 +40,9 @@ public Action:Timer_GetBossTeam(Handle:hTimer)
 	return Plugin_Continue;
 }
 
-public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], status)
+public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
-	if(!strcmp(ability_name, "rage_overlay"))
+	if(StrEqual(ability_name, "rage_overlay"))
 	{
 		Rage_Overlay(boss, ability_name);
 	}

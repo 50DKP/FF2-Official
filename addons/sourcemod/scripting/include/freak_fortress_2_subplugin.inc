@@ -38,17 +38,16 @@ public OnPluginStart()
 	GetThisPluginName();
 }
 
-//This is very broken-FF2_OnAbility's args are client, plugin_name, ability_name, SLOT, status
-public Action:FF2_OnAbility(client, const String:plugin_name[], const String:ability_name[], status)
+public Action:FF2_OnAbility(client, const String:plugin_name[], const String:ability_name[], slot, status)
 {
 	if(plugin_name[0])
 	{
-		if(strcmp(this_plugin_name, plugin_name))
+		if(!StrEqual(this_plugin_name, plugin_name))
 		{
 			return Plugin_Continue;
 		}
 	}
-	//So we're really passing 'slot' here and not 'status'-currently subplugins have no way of getting status
-	FF2_OnAbility2(client, plugin_name, ability_name, status);
+
+	FF2_OnAbility2(client, plugin_name, ability_name, slot, status);
 	return Plugin_Continue;
 }

@@ -19,7 +19,7 @@ rage_new_weapon:	arg0 - slot (def.0)
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-#define PLUGIN_VERSION "1.10.3"
+#define PLUGIN_VERSION "2.0.0"
 
 public Plugin:myinfo=
 {
@@ -41,11 +41,11 @@ public OnPluginStart2()
 	HookEvent("teamplay_round_start", OnRoundStart);
 }
 
-public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ability_name[], status)
+public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
-	if(!strcmp(ability_name, "rage_new_weapon"))
+	if(StrEqual(ability_name, "rage_new_weapon"))
 	{
-		Rage_New_Weapon(client, ability_name);
+		Rage_New_Weapon(boss, ability_name);
 	}
 	return Plugin_Continue;
 }
