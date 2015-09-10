@@ -1189,7 +1189,7 @@ public OnPluginStart()
 
 	decl String:oldVersion[64];
 	GetConVarString(cvarVersion, oldVersion, sizeof(oldVersion));
-	if(strcmp(oldVersion, PLUGIN_VERSION, false))
+	if(!StrEqual(oldVersion, PLUGIN_VERSION, false))
 	{
 		PrintToServer("[FF2] Warning: Your config may be outdated. Back up tf/cfg/sourcemod/freak_fortress_2.cfg and delete it, and this plugin will generate a new one that you can then modify to your original values.");
 	}
@@ -1235,7 +1235,7 @@ public bool:BossTargetFilter(const String:pattern[], Handle:clients)
 public OnLibraryAdded(const String:name[])
 {
 	#if defined _steamtools_included
-	if(!strcmp(name, "SteamTools", false))
+	if(StrEqual(name, "SteamTools", false))
 	{
 		steamtools=true;
 	}
@@ -1259,7 +1259,7 @@ public OnLibraryAdded(const String:name[])
 public OnLibraryRemoved(const String:name[])
 {
 	#if defined _steamtools_included
-	if(!strcmp(name, "SteamTools", false))
+	if(StrEqual(name, "SteamTools", false))
 	{
 		steamtools=false;
 	}
@@ -1529,7 +1529,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 			for(i=0; ; i++)
 			{
 				KvGetSectionName(Kv, config, sizeof(config));
-				if(!strcmp(config, charset, false))
+				if(!StrEqual(config, charset, false))
 				{
 					FF2CharSet=i;
 					strcopy(FF2CharSetString, PLATFORM_MAX_PATH, charset);
@@ -1742,7 +1742,7 @@ public LoadCharacter(const String:characterName[])
 	while(KvGotoNextKey(BossKV[Specials]))
 	{
 		KvGetSectionName(BossKV[Specials], section, sizeof(section));
-		if(!strcmp(section, "download"))
+		if(StrEqual(section, "download"))
 		{
 			for(new i=1; ; i++)
 			{
@@ -1763,7 +1763,7 @@ public LoadCharacter(const String:characterName[])
 				}
 			}
 		}
-		else if(!strcmp(section, "mod_download"))
+		else if(StrEqual(section, "mod_download"))
 		{
 			for(new i=1; ; i++)
 			{
@@ -1788,7 +1788,7 @@ public LoadCharacter(const String:characterName[])
 				}
 			}
 		}
-		else if(!strcmp(section, "mat_download"))
+		else if(StrEqual(section, "mat_download"))
 		{
 			for(new i=1; ; i++)
 			{
@@ -2106,7 +2106,7 @@ stock bool:MapHasMusic(bool:forceRecalc=false)  //SAAAAAARGE
 		while((entity=FindEntityByClassname2(entity, "info_target"))!=-1)
 		{
 			GetEntPropString(entity, Prop_Data, "m_iName", name, sizeof(name));
-			if(!strcmp(name, "hale_no_music", false))
+			if(StrEqual(name, "hale_no_music", false))
 			{
 				hasMusic=true;
 			}
@@ -2385,11 +2385,11 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 
 		decl String:classname[64];
 		GetEdictClassname(entity, classname, 64);
-		if(!strcmp(classname, "func_regenerate"))
+		if(StrEqual(classname, "func_regenerate"))
 		{
 			AcceptEntityInput(entity, "Kill");
 		}
-		else if(!strcmp(classname, "func_respawnroomvisualizer"))
+		else if(StrEqual(classname, "func_respawnroomvisualizer"))
 		{
 			AcceptEntityInput(entity, "Disable");
 		}
@@ -3901,7 +3901,7 @@ public Action:Timer_NoHonorBound(Handle:timer, any:userid)
 		{
 			GetEdictClassname(weapon, classname, sizeof(classname));
 		}
-		if(index==357 && weapon==melee && !strcmp(classname, "tf_weapon_katana", false))
+		if(index==357 && weapon==melee && StrEqual(classname, "tf_weapon_katana", false))
 		{
 			SetEntProp(melee, Prop_Send, "m_bIsBloody", 1);
 			if(GetEntProp(client, Prop_Send, "m_iKillCountSinceLastDeploy")<1)
@@ -4318,7 +4318,7 @@ public Action:OnUberDeployed(Handle:event, const String:name[], bool:dontBroadca
 		{
 			decl String:classname[64];
 			GetEdictClassname(medigun, classname, sizeof(classname));
-			if(!strcmp(classname, "tf_weapon_medigun"))
+			if(StrEqual(classname, "tf_weapon_medigun"))
 			{
 				TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.5, client);
 				new target=GetHealingTarget(client);
@@ -4934,7 +4934,7 @@ public Action:ClientTimer(Handle:timer)
 			}
 
 			new bool:addthecrit=false;
-			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee) && strcmp(classname, "tf_weapon_knife", false))  //Every melee except knives
+			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee) && !StrEqual(classname, "tf_weapon_knife", false))  //Every melee except knives
 			{
 				addthecrit=true;
 				if(index==416)  //Market Gardener
@@ -6193,7 +6193,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 								{
 									decl String:medigunClassname[64];
 									GetEdictClassname(medigun, medigunClassname, sizeof(medigunClassname));
-									if(!strcmp(medigunClassname, "tf_weapon_medigun", false))
+									if(StrEqual(medigunClassname, "tf_weapon_medigun", false))
 									{
 										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healerCount);
 										new Float:max=1.0;
@@ -6360,7 +6360,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 			else
 			{
 				decl String:classname[64];
-				if(GetEdictClassname(attacker, classname, sizeof(classname)) && !strcmp(classname, "trigger_hurt", false))
+				if(GetEdictClassname(attacker, classname, sizeof(classname)) && StrEqual(classname, "trigger_hurt", false))
 				{
 					new Action:action=Plugin_Continue;
 					Call_StartForward(OnTriggerHurt);
@@ -6381,7 +6381,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 							damage=1500.0;
 						}
 
-						if(!strcmp(currentmap, "arena_arakawa_b3", false) && damage>1000.0)
+						if(StrEqual(currentmap, "arena_arakawa_b3", false) && damage>1000.0)
 						{
 							damage=490.0;
 						}
@@ -6733,7 +6733,7 @@ stock FindTeleOwner(client)
 
 	new teleporter=GetEntPropEnt(client, Prop_Send, "m_hGroundEntity");
 	decl String:classname[32];
-	if(IsValidEntity(teleporter) && GetEdictClassname(teleporter, classname, sizeof(classname)) && !strcmp(classname, "obj_teleporter", false))
+	if(IsValidEntity(teleporter) && GetEdictClassname(teleporter, classname, sizeof(classname)) && StrEqual(classname, "obj_teleporter", false))
 	{
 		new owner=GetEntPropEnt(teleporter, Prop_Send, "m_hBuilder");
 		if(IsValidClient(owner, false))
@@ -8281,7 +8281,7 @@ stock GetHealingTarget(client, bool:checkgun=false)
 	{
 		decl String:classname[64];
 		GetEdictClassname(medigun, classname, sizeof(classname));
-		if(!strcmp(classname, "tf_weapon_medigun", false))
+		if(StrEqual(classname, "tf_weapon_medigun", false))
 		{
 			if(GetEntProp(medigun, Prop_Send, "m_bHealing"))
 			{
@@ -8442,7 +8442,7 @@ public Action:Command_Say(client, args)
 		return Plugin_Continue;
 	}
 
-	if(!strcmp(chat, "\"nextmap\"") && FF2CharSetString[0])
+	if(StrEqual(chat, "\"nextmap\"") && FF2CharSetString[0])
 	{
 		Command_Nextmap(client, 0);
 		return Plugin_Handled;

@@ -383,7 +383,7 @@ public Action:SaveMinion(client, &attacker, &inflictor, &Float:damage, &damagety
 	if(attacker>MaxClients)
 	{
 		decl String:edict[64];
-		if(GetEdictClassname(attacker, edict, sizeof(edict)) && !strcmp(edict, "trigger_hurt", false))
+		if(GetEdictClassname(attacker, edict, sizeof(edict)) && StrEqual(edict, "trigger_hurt", false))
 		{
 			new target, Float:position[3];
 			new bool:otherTeamIsAlive;
