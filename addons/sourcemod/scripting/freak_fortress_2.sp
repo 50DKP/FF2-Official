@@ -30,8 +30,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #undef REQUIRE_PLUGIN
 #tryinclude <smac>
 #tryinclude <updater>
-/*#tryinclude <goomba>
-#tryinclude <rtd>*/
 #define REQUIRE_PLUGIN
 
 #define MAJOR_REVISION "2"
@@ -70,10 +68,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #if defined _steamtools_included
 new bool:steamtools=false;
 #endif
-
-/*#if defined _goomba_included
-new bool:goomba=false;
-#endif*/
 
 new TFTeam:OtherTeam=TFTeam_Red;
 new TFTeam:BossTeam=TFTeam_Blue;
@@ -135,9 +129,6 @@ new Handle:cvarBossTeleporter;
 new Handle:cvarBossSuicide;
 new Handle:cvarShieldCrits;
 new Handle:cvarCaberDetonations;
-/*new Handle:cvarGoombaDamage;
-new Handle:cvarGoombaRebound;
-new Handle:cvarBossRTD;*/
 new Handle:cvarUpdater;
 new Handle:cvarDebug;
 new Handle:cvarPreroundBossDisconnect;
@@ -168,9 +159,6 @@ new bool:lastPlayerGlow=true;
 new bool:bossTeleportation=true;
 new shieldCrits;
 new allowedDetonations;
-/*new Float:GoombaDamage=0.05;
-new Float:reboundPower=300.0;
-new bool:canBossRTD;*/
 
 new Handle:MusicTimer;
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -1069,9 +1057,6 @@ public OnPluginStart()
 	cvarPreroundBossDisconnect=CreateConVar("ff2_replace_disconnected_boss", "1", "If a boss disconnects before the round starts, use the next player in line instead? 0 - No, 1 - Yes", _, true, 0.0, true, 1.0);
 	cvarCaberDetonations=CreateConVar("ff2_caber_detonations", "5", "Amount of times somebody can detonate the Ullapool Caber");
 	cvarShieldCrits=CreateConVar("ff2_shield_crits", "0", "0 to disable grenade launcher crits when equipping a shield, 1 for minicrits, 2 for crits", _, true, 0.0, true, 2.0);
-	/*cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", _, true, 0.01, true, 1.0);
-	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How high players should rebound after goomba stomping the boss (requires Goomba Stomp)", _, true, 0.0);
-	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", _, true, 0.0, true, 1.0);*/
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", _, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", _, true, 0.0, true, 1.0);
 
@@ -1115,9 +1100,6 @@ public OnPluginStart()
 	HookConVarChange(cvarBossTeleporter, CvarChange);
 	HookConVarChange(cvarShieldCrits, CvarChange);
 	HookConVarChange(cvarCaberDetonations, CvarChange);
-	/*HookConVarChange(cvarGoombaDamage, CvarChange);
-	HookConVarChange(cvarGoombaRebound, CvarChange);
-	HookConVarChange(cvarBossRTD, CvarChange);*/
 	HookConVarChange(cvarUpdater, CvarChange);
 	HookConVarChange(cvarNextmap=FindConVar("sm_nextmap"), CvarChangeNextmap);
 
@@ -1241,13 +1223,6 @@ public OnLibraryAdded(const String:name[])
 	}
 	#endif
 
-	/*#if defined _goomba_included
-	if(!strcmp(name, "goomba", false))
-	{
-		goomba=true;
-	}
-	#endif*/
-
 	#if defined _updater_included && !defined DEV_REVISION
 	if(StrEqual(name, "updater") && GetConVarBool(cvarUpdater))
 	{
@@ -1264,13 +1239,6 @@ public OnLibraryRemoved(const String:name[])
 		steamtools=false;
 	}
 	#endif
-
-	/*#if defined _goomba_included
-	if(!strcmp(name, "goomba", false))
-	{
-		goomba=false;
-	}
-	#endif*/
 
 	#if defined _updater_included
 	if(StrEqual(name, "updater"))
@@ -1396,9 +1364,6 @@ public EnableFF2()
 	{
 		PointDelay*=-1;
 	}
-	/*GoombaDamage=GetConVarFloat(cvarGoombaDamage);
-	reboundPower=GetConVarFloat(cvarGoombaRebound);
-	canBossRTD=GetConVarBool(cvarBossRTD);*/
 	AliveToEnable=GetConVarInt(cvarAliveToEnable);
 	BossCrits=GetConVarBool(cvarCrits);
 	arenaRounds=GetConVarInt(cvarArenaRounds);
@@ -1962,18 +1927,6 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		allowedDetonations=StringToInt(newValue);
 	}
-	/*else if(convar==cvarGoombaDamage)
-	{
-		GoombaDamage=StringToFloat(newValue);
-	}
-	else if(convar==cvarGoombaRebound)
-	{
-		reboundPower=StringToFloat(newValue);
-	}
-	else if(convar==cvarBossRTD)
-	{
-		canBossRTD=bool:StringToInt(newValue);
-	}*/
 	else if(convar==cvarUpdater)
 	{
 		#if defined _updater_included && !defined DEV_REVISION
@@ -6602,56 +6555,6 @@ public Action:TF2_OnPlayerTeleport(client, teleporter, &bool:result)
 	}
 	return Plugin_Continue;
 }
-
-/*public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBonus, &Float:JumpPower)
-{
-	if(!Enabled || !IsValidClient(attacker) || !IsValidClient(victim) || attacker==victim)
-	{
-		return Plugin_Continue;
-	}
-
-	if(IsBoss(attacker))
-	{
-		if(shield[victim])
-		{
-			new Float:position[3];
-			GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
-
-			TF2_RemoveWearable(victim, shield[victim]);
-			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			TF2_AddCondition(victim, TFCond_Bonked, 0.1);
-			shield[victim]=0;
-			return Plugin_Handled;
-		}
-		damageMultiplier=900.0;
-		JumpPower=0.0;
-		PrintHintText(victim, "Ouch!  Watch your head!");
-		PrintHintText(attacker, "You just goomba stomped somebody!");
-		return Plugin_Changed;
-	}
-	else if(IsBoss(victim))
-	{
-		damageMultiplier=GoombaDamage;
-		JumpPower=reboundPower;
-		PrintHintText(victim, "You were just goomba stomped!");
-		PrintHintText(attacker, "You just goomba stomped the boss!");
-		UpdateHealthBar();
-		return Plugin_Changed;
-	}
-	return Plugin_Continue;
-}
-
-public Action:RTD_CanRollDice(client)
-{
-	if(Enabled && IsBoss(client) && !canBossRTD)
-	{
-		return Plugin_Handled;
-	}
-	return Plugin_Continue;
-}*/
 
 public Action:OnGetMaxHealth(client, &maxHealth)
 {
