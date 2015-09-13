@@ -1339,7 +1339,7 @@ public EnableFF2()
 	Enabled2=true;
 
 	new String:config[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "%s/%s", FF2_CONFIGS, WEAPONS_CONFIG);
+	BuildPath(Path_SM, config, sizeof(config), "%s/%s", FF2_CONFIGS, WEAPONS_CONFIG);
 
 	if(kvWeaponMods!=INVALID_HANDLE)
 	{
@@ -1466,7 +1466,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 {
 	decl String:config[PLATFORM_MAX_PATH], String:key[4], String:charset[42];
 	Specials=0;
-	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
 
 	if(!FileExists(config))
 	{
@@ -1497,7 +1497,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 				if(!StrEqual(config, charset, false))
 				{
 					FF2CharSet=i;
-					strcopy(FF2CharSetString, PLATFORM_MAX_PATH, charset);
+					strcopy(FF2CharSetString, sizeof(FF2CharSetString), charset);
 					KvGotoFirstSubKey(Kv);
 					break;
 				}
@@ -1698,7 +1698,7 @@ public LoadCharacter(const String:characterName[])
 
 	decl String:key[PLATFORM_MAX_PATH], String:section[64];
 	KvSetString(BossKV[Specials], "filename", characterName);
-	KvGetString(BossKV[Specials], "name", config, PLATFORM_MAX_PATH);
+	KvGetString(BossKV[Specials], "name", config, sizeof(config));
 	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "sound_block_vo", 0);
 	//BossSpeed[Specials]=KvGetFloat(BossKV[Specials], "maxspeed", 340.0);
 	//BossRageDamage[Specials]=KvGetFloat(BossKV[Specials], "ragedamage", 1900.0);
@@ -1712,7 +1712,7 @@ public LoadCharacter(const String:characterName[])
 			for(new i=1; ; i++)
 			{
 				IntToString(i, key, sizeof(key));
-				KvGetString(BossKV[Specials], key, config, PLATFORM_MAX_PATH);
+				KvGetString(BossKV[Specials], key, config, sizeof(config));
 				if(!config[0])
 				{
 					break;
@@ -1733,7 +1733,7 @@ public LoadCharacter(const String:characterName[])
 			for(new i=1; ; i++)
 			{
 				IntToString(i, key, sizeof(key));
-				KvGetString(BossKV[Specials], key, config, PLATFORM_MAX_PATH);
+				KvGetString(BossKV[Specials], key, config, sizeof(config));
 				if(!config[0])
 				{
 					break;
@@ -1741,7 +1741,7 @@ public LoadCharacter(const String:characterName[])
 
 				for(new extension; extension<sizeof(extensions); extension++)
 				{
-					Format(key, PLATFORM_MAX_PATH, "%s%s", config, extensions[extension]);
+					Format(key, sizeof(key), "%s%s", config, extensions[extension]);
 					if(FileExists(key, true))
 					{
 						AddFileToDownloadsTable(key);
@@ -1758,12 +1758,12 @@ public LoadCharacter(const String:characterName[])
 			for(new i=1; ; i++)
 			{
 				IntToString(i, key, sizeof(key));
-				KvGetString(BossKV[Specials], key, config, PLATFORM_MAX_PATH);
+				KvGetString(BossKV[Specials], key, config, sizeof(config));
 				if(!config[0])
 				{
 					break;
 				}
-				Format(key, PLATFORM_MAX_PATH, "%s.vtf", config);
+				Format(key, sizeof(key), "%s.vtf", config);
 				if(FileExists(key, true))
 				{
 					AddFileToDownloadsTable(key);
@@ -1772,7 +1772,7 @@ public LoadCharacter(const String:characterName[])
 				{
 					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
 				}
-				Format(key, PLATFORM_MAX_PATH, "%s.vmt", config);
+				Format(key, sizeof(key), "%s.vmt", config);
 				if(FileExists(key, true))
 				{
 					AddFileToDownloadsTable(key);
@@ -2002,7 +2002,7 @@ stock bool:IsFF2Map()
 		return true;
 	}
 
-	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/maps.cfg");
 	if(!FileExists(config))
 	{
 		LogError("[FF2] Unable to find %s, disabling plugin.", config);
@@ -2078,7 +2078,7 @@ stock bool:CheckToChangeMapDoors()
 
 	decl String:config[PLATFORM_MAX_PATH];
 	checkDoors=false;
-	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/doors.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/doors.cfg");
 	if(!FileExists(config))
 	{
 		if(!strncmp(currentmap, "vsh_lolcano_pb1", 15, false))
@@ -2831,14 +2831,14 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 		Format(music, 10, "time%i", MusicIndex);
 		new Float:time=KvGetFloat(BossKV[character[0]], music);
 		Format(music, 10, "path%i", MusicIndex);
-		KvGetString(BossKV[character[0]], music, music, PLATFORM_MAX_PATH);
+		KvGetString(BossKV[character[0]], music, music, sizeof(music));
 
 		new Action:action=Plugin_Continue;
 		Call_StartForward(OnMusic);
 		decl String:sound2[PLATFORM_MAX_PATH];
 		new Float:time2=time;
-		strcopy(sound2, PLATFORM_MAX_PATH, music);
-		Call_PushStringEx(sound2, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
+		strcopy(sound2, sizeof(sound2), music);
+		Call_PushStringEx(sound2, sizeof(sound2), 0, SM_PARAM_COPYBACK);
 		Call_PushFloatRef(time2);
 		Call_Finish(action);
 		switch(action)
@@ -2850,7 +2850,7 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 			}
 			case Plugin_Changed:
 			{
-				strcopy(music, PLATFORM_MAX_PATH, sound2);
+				strcopy(music, sizeof(music), sound2);
 				time=time2;
 			}
 		}
@@ -2907,14 +2907,14 @@ public Action:Timer_MusicTheme(Handle:timer, any:userid)
 			Format(music, 10, "time%i", MusicIndex);
 			new Float:time=KvGetFloat(BossKV[character[0]], music);
 			Format(music, 10, "path%i", MusicIndex);
-			KvGetString(BossKV[character[0]], music, music, PLATFORM_MAX_PATH);
+			KvGetString(BossKV[character[0]], music, music, sizeof(music));
 
 			new Action:action=Plugin_Continue;
 			Call_StartForward(OnMusic);
 			decl String:sound2[PLATFORM_MAX_PATH];
 			new Float:time2=time;
-			strcopy(sound2, PLATFORM_MAX_PATH, music);
-			Call_PushStringEx(sound2, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
+			strcopy(sound2, sizeof(sound2), music);
+			Call_PushStringEx(sound2, sizeof(sound2), 0, SM_PARAM_COPYBACK);
 			Call_PushFloatRef(time2);
 			Call_Finish(action);
 			switch(action)
@@ -2926,7 +2926,7 @@ public Action:Timer_MusicTheme(Handle:timer, any:userid)
 				}
 				case Plugin_Changed:
 				{
-					strcopy(music, PLATFORM_MAX_PATH, sound2);
+					strcopy(music, sizeof(music), sound2);
 					time=time2;
 				}
 			}
@@ -3200,7 +3200,7 @@ public Action:MakeModelTimer(Handle:timer, any:client)
 	{
 		decl String:model[PLATFORM_MAX_PATH];
 		KvRewind(BossKV[character[client]]);
-		KvGetString(BossKV[character[client]], "model", model, PLATFORM_MAX_PATH);
+		KvGetString(BossKV[character[client]], "model", model, sizeof(model));
 		SetVariantString(model);
 		AcceptEntityInput(Boss[client], "SetCustomModel");
 		SetEntProp(Boss[client], Prop_Send, "m_bUseClassAnimations", 1);
@@ -4553,7 +4553,7 @@ public Action:Command_Charset(client, args)
 	ImplodeStrings(rawText, amount, " ", charset, sizeof(charset));
 
 	decl String:config[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
 
 	new Handle:Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, config);
@@ -4585,7 +4585,7 @@ public Action:Command_ReloadSubPlugins(client, args)
 		//DisableSubPlugins(true);
 		//EnableSubPlugins(true);
 		decl String:path[PLATFORM_MAX_PATH], String:filename[PLATFORM_MAX_PATH];
-		BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freak_fortress_2");
+		BuildPath(Path_SM, path, sizeof(path), "plugins/freak_fortress_2");
 		decl FileType:filetype;
 		new Handle:directory=OpenDirectory(path);
 		while(ReadDirEntry(directory, filename, sizeof(filename), filetype))
@@ -5505,7 +5505,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			GetGameTime()<=KSpreeTimer[boss] ? (KSpreeCount[boss]+=1) : (KSpreeCount[boss]=1);  //Breaks if you do ++ or remove the parentheses...
 			if(KSpreeCount[boss]==3)
 			{
-				if(RandomSound("sound_kspree", sound, PLATFORM_MAX_PATH, boss))
+				if(RandomSound("sound_kspree", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAll(sound);
 					EmitSoundToAll(sound);
@@ -5782,7 +5782,7 @@ public Action:Timer_DrawGame(Handle:timer)
 		case 1, 2, 3, 4, 5:
 		{
 			decl String:sound[PLATFORM_MAX_PATH];
-			Format(sound, PLATFORM_MAX_PATH, "vo/announcer_ends_%isec.mp3", time);
+			Format(sound, sizeof(sound), "vo/announcer_ends_%isec.mp3", time);
 			EmitSoundToAll(sound);
 		}
 		case 0:
@@ -8060,7 +8060,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, param1, param2)
 				{
 					decl String:s[PLATFORM_MAX_PATH];
 					Format(s,10,"path%i",MusicIndex);
-					KvGetString(BossKV[character[0]], s,s, PLATFORM_MAX_PATH);
+					KvGetString(BossKV[character[0]], s,s, sizeof(s));
 					StopSound(param1, SNDCHAN_AUTO, s);
 					StopSound(param1, SNDCHAN_AUTO, s);
 				}
@@ -8139,9 +8139,9 @@ public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH
 	if(!StrContains(sound, "vo") && !(FF2Flags[Boss[boss]] & FF2FLAG_TALKING))
 	{
 		decl String:newSound[PLATFORM_MAX_PATH];
-		if(RandomSound("catch_phrase", newSound, PLATFORM_MAX_PATH, boss))
+		if(RandomSound("catch_phrase", newSound, sizeof(newSound), boss))
 		{
-			strcopy(sound, PLATFORM_MAX_PATH, newSound);
+			strcopy(sound, sizeof(sound), newSound);
 			return Plugin_Changed;
 		}
 
