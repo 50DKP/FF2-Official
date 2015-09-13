@@ -1036,7 +1036,7 @@ public OnPluginStart()
 
 	cvarVersion=CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
 	cvarPointType=CreateConVar("ff2_point_type", "0", "0-Use ff2_point_alive, 1-Use ff2_point_time", _, true, 0.0, true, 1.0);
-	cvarPointDelay=CreateConVar("ff2_point_delay", "6", "Seconds to add to the point delay per player");
+	cvarPointDelay=CreateConVar("ff2_point_delay", "6", "Seconds to add to the point delay per player", _, true, 0.0);
 	cvarAliveToEnable=CreateConVar("ff2_point_alive", "5", "The control point will only activate when there are this many people or less left alive");
 	cvarAnnounce=CreateConVar("ff2_announce", "120", "Amount of seconds to wait until FF2 info is displayed again.  0 to disable", _, true, 0.0);
 	cvarEnabled=CreateConVar("ff2_enabled", "1", "0-Disable FF2 (WHY?), 1-Enable FF2", FCVAR_DONTRECORD, true, 0.0, true, 1.0);
@@ -1059,10 +1059,6 @@ public OnPluginStart()
 	cvarShieldCrits=CreateConVar("ff2_shield_crits", "0", "0 to disable grenade launcher crits when equipping a shield, 1 for minicrits, 2 for crits", _, true, 0.0, true, 2.0);
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", _, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", _, true, 0.0, true, 1.0);
-
-	//The following are used in various subplugins
-	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
-	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
 
 	HookEvent("teamplay_round_start", OnRoundStart);
 	HookEvent("teamplay_round_win", OnRoundEnd);
@@ -1158,7 +1154,7 @@ public OnPluginStart()
 	RegAdminCmd("hale_resetqueuepoints", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 	RegAdminCmd("hale_resetq", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 
-	AutoExecConfig(true, "freak_fortress_2");
+	AutoExecConfig(true, "freak_fortress_2/freak_fortress_2");
 
 	FF2Cookies=RegClientCookie("ff2_cookies_mk2", "", CookieAccess_Protected);
 
@@ -1360,10 +1356,6 @@ public EnableFF2()
 	Announce=GetConVarFloat(cvarAnnounce);
 	PointType=GetConVarInt(cvarPointType);
 	PointDelay=GetConVarInt(cvarPointDelay);
-	if(PointDelay<0)
-	{
-		PointDelay*=-1;
-	}
 	AliveToEnable=GetConVarInt(cvarAliveToEnable);
 	BossCrits=GetConVarBool(cvarCrits);
 	arenaRounds=GetConVarInt(cvarArenaRounds);
@@ -1862,10 +1854,6 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	if(convar==cvarPointDelay)
 	{
 		PointDelay=StringToInt(newValue);
-		if(PointDelay<0)
-		{
-			PointDelay*=-1;
-		}
 	}
 	else if(convar==cvarAnnounce)
 	{

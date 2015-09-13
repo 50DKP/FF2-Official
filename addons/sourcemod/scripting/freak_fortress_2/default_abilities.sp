@@ -46,6 +46,12 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart2()
 {
+	cvarOldJump=CreateConVar("ff2_oldjump", "0", "Use old VSH jump equations", _, true, 0.0, true, 1.0);
+	cvarBaseJumperStun=CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
+
+	HookConVarChange(cvarOldJump, CvarChange);
+	HookConVarChange(cvarBaseJumperStun, CvarChange);
+
 	jumpHUD=CreateHudSynchronizer();
 
 	HookEvent("object_deflected", OnDeflect, EventHookMode_Pre);
@@ -53,16 +59,12 @@ public OnPluginStart2()
 	HookEvent("player_death", OnPlayerDeath);
 
 	LoadTranslations("freak_fortress_2.phrases");
+
+	AutoExecConfig(true, "freak_fortress_2/default_abilities");
 }
 
-public OnAllPluginsLoaded()
+public OnConfigsExecuted()
 {
-	cvarOldJump=FindConVar("ff2_oldjump");  //Created in freak_fortress_2.sp
-	cvarBaseJumperStun=FindConVar("ff2_base_jumper_stun");
-
-	HookConVarChange(cvarOldJump, CvarChange);
-	HookConVarChange(cvarBaseJumperStun, CvarChange);
-
 	oldJump=GetConVarBool(cvarOldJump);
 	removeBaseJumperOnStun=GetConVarBool(cvarBaseJumperStun);
 }
