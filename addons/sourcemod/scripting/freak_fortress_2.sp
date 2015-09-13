@@ -35,7 +35,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define MAJOR_REVISION "2"
 #define MINOR_REVISION "0"
 #define STABLE_REVISION "0"
-#define DEV_REVISION "alpha.3"
+#define DEV_REVISION "alpha"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //2.0.0
@@ -4741,7 +4741,7 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 		}
 	}
 
-	FF2Flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
+	FF2Flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_BLAST_JUMPING);
 	FF2Flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
 }
@@ -4791,21 +4791,6 @@ public Action:ClientTimer(Handle:timer)
 				strcopy(classname, sizeof(classname), "");
 			}
 			new bool:validwep=!StrContains(classname, "tf_weapon", false);
-
-			/*if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))  //Removed in Gunmettle update
-			{
-				if(GetClientCloakIndex(client)==59)  //Dead Ringer
-				{
-					if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
-					{
-						TF2_RemoveCondition(client, TFCond_DeadRingered);
-					}
-				}
-				else
-				{
-					TF2_AddCondition(client, TFCond_DeadRingered, 0.3);
-				}
-			}*/
 
 			new index=(validwep ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 			if(class==TFClass_Medic)
@@ -4892,7 +4877,7 @@ public Action:ClientTimer(Handle:timer)
 				addthecrit=true;
 				if(index==416)  //Market Gardener
 				{
-					addthecrit=FF2Flags[client] & FF2FLAG_ROCKET_JUMPING ? true : false;
+					addthecrit=FF2Flags[client] & FF2FLAG_BLAST_JUMPING ? true : false;
 				}
 			}
 			else if((!StrContains(classname, "tf_weapon_smg") && index!=751) ||  //Cleaner's Carbine
@@ -5252,7 +5237,7 @@ public TF2_OnConditionAdded(client, TFCond:condition)
 		}
 		else if(!IsBoss(client) && condition==TFCond_BlastJumping)
 		{
-			FF2Flags[client]|=FF2FLAG_ROCKET_JUMPING;
+			FF2Flags[client]|=FF2FLAG_BLAST_JUMPING;
 		}
 	}
 }
@@ -5267,7 +5252,7 @@ public TF2_OnConditionRemoved(client, TFCond:condition)
 		}
 		else if(!IsBoss(client) && condition==TFCond_BlastJumping)
 		{
-			FF2Flags[client]&=~FF2FLAG_ROCKET_JUMPING;
+			FF2Flags[client]&=~FF2FLAG_BLAST_JUMPING;
 		}
 	}
 }
@@ -6090,7 +6075,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 					}
 					case 416:  //Market Gardener (courtesy of Chdata)
 					{
-						if(FF2Flags[attacker] & FF2FLAG_ROCKET_JUMPING)
+						if(FF2Flags[attacker] & FF2FLAG_BLAST_JUMPING)
 						{
 							damage=(Pow(float(BossHealthMax[boss]), 0.74074)+512.0-(Marketed[client]/128.0*float(BossHealthMax[boss])));
 							damagetype|=DMG_CRIT;
@@ -8242,14 +8227,12 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 
 	new Handle:menu=CreateMenu(Handler_VoteCharset, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(menu, "%t", "Vote for Character Set");  //"Please vote for the character set for the next map."
-	//SetVoteResultCallback(menu, Handler_VoteCharset);
 
 	decl String:config[PLATFORM_MAX_PATH], String:charset[64];
 	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
 
 	new Handle:Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, config);
-	//AddMenuItem(menu, "0 Random", "Random");
 	AddMenuItem(menu, "Random", "Random");
 	new total, charsets;
 	do
@@ -8263,8 +8246,6 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 		validCharsets[charsets]=total;
 
 		KvGetSectionName(Kv, charset, sizeof(charset));
-		//Format(charset, sizeof(charset), "%i %s", charsets, config);
-		//AddMenuItem(menu, charset, config);
 		AddMenuItem(menu, charset, charset);
 	}
 	while(KvGotoNextKey(Kv));
@@ -8281,16 +8262,7 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 
 public Handler_VoteCharset(Handle:menu, MenuAction:action, param1, param2)
 {
-	/*if(action==MenuAction_Select && param2==1)
-	{
-		new clients[1];
-		clients[0]=param1;
-		if(!IsVoteInProgress())
-		{
-			VoteMenu(menu, clients, param1, 1, MENU_TIME_FOREVER);
-		}
-	}
-	else */if(action==MenuAction_VoteEnd)
+	if(action==MenuAction_VoteEnd)
 	{
 		FF2CharSet=param1 ? param1-1 : validCharsets[GetRandomInt(1, FF2CharSet)]-1;  //If param1 is 0 then we need to find a random charset
 
@@ -8305,26 +8277,6 @@ public Handler_VoteCharset(Handle:menu, MenuAction:action, param1, param2)
 		CloseHandle(menu);
 	}
 }
-
-/*public Handler_VoteCharset(Handle:menu, votes, clients, const clientInfo[][2], items, const itemInfo[][2])
-{
-	decl String:item[42], String:display[42], String:nextmap[42];
-	GetMenuItem(menu, itemInfo[0][VOTEINFO_ITEM_INDEX], item, sizeof(item), _, display, sizeof(display));
-	if(item[0]=='0')  //!StringToInt(item)
-	{
-		FF2CharSet=GetRandomInt(0, FF2CharSet);
-	}
-	else
-	{
-		FF2CharSet=item[0]-'0'-1;  //Wat
-		//FF2CharSet=StringToInt(item)-1
-	}
-
-	GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
-	strcopy(FF2CharSetString, 42, item[StrContains(item, " ")+1]);
-	CPrintToChatAll("{olive}[FF2]{default} %t", "nextmap_charset", nextmap, FF2CharSetString);  //display
-	isCharSetSelected=true;
-}*/
 
 public Action:Command_Nextmap(client, args)
 {
