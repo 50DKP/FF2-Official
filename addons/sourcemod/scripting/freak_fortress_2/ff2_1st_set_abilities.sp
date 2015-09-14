@@ -43,7 +43,7 @@ new TFTeam:BossTeam=TFTeam_Blue;
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
-	OnRage=CreateGlobalForward("FF2_OnRage", ET_Hook, boss, Param_FloatByRef);  //Boss, distance
+	OnRage=CreateGlobalForward("FF2_OnRage", ET_Hook, Param_Cell, Param_FloatByRef);  //Boss, distance
 	return APLRes_Success;
 }
 
@@ -131,7 +131,7 @@ public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_nam
 		if(!boss)
 		{
 			new Action:action;
-			Call_StartForward(OnHaleRage);
+			Call_StartForward(OnRage);
 			new Float:distance=FF2_GetBossRageDistance(boss, this_plugin_name, ability_name);
 			new Float:newDistance=distance;
 			Call_PushCell(boss);
