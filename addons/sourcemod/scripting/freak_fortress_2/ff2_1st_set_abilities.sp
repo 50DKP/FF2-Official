@@ -34,7 +34,7 @@ new CloneOwnerIndex[MAXPLAYERS+1]=-1;
 new Handle:SlowMoTimer;
 new oldTarget;
 
-new Handle:OnHaleRage=INVALID_HANDLE;
+new Handle:OnRage;
 
 new Handle:cvarTimeScale;
 new Handle:cvarCheats;
@@ -43,7 +43,7 @@ new TFTeam:BossTeam=TFTeam_Blue;
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
-	OnHaleRage=CreateGlobalForward("VSH_OnDoRage", ET_Hook, Param_FloatByRef);
+	OnRage=CreateGlobalForward("FF2_OnRage", ET_Hook, boss, Param_FloatByRef);  //Boss, distance
 	return APLRes_Success;
 }
 
@@ -124,21 +124,22 @@ public Action:Timer_GetBossTeam(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
+public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
 	if(!slot)  //Rage
 	{
 		if(!boss)
 		{
-			new Action:action=Plugin_Continue;
+			new Action:action;
 			Call_StartForward(OnHaleRage);
 			new Float:distance=FF2_GetBossRageDistance(boss, this_plugin_name, ability_name);
 			new Float:newDistance=distance;
+			Call_PushCell(boss);
 			Call_PushFloatRef(newDistance);
 			Call_Finish(action);
-			if(action!=Plugin_Continue && action!=Plugin_Changed)
+			if(action==Plugin_Handled || action==Plugin_Stop)
 			{
-				return Plugin_Continue;
+				return;
 			}
 			else if(action==Plugin_Changed)
 			{
@@ -186,7 +187,6 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 	{
 		Rage_Slowmo(boss, ability_name);
 	}
-	return Plugin_Continue;
 }
 
 Rage_Clone(const String:ability_name[], boss)

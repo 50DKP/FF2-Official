@@ -38,16 +38,14 @@ public OnPluginStart()
 	GetThisPluginName();
 }
 
-public Action:FF2_OnAbility(client, const String:plugin_name[], const String:ability_name[], slot, status)
+public FF2_OnAbility(client, const String:plugin_name[], const String:ability_name[], slot, status)
 {
 	if(plugin_name[0])
 	{
 		if(!StrEqual(this_plugin_name, plugin_name))
 		{
-			return Plugin_Continue;
+			return;
 		}
 	}
-
 	FF2_OnAbility2(client, plugin_name, ability_name, slot, status);
-	return Plugin_Continue;
 }

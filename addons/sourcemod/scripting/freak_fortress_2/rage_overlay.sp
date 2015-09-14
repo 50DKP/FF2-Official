@@ -40,13 +40,12 @@ public Action:Timer_GetBossTeam(Handle:hTimer)
 	return Plugin_Continue;
 }
 
-public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
+public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
 	if(StrEqual(ability_name, "rage_overlay"))
 	{
 		Rage_Overlay(boss, ability_name);
 	}
-	return Plugin_Continue;
 }
 
 Rage_Overlay(boss, const String:ability_name[])

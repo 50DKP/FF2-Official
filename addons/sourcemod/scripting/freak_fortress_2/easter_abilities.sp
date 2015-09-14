@@ -154,7 +154,7 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, 
 	}
 }
 
-public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
+public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
 	//NOOP
 }

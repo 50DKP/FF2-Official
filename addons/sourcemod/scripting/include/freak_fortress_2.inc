@@ -376,8 +376,6 @@ native bool:FF2_Debug();
  * Called whenever a boss uses an ability (Rage, jump, teleport, etc)
  * Called every 0.2 seconds for charge abilities
  *
- * Use FF2_PreAbility with enabled=false ONLY to prevent FF2_OnAbility!
- *
  * @param boss          Boss's index
  * @param pluginName    Name of plugin with this ability
  * @param abilityName   Name of ability
@@ -391,10 +389,36 @@ native bool:FF2_Debug();
  *                          1 - Recharging
  *                          2 - Ready
  *                          3 - In use
- * @return              Return enabled=false in FF2_PreAbility to simulate Plugin_Stop
+ * @return              Plugin_Handled or Plugin_Stop for FF2_PreAbility to prevent FF2_OnAbility
  */
-forward FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[], slot, &bool:enabled);
-forward Action:FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[], slot, status);
+forward Action:FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[], slot);
+forward FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[], slot, status);
+
+/**
+ * Called when a boss rages
+ *
+ * @param boss          Boss's index
+ * @param distance      Rage distance
+ * @return              Plugin_Changed to change rage distance, Plugin_Handled or Plugin_Stop to prevent rage
+ */
+forward Action:FF2_OnRage(boss, &Float:distance);
+
+/**
+ * Called when a boss super jumps (this includes teleports)
+ *
+ * @param boss              Boss's index
+ * @param superDuperJump    Whether or not super duper jump is enabled
+ * @return                  Plugin_Changed to change super duper jump status, Plugin_Handled or Plugin_Stop to prevent super jump
+ */
+forward Action:FF2_OnSuperJump(boss, &bool:superDuperJump);
+
+/**
+ * Called when a boss uses weighdown
+ *
+ * @param boss          Boss's index
+ * @return              Plugin_Handled or Plugin_Stop to prevent weighdown
+ */
+forward Action:FF2_OnWeighdown(boss);
 
 /**
  * Called when a Boss gets hurt by environmental damage

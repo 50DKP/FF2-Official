@@ -8711,21 +8711,19 @@ public Native_GetAbilityArgumentString(Handle:plugin, numParams)
 
 UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, buttonMode=0)
 {
-	new bool:enabled=true;
+	new Action:action;
 	Call_StartForward(PreAbility);
 	Call_PushCell(boss);
 	Call_PushString(pluginName);
 	Call_PushString(abilityName);
 	Call_PushCell(slot);
-	Call_PushCellRef(enabled);
-	Call_Finish();
+	Call_Finish(action);
 
-	if(!enabled)
+	if(action==Plugin_Handled || action==Plugin_Stop)
 	{
 		return;
 	}
 
-	new Action:action=Plugin_Continue;
 	Call_StartForward(OnAbility);
 	Call_PushCell(boss);
 	Call_PushString(pluginName);
@@ -8734,13 +8732,13 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 	if(slot==-1)
 	{
 		Call_PushCell(3);  //We're assuming here a life-loss ability will always be in use if it gets called
-		Call_Finish(action);
+		Call_Finish();
 	}
 	else if(!slot)
 	{
 		FF2Flags[Boss[boss]]&=~FF2FLAG_BOTRAGE;
 		Call_PushCell(3);  //We're assuming here a rage ability will always be in use if it gets called
-		Call_Finish(action);
+		Call_Finish();
 		BossCharge[boss][slot]=0.0;
 	}
 	else
@@ -8780,7 +8778,7 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 			if(BossCharge[boss][slot]>=0.0)
 			{
 				Call_PushCell(2);  //Ready
-				Call_Finish(action);
+				Call_Finish();
 				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(boss, pluginName, abilityName, 1, 1.5);
 				if(BossCharge[boss][slot]+charge<100.0)
 				{
@@ -8794,7 +8792,7 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 			else
 			{
 				Call_PushCell(1);  //Recharging
-				Call_Finish(action);
+				Call_Finish();
 				BossCharge[boss][slot]+=0.2;
 			}
 		}
@@ -8805,7 +8803,7 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 			if(angles[0]<-45.0)
 			{
 				Call_PushCell(3);  //In use
-				Call_Finish(action);
+				Call_Finish();
 				new Handle:data;
 				CreateDataTimer(0.1, Timer_UseBossCharge, data);
 				WritePackCell(data, boss);
@@ -8816,20 +8814,20 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 			else
 			{
 				Call_PushCell(0);  //Not in use
-				Call_Finish(action);
+				Call_Finish();
 				BossCharge[boss][slot]=0.0;
 			}
 		}
 		else if(BossCharge[boss][slot]<0.0)
 		{
 			Call_PushCell(1);  //Recharging
-			Call_Finish(action);
+			Call_Finish();
 			BossCharge[boss][slot]+=0.2;
 		}
 		else
 		{
 			Call_PushCell(0);  //Not in use
-			Call_Finish(action);
+			Call_Finish();
 		}
 	}
 }

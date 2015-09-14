@@ -41,13 +41,12 @@ public OnPluginStart2()
 	HookEvent("teamplay_round_start", OnRoundStart);
 }
 
-public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
+public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
 	if(StrEqual(ability_name, "rage_new_weapon"))
 	{
 		Rage_New_Weapon(boss, ability_name);
 	}
-	return Plugin_Continue;
 }
 
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)

@@ -18,9 +18,9 @@ public Plugin:myinfo=
 	version=PLUGIN_VERSION,
 };
 
-new Handle:OnHaleJump;
-new Handle:OnHaleRage;
-new Handle:OnHaleWeighdown;
+new Handle:OnSuperJump;
+new Handle:OnRage;
+new Handle:OnWeighdown;
 
 new Handle:gravityDatapack[MAXPLAYERS+1];
 
@@ -38,9 +38,9 @@ new bool:removeBaseJumperOnStun;
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
-	OnHaleJump=CreateGlobalForward("VSH_OnDoJump", ET_Hook, Param_CellByRef);
-	OnHaleRage=CreateGlobalForward("VSH_OnDoRage", ET_Hook, Param_FloatByRef);
-	OnHaleWeighdown=CreateGlobalForward("VSH_OnDoWeighdown", ET_Hook);
+	OnSuperJump=CreateGlobalForward("FF2_OnSuperJump", ET_Hook, Param_Cell, Param_CellByRef);  //Boss, super duper jump
+	OnRage=CreateGlobalForward("FF2_OnRage", ET_Hook, Param_Cell, Param_FloatByRef);  //Boss, distance
+	OnWeighdown=CreateGlobalForward("FF2_OnWeighdown", ET_Hook, Param_Cell);  //Boss
 	return APLRes_Success;
 }
 
@@ -111,7 +111,7 @@ public Action:Timer_GetBossTeam(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
+public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
 	if(!slot)  //Rage
 	{
@@ -119,14 +119,15 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 		{
 			new Float:distance=FF2_GetBossRageDistance(boss, this_plugin_name, ability_name);
 			new Float:newDistance=distance;
-			new Action:action=Plugin_Continue;
 
-			Call_StartForward(OnHaleRage);
+			new Action:action;
+			Call_StartForward(OnRage);
+			Call_PushCell(boss);
 			Call_PushFloatRef(newDistance);
 			Call_Finish(action);
-			if(action!=Plugin_Continue && action!=Plugin_Changed)
+			if(action==Plugin_Handled || action==Plugin_Stop)
 			{
-				return Plugin_Continue;
+				return;
 			}
 			else if(action==Plugin_Changed)
 			{
@@ -179,7 +180,7 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 
 		if(!otherTeamIsAlive)
 		{
-			return Plugin_Continue;
+			return;
 		}
 
 		new target, tries;
@@ -189,7 +190,7 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 			target=GetRandomInt(1, MaxClients);
 			if(tries==100)
 			{
-				return Plugin_Continue;
+				return;
 			}
 		}
 		while(!IsValidEdict(target) || target==client || (FF2_GetFF2Flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target));
@@ -198,7 +199,6 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 		TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
 		TF2_StunPlayer(client, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, client);
 	}
-	return Plugin_Continue;
 }
 
 Rage_Stun(const String:ability_name[], boss)
@@ -292,11 +292,12 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 		case 3:
 		{
 			new bool:superJump=enableSuperDuperJump[boss];
-			new Action:action=Plugin_Continue;
-			Call_StartForward(OnHaleJump);
+			new Action:action;
+			Call_StartForward(OnSuperJump);
+			Call_PushCell(boss);
 			Call_PushCellRef(superJump);
 			Call_Finish(action);
-			if(action!=Plugin_Continue && action!=Plugin_Changed)
+			if(action==Plugin_Handled || action==Plugin_Stop)
 			{
 				return;
 			}
@@ -381,12 +382,13 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 		}
 		case 3:
 		{
-			new Action:action=Plugin_Continue;
+			new Action:action;
 			new bool:superJump=enableSuperDuperJump[boss];
-			Call_StartForward(OnHaleJump);
+			Call_StartForward(OnSuperJump);
+			Call_PushCell(boss);
 			Call_PushCellRef(superJump);
 			Call_Finish(action);
-			if(action!=Plugin_Continue && action!=Plugin_Changed)
+			if(action==Plugin_Handled || action==Plugin_Stop)
 			{
 				return;
 			}
@@ -516,10 +518,11 @@ Charge_WeighDown(boss, slot)  //TODO: Create a HUD for this
 			GetClientEyeAngles(client, angles);
 			if(angles[0]>60.0)
 			{
-				new Action:action=Plugin_Continue;
-				Call_StartForward(OnHaleWeighdown);
+				new Action:action;
+				Call_StartForward(OnWeighdown);
+				Call_PushCell(boss);
 				Call_Finish(action);
-				if(action!=Plugin_Continue && action!=Plugin_Changed)
+				if(action==Plugin_Handled || action==Plugin_Stop)
 				{
 					return;
 				}
