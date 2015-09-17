@@ -3423,23 +3423,26 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 
 	if(!IsBoss(client))
 	{
+		decl String:itemString[8];
+		IntToString(iItemDefinitionIndex, itemString, sizeof(itemString));
+
 		KvRewind(kvWeaponMods);
 		new bool:differentClass=false;
-		if(KvJumpToKey(kvWeaponMods, "By Classname") && KvJumpToKey(kvWeaponMods, classname))
+		if(KvJumpToKey(kvWeaponMods, classname) || KvJumpToKey(kvWeaponMods, itemString))
 		{
-			Debug("Keyvalues: Entered classname (classname %s)", classname);
+			Debug("Entered classname %s or index %i", classname, iItemDefinitionIndex);
 			if(KvJumpToKey(kvWeaponMods, "replace"))
 			{
-				Debug("\tKeyvalues classname: Entered replace");
+				Debug("\tEntered replace");
 				new String:newClass[64];
 				KvGetString(kvWeaponMods, "classname", newClass, sizeof(newClass));
-				Debug("\t\tKeyvalues classname>replace: New classname is %s", newClass);
+				Debug("\t\tNew classname is %s", newClass);
 
 				new flags=OVERRIDE_ITEM_DEF|OVERRIDE_ATTRIBUTES|FORCE_GENERATION;
 				new index=KvGetNum(kvWeaponMods, "index", -1);
-				if(index==-1)
+				if(index<0)
 				{
-					LogError("[FF2 Weapons] \"Replace\" is missing item definition index for classname %s!", classname);
+					LogError("[FF2 Weapons] \"replace\" is missing item definition index for classname %s or index %i!", classname, iItemDefinitionIndex);
 					return Plugin_Stop;
 				}
 
@@ -3455,7 +3458,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				{
 					flags|=OVERRIDE_ITEM_LEVEL;
 				}
-				else if(differentClass)
+				else if(differentClass)  //If level wasn't set and we're switching classnames automatically set the level to 1
 				{
 					level=1;
 				}
@@ -3465,7 +3468,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				{
 					flags|=OVERRIDE_ITEM_QUALITY;
 				}
-				else if(differentClass)
+				else if(differentClass)  //Ditto here.
 				{
 					quality=0;
 				}
@@ -3474,20 +3477,30 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				TF2Items_SetClassname(weapon, classname);
 				TF2Items_SetQuality(weapon, quality);
 				TF2Items_SetLevel(weapon, level);
-				Debug("\t\tKeyvalues classname>replace: Gave new weapon with classname %s, quality %i, and level %i", classname, quality, level);
+				Debug("\t\tGave new weapon with classname %s, index %i, quality %i, and level %i", classname, index, quality, level);
 				new entity=TF2Items_GiveNamedItem(client, weapon);
-				Debug("\t\tKeyvalues classname>replace: Entity was %i", entity);
 				//CloseHandle(weapon);
 				EquipPlayerWeapon(client, entity);
 				KvGoBack(kvWeaponMods);
 			}
 
-			if(KvJumpToKey(kvWeaponMods, "removeattribs"))  //TODO: remove-all (TF2Attrib)
+			decl String:attributes[64], String:weaponAttribsArray[32][32];
+			KvGetString(kvWeaponMods, "remove", attributes, sizeof(attributes));
+			Debug("Attributes to be removed: %s", attributes);
+			new attribCount=ExplodeString(attributes, ";", weaponAttribsArray, 32, 32);
+			new entity=FindEntityByClassname(-1, classname);
+			for(new attribute; attribute<attribCount; attribute++)
 			{
-				Debug("\tKeyvalues classname: Entered removeattribs");
+				TF2Attrib_RemoveByDefIndex(entity, StringToInt(weaponAttribsArray[attribute]));
+				Debug("Removed attribute %s", weaponAttribsArray[attribute]);
+			}
+
+			/*if(KvJumpToKey(kvWeaponMods, "remove"))  //TODO: remove-all (TF2Attrib)
+			{
+				Debug("\tEntered remove");
 				if(KvGotoFirstSubKey(kvWeaponMods, false))
 				{
-					Debug("\t\tKeyvalues classname>removeattribs: Entered first subkey");
+					Debug("\t\tEntered first subkey");
 					decl attributes[64];
 					new attribCount=1;
 
@@ -3502,7 +3515,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 						Debug("\t\tKeyvalues classname>removeattribs: Got attrib %i", attributes[key]);
 						attribCount++;
 					}
-					Debug("\t\tKeyvalues classname>removeatribs: Final attrib count was %i", attribCount);
+					Debug("\t\tFinal attrib count was %i", attribCount);
 
 					if(attribCount>0)
 					{
@@ -3516,7 +3529,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 								return Plugin_Stop;
 							}
 
-							Debug("\t\tKeyvalues classname>removeattribs: Removed attribute %i", attributes[attribute]);
+							Debug("\t\tRemoved attribute %i", attributes[attribute]);
 							new entity=FindEntityByClassname(-1, classname);
 							if(entity!=-1)
 							{
@@ -3528,32 +3541,74 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				}
 				else
 				{
-					LogError("[FF2 Weapons] There was nothing under \"removeattribs\" for classname %s!", classname);
+					LogError("[FF2 Weapons] There was nothing under \"remove\" for classname %s!", classname);
+				}
+				KvGoBack(kvWeaponMods);
+			}*/
+
+			if(KvJumpToKey(kvWeaponMods, "add"))  //TODO: Preserve attributes
+			{
+				Debug("\tEntered add");
+				decl String:attributes[32][8];
+				new attribCount;
+				for(new key; KvGotoNextKey(kvWeaponMods); key+=2)
+				{
+					if(key>=32)
+					{
+						LogError("[FF2 Weapons] Weapon %s (index %i) has more than 16 attributes, ignoring the rest", classname, iItemDefinitionIndex);
+						break;
+					}
+
+					attribCount++;
+					KvGetSectionName(kvWeaponMods, attributes[key], 8);
+					KvGetString(kvWeaponMods, attributes[key], attributes[key+1], 8);
+					Debug("\t\tAttribute set %i is %s ; %s", attribCount, attributes[key], attributes[key+1]);
+				}
+
+				if(attribCount % 2)  //TODO: Still have no clue what this does...
+				{
+					attribCount--;
+				}
+
+				if(attribCount>0)
+				{
+					new entity=FindEntityByClassname(-1, classname);
+					for(new attribute=0; attribute<attribCount; attribute+=2)
+					{
+						new attrib=StringToInt(attributes[attribute]);
+						if(!attrib)
+						{
+							LogError("[FF2 Weapons] Ignoring attribute 0 passed for weapon %s (index %i)", classname, iItemDefinitionIndex);
+							continue;
+						}
+
+						TF2Attrib_SetByDefIndex(entity, StringToInt(attributes[attribute]), StringToFloat(attributes[attribute+1]));
+						Debug("\t\tAdded attribute set %s ; %s", attributes[attribute], attributes[attribute+1]);
+					}
 				}
 				KvGoBack(kvWeaponMods);
 			}
 
-			if(KvJumpToKey(kvWeaponMods, "addattribs"))  //TODO: Preserve attributes
+			/*if(KvJumpToKey(kvWeaponMods, "add"))  //TODO: Preserve attributes
 			{
-				Debug("\tKeyvalues classname: Entered addattribs");
 				if(KvGotoFirstSubKey(kvWeaponMods, false))
 				{
-					Debug("\t\tKeyvalues classname>addattribs: Entered first subkey");
+					Debug("\t\tEntered first subkey");
 					new String:attributes[64][64];
 					new attribCount=1;
 
 					KvGetSectionName(kvWeaponMods, attributes[0], sizeof(attributes));
 					KvGetString(kvWeaponMods, attributes[0], attributes[1], sizeof(attributes));
-					Debug("\t\tKeyvalues classname>addattribs: First attrib set was %s ; %s", attributes[0], attributes[1]);
+					Debug("\t\tFirst attrib set was %s ; %s", attributes[0], attributes[1]);
 
-					for(new key=3; KvGotoNextKey(kvWeaponMods, false); key+=2)
+					for(new key=3; KvGotoNextKey(kvWeaponMods); key+=2)
 					{
 						KvGetSectionName(kvWeaponMods, attributes[key], sizeof(attributes));
 						KvGetString(kvWeaponMods, attributes[key], attributes[key+1], sizeof(attributes));
-						Debug("\t\tKeyvalues classname>addattribs: Got attrib set %s ; %s", attributes[key], attributes[key+1]);
+						Debug("\t\tGot attrib set %s ; %s", attributes[key], attributes[key+1]);
 						attribCount++;
 					}
-					Debug("\t\tKeyvalues classname>addatribs: Final attrib count was %i", attribCount);
+					Debug("\t\tFinal attrib count was %i", attribCount);
 
 					if(attribCount%2!=0)
 					{
@@ -3575,7 +3630,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 
 							Debug("\t\tKeyvalues classname>addattribs: Added attrib set %s ; %s", attributes[attribute], attributes[attribute+1]);
 							new entity=FindEntityByClassname(-1, classname);
-							{
+							{  //FIXME: THIS BRACKET
 								TF2Attrib_SetByDefIndex(entity, StringToInt(attributes[attribute]), StringToFloat(attributes[attribute+1]));
 							}
 							i++;
@@ -3587,7 +3642,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 					LogError("[FF2 Weapons] There was nothing under \"Addattribs\" for classname %s!", classname);
 				}
 				KvGoBack(kvWeaponMods);
-			}
+			}*/
 		}
 
 		/*if(differentClass)
