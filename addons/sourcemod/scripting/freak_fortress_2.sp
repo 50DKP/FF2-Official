@@ -66,7 +66,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define CHANGELOG "data/ff2_changelog.txt"
 
 #if defined _steamtools_included
-new bool:steamtools=false;
+new bool:steamtools;
 #endif
 
 new TFTeam:OtherTeam=TFTeam_Red;
@@ -168,7 +168,7 @@ new Handle:doorCheckTimer;
 new botqueuepoints;
 new Float:HPTime;
 new String:currentmap[99];
-new bool:checkDoors=false;
+new bool:checkDoors;
 new bool:bMedieval;
 new bool:firstBlood;
 
@@ -186,18 +186,18 @@ new Handle:cvarNextmap;
 new FF2CharSet;
 new validCharsets[64];
 new String:FF2CharSetString[42];
-new bool:isCharSetSelected=false;
+new bool:isCharSetSelected;
 
 new healthBar=-1;
 new g_Monoculus=-1;
 
-static bool:executed=false;
-static bool:executed2=false;
+static bool:executed;
+static bool:executed2;
 
 new changeGamemode;
 
 //new Handle:kvWeaponSpecials;
-new Handle:kvWeaponMods=INVALID_HANDLE;
+new Handle:kvWeaponMods;
 
 enum FF2RoundState
 {
@@ -1471,7 +1471,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 	FileToKeyValues(Kv, config);
 	new NumOfCharSet=FF2CharSet;
 
-	new Action:action=Plugin_Continue;
+	new Action:action;
 	Call_StartForward(OnLoadCharacterSet);
 	Call_PushCellRef(NumOfCharSet);
 	strcopy(charset, sizeof(charset), FF2CharSetString);
@@ -2480,7 +2480,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 	executed=false;
 	executed2=false;
-	new bool:bossWin=false;
+	new bool:bossWin;
 	decl String:sound[PLATFORM_MAX_PATH];
 	if((TFTeam:GetEventInt(event, "team")==BossTeam))
 	{
@@ -2821,7 +2821,7 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 		Format(music, 10, "path%i", MusicIndex);
 		KvGetString(BossKV[character[0]], music, music, sizeof(music));
 
-		new Action:action=Plugin_Continue;
+		new Action:action;
 		Call_StartForward(OnMusic);
 		decl String:sound2[PLATFORM_MAX_PATH];
 		new Float:time2=time;
@@ -2897,7 +2897,7 @@ public Action:Timer_MusicTheme(Handle:timer, any:userid)
 			Format(music, 10, "path%i", MusicIndex);
 			KvGetString(BossKV[character[0]], music, music, sizeof(music));
 
-			new Action:action=Plugin_Continue;
+			new Action:action;
 			Call_StartForward(OnMusic);
 			decl String:sound2[PLATFORM_MAX_PATH];
 			new Float:time2=time;
@@ -3427,7 +3427,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		IntToString(iItemDefinitionIndex, itemString, sizeof(itemString));
 
 		KvRewind(kvWeaponMods);
-		new bool:differentClass=false;
+		new bool:differentClass;
 		if(KvJumpToKey(kvWeaponMods, classname) || KvJumpToKey(kvWeaponMods, itemString))
 		{
 			Debug("Entered classname %s or index %i", classname, iItemDefinitionIndex);
@@ -3511,7 +3511,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				if(attribCount>0)
 				{
 					new entity=FindEntityByClassname(-1, classname);
-					for(new attribute=0; attribute<attribCount; attribute+=2)
+					for(new attribute; attribute<attribCount; attribute+=2)
 					{
 						new attrib=StringToInt(attributes[attribute]);
 						if(attrib<=0)
@@ -3954,7 +3954,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 		{
 			for(new i; i<2*addattribs; i+=2)
 			{
-				new bool:dontAdd=false;
+				new bool:dontAdd;
 				new attribIndex=TF2Items_GetAttributeId(item, i);
 				for(new z; z<attribCount+i; z+=2)
 				{
@@ -4924,7 +4924,7 @@ public Action:ClientTimer(Handle:timer)
 				}
 			}
 
-			new bool:addthecrit=false;
+			new bool:addthecrit;
 			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee) && !StrEqual(classname, "tf_weapon_knife", false))  //Every melee except knives
 			{
 				addthecrit=true;
@@ -5063,7 +5063,7 @@ public Action:BossTimer(Handle:timer)
 		return Plugin_Stop;
 	}
 
-	new bool:validBoss=false;
+	new bool:validBoss;
 	for(new boss; boss<=MaxClients; boss++)
 	{
 		new client=Boss[boss];
@@ -6353,7 +6353,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 				decl String:classname[64];
 				if(GetEdictClassname(attacker, classname, sizeof(classname)) && StrEqual(classname, "trigger_hurt", false))
 				{
-					new Action:action=Plugin_Continue;
+					new Action:action;
 					Call_StartForward(OnTriggerHurt);
 					Call_PushCell(boss);
 					Call_PushCell(attacker);
