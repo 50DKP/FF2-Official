@@ -3527,7 +3527,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				KvGoBack(kvWeaponMods);
 			}
 
-			if(KvJumpToKey(kvWeaponMods, "remove"))  //TODO: Remove all
+			if(KvJumpToKey(kvWeaponMods, "remove"))
 			{
 				Debug("\tEntered remove");
 				decl String:attributes[16][8];
@@ -3538,12 +3538,20 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 					new attribute=StringToInt(attributes[key]);
 					if(attribute<=0)
 					{
-						LogError("[FF2 Weapons] Ignoring attribute %i passed for weapon %s (index %i) while removing attributes", attribute, classname, iItemDefinitionIndex);
-						continue;
+						if(StrEqual(attributes[key], "all"))
+						{
+							TF2Attrib_RemoveAll(entity);
+							Debug("\t\tRemoved all attributes");
+						}
+						else
+						{
+							LogError("[FF2 Weapons] Ignoring attribute %s passed for weapon %s (index %i) while removing attributes", attribute[key], classname, iItemDefinitionIndex);
+							continue;
+						}
 					}
 
-					TF2Attrib_RemoveByDefIndex(entity, StringToInt(attributes[key]));
-					Debug("\t\tRemoved attribute %s", attributes[key]);
+					TF2Attrib_RemoveByDefIndex(entity, attribute);
+					Debug("\t\tRemoved attribute %i", attribute);
 				}
 				KvGoBack(kvWeaponMods);
 			}
