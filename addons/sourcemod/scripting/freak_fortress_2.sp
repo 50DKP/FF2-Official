@@ -3514,28 +3514,38 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 					for(new attribute=0; attribute<attribCount; attribute+=2)
 					{
 						new attrib=StringToInt(attributes[attribute]);
-						if(!attrib)
+						if(attrib<=0)
 						{
-							LogError("[FF2 Weapons] Ignoring attribute 0 passed for weapon %s (index %i)", classname, iItemDefinitionIndex);
+							LogError("[FF2 Weapons] Ignoring attribute %i passed for weapon %s (index %i) while adding attributes", attrib, classname, iItemDefinitionIndex);
 							continue;
 						}
 
-						TF2Attrib_SetByDefIndex(entity, StringToInt(attributes[attribute]), StringToFloat(attributes[attribute+1]));
+						TF2Attrib_SetByDefIndex(entity, attrib, StringToFloat(attributes[attribute+1]));
 						Debug("\t\tAdded attribute set %s ; %s", attributes[attribute], attributes[attribute+1]);
 					}
 				}
 				KvGoBack(kvWeaponMods);
 			}
 
-			decl String:attributes[64], String:weaponAttribsArray[32][8];
-			KvGetString(kvWeaponMods, "remove", attributes, sizeof(attributes));
-			Debug("Attributes to be removed: %s", attributes);
-			new attribCount=ExplodeString(attributes, ";", weaponAttribsArray, 32, 8);
-			new entity=FindEntityByClassname(-1, classname);
-			for(new attribute; attribute<attribCount; attribute++)
+			if(KvJumpToKey(kvWeaponMods, "remove"))  //TODO: Remove all
 			{
-				TF2Attrib_RemoveByDefIndex(entity, StringToInt(weaponAttribsArray[attribute]));
-				Debug("Removed attribute %s", weaponAttribsArray[attribute]);
+				Debug("\tEntered remove");
+				decl String:attributes[16][8];
+				new entity=FindEntityByClassname(-1, classname);
+				for(new key; KvGotoNextKey(kvWeaponMods) && key<16; key++)
+				{
+					KvGetSectionName(kvWeaponMods, attributes[key], 8);
+					new attribute=StringToInt(attributes[key]);
+					if(attribute<=0)
+					{
+						LogError("[FF2 Weapons] Ignoring attribute %i passed for weapon %s (index %i) while removing attributes", attribute, classname, iItemDefinitionIndex);
+						continue;
+					}
+
+					TF2Attrib_RemoveByDefIndex(entity, StringToInt(attributes[key]));
+					Debug("\t\tRemoved attribute %s", attributes[key]);
+				}
+				KvGoBack(kvWeaponMods);
 			}
 
 			/*if(KvJumpToKey(kvWeaponMods, "remove"))  //TODO: remove-all (TF2Attrib)
