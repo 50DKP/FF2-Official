@@ -469,12 +469,12 @@ forward Action:FF2_OnAddQueuePoints(add_points[MAXPLAYERS+1]);
 forward Action:FF2_OnLoadCharacterSet(&charSetNum, String:charSetName[]);
 
 /**
- * Called when a Boss loses a life
+ * Called when a boss loses a life
  *
  * @param boss      Boss's index
  * @param lives     Number of lives left
  * @param maxLives  Max number of lives
- * @return          Plugin_Stop or Plugin_Handled to prevent damage that would remove a life, Plugin_Changed if you want to change the number of lives left.
+ * @return          Plugin_Stop or Plugin_Handled to prevent damage that would remove a life, Plugin_Changed if you want to change the number of lives left.  Setting lives to a value greater than maxLives will also set maxLives to that value.
  */
 forward Action:FF2_OnLoseLife(boss, &lives, maxLives);
 

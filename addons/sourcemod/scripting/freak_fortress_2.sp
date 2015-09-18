@@ -6447,24 +6447,24 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 			{
 				SetEntProp(client, Prop_Data, "m_iHealth", (BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1));  //Set the health early to avoid the boss dying from fire, etc.
 
-				new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
+				new Action:action, bossLives=BossLives[boss];  //Used for the forward
 				Call_StartForward(OnLoseLife);
 				Call_PushCell(boss);
 				Call_PushCellRef(bossLives);
 				Call_PushCell(BossLivesMax[boss]);
 				Call_Finish(action);
-				if(action==Plugin_Stop || action==Plugin_Handled)  //TODO: Make sure this works
+				if(action==Plugin_Stop || action==Plugin_Handled)  //Don't allow any damage to be taken and also don't let the life-loss go through
 				{
 					SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]);
 					return;
 				}
 				else if(action==Plugin_Changed)
 				{
-					if(bossLives>BossLivesMax[boss])
+					if(bossLives>BossLivesMax[boss])  //If the new amount of lives is greater than the max, set the max to the new amount
 					{
 						BossLivesMax[boss]=bossLives;
 					}
-					BossLives[boss]=bossLives;
+					BossLives[boss]=lives=bossLives;
 				}
 
 				decl String:ability[PLATFORM_MAX_PATH];
