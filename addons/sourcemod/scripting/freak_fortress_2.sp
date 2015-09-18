@@ -8954,10 +8954,10 @@ public Native_RandomSound(Handle:plugin, numParams)
 	decl String:kv[64];
 	GetNativeString(1, kv, sizeof(kv));
 
-	new length=GetNativeCell(4);
+	new length=GetNativeCell(3);
 	decl String:sound[length];
-	new bool:soundExists=ReturnRandomSound(kv, sound, length, GetNativeCell(5), GetNativeCell(6));
-	SetNativeString(3, sound, GetNativeCell(4));
+	new bool:soundExists=ReturnRandomSound(kv, sound, length, GetNativeCell(4), GetNativeCell(5));
+	SetNativeString(2, sound, length);
 	return soundExists;
 }
 
