@@ -3484,10 +3484,53 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				KvGoBack(kvWeaponMods);
 			}
 
-			decl String:attributes[64], String:weaponAttribsArray[32][32];
+			if(KvJumpToKey(kvWeaponMods, "add"))  //TODO: Preserve attributes
+			{
+				Debug("\tEntered add");
+				decl String:attributes[32][8];
+				new attribCount;
+				for(new key; KvGotoNextKey(kvWeaponMods); key+=2)
+				{
+					if(key>=32)
+					{
+						LogError("[FF2 Weapons] Weapon %s (index %i) has more than 16 attributes, ignoring the rest", classname, iItemDefinitionIndex);
+						break;
+					}
+
+					attribCount++;
+					KvGetSectionName(kvWeaponMods, attributes[key], 8);
+					KvGetString(kvWeaponMods, attributes[key], attributes[key+1], 8);
+					Debug("\t\tAttribute set %i is %s ; %s", attribCount, attributes[key], attributes[key+1]);
+				}
+
+				if(attribCount % 2)  //TODO: Still have no clue what this does...
+				{
+					attribCount--;
+				}
+
+				if(attribCount>0)
+				{
+					new entity=FindEntityByClassname(-1, classname);
+					for(new attribute=0; attribute<attribCount; attribute+=2)
+					{
+						new attrib=StringToInt(attributes[attribute]);
+						if(!attrib)
+						{
+							LogError("[FF2 Weapons] Ignoring attribute 0 passed for weapon %s (index %i)", classname, iItemDefinitionIndex);
+							continue;
+						}
+
+						TF2Attrib_SetByDefIndex(entity, StringToInt(attributes[attribute]), StringToFloat(attributes[attribute+1]));
+						Debug("\t\tAdded attribute set %s ; %s", attributes[attribute], attributes[attribute+1]);
+					}
+				}
+				KvGoBack(kvWeaponMods);
+			}
+
+			decl String:attributes[64], String:weaponAttribsArray[32][8];
 			KvGetString(kvWeaponMods, "remove", attributes, sizeof(attributes));
 			Debug("Attributes to be removed: %s", attributes);
-			new attribCount=ExplodeString(attributes, ";", weaponAttribsArray, 32, 32);
+			new attribCount=ExplodeString(attributes, ";", weaponAttribsArray, 32, 8);
 			new entity=FindEntityByClassname(-1, classname);
 			for(new attribute; attribute<attribCount; attribute++)
 			{
@@ -3545,49 +3588,6 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				}
 				KvGoBack(kvWeaponMods);
 			}*/
-
-			if(KvJumpToKey(kvWeaponMods, "add"))  //TODO: Preserve attributes
-			{
-				Debug("\tEntered add");
-				decl String:attributes[32][8];
-				new attribCount;
-				for(new key; KvGotoNextKey(kvWeaponMods); key+=2)
-				{
-					if(key>=32)
-					{
-						LogError("[FF2 Weapons] Weapon %s (index %i) has more than 16 attributes, ignoring the rest", classname, iItemDefinitionIndex);
-						break;
-					}
-
-					attribCount++;
-					KvGetSectionName(kvWeaponMods, attributes[key], 8);
-					KvGetString(kvWeaponMods, attributes[key], attributes[key+1], 8);
-					Debug("\t\tAttribute set %i is %s ; %s", attribCount, attributes[key], attributes[key+1]);
-				}
-
-				if(attribCount % 2)  //TODO: Still have no clue what this does...
-				{
-					attribCount--;
-				}
-
-				if(attribCount>0)
-				{
-					new entity=FindEntityByClassname(-1, classname);
-					for(new attribute=0; attribute<attribCount; attribute+=2)
-					{
-						new attrib=StringToInt(attributes[attribute]);
-						if(!attrib)
-						{
-							LogError("[FF2 Weapons] Ignoring attribute 0 passed for weapon %s (index %i)", classname, iItemDefinitionIndex);
-							continue;
-						}
-
-						TF2Attrib_SetByDefIndex(entity, StringToInt(attributes[attribute]), StringToFloat(attributes[attribute+1]));
-						Debug("\t\tAdded attribute set %s ; %s", attributes[attribute], attributes[attribute+1]);
-					}
-				}
-				KvGoBack(kvWeaponMods);
-			}
 
 			/*if(KvJumpToKey(kvWeaponMods, "add"))  //TODO: Preserve attributes
 			{
