@@ -2845,7 +2845,7 @@ public Action:StartBossTimer(Handle:timer)
 	{
 		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
-			BossHealthMax[boss]=ParseFormula(boss, "health_formula", "(((760.8+n)*(n-1))^1.0341)+2046", RoundFloat(Pow((760.8+Float:playing)*(Float:playing-1.0), 1.0341)+2046.0));
+			BossHealthMax[boss]=ParseFormula(boss, "health_formula", "(((760.8+n)*(n-1))^1.0341)+2046", RoundFloat(Pow((760.8+float(playing))*(float(playing)-1.0), 1.0341)+2046.0));
 			BossLives[boss]=BossLivesMax[boss];
 			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 			BossHealthLast[boss]=BossHealth[boss];
