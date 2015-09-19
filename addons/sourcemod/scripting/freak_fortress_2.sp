@@ -3542,12 +3542,10 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 						{
 							TF2Attrib_RemoveAll(entity);
 							Debug("\t\tRemoved all attributes");
+							break;  //Just exit the for loop since we've already removed all attributes
 						}
-						else
-						{
-							LogError("[FF2 Weapons] Ignoring attribute %s passed for weapon %s (index %i) while removing attributes", attributes[key], classname, iItemDefinitionIndex);
-							continue;
-						}
+						LogError("[FF2 Weapons] Ignoring attribute %s passed for weapon %s (index %i) while removing attributes", attributes[key], classname, iItemDefinitionIndex);
+						continue;
 					}
 
 					TF2Attrib_RemoveByDefIndex(entity, attribute);
