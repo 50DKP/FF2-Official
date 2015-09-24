@@ -3412,7 +3412,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		return Plugin_Continue;
 	}
 
-	//TODO: "By Definition Index", "onhit", "ontakedamage", "removeattrib"
+	//TODO: "onhit", "ontakedamage"
 	//TODO: Also support comma-delimited strings, eg "38, 457" or "tf_weapon_knife, tf_weapon_katana"
 	static Handle:weapon;
 	if(weapon!=INVALID_HANDLE)
@@ -3503,12 +3503,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 					Debug("\t\tAttribute set %i is %s ; %s", attribCount, attributes[key], attributes[key+1]);
 				}
 
-				if(attribCount % 2)  //TODO: Still have no clue what this does...
-				{
-					attribCount--;
-				}
-
-				if(attribCount>0)
+				if(attribCount)
 				{
 					new entity=FindEntityByClassname(-1, classname);
 					for(new attribute; attribute<attribCount; attribute+=2)
@@ -3932,9 +3927,11 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 	new String:weaponAttribsArray[32][32];
 	new attribCount=ExplodeString(att, ";", weaponAttribsArray, 32, 32);
 
-	if(attribCount % 2)
+	if(attribCount % 2)  //Unbalanced array, eg "2 ; 10 ; 3"
 	{
-		--attribCount;
+		LogError("[FF2 Weapons] Unbalanced attributes array %s", att);
+		CloseHandle(weapon);
+		return INVALID_HANDLE;
 	}
 
 	new flags=OVERRIDE_ATTRIBUTES;
@@ -4007,7 +4004,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 			new attrib=StringToInt(weaponAttribsArray[i]);
 			if(!attrib)
 			{
-				LogError("Bad weapon attribute passed: %s ; %s", weaponAttribsArray[i], weaponAttribsArray[i+1]);
+				LogError("[FF2 Weapons] Bad weapon attribute passed: %s ; %s", weaponAttribsArray[i], weaponAttribsArray[i+1]);
 				CloseHandle(weapon);
 				return INVALID_HANDLE;
 			}
@@ -7476,9 +7473,11 @@ stock SpawnWeapon(client, String:name[], index, level, qual, String:att[])
 	new String:atts[32][32];
 	new count=ExplodeString(att, ";", atts, 32, 32);
 
-	if(count % 2)
+	if(count % 2)  //Unbalanced array, eg "2 ; 10 ; 3"
 	{
-		--count;
+		LogError("[FF2 Weapons] Unbalanced attributes array %s", att);
+		CloseHandle(hWeapon);
+		return -1;
 	}
 
 	if(count>0)
@@ -7490,7 +7489,7 @@ stock SpawnWeapon(client, String:name[], index, level, qual, String:att[])
 			new attrib=StringToInt(atts[i]);
 			if(!attrib)
 			{
-				LogError("Bad weapon attribute passed: %s ; %s", atts[i], atts[i+1]);
+				LogError("[FF2 Weapons] Bad weapon attribute passed: %s ; %s", atts[i], atts[i+1]);
 				CloseHandle(hWeapon);
 				return -1;
 			}
