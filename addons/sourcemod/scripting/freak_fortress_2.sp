@@ -2358,7 +2358,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	PickCharacter(0, 0);
 	if((Special[0]<0) || !BossKV[Special[0]])
 	{
-		LogError("[FF2] I just don't know what went wrong");
+		LogError("[FF2 Bosses] Couldn't find a boss!");
 		return Plugin_Continue;
 	}
 
@@ -7230,7 +7230,7 @@ public bool:PickCharacter(boss, companion)
 			KvRewind(BossKV[Special[boss]]);
 			if(KvGetNum(BossKV[Special[boss]], "blocked"))
 			{
-				Special[boss]=0;
+				Special[boss]=-1;
 				continue;
 			}
 			break;
@@ -7366,6 +7366,12 @@ FindCompanion(boss, players, bool:omit[])
 
 			playersNeeded++;
 			FindCompanion(companion, players, omit);  //Make sure this companion doesn't have a companion of their own
+		}
+		else  //Can't find the companion's character, so just play without the companion
+		{
+			LogError("[FF2 Bosses] Could not find boss %s!", companionName);
+			Boss[companion]=0;
+			omit[companion]=false;
 		}
 	}
 	playersNeeded=3;  //Reset the amount of players needed back to 3 after we're done
