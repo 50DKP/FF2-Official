@@ -3511,7 +3511,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 						new attrib=StringToInt(attributes[attribute]);
 						if(!attrib)  //StringToInt will return 0 on failure, which probably means the attribute was specified by name, not index
 						{
-							TF2Attrib_SetByName(entity, attributes[attribute], attributes[attribute+1]);
+							TF2Attrib_SetByName(entity, attributes[attribute], StringToFloat(attributes[attribute+1]));
 							Debug("\t\tAdded attribute set %s ; %s", attributes[attribute], attributes[attribute+1]);
 						}
 						else if(attrib<0)
