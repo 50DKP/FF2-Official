@@ -3468,7 +3468,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				{
 					flags|=OVERRIDE_ITEM_QUALITY;
 				}
-				else if(differentClass)  //Ditto here.
+				else if(differentClass)  //Ditto here
 				{
 					quality=0;
 				}
@@ -3479,12 +3479,12 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				TF2Items_SetLevel(weapon, level);
 				Debug("\t\tGave new weapon with classname %s, index %i, quality %i, and level %i", classname, index, quality, level);
 				new entity=TF2Items_GiveNamedItem(client, weapon);
-				//CloseHandle(weapon);
+				CloseHandle(weapon);
 				EquipPlayerWeapon(client, entity);
 				KvGoBack(kvWeaponMods);
 			}
 
-			if(KvJumpToKey(kvWeaponMods, "add"))  //TODO: Preserve attributes
+			if(KvJumpToKey(kvWeaponMods, "add"))
 			{
 				Debug("\tEntered add");
 				decl String:attributes[32][8];
