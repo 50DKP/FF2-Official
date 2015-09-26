@@ -10,9 +10,13 @@
 
 		"Notes"			"Fixed companions always having default rage damage and lives, even if specified otherwise"
 		"Notes"			"Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive"
+		"Notes"			"Fixed minions receiving benefits intended only for normal players"
 		"Notes"			"Minions no longer die after their summoner is killed"
 		"Notes"			"Removed Shortstop reload penalty"
 		"Notes"			"Fixed large amounts of lives being cut off when being displayed"
+		"Notes"			"Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace'"
+		"Notes"			"ff2_crits now defaults to 0 instead of 1"
+		"Notes"			"Fixed PDAs and sappers not being usable when given to bosses"
 	}
 
 	"Files"
@@ -20,7 +24,14 @@
 		"Patch"
 		{
 			"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
+			"Plugin"	"Path_SM/plugins/freaks/easter_abilities.ff2"
+			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
+			"Plugin"	"Path_SM/plugins/freaks/special_noanims.ff2"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
+			"Source"	"Path_SM/scripting/freaks/easter_abilities.sp"
+			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
+			"Source"	"Path_SM/scripting/freaks/special_noanims.sp"
+			"Source"	"Path_SM/scripting/include/freak_fortress_2.inc"
 		}
 
 		"Plugin"		"Path_SM/plugins/freak_fortress_2.smx"

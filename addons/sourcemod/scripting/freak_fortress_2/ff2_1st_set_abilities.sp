@@ -253,7 +253,7 @@ Rage_Clone(const String:ability_name[], boss)
 		clone=GetArrayCell(players, temp);
 		RemoveFromArray(players, temp);
 
-		FF2_SetFF2Flags(clone, FF2_GetFF2Flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM);
+		FF2_SetFF2Flags(clone, FF2_GetFF2Flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_CLASSTIMERDISABLED);
 		TF2_ChangeClientTeam(clone, BossTeam);
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=boss;
@@ -291,6 +291,23 @@ Rage_Clone(const String:ability_name[], boss)
 				}
 
 				weapon=SpawnWeapon(clone, classname, index, 101, 0, attributes);
+				if(StrEqual(classname, "tf_weapon_builder") && index!=735)  //PDA, normal sapper
+				{
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 1);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 2);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 3);
+				}
+				else if(StrEqual(classname, "tf_weapon_sapper") || index==735)  //Sappers, normal sapper
+				{
+					SetEntProp(weapon, Prop_Send, "m_iObjectType", 3);
+					SetEntProp(weapon, Prop_Data, "m_iSubType", 3);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 0);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 1);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 2);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
+				}
+
 				if(IsValidEdict(weapon))
 				{
 					SetEntPropEnt(clone, Prop_Send, "m_hActiveWeapon", weapon);
@@ -842,10 +859,11 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 		}
 	}*/
 
-	if(CloneOwnerIndex[client]!=-1 && TF2_GetClientTeam(client)==BossTeam)
+	if(CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)  //Switch clones back to the other team after they die
 	{
 		CloneOwnerIndex[client]=-1;
-		TF2_ChangeClientTeam(client, (BossTeam==TFTeam_Blue) ? (TFTeam_Red) : (TFTeam_Blue));
+		FF2_SetFF2Flags(client, FF2_GetFF2Flags(client) & ~FF2FLAG_CLASSTIMERDISABLED);
+		TF2_ChangeClientTeam(client, BossTeam==TFTeam_Blue ? TFTeam_Red : TFTeam_Blue);
 	}
 	return Plugin_Continue;
 }

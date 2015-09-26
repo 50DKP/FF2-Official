@@ -36,7 +36,7 @@ native bool:FF2_IsFF2Enabled();
  * Gets the version of FF2 running on the server
  *
  * @param version   An array of size 3 that will contain the major, minor, and stable version numbers respectively
- * @return          True if the server is running a dev version of FF2, false otherwise
+ * @return			True if the server is running a dev version of FF2, false otherwise
  */
 native FF2_GetFF2Version(version[]=0);
 
@@ -189,16 +189,16 @@ native FF2_SetBossCharge(boss, slot, Float:value);
 /**
  * Gets how much damage is needed in order to activate the rage of the current boss
  *
- * @param boss      Boss index
- * @return          Total damage needed
+ * @param boss	Boss index
+ * @return		Total damage needed
  */
 native FF2_GetBossRageDamage(boss);
 
 /**
  * Sets how much damage is needed in order to activate the rage of the current boss
  *
- * @param boss      Boss index
- * @param damage    New damage value
+ * @param boss		Boss index
+ * @param damage	New damage value
  * @noreturn
  */
 native FF2_SetBossRageDamage(boss, damage);
@@ -445,7 +445,7 @@ forward Action:FF2_OnMusic(String:path[], &Float:time);
  * @param boss			Boss index
  * @param character   	Character index
  * @param characterName	Character name
- * @param preset        True if the boss was set using a command such as ff2_special
+ * @param preset		True if the boss was set using a command such as ff2_special
  * @return				You can NOT use Plugin_Stop to prevent this, but you can change specialName and use Plugin_Changed to change the boss.  If you want to change 'character', then make 'characterName' null.
  */
 forward Action:FF2_OnSpecialSelected(boss, &character, String:characterName[], bool:preset);
@@ -481,8 +481,8 @@ forward Action:FF2_OnLoseLife(boss, &lives, maxLives);
 /**
  * Called when the number of alive players changes.  Note that this will never be 0 as FF2 does not re-calculate the number of players once the round ends.
  *
- * @param players   Number of alive players left on the non-boss team
- * @param bosses    Number of alive players left on the boss team
+ * @param players	Number of alive players left on the non-boss team
+ * @param bosses	Number of alive players left on the boss team (this includes minions as well)
  * @noreturn
  */
 forward Action:FF2_OnAlivePlayersChanged(players, bosses);

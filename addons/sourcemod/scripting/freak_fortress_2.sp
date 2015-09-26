@@ -308,89 +308,99 @@ static const String:ff2versiontitles[][]=
 	"1.10.6",
 	"1.10.6",
 	"1.10.6",
+	"1.10.7",
 	"1.10.7"
 };
 
 static const String:ff2versiondates[][]=
 {
-	"6 April 2012",		//1.0
-	"14 April 2012",	//1.01
-	"14 April 2012",	//1.01
-	"17 April 2012",	//1.02
-	"19 April 2012",	//1.03
-	"21 April 2012",	//1.04
-	"29 April 2012",	//1.05
-	"29 April 2012",	//1.05
-	"1 May 2012",		//1.06
-	"22 June 2012",		//1.06c
-	"3 July 2012",		//1.06d
-	"24 Aug 2012",		//1.06e
-	"5 Sep 2012",		//1.06f
-	"5 Sep 2012",		//1.06g
-	"6 Sep 2012",		//1.06h
-	"8 Oct 2012",		//1.07 beta 1
-	"8 Oct 2012",		//1.07 beta 1
-	"8 Oct 2012",		//1.07 beta 1
-	"8 Oct 2012",		//1.07 beta 1
-	"8 Oct 2012",		//1.07 beta 1
-	"11 Oct 2012",		//1.07 beta 4
-	"18 Oct 2012",		//1.07 beta 5
-	"9 Nov 2012",		//1.07 beta 6
-	"14 Dec 2012",		//1.07
-	"October 30, 2013",	//1.0.8
-	"October 30, 2013",	//1.0.8
-	"October 30, 2013",	//1.0.8
-	"October 30, 2013",	//1.0.8
-	"October 30, 2013",	//1.0.8
-	"March 6, 2014",	//1.9.0
-	"March 6, 2014",	//1.9.0
-	"March 18, 2014",	//1.9.1
-	"March 22, 2014",	//1.9.2
-	"March 22, 2014",	//1.9.2
-	"April 5, 2014",	//1.9.3
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"July 26, 2014",	//1.10.0
-	"August 28, 2014",	//1.10.1
-	"August 28, 2014",	//1.10.1
-	"August 28, 2014",	//1.10.1
-	"August 28, 2014",	//1.10.1
-	"August 28, 2014",	//1.10.1
-	"August 28, 2014",	//1.10.2
-	"November 6, 2014",	//1.10.3
-	"November 6, 2014",	//1.10.3
-	"November 6, 2014",	//1.10.3
-	"November 6, 2014",	//1.10.3
-	"November 6, 2014",	//1.10.3
-	"March 1, 2015",	//1.10.4
-	"March 1, 2015",	//1.10.4
-	"March 1, 2015",	//1.10.4
-	"March 1, 2015",	//1.10.4
-	"March 1, 2015",	//1.10.4
-	"March 13, 2015",	//1.10.5
-	"August 10, 2015",	//1.10.6
-	"August 10, 2015",	//1.10.6
-	"August 10, 2015",	//1.10.6
-	"August 10, 2015",	//1.10.6
-	"September 1, 2015"	//1.10.7
+	"6 April 2012",			//1.0
+	"14 April 2012",		//1.01
+	"14 April 2012",		//1.01
+	"17 April 2012",		//1.02
+	"19 April 2012",		//1.03
+	"21 April 2012",		//1.04
+	"29 April 2012",		//1.05
+	"29 April 2012",		//1.05
+	"1 May 2012",			//1.06
+	"22 June 2012",			//1.06c
+	"3 July 2012",			//1.06d
+	"24 Aug 2012",			//1.06e
+	"5 Sep 2012",			//1.06f
+	"5 Sep 2012",			//1.06g
+	"6 Sep 2012",			//1.06h
+	"8 Oct 2012",			//1.07 beta 1
+	"8 Oct 2012",			//1.07 beta 1
+	"8 Oct 2012",			//1.07 beta 1
+	"8 Oct 2012",			//1.07 beta 1
+	"8 Oct 2012",			//1.07 beta 1
+	"11 Oct 2012",			//1.07 beta 4
+	"18 Oct 2012",			//1.07 beta 5
+	"9 Nov 2012",			//1.07 beta 6
+	"14 Dec 2012",			//1.07
+	"October 30, 2013",		//1.0.8
+	"October 30, 2013",		//1.0.8
+	"October 30, 2013",		//1.0.8
+	"October 30, 2013",		//1.0.8
+	"October 30, 2013",		//1.0.8
+	"March 6, 2014",		//1.9.0
+	"March 6, 2014",		//1.9.0
+	"March 18, 2014",		//1.9.1
+	"March 22, 2014",		//1.9.2
+	"March 22, 2014",		//1.9.2
+	"April 5, 2014",		//1.9.3
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"July 26, 2014",		//1.10.0
+	"August 28, 2014",		//1.10.1
+	"August 28, 2014",		//1.10.1
+	"August 28, 2014",		//1.10.1
+	"August 28, 2014",		//1.10.1
+	"August 28, 2014",		//1.10.1
+	"August 28, 2014",		//1.10.2
+	"November 6, 2014",		//1.10.3
+	"November 6, 2014",		//1.10.3
+	"November 6, 2014",		//1.10.3
+	"November 6, 2014",		//1.10.3
+	"November 6, 2014",		//1.10.3
+	"March 1, 2015",		//1.10.4
+	"March 1, 2015",		//1.10.4
+	"March 1, 2015",		//1.10.4
+	"March 1, 2015",		//1.10.4
+	"March 1, 2015",		//1.10.4
+	"March 13, 2015",		//1.10.5
+	"August 10, 2015",		//1.10.6
+	"August 10, 2015",		//1.10.6
+	"August 10, 2015",		//1.10.6
+	"August 10, 2015",		//1.10.6
+	"September 6, 2015",	//1.10.7
+	"September 6, 2015"		//1.10.7
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 64:  //1.10.7
+		case 65:  //1.10.7
 		{
 			DrawPanelText(panel, "1) Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
 			DrawPanelText(panel, "2) Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive (Shadow from Spyper)");
-			DrawPanelText(panel, "3) Minions no longer die after their summoner is killed (Wliu)");
-			DrawPanelText(panel, "4) Removed Shortstop reload penalty (Starblaster64)");
-			DrawPanelText(panel, "5) Fixed large amounts of lives being cut off when being displayed (Wliu)");
+			DrawPanelText(panel, "3) Fixed minions receiving benefits intended only for normal players (Wliu)");
+			DrawPanelText(panel, "4) Minions no longer die after their summoner is killed (Wliu)");
+			DrawPanelText(panel, "5) Removed Shortstop reload penalty (Starblaster64)");
+			DrawPanelText(panel, "See next page (press 1)");
+		}
+		case 64:  //1.10.7
+		{
+			DrawPanelText(panel, "6) Fixed large amounts of lives being cut off when being displayed (Wliu)");
+			DrawPanelText(panel, "7) [Server] Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace' (Wliu from Shadow)");
+			DrawPanelText(panel, "8) [Server] 'ff2_crits' now defaults to 0 instead of 1 (Wliu from Spyper)");
+			DrawPanelText(panel, "9) [Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)");
 		}
 		case 63:  //1.10.6
 		{
@@ -2277,7 +2287,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	PickCharacter(0, 0);
 	if((character[0]<0) || !BossKV[character[0]])
 	{
-		LogError("[FF2] I just don't know what went wrong");
+		LogError("[FF2 Bosses] Couldn't find a boss!");
 		return Plugin_Continue;
 	}
 
@@ -3202,14 +3212,14 @@ EquipBoss(boss)
 	new client=Boss[boss];
 	DoOverlay(client, "");
 	TF2_RemoveAllWeapons(client);
-	decl String:weapon[64], String:attributes[256];
+	decl String:key[10], String:classname[64], String:attributes[256];
 	for(new i=1; ; i++)
 	{
 		KvRewind(BossKV[character[boss]]);
-		Format(weapon, 10, "weapon%i", i);
-		if(KvJumpToKey(BossKV[character[boss]], weapon))
+		Format(key, sizeof(key), "weapon%i", i);
+		if(KvJumpToKey(BossKV[character[boss]], key))
 		{
-			KvGetString(BossKV[character[boss]], "name", weapon, sizeof(weapon));
+			KvGetString(BossKV[character[boss]], "name", classname, sizeof(classname));
 			KvGetString(BossKV[character[boss]], "attributes", attributes, sizeof(attributes));
 			if(attributes[0]!='\0')
 			{
@@ -3224,12 +3234,30 @@ EquipBoss(boss)
 					//2: x3 damage
 			}
 
-			new BossWeapon=SpawnWeapon(client, weapon, KvGetNum(BossKV[character[boss]], "index"), 101, 5, attributes);
+			new index=KvGetNum(BossKV[character[boss]], "index");
+			new weapon=SpawnWeapon(client, classname, index, 101, 5, attributes);
+			if(StrEqual(classname, "tf_weapon_builder", false) && index!=735)  //PDA, normal sapper
+			{
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 1);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 2);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 3);
+			}
+			else if(StrEqual(classname, "tf_weapon_sapper", false) || index==735)  //Sappers
+			{
+				SetEntProp(weapon, Prop_Send, "m_iObjectType", 3);
+				SetEntProp(weapon, Prop_Data, "m_iSubType", 3);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 0);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 1);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 2);
+				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
+			}
+
 			if(!KvGetNum(BossKV[character[boss]], "show", 0))
 			{
-				SetEntPropFloat(BossWeapon, Prop_Send, "m_flModelScale", 0.001);
+				SetEntPropFloat(weapon, Prop_Send, "m_flModelScale", 0.001);
 			}
-			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", BossWeapon);
+			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 		}
 		else
 		{
@@ -3272,6 +3300,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 			KvRewind(BossKV[character[boss]]);
 			TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[character[boss]], "class", 1), _, false);
 		}
+		SetEntProp(client, Prop_Send, "m_iObserverMode", 0);  //Try to force them out of spectate mode, UNTESTED
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		TF2_ChangeClientTeam(client, BossTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
@@ -4051,7 +4080,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);  //This really shouldn't be needed but I've been noticing players who still have glow
 
-	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overhealh bug
+	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overheal bug
 	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
 	if(TF2_GetClientTeam(client)==BossTeam)
 	{
@@ -4067,6 +4096,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
 	{
 		Debug("Non-boss client %N is a living spectator!", client);
+		SetEntProp(client, Prop_Send, "m_iObserverMode", 0);  //Try to force them out of spectate mode, UNTESTED
 		TF2_RespawnPlayer(client);
 		CreateTimer(0.1, MakeNotBoss, userid, TIMER_FLAG_NO_MAPCHANGE);
 	}
@@ -5205,7 +5235,7 @@ public Action:BossTimer(Handle:timer)
 					KvRewind(BossKV[character[boss2]]);
 					KvGetString(BossKV[character[boss2]], "name", name, sizeof(name), "=Failed name=");
 					//Format(bossLives, sizeof(bossLives), ((BossLives[boss2]>1) ? ("x%i", BossLives[boss2]) : ("")));
-					decl String:bossLives[4];
+					decl String:bossLives[10];
 					if(BossLives[boss2]>1)
 					{
 						Format(bossLives, sizeof(bossLives), "x%i", BossLives[boss2]);
@@ -5594,7 +5624,6 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		new boss=GetBossIndex(client);
 		if(boss==-1 || (GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 		{
-			Debug("hi");
 			return Plugin_Continue;
 		}
 
@@ -5733,7 +5762,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			{
 				RedAlivePlayers++;
 			}
-			else if(IsBoss(client) || (FF2Flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
+			else if(GetClientTeam(client)==BossTeam)
 			{
 				BlueAlivePlayers++;
 			}
@@ -7332,7 +7361,7 @@ public bool:PickCharacter(boss, companion)
 			KvRewind(BossKV[character[boss]]);
 			if(KvGetNum(BossKV[character[boss]], "blocked"))
 			{
-				character[boss]=0;
+				character[boss]=-1;
 				continue;
 			}
 			break;
@@ -7468,6 +7497,12 @@ FindCompanion(boss, players, bool:omit[])
 
 			playersNeeded++;
 			FindCompanion(companion, players, omit);  //Make sure this companion doesn't have a companion of their own
+		}
+		else  //Can't find the companion's character, so just play without the companion
+		{
+			LogError("[FF2 Bosses] Could not find boss %s!", companionName);
+			Boss[companion]=0;
+			omit[companion]=false;
 		}
 	}
 	playersNeeded=3;  //Reset the amount of players needed back to 3 after we're done
