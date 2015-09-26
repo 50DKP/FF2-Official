@@ -3509,14 +3509,20 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 					for(new attribute; attribute<attribCount; attribute+=2)
 					{
 						new attrib=StringToInt(attributes[attribute]);
-						if(attrib<=0)
+						if(!attrib)  //StringToInt will return 0 on failure, which probably means the attribute was specified by name, not index
+						{
+							TF2Attrib_SetByName(entity, attributes[attribute], attributes[attribute+1]);
+							Debug("\t\tAdded attribute set %s ; %s", attributes[attribute], attributes[attribute+1]);
+						}
+						else if(attrib<0)
 						{
 							LogError("[FF2 Weapons] Ignoring attribute %i passed for weapon %s (index %i) while adding attributes", attrib, classname, iItemDefinitionIndex);
-							continue;
 						}
-
-						TF2Attrib_SetByDefIndex(entity, attrib, StringToFloat(attributes[attribute+1]));
-						Debug("\t\tAdded attribute set %s ; %s", attributes[attribute], attributes[attribute+1]);
+						else
+						{
+							TF2Attrib_SetByDefIndex(entity, attrib, StringToFloat(attributes[attribute+1]));
+							Debug("\t\tAdded attribute set %s ; %s", attributes[attribute], attributes[attribute+1]);
+						}
 					}
 				}
 				KvGoBack(kvWeaponMods);
@@ -3531,7 +3537,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				{
 					KvGetSectionName(kvWeaponMods, attributes[key], 8);
 					new attribute=StringToInt(attributes[key]);
-					if(attribute<=0)
+					if(!attribute)  //StringToInt will return 0 on failure, which probably means the attribute was specified by name, not index
 					{
 						if(StrEqual(attributes[key], "all"))
 						{
@@ -3539,12 +3545,21 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 							Debug("\t\tRemoved all attributes");
 							break;  //Just exit the for loop since we've already removed all attributes
 						}
-						LogError("[FF2 Weapons] Ignoring attribute %s passed for weapon %s (index %i) while removing attributes", attributes[key], classname, iItemDefinitionIndex);
-						continue;
+						else
+						{
+							TF2Attrib_RemoveByName(entity, attributes[key]);
+							Debug("\t\tRemoved attribute %s", attributes[key]);
+						}
 					}
-
-					TF2Attrib_RemoveByDefIndex(entity, attribute);
-					Debug("\t\tRemoved attribute %i", attribute);
+					else if(attribute<0)
+					{
+						LogError("[FF2 Weapons] Ignoring attribute %s passed for weapon %s (index %i) while removing attributes", attributes[key], classname, iItemDefinitionIndex);
+					}
+					else
+					{
+						TF2Attrib_RemoveByDefIndex(entity, attribute);
+						Debug("\t\tRemoved attribute %i", attribute);
+					}
 				}
 				KvGoBack(kvWeaponMods);
 			}
