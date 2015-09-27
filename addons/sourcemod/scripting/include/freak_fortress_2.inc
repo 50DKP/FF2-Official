@@ -619,9 +619,9 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetAbilityArgument");
 	MarkNativeAsOptional("FF2_GetAbilityArgumentFloat");
 	MarkNativeAsOptional("FF2_GetAbilityArgumentString");
-    MarkNativeAsOptional("FF2_UseAbility");
-    MarkNativeAsOptional("FF2_GetFF2Flags");
-    MarkNativeAsOptional("FF2_SetFF2Flags");
+	MarkNativeAsOptional("FF2_UseAbility");
+	MarkNativeAsOptional("FF2_GetFF2Flags");
+	MarkNativeAsOptional("FF2_SetFF2Flags");
 	MarkNativeAsOptional("FF2_GetQueuePoints");
 	MarkNativeAsOptional("FF2_SetQueuePoints");
 	MarkNativeAsOptional("FF2_StartMusic");
@@ -629,6 +629,6 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_RandomSound");
 	MarkNativeAsOptional("FF2_GetClientGlow");
 	MarkNativeAsOptional("FF2_SetClientGlow");
-    MarkNativeAsOptional("FF2_Debug");
+	MarkNativeAsOptional("FF2_Debug");
 }
 #endif
