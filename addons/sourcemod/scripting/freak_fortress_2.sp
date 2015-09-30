@@ -5761,7 +5761,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			{
 				RedAlivePlayers++;
 			}
-			else if(GetClientTeam(client)==BossTeam)
+			else if(TF2_GetClientTeam(client)==BossTeam)
 			{
 				BlueAlivePlayers++;
 			}
@@ -6058,7 +6058,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 						Debug("\tEntered onhit");
 						decl String:action[32];
 						new value;
-						for(new key; KvGoToNextKey(kvWeaponMods); key+=2)
+						for(new key; KvGotoNextKey(kvWeaponMods); key+=2)
 						{
 							KvGetSectionName(kvWeaponMods, action, sizeof(action));
 							KvGetNum(kvWeaponMods, action, value);
@@ -6107,7 +6107,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 							{
 								if(damagecustom==TF_CUSTOM_HEADSHOT)
 								{
-									damage=value;
+									damage=float(value);
 								}
 							}
 							else if(StrEqual(action, "increase head count"))
@@ -6288,7 +6288,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 							{
 								if(GetEntProp(attacker, Prop_Send, "m_iRevengeCrits"))  //If a revenge crit was used, give a damage bonus
 								{
-									damage=value;
+									damage=float(value);
 								}
 							}
 							else if(StrEqual(action, "stun"))
