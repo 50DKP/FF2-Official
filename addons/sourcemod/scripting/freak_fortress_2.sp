@@ -6103,28 +6103,28 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 									}
 								}
 							}
-							else if(StrEqual(action, "headshot"))
+							else if(StrEqual(action, "headshot", false))
 							{
 								if(damagecustom==TF_CUSTOM_HEADSHOT)
 								{
 									damage=float(value);
 								}
 							}
-							else if(StrEqual(action, "increase head count"))
+							else if(StrEqual(action, "increase head count", false))
 							{
 								IncrementHeadCount(attacker);
 							}
-							else if(StrEqual(action, "increase head count after damage"))
+							else if(StrEqual(action, "increase head count after damage", false))
 							{
 								static Float:requiredDamage;
 								requiredDamage+=damage;
 								if(requiredDamage>=float(value))
 								{
 									SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
-									requiredDamage-=200.0;
+									requiredDamage-=float(value);
 								}
 							}
-							else if(StrEqual(action, "modify health"))
+							else if(StrEqual(action, "modify health", false))
 							{
 								new health=GetClientHealth(attacker);
 								new max=GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
@@ -6144,11 +6144,11 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 									TF2_RemoveCondition(attacker, TFCond_OnFire);
 								}
 							}
-							else if(StrEqual(action, "modify charge"))
+							else if(StrEqual(action, "modify charge", false))
 							{
 								SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", float(value));
 							}
-							else if(StrEqual(action, "modify rage"))
+							else if(StrEqual(action, "modify rage", false))
 							{
 								if(BossCharge[boss][0]>0.0)
 								{
@@ -6159,11 +6159,11 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 									}
 								}
 							}
-							else if(StrEqual(action, "spawn small health pack"))
+							else if(StrEqual(action, "spawn small health pack", false))
 							{
 								SpawnSmallHealthPackAt(client, TF2_GetClientTeam(attacker));
 							}
-							else if(StrEqual(action, "remove bloody status"))
+							else if(StrEqual(action, "remove bloody status", false))
 							{
 								SetEntProp(weapon, Prop_Send, "m_bIsBloody", 1);
 								if(GetEntProp(attacker, Prop_Send, "m_iKillCountSinceLastDeploy")<1)
@@ -6176,7 +6176,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 									TF2_RemoveCondition(attacker, TFCond_OnFire);
 								}
 							}
-							else if(StrEqual(action, "backstab"))
+							else if(StrEqual(action, "backstab", false))
 							{
 								if(damagecustom==TF_CUSTOM_BACKSTAB)
 								{
@@ -6264,7 +6264,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 									return Plugin_Changed;
 								}
 							}
-							else if(StrEqual(action, "market gardener backstab"))
+							else if(StrEqual(action, "market gardener backstab", false))
 							{
 								if(FF2Flags[attacker] & FF2FLAG_BLAST_JUMPING)
 								{
@@ -6284,14 +6284,14 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 									return Plugin_Changed;
 								}
 							}
-							else if(StrEqual(action, "revenge crit"))
+							else if(StrEqual(action, "revenge crit", false))
 							{
 								if(GetEntProp(attacker, Prop_Send, "m_iRevengeCrits"))  //If a revenge crit was used, give a damage bonus
 								{
 									damage=float(value);
 								}
 							}
-							else if(StrEqual(action, "stun"))
+							else if(StrEqual(action, "stun", false))
 							{
 								if(circuitStun)
 								{
@@ -6300,7 +6300,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 									EmitSoundToClient(client, "weapons/barret_arm_zap.wav");
 								}
 							}
-							else if(StrEqual(action, "add uber to healers"))
+							else if(StrEqual(action, "add uber to healers", false))
 							{
 								new healers[MAXPLAYERS];
 								new healerCount;
@@ -6341,7 +6341,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 									}
 								}
 							}
-							else if(action, "mmph")
+							else if(StrEqual(action, "mmph", false))
 							{
 								if(!TF2_IsPlayerInCondition(attacker, TFCond_CritMmmph))
 								{
