@@ -3370,7 +3370,6 @@ public Action:MakeBoss(Handle:timer, any:boss)
 			KvRewind(BossKV[Special[boss]]);
 			TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
 		}
-		SetEntProp(client, Prop_Send, "m_iObserverMode", 0);  //Try to force them out of spectate mode, UNTESTED
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, BossTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
@@ -3475,6 +3474,8 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
 	{
 		Debug("Boss client %N is a living spectator!", client);
+		SetClientTeam(client, BossTeam);
+		TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
 		TF2_RespawnPlayer(client);
 		CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
 	}
@@ -3895,7 +3896,6 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
 	{
 		Debug("Non-boss client %N is a living spectator!", client);
-		SetEntProp(client, Prop_Send, "m_iObserverMode", 0);  //Try to force them out of spectate mode, UNTESTED
 		TF2_RespawnPlayer(client);
 		CreateTimer(0.1, MakeNotBoss, userid, TIMER_FLAG_NO_MAPCHANGE);
 	}
