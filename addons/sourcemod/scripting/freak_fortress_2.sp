@@ -284,6 +284,7 @@ static const String:ff2versiontitles[][]=
 	"1.10.6",
 	"1.10.6",
 	"1.10.7",
+	"1.10.7",
 	"1.10.7"
 };
 
@@ -353,15 +354,16 @@ static const String:ff2versiondates[][]=
 	"August 10, 2015",		//1.10.6
 	"August 10, 2015",		//1.10.6
 	"August 10, 2015",		//1.10.6
-	"September 6, 2015",	//1.10.7
-	"September 6, 2015"		//1.10.7
+	"October 4, 2015",		//1.10.7
+	"October 4, 2015",		//1.10.7
+	"October 4, 2015"		//1.10.7
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 65:  //1.10.7
+		case 66:  //1.10.7
 		{
 			DrawPanelText(panel, "1) Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
 			DrawPanelText(panel, "2) Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive (Shadow from Spyper)");
@@ -370,12 +372,19 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "5) Removed Shortstop reload penalty (Starblaster64)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 64:  //1.10.7
+		case 65:  //1.10.7
 		{
 			DrawPanelText(panel, "6) Fixed large amounts of lives being cut off when being displayed (Wliu)");
+			DrawPanelText(panel, "7) More living spectator fixes (Wliu)");
 			DrawPanelText(panel, "7) [Server] Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace' (Wliu from Shadow)");
 			DrawPanelText(panel, "8) [Server] 'ff2_crits' now defaults to 0 instead of 1 (Wliu from Spyper)");
-			DrawPanelText(panel, "9) [Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)");
+			DrawPanelText(panel, "9) [Server] Fixed divide by 0 errors (Wliu)");
+			DrawPanelText(panel, "See next page (press 1)");
+		}
+		case 64:  //1.10.7
+		{
+			DrawPanelText(panel, "9) [Dev] Fixed FF2_OnAlivePlayersChanged not returning the number of minions (Wliu)");
+			DrawPanelText(panel, "10) [Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)");
 		}
 		case 63:  //1.10.6
 		{
