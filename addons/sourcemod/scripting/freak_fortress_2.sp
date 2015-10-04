@@ -3474,7 +3474,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
 	{
 		Debug("Boss client %N is a living spectator!", client);
-		SetClientTeam(client, BossTeam);
+		ChangeClientTeam(client, BossTeam);
 		TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
 		TF2_RespawnPlayer(client);
 		CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
