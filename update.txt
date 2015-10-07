@@ -12,6 +12,7 @@
 		"Notes"			"Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive"
 		"Notes"			"Fixed minions receiving benefits intended only for normal players"
 		"Notes"			"Minions no longer die after their summoner is killed"
+		"Notes"			"Whitelisted the Shooting Star"
 		"Notes"			"Removed Shortstop reload penalty"
 		"Notes"			"Fixed large amounts of lives being cut off when being displayed"
 		"Notes"			"Fixed the living spectator bug again"

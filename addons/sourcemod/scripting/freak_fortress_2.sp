@@ -354,9 +354,9 @@ static const String:ff2versiondates[][]=
 	"August 10, 2015",		//1.10.6
 	"August 10, 2015",		//1.10.6
 	"August 10, 2015",		//1.10.6
-	"October 4, 2015",		//1.10.7
-	"October 4, 2015",		//1.10.7
-	"October 4, 2015"		//1.10.7
+	"October 7, 2015",		//1.10.7
+	"October 7, 2015",		//1.10.7
+	"October 7, 2015"		//1.10.7
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -368,21 +368,22 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "1) Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
 			DrawPanelText(panel, "2) Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive (Shadow from Spyper)");
 			DrawPanelText(panel, "3) Fixed minions receiving benefits intended only for normal players (Wliu)");
-			DrawPanelText(panel, "4) Minions no longer die after their summoner is killed (Wliu)");
-			DrawPanelText(panel, "5) Removed Shortstop reload penalty (Starblaster64)");
+			DrawPanelText(panel, "4) Removed Shortstop reload penalty (Starblaster64)");
+			DrawPanelText(panel, "5) Whitelisted the Shooting Star (Wliu)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 65:  //1.10.7
 		{
 			DrawPanelText(panel, "6) Fixed large amounts of lives being cut off when being displayed (Wliu)");
 			DrawPanelText(panel, "7) More living spectator fixes (Wliu)");
-			DrawPanelText(panel, "7) [Server] Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace' (Wliu from Shadow)");
-			DrawPanelText(panel, "8) [Server] 'ff2_crits' now defaults to 0 instead of 1 (Wliu from Spyper)");
-			DrawPanelText(panel, "9) [Server] Fixed divide by 0 errors (Wliu)");
+			DrawPanelText(panel, "8) [Server] Added arg12 to rage_cloneattack to determine whether or not clones die after their boss dies (Wliu");
+			DrawPanelText(panel, "9) [Server] Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace' (Wliu from Shadow)");
+			DrawPanelText(panel, "10) [Server] 'ff2_crits' now defaults to 0 instead of 1 (Wliu from Spyper)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 64:  //1.10.7
 		{
+			DrawPanelText(panel, "11) [Server] Fixed divide by 0 errors (Wliu)");
 			DrawPanelText(panel, "9) [Dev] Fixed FF2_OnAlivePlayersChanged not returning the number of minions (Wliu)");
 			DrawPanelText(panel, "10) [Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)");
 		}
@@ -6089,7 +6090,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							new Float:rage=GetEntPropFloat(attacker, Prop_Send, "m_flRageMeter");
 							SetEntPropFloat(attacker, Prop_Send, "m_flRageMeter", (rage+focus>100) ? 100.0 : rage+focus);
 						}
-						else if(index!=230 && index!=402 && index!=526)  //Sydney Sleeper, Bazaar Bargain, Machina
+						else if(index!=230 && index!=402 && index!=526 && index!=30665)  //Sydney Sleeper, Bazaar Bargain, Machina, Shooting Star
 						{
 							new Float:time=(GlowTimer[boss]>10 ? 1.0 : 2.0);
 							time+=(GlowTimer[boss]>10 ? (GlowTimer[boss]>20 ? 1.0 : 2.0) : 4.0)*(charge/100.0);
