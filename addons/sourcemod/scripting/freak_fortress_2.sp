@@ -9051,13 +9051,13 @@ UpdateHealthBar()
 	}
 
 	new healthAmount, maxHealthAmount, bosses, healthPercent;
-	for(new client; client<=MaxClients; client++)
+	for(new boss; boss<=Maxbosss; boss++)
 	{
-		if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]))
+		if(IsValidboss(Boss[boss]) && IsPlayerAlive(Boss[boss]))
 		{
 			bosses++;
-			healthAmount+=BossHealth[client]-BossHealthMax[client]*(BossLives[client]-1);
-			maxHealthAmount+=BossHealthMax[client];
+			healthAmount+=BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1);
+			maxHealthAmount+=BossHealthMax[boss];
 		}
 	}
 
