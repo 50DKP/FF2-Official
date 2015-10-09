@@ -6555,10 +6555,15 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 		JumpPower=reboundPower;
 		PrintHintText(victim, "You were just goomba stomped!");
 		PrintHintText(attacker, "You just goomba stomped the boss!");
-		UpdateHealthBar();
+		RequestFrame(Timer_GoombaUpdateHealthBar, 0);
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
+}
+
+public Timer_GoombaUpdateHealthBar(any:data)
+{
+	UpdateHealthBar();
 }
 
 public Action:RTD_CanRollDice(client)
