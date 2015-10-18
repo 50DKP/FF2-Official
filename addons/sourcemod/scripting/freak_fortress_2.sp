@@ -354,9 +354,9 @@ static const String:ff2versiondates[][]=
 	"August 10, 2015",		//1.10.6
 	"August 10, 2015",		//1.10.6
 	"August 10, 2015",		//1.10.6
-	"October 7, 2015",		//1.10.7
-	"October 7, 2015",		//1.10.7
-	"October 7, 2015"		//1.10.7
+	"October 18, 2015",		//1.10.7
+	"October 18, 2015",		//1.10.7
+	"October 18, 2015"		//1.10.7
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -376,16 +376,17 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "6) Fixed large amounts of lives being cut off when being displayed (Wliu)");
 			DrawPanelText(panel, "7) More living spectator fixes (Wliu)");
-			DrawPanelText(panel, "8) [Server] Added arg12 to rage_cloneattack to determine whether or not clones die after their boss dies (Wliu");
-			DrawPanelText(panel, "9) [Server] Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace' (Wliu from Shadow)");
-			DrawPanelText(panel, "10) [Server] 'ff2_crits' now defaults to 0 instead of 1 (Wliu from Spyper)");
+			DrawPanelText(panel, "8) Fixed health bar not updating when goomba-ing the boss (Wliu from Akuba)");
+			DrawPanelText(panel, "9) [Server] Added arg12 to rage_cloneattack to determine whether or not clones die after their boss dies (Wliu");
+			DrawPanelText(panel, "10) [Server] Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace' (Wliu from Shadow)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 64:  //1.10.7
 		{
-			DrawPanelText(panel, "11) [Server] Fixed divide by 0 errors (Wliu)");
-			DrawPanelText(panel, "9) [Dev] Fixed FF2_OnAlivePlayersChanged not returning the number of minions (Wliu)");
-			DrawPanelText(panel, "10) [Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)");
+			DrawPanelText(panel, "11) [Server] 'ff2_crits' now defaults to 0 instead of 1 (Wliu from Spyper)");
+			DrawPanelText(panel, "12) [Server] Fixed divide by 0 errors (Wliu)");
+			DrawPanelText(panel, "13) [Dev] Fixed FF2_OnAlivePlayersChanged not returning the number of minions (Wliu)");
+			DrawPanelText(panel, "14) [Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)");
 		}
 		case 63:  //1.10.6
 		{
