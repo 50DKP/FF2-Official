@@ -48,13 +48,13 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
-	if(!client || !attacker || !IsClientInGame(client) || !IsClientInGame(attacker) || !FF2_IsFF2Enabled())
+	if(!client || !attacker || !IsClientInGame(client) || !IsClientInGame(attacker))
 	{
 		return;
 	}
 
 	new boss=FF2_GetBossIndex(attacker);
-	if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, OBJECTS))
+	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, OBJECTS))
 	{
 		decl String:classname[PLATFORM_MAX_PATH], String:model[PLATFORM_MAX_PATH];
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 1, classname, sizeof(classname));
@@ -67,7 +67,7 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 
 	boss=FF2_GetBossIndex(client);
-	if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
+	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
 	{
 		decl String:classname[PLATFORM_MAX_PATH], String:model[PLATFORM_MAX_PATH];
 		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 1, classname, sizeof(classname));

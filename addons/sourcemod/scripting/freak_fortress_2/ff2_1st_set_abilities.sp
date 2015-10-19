@@ -627,7 +627,7 @@ public Action:Timer_StopSlowMo(Handle:timer, any:boss)
 public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Float:angles[3], &weapon)
 {
 	new boss=FF2_GetBossIndex(client);
-	if(FF2_IsFF2Enabled() && boss==-1 || !(FF2Flags[boss] & FLAG_ONSLOWMO))
+	if(boss==-1 || !(FF2Flags[boss] & FLAG_ONSLOWMO))
 	{
 		return Plugin_Continue;
 	}
@@ -772,11 +772,6 @@ public Action:Timer_SlowMoChange(Handle:timer, any:boss)
 
 public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(!FF2_IsFF2Enabled())
-	{
-		return Plugin_Continue;
-	}
-
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new boss=FF2_GetBossIndex(attacker);
