@@ -1284,53 +1284,14 @@ public OnConfigsExecuted()
 
 public OnMapStart()
 {
-	HPTime=0.0;
-	MusicTimer=INVALID_HANDLE;
-	doorCheckTimer=INVALID_HANDLE;
 	RoundCount=0;
-	for(new client; client<=MaxClients; client++)
-	{
-		KSpreeTimer[client]=0.0;
-		FF2Flags[client]=0;
-		Incoming[client]=-1;
-	}
-
-	for(new specials; specials<MAXSPECIALS; specials++)
-	{
-		if(BossKV[specials]!=INVALID_HANDLE)
-		{
-			CloseHandle(BossKV[specials]);
-			BossKV[specials]=INVALID_HANDLE;
-		}
-	}
 }
 
 public OnMapEnd()
 {
 	if(Enabled || Enabled2)
 	{
-		SetConVarInt(FindConVar("tf_arena_use_queue"), tf_arena_use_queue);
-		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
-		SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
-		SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
-		SetConVarInt(FindConVar("tf_dropped_weapon_lifetime"), tf_dropped_weapon_lifetime);
-		SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), tf_feign_death_activate_damage_scale);
-		SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), tf_feign_death_damage_scale);
-		SetConVarFloat(FindConVar("tf_stealth_damage_reduction"), tf_stealth_damage_reduction);
-
-		#if defined _steamtools_included
-		if(steamtools)
-		{
-			Steam_SetGameDescription("Team Fortress");
-		}
-		#endif
-		//DisableSubPlugins();
-
-		if(MusicTimer!=INVALID_HANDLE)
-		{
-			KillTimer(MusicTimer);
-			MusicTimer=INVALID_HANDLE;
-		}
+		DisableFF2();  //This resets all the variables for safety
 	}
 }
 
@@ -1430,28 +1391,41 @@ public DisableFF2()
 	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), tf_feign_death_damage_scale);
 	SetConVarFloat(FindConVar("tf_stealth_damage_reduction"), tf_stealth_damage_reduction);
 
+	HPTime=0.0;
+
 	if(doorCheckTimer!=INVALID_HANDLE)
 	{
 		KillTimer(doorCheckTimer);
 		doorCheckTimer=INVALID_HANDLE;
 	}
 
-	for(new client=1; client<=MaxClients; client++)
-	{
-		if(IsValidClient(client))
-		{
-			if(BossInfoTimer[client][1]!=INVALID_HANDLE)
-			{
-				KillTimer(BossInfoTimer[client][1]);
-				BossInfoTimer[client][1]=INVALID_HANDLE;
-			}
-		}
-	}
-
 	if(MusicTimer!=INVALID_HANDLE)
 	{
 		KillTimer(MusicTimer);
 		MusicTimer=INVALID_HANDLE;
+	}
+
+	for(new boss; boss<=MaxClients; boss++)
+	{
+		boss[boss]=0;
+		character[boss]=-1;
+		KSpreeTimer[boss]=0.0;
+		FF2Flags[boss]=0;
+		Incoming[boss]=-1;
+		if(BossInfoTimer[boss][1]!=INVALID_HANDLE)
+		{
+			KillTimer(BossInfoTimer[boss][1]);
+			BossInfoTimer[boss][1]=INVALID_HANDLE;
+		}
+	}
+
+	for(new characters; characters<=MAXSPECIALS; characters++)
+	{
+		if(BossKV[characters]!=INVALID_HANDLE)
+		{
+			CloseHandle(BossKV[characters]);
+			BossKV[characters]=INVALID_HANDLE;
+		}
 	}
 
 	#if defined _steamtools_included
