@@ -30,8 +30,11 @@ public OnPluginStart2()
 
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	CreateTimer(0.3, Timer_GetBossTeam);
-	return Plugin_Continue;
+	if(FF2_IsFF2Enabled())
+	{
+		CreateTimer(0.3, Timer_GetBossTeam);
+		return Plugin_Continue;
+	}
 }
 
 public Action:Timer_GetBossTeam(Handle:hTimer)

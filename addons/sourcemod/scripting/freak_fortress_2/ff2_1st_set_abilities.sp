@@ -77,11 +77,14 @@ public OnMapStart()
 
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	CreateTimer(0.3, Timer_GetBossTeam);
-	for(new client; client<=MaxClients; client++)
+	if(GetConVarBool(FF2_IsFF2Enabled()))
 	{
-		FF2Flags[client]=0;
-		CloneOwnerIndex[client]=-1;
+		CreateTimer(0.3, Timer_GetBossTeam);
+		for(new client; client<=MaxClients; client++)
+		{
+			FF2Flags[client]=0;
+			CloneOwnerIndex[client]=-1;
+		}
 	}
 	return Plugin_Continue;
 }
@@ -99,16 +102,19 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 
 public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	for(new client; client<=MaxClients; client++)
+	if(GetConVarBool(FF2_IsFF2Enabled()))
 	{
-		if(FF2Flags[client] & FLAG_ONSLOWMO)
+		for(new client; client<=MaxClients; client++)
 		{
-			if(SlowMoTimer)
+			if(FF2Flags[client] & FLAG_ONSLOWMO)
 			{
-				KillTimer(SlowMoTimer);
+				if(SlowMoTimer)
+				{
+					KillTimer(SlowMoTimer);
+				}
+				Timer_StopSlowMo(INVALID_HANDLE, -1);
+				return Plugin_Continue;
 			}
-			Timer_StopSlowMo(INVALID_HANDLE, -1);
-			return Plugin_Continue;
 		}
 	}
 	return Plugin_Continue;
@@ -621,7 +627,7 @@ public Action:Timer_StopSlowMo(Handle:timer, any:boss)
 public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:velocity[3], Float:angles[3], &weapon)
 {
 	new boss=FF2_GetBossIndex(client);
-	if(boss==-1 || !(FF2Flags[boss] & FLAG_ONSLOWMO))
+	if(FF2_IsFF2Enabled() && boss==-1 || !(FF2Flags[boss] & FLAG_ONSLOWMO))
 	{
 		return Plugin_Continue;
 	}
@@ -766,6 +772,11 @@ public Action:Timer_SlowMoChange(Handle:timer, any:boss)
 
 public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
+	if(!FF2_IsFF2Enabled())
+	{
+		return Plugin_Continue;
+	}
+
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new boss=FF2_GetBossIndex(attacker);

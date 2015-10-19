@@ -83,15 +83,18 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	for(new client; client<MaxClients; client++)
+	if(GetConVarBool(FF2_IsFF2Enabled()))
 	{
-		enableSuperDuperJump[client]=false;
-		UberRageCount[client]=0.0;
+		for(new client; client<MaxClients; client++)
+		{
+			enableSuperDuperJump[client]=false;
+			UberRageCount[client]=0.0;
+		}
+	
+		CreateTimer(0.3, Timer_GetBossTeam, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(9.11, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);  //TODO: Investigate.
+		return Plugin_Continue;
 	}
-
-	CreateTimer(0.3, Timer_GetBossTeam, _, TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(9.11, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);  //TODO: Investigate.
-	return Plugin_Continue;
 }
 
 public Action:StartBossTimer(Handle:timer)  //TODO: What.
@@ -570,7 +573,7 @@ public Action:Timer_ResetGravity(Handle:timer, Handle:data)
 public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new boss=FF2_GetBossIndex(GetClientOfUserId(GetEventInt(event, "attacker")));
-	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "special_dissolve"))
+	if(FF2_IsFF2Enabled() && boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "special_dissolve"))
 	{
 		CreateTimer(0.1, Timer_DissolveRagdoll, GetEventInt(event, "userid"));
 	}
@@ -648,7 +651,7 @@ stock AttachParticle(entity, String:particleType[], Float:offset=0.0, bool:attac
 public Action:OnDeflect(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new boss=FF2_GetBossIndex(GetClientOfUserId(GetEventInt(event, "userid")));
-	if(boss!=-1)
+	if(FF2_IsFF2Enabled() && boss!=-1)
 	{
 		if(UberRageCount[boss]>11)
 		{

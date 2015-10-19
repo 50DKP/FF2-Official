@@ -48,7 +48,7 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client=GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
-	if(!client || !attacker || !IsClientInGame(client) || !IsClientInGame(attacker))
+	if(!client || !attacker || !IsClientInGame(client) || !IsClientInGame(attacker) || !FF2_IsFF2Enabled())
 	{
 		return;
 	}
@@ -82,7 +82,7 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 
 public OnEntityCreated(entity, const String:classname[])
 {
-	if(IsValidEdict(entity) && StrContains(classname, "tf_projectile")>=0)
+	if(FF2_IsFF2Enabled() && IsValidEdict(entity) && StrContains(classname, "tf_projectile")>=0)
 	{
 		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
 	}

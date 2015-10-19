@@ -51,8 +51,11 @@ public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_nam
 
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	CreateTimer(0.41, Timer_Disable_Anims);
-	CreateTimer(9.31, Timer_Disable_Anims);
+	if(FF2_IsFF2Enabled())
+	{
+		CreateTimer(0.41, Timer_Disable_Anims);
+		CreateTimer(9.31, Timer_Disable_Anims);
+	}
 	return Plugin_Continue;
 }
 

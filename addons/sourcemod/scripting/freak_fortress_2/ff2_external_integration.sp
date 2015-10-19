@@ -86,7 +86,7 @@ public void OnConfigsExecuted()
 
 public Action OnStomp(int attacker, int victim, float &damageMultiplier, float &damageBonus, float &JumpPower)
 {
-	if(goomba)
+	if(FF2_IsFF2Enabled() && goomba)
 	{
 		if(FF2_GetBossIndex(attacker)!=-1)
 		{
@@ -112,5 +112,5 @@ public Action OnStomp(int attacker, int victim, float &damageMultiplier, float &
 
 public Action RTD_CanRollDice(int client)
 {
-	return (FF2_GetBossIndex(client)!=-1 && rtd && !canBossRTD) ? Plugin_Handled : Plugin_Continue;
+	return (FF2_IsFF2Enabled() && FF2_GetBossIndex(client)!=-1 && rtd && !canBossRTD) ? Plugin_Handled : Plugin_Continue;
 }
