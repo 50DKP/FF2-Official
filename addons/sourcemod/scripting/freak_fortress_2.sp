@@ -1407,7 +1407,7 @@ public DisableFF2()
 
 	for(new boss; boss<=MaxClients; boss++)
 	{
-		boss[boss]=0;
+		Boss[boss]=0;
 		character[boss]=-1;
 		KSpreeTimer[boss]=0.0;
 		FF2Flags[boss]=0;
