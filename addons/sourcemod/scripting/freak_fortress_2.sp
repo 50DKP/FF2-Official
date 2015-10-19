@@ -5762,7 +5762,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 			{
 				RedAlivePlayers++;
 			}
-			else if(GetClientTeam(client)==BossTeam)
+			else if(TF2_GetClientTeam(client)==BossTeam)
 			{
 				BlueAlivePlayers++;
 			}
