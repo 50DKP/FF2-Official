@@ -228,7 +228,7 @@ Rage_Clone(const String:ability_name[], boss)
 	{
 		if(IsClientInGame(target))
 		{
-			new team=TF2_GetClientTeam(target);
+			new TFTeam:team=TF2_GetClientTeam(target);
 			if(team>TFTeam_Spectator && team!=TFTeam_Blue)
 			{
 				if(IsPlayerAlive(target))
