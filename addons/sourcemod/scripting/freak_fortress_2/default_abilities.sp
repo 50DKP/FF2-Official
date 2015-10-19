@@ -83,7 +83,7 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(GetConVarBool(FF2_IsFF2Enabled()))
+	if(FF2_IsFF2Enabled())
 	{
 		for(new client; client<MaxClients; client++)
 		{

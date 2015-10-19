@@ -77,7 +77,7 @@ public OnMapStart()
 
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(GetConVarBool(FF2_IsFF2Enabled()))
+	if(FF2_IsFF2Enabled())
 	{
 		CreateTimer(0.3, Timer_GetBossTeam);
 		for(new client; client<=MaxClients; client++)
@@ -102,7 +102,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 
 public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if(GetConVarBool(FF2_IsFF2Enabled()))
+	if(FF2_IsFF2Enabled())
 	{
 		for(new client; client<=MaxClients; client++)
 		{
