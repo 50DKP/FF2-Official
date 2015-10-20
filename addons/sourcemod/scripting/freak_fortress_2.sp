@@ -3357,7 +3357,7 @@ EquipBoss(boss)
 public Action:MakeBoss(Handle:timer, any:boss)
 {
 	new client=Boss[boss];
-	if(!IsValidClient(client))
+	if(!IsValidClient(client) || CheckRoundState()==-1)
 	{
 		return Plugin_Continue;
 	}
@@ -3376,11 +3376,6 @@ public Action:MakeBoss(Handle:timer, any:boss)
 
 	if(GetClientTeam(client)!=BossTeam)
 	{
-		if(TF2_GetPlayerClass(client)==TFClass_Unknown)  //Make sure when we respawn them they have a class
-		{
-			KvRewind(BossKV[Special[boss]]);
-			TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
-		}
 		SetEntProp(client, Prop_Send, "m_lifeState", 2);
 		ChangeClientTeam(client, BossTeam);
 		SetEntProp(client, Prop_Send, "m_lifeState", 0);
@@ -3481,14 +3476,9 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	BossCharge[boss][0]=0.0;
 	SetClientQueuePoints(client, 0);
 
-	//Just to ensure a player doesn't get stuck as a living spectator
 	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
 	{
 		Debug("Boss client %N is a living spectator!", client);
-		ChangeClientTeam(client, BossTeam);
-		TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
-		TF2_RespawnPlayer(client);
-		CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	return Plugin_Continue;
 }
