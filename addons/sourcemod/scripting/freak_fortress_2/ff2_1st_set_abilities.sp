@@ -851,9 +851,8 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 		}
 	}
 
-	//Clones are now given a chance to win even if the boss dies
-	/*boss=FF2_GetBossIndex(client);
-	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack") && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+	boss=FF2_GetBossIndex(client);
+	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack") && FF2_GetAbilityArgument(boss, this_plugin_name, "rage_cloneattack", 12, 1) && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
 		for(new target=1; target<=MaxClients; target++)
 		{
@@ -863,7 +862,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 				TF2_ChangeClientTeam(target, (BossTeam==TFTeam_Blue) ? (TFTeam_Red) : (TFTeam_Blue));
 			}
 		}
-	}*/
+	}
 
 	if(CloneOwnerIndex[client]!=-1 && TF2_GetClientTeam(client)==BossTeam)  //Switch clones back to the other team after they die
 	{

@@ -1,5 +1,5 @@
 # Contributing
-First of all, thanks for considering to create an issue!  If you could just please follow these rules, that would be great :smile:
+First of all, thanks for considering to create an issue!  If you could just please follow these rules, that would be great :smile:.
 
 ## General Guidelines
 * Make sure your issue hasn't already been reported before opening one
@@ -10,7 +10,7 @@ First of all, thanks for considering to create an issue!  If you could just plea
 ## Issues
 * Bug reports should contain the exact version of FF2 that you experienced the bug on
 	* Refer to an exact commit or build number instead of the "latest" version
-	* Error logs should also be included if possible (encase the log using ` `s (tildes))
+	* Error logs should also be included if possible (surround the log with \`\`\`)
 	* Pictures would also be helpful if the bug is graphical
 	* If testing on a dev version, make sure you are using the latest source available
 * Feature requests should contain a description of existing behavior and a detailed explanation of why you want this new feature
