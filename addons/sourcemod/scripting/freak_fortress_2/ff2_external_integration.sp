@@ -10,21 +10,15 @@
 #tryinclude <rtd>
 #define REQUIRE_PLUGIN
 
-#pragma newdecls required  //Move this to the top once all include files have been updated to new-style syntax
+#pragma newdecls required
 
 #define PLUGIN_VERSION "0.0.0"
 
-Handle cvarGoomba;
-Handle cvarGoombaDamage;
-Handle cvarGoombaRebound;
-Handle cvarRTD;
-Handle cvarBossRTD;
-
-bool goomba;
-float goombaDamage;
-float goombaRebound;
-bool rtd;
-bool canBossRTD;
+ConVar cvarGoomba;
+ConVar cvarGoombaDamage;
+ConVar cvarGoombaRebound;
+ConVar cvarRTD;
+ConVar cvarBossRTD;
 
 public Plugin myinfo=
 {
@@ -42,51 +36,12 @@ public void OnPluginStart()
 	cvarRTD=CreateConVar("ff2_rtd", "1", "Allow FF2 to integrate with RTD?", _, true, 0.0, true, 1.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Allow the boss to use RTD?", _, true, 0.0, true, 1.0);
 
-	HookConVarChange(cvarGoomba, CvarChange);
-	HookConVarChange(cvarGoombaDamage, CvarChange);
-	HookConVarChange(cvarGoombaRebound, CvarChange);
-	HookConVarChange(cvarRTD, CvarChange);
-	HookConVarChange(cvarBossRTD, CvarChange);
-
 	AutoExecConfig(false, "ff2_external_integration", "sourcemod/freak_fortress_2");
-}
-
-public void CvarChange(Handle convar, const char[] oldValue, const char[] newValue)
-{
-	if(convar==cvarGoomba)
-	{
-		goomba=view_as<bool>(StringToInt(newValue));
-	}
-	else if(convar==cvarGoombaDamage)
-	{
-		goombaDamage=(StringToFloat(newValue));
-	}
-	else if(convar==cvarGoombaRebound)
-	{
-		goombaRebound=(StringToFloat(newValue));
-	}
-	else if(convar==cvarRTD)
-	{
-		rtd=view_as<bool>(StringToInt(newValue));
-	}
-	else if(convar==cvarBossRTD)
-	{
-		canBossRTD=view_as<bool>(StringToInt(newValue));
-	}
-}
-
-public void OnConfigsExecuted()
-{
-	goomba=GetConVarBool(cvarGoomba);
-	goombaDamage=GetConVarFloat(cvarGoombaDamage);
-	goombaRebound=GetConVarFloat(cvarGoombaRebound);
-	rtd=GetConVarBool(cvarRTD);
-	canBossRTD=GetConVarBool(cvarBossRTD);
 }
 
 public Action OnStomp(int attacker, int victim, float &damageMultiplier, float &damageBonus, float &JumpPower)
 {
-	if(FF2_IsFF2Enabled() && goomba)
+	if(FF2_IsFF2Enabled() && cvarGoomba.BoolValue)
 	{
 		if(FF2_GetBossIndex(attacker)!=-1)
 		{
@@ -100,8 +55,8 @@ public Action OnStomp(int attacker, int victim, float &damageMultiplier, float &
 		}
 		else if(FF2_GetBossIndex(victim)!=-1)
 		{
-			damageMultiplier=goombaDamage;
-			JumpPower=goombaRebound;
+			damageMultiplier=cvarGoombaDamage.FloatValue;
+			JumpPower=cvarGoombaRebound.FloatValue;
 			PrintCenterText(victim, "You were just goomba stomped!");
 			PrintCenterText(attacker, "You just goomba stomped the boss!");
 			return Plugin_Changed;
@@ -112,5 +67,5 @@ public Action OnStomp(int attacker, int victim, float &damageMultiplier, float &
 
 public Action RTD_CanRollDice(int client)
 {
-	return (FF2_GetBossIndex(client)!=-1 && rtd && !canBossRTD) ? Plugin_Handled : Plugin_Continue;
+	return (FF2_GetBossIndex(client)!=-1 && cvarRTD.BoolValue && !cvarBossRTD.BoolValue) ? Plugin_Handled : Plugin_Continue;
 }
