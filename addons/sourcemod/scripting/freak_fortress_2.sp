@@ -5,6 +5,7 @@ By Rainbolt Dash: programmer, modeller, mapper, painter.
 Author of Demoman The Pirate: http://www.randomfortress.ru/thepirate/
 And one of two creators of Floral Defence: http://www.polycount.com/forum/showthread.php?t=73688
 And author of VS Saxton Hale Mode
+And notoriously famous for creating plugins with terrible code and then abandoning them.
 
 Plugin thread on AlliedMods: http://forums.alliedmods.net/showthread.php?t=182108
 
@@ -2350,10 +2351,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	{
 		if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
 		{
-			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 2);
-			ChangeClientTeam(Boss[0], BossTeam);
-			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 0);
-			TF2_RespawnPlayer(Boss[0]);
+			AssignTeam(Boss[0], TFTeam:BossTeam, 1);
 		}
 
 		for(new client=1; client<=MaxClients; client++)
@@ -3350,7 +3348,7 @@ EquipBoss(boss)
 	new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1);
 	if(TF2_GetPlayerClass(client)!=class)
 	{
-		TF2_SetPlayerClass(client, class, _, false);
+		TF2_SetPlayerClass(client, class, _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
 	}
 }
 
@@ -3374,18 +3372,15 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		}
 	}
 
+	KvRewind(BossKV[Special[boss]]);
 	if(GetClientTeam(client)!=BossTeam)
 	{
-		SetEntProp(client, Prop_Send, "m_lifeState", 2);
-		ChangeClientTeam(client, BossTeam);
-		SetEntProp(client, Prop_Send, "m_lifeState", 0);
-		TF2_RespawnPlayer(client);
+		AssignTeam(client, TFTeam:BossTeam, KvGetNum(BossKV[Special[boss]], "class", 1));
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
-	KvRewind(BossKV[Special[boss]]);
 	TF2_RemovePlayerDisguise(client);
-	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
+	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
 	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	switch(KvGetNum(BossKV[Special[boss]], "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
@@ -3475,11 +3470,6 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	KSpreeCount[boss]=0;
 	BossCharge[boss][0]=0.0;
 	SetClientQueuePoints(client, 0);
-
-	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
-	{
-		Debug("Boss client %N is a living spectator!", client);
-	}
 	return Plugin_Continue;
 }
 
@@ -3881,25 +3871,13 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);  //This really shouldn't be needed but I've been noticing players who still have glow
 
-	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overheal bug
-	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
+	SetEntityHealth(client, GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client)); //Temporary: Reset health to avoid an overheal bug
 	if(GetClientTeam(client)==BossTeam)
 	{
-		SetEntProp(client, Prop_Send, "m_lifeState", 2);
-		ChangeClientTeam(client, OtherTeam);
-		SetEntProp(client, Prop_Send, "m_lifeState", 0);
-		TF2_RespawnPlayer(client);
+		AssignTeam(client, TFTeam:OtherTeam, 1);
 	}
 
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
-
-	//Just to ensure a player doesn't get stuck as a living spectator
-	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
-	{
-		Debug("Non-boss client %N is a living spectator!", client);
-		TF2_RespawnPlayer(client);
-		CreateTimer(0.1, MakeNotBoss, userid, TIMER_FLAG_NO_MAPCHANGE);
-	}
 	return Plugin_Continue;
 }
 
@@ -4084,7 +4062,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
-		Debug("Respawning %N to avoid civilian bug");
+		Debug("Respawning %N to avoid civilian bug", client);
 		TF2_RespawnPlayer(client);
 	}
 	civilianCheck[client]=0;
@@ -5755,7 +5733,7 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 	{
 		if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
 		{
-			SetEntProp(client, Prop_Data, "m_iHealth", (BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1));  //Set the health early to avoid the boss dying from fire, etc.
+			SetEntityHealth(client,(BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1)); //Set the health early to avoid the boss dying from fire, etc.
 
 			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
 			Call_StartForward(OnLoseLife);
@@ -6138,8 +6116,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							{
 								newhealth=max+100;
 							}
-							SetEntProp(attacker, Prop_Data, "m_iHealth", newhealth);
-							SetEntProp(attacker, Prop_Send, "m_iHealth", newhealth);
+							SetEntityHealth(client, newhealth);
 						}
 
 						if(TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
@@ -6179,8 +6156,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							{
 								newhealth=max+100;
 							}
-							SetEntProp(attacker, Prop_Data, "m_iHealth", newhealth);
-							SetEntProp(attacker, Prop_Send, "m_iHealth", newhealth);
+							SetEntityHealth(attacker, newhealth);
 						}
 						if(TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
 						{
@@ -6345,8 +6321,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							health=500;
 						}
-						SetEntProp(attacker, Prop_Data, "m_iHealth", health);
-						SetEntProp(attacker, Prop_Send, "m_iHealth", health);
+						SetEntityHealth(client, health);
 					}
 					else if(index==461)  //Big Earner
 					{
@@ -6573,7 +6548,7 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 	if(Enabled && IsBoss(client))
 	{
 		new boss=GetBossIndex(client);
-		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1));
+		SetEntityHealth(client, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1));
 		maxHealth=BossHealthMax[boss];
 		return Plugin_Changed;
 	}
@@ -6634,8 +6609,7 @@ stock IncrementHeadCount(client)
 	new decapitations=GetEntProp(client, Prop_Send, "m_iDecapitations");
 	new health=GetClientHealth(client);
 	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations+1);
-	SetEntProp(client, Prop_Data, "m_iHealth", health+15);
-	SetEntProp(client, Prop_Send, "m_iHealth", health+15);
+	SetEntityHealth(client, health+15);
 	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
 }
 
@@ -6672,6 +6646,27 @@ public Action:Timer_DisguiseBackstab(Handle:timer, any:userid)
 		RandomlyDisguise(client);
 	}
 	return Plugin_Continue;
+}
+
+stock AssignTeam(client, TFTeam:team, desiredclass=0) // Move all this team switching stuff into a single stock
+{
+	if(!GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass")) // Initial living spectator check. A value of 0 means that no class is selected
+	{
+		Debug("INVALID DESIRED CLASS FOR %N!", client);
+		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", !desiredclass ? 1 : desiredclass); // So we assign one to prevent living spectators
+	}
+
+	SetEntProp(client, Prop_Send, "m_lifeState", 2);
+	TF2_ChangeClientTeam(client, team);
+	// SetEntProp(client, Prop_Send, "m_lifeState", 0); // Is this even needed? According to naydef, this is the other cause of living spectators. 
+	TF2_RespawnPlayer(client);
+	
+	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client)) // If the initial checks fail, use brute-force.
+	{
+		Debug("%N IS A LIVING SPECTATOR!", client);
+		TF2_SetPlayerClass(client, TFClassType:(!desiredclass ? 1 : desiredclass), _, true);
+		TF2_RespawnPlayer(client);
+	}
 }
 
 stock RandomlyDisguise(client)	//Original code was mecha's, but the original code is broken and this uses a better method now.
