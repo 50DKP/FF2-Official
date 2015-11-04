@@ -1,10 +1,5 @@
 /*
-====================================================================================================
-   ___                     _        ___               _                           ____  
-  / __\ _ __   ___   __ _ | | __   / __\  ___   _ __ | |_  _ __   ___  ___  ___  |___ \ 
- / _\  | '__| / _ \ / _` || |/ /  / _\   / _ \ | '__|| __|| '__| / _ \/ __|/ __|   __) |
-/ /    | |   |  __/| (_| ||   <  / /    | (_) || |   | |_ | |   |  __/\__ \\__ \  / __/ 
-\/     |_|    \___| \__,_||_|\_\ \/      \___/ |_|    \__||_|    \___||___/|___/ |_____|
+===Freak Fortress 2===
 
 By Rainbolt Dash: programmer, modeller, mapper, painter.
 Author of Demoman The Pirate: http://www.randomfortress.ru/thepirate/
@@ -2357,7 +2352,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	{
 		if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
 		{
-			AssignTeam(Boss[0], TFTeam:BossTeam, GetRandomInt(1,9));
+			AssignTeam(Boss[0], TFTeam:BossTeam, 1);
 		}
 
 		for(new client=1; client<=MaxClients; client++)
