@@ -3871,8 +3871,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);  //This really shouldn't be needed but I've been noticing players who still have glow
 
-	SetEntProp(client, Prop_Send, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));  //Temporary: Reset health to avoid an overheal bug
-	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
+	SetEntityHealth(client, GetPlayerMaxHealth(client)); //Temporary: Reset health to avoid an overheal bug
 	if(GetClientTeam(client)==BossTeam)
 	{
 		AssignTeam(client, TFTeam:OtherTeam, GetRandomInt(1,9));
@@ -3880,6 +3879,11 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Continue;
+}
+
+stock GetPlayerMaxHealth(client)
+{
+	return GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client);
 }
 
 public Action:CheckItems(Handle:timer, any:userid)
@@ -5734,7 +5738,7 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 	{
 		if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
 		{
-			SetEntProp(client, Prop_Data, "m_iHealth", (BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1));  //Set the health early to avoid the boss dying from fire, etc.
+			SetEntityHealth(client,(BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1)); //Set the health early to avoid the boss dying from fire, etc.
 
 			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
 			Call_StartForward(OnLoseLife);
@@ -6109,7 +6113,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					case 214:  //Powerjack
 					{
 						new health=GetClientHealth(attacker);
-						new max=GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
+						new max=GetPlayerMaxHealth(client);
 						new newhealth=health+50;
 						if(health<max+100)
 						{
@@ -6117,8 +6121,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							{
 								newhealth=max+100;
 							}
-							SetEntProp(attacker, Prop_Data, "m_iHealth", newhealth);
-							SetEntProp(attacker, Prop_Send, "m_iHealth", newhealth);
+							SetEntityHealth(client, newhealth);
 						}
 
 						if(TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
@@ -6150,7 +6153,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						}
 
 						new health=GetClientHealth(attacker);
-						new max=GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
+						new max=GetPlayerMaxHealth(attacker);
 						new newhealth=health+50;
 						if(health<max+100)
 						{
@@ -6158,8 +6161,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							{
 								newhealth=max+100;
 							}
-							SetEntProp(attacker, Prop_Data, "m_iHealth", newhealth);
-							SetEntProp(attacker, Prop_Send, "m_iHealth", newhealth);
+							SetEntityHealth(attacker, newhealth);
 						}
 						if(TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
 						{
@@ -6324,8 +6326,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							health=500;
 						}
-						SetEntProp(attacker, Prop_Data, "m_iHealth", health);
-						SetEntProp(attacker, Prop_Send, "m_iHealth", health);
+						SetEntityHealth(client, health);
 					}
 					else if(index==461)  //Big Earner
 					{
@@ -6552,7 +6553,7 @@ public Action:OnGetMaxHealth(client, &maxHealth)
 	if(Enabled && IsBoss(client))
 	{
 		new boss=GetBossIndex(client);
-		SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1));
+		SetEntityHealth(client, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1));
 		maxHealth=BossHealthMax[boss];
 		return Plugin_Changed;
 	}
@@ -6613,8 +6614,7 @@ stock IncrementHeadCount(client)
 	new decapitations=GetEntProp(client, Prop_Send, "m_iDecapitations");
 	new health=GetClientHealth(client);
 	SetEntProp(client, Prop_Send, "m_iDecapitations", decapitations+1);
-	SetEntProp(client, Prop_Data, "m_iHealth", health+15);
-	SetEntProp(client, Prop_Send, "m_iHealth", health+15);
+	SetEntityHealth(client, health+15);
 	TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.01);
 }
 
