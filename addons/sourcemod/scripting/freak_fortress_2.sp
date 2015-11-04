@@ -1,16 +1,23 @@
 /*
-===Freak Fortress 2===
+====================================================================================================
+   ___                     _        ___               _                           ____  
+  / __\ _ __   ___   __ _ | | __   / __\  ___   _ __ | |_  _ __   ___  ___  ___  |___ \ 
+ / _\  | '__| / _ \ / _` || |/ /  / _\   / _ \ | '__|| __|| '__| / _ \/ __|/ __|   __) |
+/ /    | |   |  __/| (_| ||   <  / /    | (_) || |   | |_ | |   |  __/\__ \\__ \  / __/ 
+\/     |_|    \___| \__,_||_|\_\ \/      \___/ |_|    \__||_|    \___||___/|___/ |_____|
 
 By Rainbolt Dash: programmer, modeller, mapper, painter.
 Author of Demoman The Pirate: http://www.randomfortress.ru/thepirate/
 And one of two creators of Floral Defence: http://www.polycount.com/forum/showthread.php?t=73688
 And author of VS Saxton Hale Mode
+And notoriously famous for creating plugins with terrible code and then abandoning them.
 
 Plugin thread on AlliedMods: http://forums.alliedmods.net/showthread.php?t=182108
 
 Updated by Otokiru, Powerlord, and RavensBro after Rainbolt Dash got sucked into DOTA2
 
 Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
+====================================================================================================
 */
 #pragma semicolon 1
 
@@ -2350,10 +2357,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	{
 		if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
 		{
-			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 2);
-			ChangeClientTeam(Boss[0], BossTeam);
-			SetEntProp(Boss[0], Prop_Send, "m_lifeState", 0);
-			TF2_RespawnPlayer(Boss[0]);
+			AssignTeam(Boss[0], TFTeam:BossTeam, GetRandomInt(1,9));
 		}
 
 		for(new client=1; client<=MaxClients; client++)
@@ -3374,16 +3378,13 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		}
 	}
 
+	KvRewind(BossKV[Special[boss]]);
 	if(GetClientTeam(client)!=BossTeam)
 	{
-		SetEntProp(client, Prop_Send, "m_lifeState", 2);
-		ChangeClientTeam(client, BossTeam);
-		SetEntProp(client, Prop_Send, "m_lifeState", 0);
-		TF2_RespawnPlayer(client);
+		AssignTeam(client, TFTeam:BossTeam, KvGetNum(BossKV[Special[boss]], "class", 1));
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
-	KvRewind(BossKV[Special[boss]]);
 	TF2_RemovePlayerDisguise(client);
 	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
 	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
@@ -3475,11 +3476,6 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	KSpreeCount[boss]=0;
 	BossCharge[boss][0]=0.0;
 	SetClientQueuePoints(client, 0);
-
-	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
-	{
-		Debug("Boss client %N is a living spectator!", client);
-	}
 	return Plugin_Continue;
 }
 
@@ -3885,21 +3881,10 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	SetEntProp(client, Prop_Data, "m_iHealth", GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client));
 	if(GetClientTeam(client)==BossTeam)
 	{
-		SetEntProp(client, Prop_Send, "m_lifeState", 2);
-		ChangeClientTeam(client, OtherTeam);
-		SetEntProp(client, Prop_Send, "m_lifeState", 0);
-		TF2_RespawnPlayer(client);
+		AssignTeam(client, TFTeam:OtherTeam, GetRandomInt(1,9));
 	}
-
+	
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
-
-	//Just to ensure a player doesn't get stuck as a living spectator
-	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))
-	{
-		Debug("Non-boss client %N is a living spectator!", client);
-		TF2_RespawnPlayer(client);
-		CreateTimer(0.1, MakeNotBoss, userid, TIMER_FLAG_NO_MAPCHANGE);
-	}
 	return Plugin_Continue;
 }
 
@@ -4084,7 +4069,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
-		Debug("Respawning %N to avoid civilian bug");
+		Debug("Respawning %N to avoid civilian bug", client);
 		TF2_RespawnPlayer(client);
 	}
 	civilianCheck[client]=0;
@@ -6672,6 +6657,27 @@ public Action:Timer_DisguiseBackstab(Handle:timer, any:userid)
 		RandomlyDisguise(client);
 	}
 	return Plugin_Continue;
+}
+
+stock AssignTeam(client, TFTeam:team, desiredclass) // Move all this team switching stuff into a single stock
+{
+	if(!GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass")) // Initial living spectator check. A value of 0 means that no class is selected
+	{
+		Debug("INVALID DESIRED CLASS FOR %N!", client);
+		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", desiredclass); // So we assign one to prevent living spectators
+	}
+
+	SetEntProp(client, Prop_Send, "m_lifeState", 2);
+	TF2_ChangeClientTeam(client, team);
+	// SetEntProp(client, Prop_Send, "m_lifeState", 0); // Is this even needed? According to naydef, this is the other cause of living spectators. 
+	TF2_RespawnPlayer(client);
+	
+	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client)) // If the initial checks fail, use brute-force.
+	{
+		TF2_SetPlayerClass(client, TFClassType:desiredclass, _, true);
+		TF2_RespawnPlayer(client);
+	}
+	
 }
 
 stock RandomlyDisguise(client)	//Original code was mecha's, but the original code is broken and this uses a better method now.
