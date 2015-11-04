@@ -3876,7 +3876,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	{
 		AssignTeam(client, TFTeam:OtherTeam, 1);
 	}
-	
+
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Continue;
 }
