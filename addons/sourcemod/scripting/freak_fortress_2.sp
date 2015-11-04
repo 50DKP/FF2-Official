@@ -6658,7 +6658,7 @@ stock AssignTeam(client, TFTeam:team, desiredclass=0) // Move all this team swit
 	if(!GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass")) // Initial living spectator check. A value of 0 means that no class is selected
 	{
 		Debug("INVALID DESIRED CLASS FOR %N!", client);
-		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", !desiredclass ? GetRandomInt(1,9) : desiredclass); // So we assign one to prevent living spectators
+		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", !desiredclass ? 1 : desiredclass); // So we assign one to prevent living spectators
 	}
 
 	SetEntProp(client, Prop_Send, "m_lifeState", 2);
@@ -6669,7 +6669,7 @@ stock AssignTeam(client, TFTeam:team, desiredclass=0) // Move all this team swit
 	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client)) // If the initial checks fail, use brute-force.
 	{
 		Debug("%N IS A LIVING SPECTATOR!", client);
-		TF2_SetPlayerClass(client, TFClassType:(!desiredclass ? GetRandomInt(1,9) : desiredclass), _, true);
+		TF2_SetPlayerClass(client, TFClassType:(!desiredclass ? 1 : desiredclass), _, true);
 		TF2_RespawnPlayer(client);
 	}
 }
