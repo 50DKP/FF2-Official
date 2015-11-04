@@ -6669,10 +6669,10 @@ stock AssignTeam(client, TFTeam:team, desiredclass) // Move all this team switch
 	
 	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client)) // If the initial checks fail, use brute-force.
 	{
+		Debug("%N IS A LIVING SPECTATOR!", client);
 		TF2_SetPlayerClass(client, TFClassType:desiredclass, _, true);
 		TF2_RespawnPlayer(client);
 	}
-	
 }
 
 stock RandomlyDisguise(client)	//Original code was mecha's, but the original code is broken and this uses a better method now.
