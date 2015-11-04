@@ -12,7 +12,6 @@ Plugin thread on AlliedMods: http://forums.alliedmods.net/showthread.php?t=18210
 Updated by Otokiru, Powerlord, and RavensBro after Rainbolt Dash got sucked into DOTA2
 
 Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
-====================================================================================================
 */
 #pragma semicolon 1
 
