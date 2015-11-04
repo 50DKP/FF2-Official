@@ -3871,7 +3871,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);  //This really shouldn't be needed but I've been noticing players who still have glow
 
-	SetEntityHealth(client, GetPlayerMaxHealth(client)); //Temporary: Reset health to avoid an overheal bug
+	SetEntityHealth(client, GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client);); //Temporary: Reset health to avoid an overheal bug
 	if(GetClientTeam(client)==BossTeam)
 	{
 		AssignTeam(client, TFTeam:OtherTeam, GetRandomInt(1,9));
@@ -3879,11 +3879,6 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Continue;
-}
-
-stock GetPlayerMaxHealth(client)
-{
-	return GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client);
 }
 
 public Action:CheckItems(Handle:timer, any:userid)
@@ -6113,7 +6108,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					case 214:  //Powerjack
 					{
 						new health=GetClientHealth(attacker);
-						new max=GetPlayerMaxHealth(client);
+						new max=GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client);;
 						new newhealth=health+50;
 						if(health<max+100)
 						{
@@ -6153,7 +6148,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						}
 
 						new health=GetClientHealth(attacker);
-						new max=GetPlayerMaxHealth(attacker);
+						new max=GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client);;
 						new newhealth=health+50;
 						if(health<max+100)
 						{
