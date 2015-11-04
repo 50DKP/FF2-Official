@@ -3874,7 +3874,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	SetEntityHealth(client, GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client)); //Temporary: Reset health to avoid an overheal bug
 	if(GetClientTeam(client)==BossTeam)
 	{
-		AssignTeam(client, TFTeam:OtherTeam, GetRandomInt(1,9));
+		AssignTeam(client, TFTeam:OtherTeam, 1);
 	}
 	
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
@@ -6108,7 +6108,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					case 214:  //Powerjack
 					{
 						new health=GetClientHealth(attacker);
-						new max=GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client);
+						new max=GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
 						new newhealth=health+50;
 						if(health<max+100)
 						{
@@ -6148,7 +6148,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						}
 
 						new health=GetClientHealth(attacker);
-						new max=GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client);
+						new max=GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
 						new newhealth=health+50;
 						if(health<max+100)
 						{
