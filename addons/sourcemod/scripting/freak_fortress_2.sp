@@ -3348,7 +3348,7 @@ EquipBoss(boss)
 	new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1);
 	if(TF2_GetPlayerClass(client)!=class)
 	{
-		TF2_SetPlayerClass(client, class, _, false);
+		TF2_SetPlayerClass(client, class, _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
 	}
 }
 
@@ -3380,7 +3380,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 	TF2_RemovePlayerDisguise(client);
-	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, false);
+	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1), _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
 	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	switch(KvGetNum(BossKV[Special[boss]], "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
