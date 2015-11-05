@@ -5248,7 +5248,7 @@ public Action:OnChangeClass(client, const String:command[], args)
 		//Don't allow the boss to switch classes but instead set their *desired* class (for the next round)
 		decl String:class[16];
 		GetCmdArg(1, class, sizeof(class));
-		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", TF2_GetClass(class));
+		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TF2_GetClass(class));
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
