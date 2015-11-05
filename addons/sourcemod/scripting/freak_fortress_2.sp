@@ -5243,46 +5243,15 @@ public Action:OnSuicide(client, const String:command[], args)
 
 public Action:OnChangeClass(client, const String:command[], args)
 {
-	if(Enabled && IsBoss(client) && IsPlayerAlive(client))
-	{
-		//Don't allow the boss to switch classes but instead set their *desired* class (for the next round)
-		decl String:class[16];
-		GetCmdArg(1, class, sizeof(class));
-		if(StrEqual(class, "scout", false))
-		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Scout);
-		}
-		else if(StrEqual(class, "soldier", false))
-		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Soldier);
-		}
-		else if(StrEqual(class, "pyro", false))
-		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Pyro);
-		}
-		else if(StrEqual(class, "demoman", false))
-		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_DemoMan);
-		}
-		else if(StrEqual(class, "heavyweapons", false))
-		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Heavy);
-		}
-		else if(StrEqual(class, "medic", false))
-		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Medic);
-		}
-		else if(StrEqual(class, "sniper", false))
-		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Sniper);
-		}
-		else if(StrEqual(class, "spy", false))
-		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TFClass_Spy);
-		}
-		return Plugin_Handled;
-	}
-	return Plugin_Continue;
+    if(Enabled && IsBoss(client) && IsPlayerAlive(client))
+    {
+        //Don't allow the boss to switch classes but instead set their *desired* class (for the next round)
+        decl String:class[16];
+        GetCmdArg(1, class, sizeof(class));
+        SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", TF2_GetClass(class));
+        return Plugin_Handled;
+    }
+    return Plugin_Continue;
 }
 
 public Action:OnJoinTeam(client, const String:command[], args)
