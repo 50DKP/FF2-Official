@@ -8089,7 +8089,7 @@ public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH
 		return Plugin_Continue;
 	}
 
-	if(!StrContains(sound, "vo") && !(FF2flags[Boss[boss]] & FF2FLAG_TALKING))
+	if(channel==SNDCHAN_VOICE && !(FF2flags[Boss[boss]] & FF2FLAG_TALKING))
 	{
 		decl String:newSound[PLATFORM_MAX_PATH];
 		if(RandomSound("catch_phrase", newSound, PLATFORM_MAX_PATH, boss))
