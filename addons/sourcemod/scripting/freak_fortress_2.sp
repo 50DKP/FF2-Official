@@ -2351,7 +2351,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	{
 		if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
 		{
-			AssignTeam(Boss[0], TFTeam:BossTeam, 1);
+			AssignTeam(Boss[0], TFTeam:BossTeam);
 		}
 
 		for(new client=1; client<=MaxClients; client++)
@@ -3375,7 +3375,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	KvRewind(BossKV[Special[boss]]);
 	if(GetClientTeam(client)!=BossTeam)
 	{
-		AssignTeam(client, TFTeam:BossTeam, KvGetNum(BossKV[Special[boss]], "class", 1));
+		AssignTeam(client, TFTeam:BossTeam, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1));
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
@@ -3874,7 +3874,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	SetEntityHealth(client, GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client)); //Temporary: Reset health to avoid an overheal bug
 	if(GetClientTeam(client)==BossTeam)
 	{
-		AssignTeam(client, TFTeam:OtherTeam, 1);
+		AssignTeam(client, TFTeam:OtherTeam);
 	}
 
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
@@ -5248,7 +5248,10 @@ public Action:OnChangeClass(client, const String:command[], args)
 		//Don't allow the boss to switch classes but instead set their *desired* class (for the next round)
 		decl String:class[16];
 		GetCmdArg(1, class, sizeof(class));
-		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:TF2_GetClass(class));
+		if(TF2_GetClass(class)!=TFClass_Unknown)  //Ignore cases where the client chooses an invalid class through the console
+		{
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", TF2_GetClass(class));
+		}
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -6617,23 +6620,23 @@ public Action:Timer_DisguiseBackstab(Handle:timer, any:userid)
 	return Plugin_Continue;
 }
 
-stock AssignTeam(client, TFTeam:team, desiredclass=0) // Move all this team switching stuff into a single stock
+stock AssignTeam(client, TFTeam:team, TFClassType:class=TFClass_Scout)
 {
-	if(!GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass")) // Initial living spectator check. A value of 0 means that no class is selected
+	if(!GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass"))  //Initial living spectator check.  A value of 0 means that no class is selected
 	{
 		Debug("INVALID DESIRED CLASS FOR %N!", client);
-		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", !desiredclass ? 1 : desiredclass); // So we assign one to prevent living spectators
+		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", class);  //So we assign one to prevent living spectators
 	}
 
 	SetEntProp(client, Prop_Send, "m_lifeState", 2);
 	TF2_ChangeClientTeam(client, team);
-	// SetEntProp(client, Prop_Send, "m_lifeState", 0); // Is this even needed? According to naydef, this is the other cause of living spectators. 
+	//SetEntProp(client, Prop_Send, "m_lifeState", 0);  //Is this even needed?  According to naydef, this is the other cause of living spectators.
 	TF2_RespawnPlayer(client);
-	
-	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client)) // If the initial checks fail, use brute-force.
+
+	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))  //If the initial checks fail, use brute force.
 	{
 		Debug("%N IS A LIVING SPECTATOR!", client);
-		TF2_SetPlayerClass(client, TFClassType:(!desiredclass ? 1 : desiredclass), _, true);
+		TF2_SetPlayerClass(client, class, _, true);
 		TF2_RespawnPlayer(client);
 	}
 }
