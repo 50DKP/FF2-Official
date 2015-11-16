@@ -2351,7 +2351,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	{
 		if(IsValidClient(Boss[0]) && GetClientTeam(Boss[0])!=BossTeam)
 		{
-			AssignTeam(Boss[0], TFTeam:BossTeam);
+			AssignTeam(Boss[0], BossTeam);
 		}
 
 		for(new client=1; client<=MaxClients; client++)
@@ -3375,7 +3375,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	KvRewind(BossKV[Special[boss]]);
 	if(GetClientTeam(client)!=BossTeam)
 	{
-		AssignTeam(client, TFTeam:BossTeam, TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1));
+		AssignTeam(client, BossTeam);
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
@@ -3874,7 +3874,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 	SetEntityHealth(client, GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client)); //Temporary: Reset health to avoid an overheal bug
 	if(GetClientTeam(client)==BossTeam)
 	{
-		AssignTeam(client, TFTeam:OtherTeam);
+		AssignTeam(client, OtherTeam);
 	}
 
 	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
@@ -6620,23 +6620,29 @@ public Action:Timer_DisguiseBackstab(Handle:timer, any:userid)
 	return Plugin_Continue;
 }
 
-stock AssignTeam(client, TFTeam:team, TFClassType:class=TFClass_Scout)
+stock AssignTeam(client, team)
 {
-	if(!GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass"))  //Initial living spectator check.  A value of 0 means that no class is selected
+	if(!GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass"))  //Living spectator check: 0 means that no class is selected
 	{
-		Debug("INVALID DESIRED CLASS FOR %N!", client);
-		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", class);  //So we assign one to prevent living spectators
+		Debug("%N does not have a desired class!", client);
+		if(IsBoss(client))
+		{
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", KvGetNum(BossKV[Special[Boss[client]]], "class", 1));  //So we assign one to prevent living spectators
+		}
+		else
+		{
+			Debug("%N was not a boss and did not have a desired class!  Please report this to https://github.com/50DKP/FF2-Official");
+		}
 	}
 
 	SetEntProp(client, Prop_Send, "m_lifeState", 2);
-	TF2_ChangeClientTeam(client, team);
-	//SetEntProp(client, Prop_Send, "m_lifeState", 0);  //Is this even needed?  According to naydef, this is the other cause of living spectators.
+	ChangeClientTeam(client, team);
 	TF2_RespawnPlayer(client);
 
-	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))  //If the initial checks fail, use brute force.
+	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))  //Welp
 	{
-		Debug("%N IS A LIVING SPECTATOR!", client);
-		TF2_SetPlayerClass(client, class, _, true);
+		Debug("%N is a living spectator!  Please report this to https://github.com/50DKP/FF2-Official", client);
+		TF2_SetPlayerClass(client, class);
 		TF2_RespawnPlayer(client);
 	}
 }
