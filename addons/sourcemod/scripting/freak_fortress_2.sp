@@ -6642,7 +6642,15 @@ stock AssignTeam(client, team)
 	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))  //Welp
 	{
 		Debug("%N is a living spectator!  Please report this to https://github.com/50DKP/FF2-Official", client);
-		TF2_SetPlayerClass(client, class);
+		if(IsBoss(client))
+		{
+			TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[Special[Boss[client]]], "class", 1));
+		}
+		else
+		{
+			Debug("Additional information: %N was not a boss");
+			TF2_SetPlayerClass(client, TFClass_Scout);
+		}
 		TF2_RespawnPlayer(client);
 	}
 }
