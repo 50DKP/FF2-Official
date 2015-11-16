@@ -1,0 +1,5 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/player/easter_demo/easter_body"
+	"$translucent" 1
+}

@@ -1,0 +1,5 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "freak_fortress_2\billy\jigsaw_eyes"
+       	"$selfillum" "1" // <- Change "0" --> "1" to make the eyes glow.
+}

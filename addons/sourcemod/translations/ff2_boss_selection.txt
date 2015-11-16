@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"ff2boss_selected"
+	{
+		"en"    "Select Boss for YOUR Round! (/ff2boss)"
+		"ru"	"Выбери Босса для СВОЕГО Раунда! (/ff2boss)"
+	}
+}

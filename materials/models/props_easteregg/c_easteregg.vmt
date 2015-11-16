@@ -1,0 +1,15 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "models/props_easteregg/c_easteregg"
+	"$bumpmap" "models\player\shared\shared_normal"
+	"$phong" "1"
+	"$phongexponent" "35"
+	"$phongboost" "5"	
+	"$lightwarptexture" "models\lightwarps\weapon_lightwarp"
+	"$phongfresnelranges" "[0.25 0.5 1]"
+
+
+	"$rimlight" "1"
+	"$rimlightexponent" "2.5"
+	"$rimlightboost" "2"  
+}
