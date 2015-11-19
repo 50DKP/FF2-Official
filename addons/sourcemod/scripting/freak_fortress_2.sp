@@ -355,9 +355,9 @@ static const String:ff2versiondates[][]=
 	"August 10, 2015",		//1.10.6
 	"August 10, 2015",		//1.10.6
 	"August 10, 2015",		//1.10.6
-	"October 18, 2015",		//1.10.7
-	"October 18, 2015",		//1.10.7
-	"October 18, 2015"		//1.10.7
+	"November 19, 2015",	//1.10.7
+	"November 19, 2015",	//1.10.7
+	"November 19, 2015"		//1.10.7
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -376,7 +376,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 		case 65:  //1.10.7
 		{
 			DrawPanelText(panel, "6) Fixed large amounts of lives being cut off when being displayed (Wliu)");
-			DrawPanelText(panel, "7) More living spectator fixes (Wliu)");
+			DrawPanelText(panel, "7) More living spectator fixes (naydef, Shadow)");
 			DrawPanelText(panel, "8) Fixed health bar not updating when goomba-ing the boss (Wliu from Akuba)");
 			DrawPanelText(panel, "9) [Server] Added arg12 to rage_cloneattack to determine whether or not clones die after their boss dies (Wliu");
 			DrawPanelText(panel, "10) [Server] Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace' (Wliu from Shadow)");
