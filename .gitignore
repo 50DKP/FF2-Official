@@ -16,7 +16,6 @@ addons/sourcemod/data/
 addons/sourcemod/extensions/
 addons/sourcemod/gamedata/
 addons/sourcemod/logs/
-addons/sourcemod/plugins/
 addons/sourcemod/scripting/**
 !addons/sourcemod/scripting/freak_fortress_2.sp
 !addons/sourcemod/scripting/freaks/
