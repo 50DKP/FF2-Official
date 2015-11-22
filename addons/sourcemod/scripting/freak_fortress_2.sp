@@ -988,6 +988,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_GetBossRageDamage", Native_GetBossRageDamage);
 	CreateNative("FF2_SetBossRageDamage", Native_SetBossRageDamage);
 	CreateNative("FF2_GetClientDamage", Native_GetDamage);
+	CreateNative("FF2_SetClientDamage", Native_SetDamage);
 	CreateNative("FF2_GetRoundState", Native_GetRoundState);
 	CreateNative("FF2_GetSpecialKV", Native_GetSpecialKV);
 	CreateNative("FF2_StartMusic", Native_StartMusic);
@@ -8706,6 +8707,11 @@ public Native_GetDamage(Handle:plugin, numParams)
 		return 0;
 	}
 	return Damage[client];
+}
+
+public Native_SetDamage(Handle:plugin, numParams)
+{
+	Damage[GetNativeCell(1)] = GetNativeCell(2);
 }
 
 public Native_GetFF2flags(Handle:plugin, numParams)
