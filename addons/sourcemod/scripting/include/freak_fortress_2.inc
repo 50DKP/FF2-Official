@@ -202,6 +202,15 @@ native FF2_SetBossRageDamage(boss, damage);
 native FF2_GetClientDamage(client);
 
 /**
+ * Gets damage dealt by this client
+ *
+ * @param client 	Client's index
+ * @param damage	New damage dealt
+ * @noreturn
+ */
+native FF2_SetClientDamage(client, damage);
+
+/**
  * Gets an ability's rage distance
  *
  * @param boss			Boss's index
@@ -608,6 +617,7 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetBossRageDamage");
 	MarkNativeAsOptional("FF2_SetBossRageDamage");
 	MarkNativeAsOptional("FF2_GetClientDamage");
+	MarkNativeAsOptional("FF2_SetClientDamage");
 	MarkNativeAsOptional("FF2_GetRoundState");
 	MarkNativeAsOptional("FF2_GetRageDist");
 	MarkNativeAsOptional("FF2_HasAbility");
