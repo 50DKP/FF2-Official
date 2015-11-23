@@ -5141,7 +5141,7 @@ public Action:BossTimer(Handle:timer)
 			{
 				decl String:pluginName[64];
 				KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
-				new slot=KvGetNum(BossKV[character[boss]], "arg0", 0);
+				new slot=KvGetNum(BossKV[character[boss]], "slot", 0);
 				new buttonmode=KvGetNum(BossKV[character[boss]], "buttonmode", 0);
 				if(slot<1)
 				{
@@ -5341,7 +5341,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 			KvRewind(BossKV[character[boss]]);
 			if(KvJumpToKey(BossKV[character[boss]], ability))
 			{
-				if(KvGetNum(BossKV[character[boss]], "arg0", 0))
+				if(KvGetNum(BossKV[character[boss]], "slot", 0))
 				{
 					continue;
 				}
@@ -6443,7 +6443,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 					KvRewind(BossKV[character[boss]]);
 					if(KvJumpToKey(BossKV[character[boss]], ability))
 					{
-						if(KvGetNum(BossKV[character[boss]], "arg0", 0)!=-1)
+						if(KvGetNum(BossKV[character[boss]], "slot", 0)!=-1)
 						{
 							continue;
 						}

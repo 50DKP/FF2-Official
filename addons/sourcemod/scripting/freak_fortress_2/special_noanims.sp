@@ -1,8 +1,8 @@
 /*
-special_noanims:	arg0 - unused.
+special_noanims:	slot - unused.
 					arg1 - 1=Custom Model Rotates (def.0)
 
-rage_new_weapon:	arg0 - slot (def.0)
+rage_new_weapon:	slot - slot (def.0)
 					arg1 - weapon's classname
 					arg2 - weapon's index
 					arg3 - weapon's attributes

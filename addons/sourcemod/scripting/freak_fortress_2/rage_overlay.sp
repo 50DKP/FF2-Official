@@ -1,5 +1,5 @@
 /*
-rage_overlay:	arg0 - slot (def.0)
+rage_overlay:	slot - slot (def.0)
 				arg1 - path to overlay ("root" is \tf\materials\)
 				arg2 - duration (def.6)
 */
