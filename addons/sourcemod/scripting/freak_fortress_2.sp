@@ -7036,7 +7036,7 @@ stock ParseFormula(boss, const String:key[], defaultValue)
 	return result;
 }
 
-stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityName[], arg, defaultValue=0)
+stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityName[], const String:argument[], defaultValue=0)
 {
 	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
 	{
@@ -7057,8 +7057,7 @@ stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityNa
 				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
 				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
 				{
-					Format(ability, sizeof(ability), "arg%i", arg);
-					return KvGetNum(BossKV[character[boss]], ability, defaultValue);
+					return KvGetNum(BossKV[character[boss]], argument, defaultValue);
 				}
 			}
 			KvGoBack(BossKV[character[boss]]);
@@ -7067,7 +7066,7 @@ stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityNa
 	return 0;
 }
 
-stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const String:abilityName[], arg, Float:defaultValue=0.0)
+stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const String:abilityName[], const String:argument[], Float:defaultValue=0.0)
 {
 	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
 	{
@@ -7088,8 +7087,7 @@ stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const Strin
 				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
 				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
 				{
-					Format(ability, sizeof(ability), "arg%i", arg);
-					return KvGetFloat(BossKV[character[boss]], ability, defaultValue);
+					return KvGetFloat(BossKV[character[boss]], argument, defaultValue);
 				}
 			}
 			KvGoBack(BossKV[character[boss]]);
@@ -7098,7 +7096,7 @@ stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const Strin
 	return 0.0;
 }
 
-stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abilityName[], arg, String:abilityString[], length, const String:defaultValue[]="")
+stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abilityName[], const String:argument[], String:abilityString[], length, const String:defaultValue[]="")
 {
 	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
 	{
@@ -7120,8 +7118,7 @@ stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abi
 				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
 				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
 				{
-					Format(ability, sizeof(ability), "arg%i", arg);
-					KvGetString(BossKV[character[boss]], ability, abilityString, length, defaultValue);
+					KvGetString(BossKV[character[boss]], argument, abilityString, length, defaultValue);
 				}
 			}
 			KvGoBack(BossKV[character[boss]]);
@@ -8742,46 +8739,49 @@ public Native_HasAbility(Handle:plugin, numParams)
 	return HasAbility(GetNativeCell(1), pluginName, abilityName);
 }
 
-public GetAbilityArgumentWrapper(boss, const String:pluginName[], const String:abilityName[], arg, defaultValue)
+public GetAbilityArgumentWrapper(boss, const String:pluginName[], const String:abilityName[], const String:argument[], defaultValue)
 {
-	return GetAbilityArgument(boss, pluginName, abilityName, arg, defaultValue);
+	return GetAbilityArgument(boss, pluginName, abilityName, argument, defaultValue);
 }
 
 public Native_GetAbilityArgument(Handle:plugin, numParams)
 {
-	decl String:pluginName[64], String:abilityName[64];
+	decl String:pluginName[64], String:abilityName[64], String:argument[64];
 	GetNativeString(2, pluginName, sizeof(pluginName));
 	GetNativeString(3, abilityName, sizeof(abilityName));
-	return GetAbilityArgumentWrapper(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), GetNativeCell(5));
+	GetNativeString(4, argument, sizeof(argument));
+	return GetAbilityArgumentWrapper(GetNativeCell(1), pluginName, abilityName, argument, GetNativeCell(5));
 }
 
-public Float:GetAbilityArgumentFloatWrapper(boss, const String:pluginName[], const String:abilityName[], arg, Float:defaultValue)
+public Float:GetAbilityArgumentFloatWrapper(boss, const String:pluginName[], const String:abilityName[], const String:argument[], Float:defaultValue)
 {
-	return GetAbilityArgumentFloat(boss, pluginName, abilityName, arg, defaultValue);
+	return GetAbilityArgumentFloat(boss, pluginName, abilityName, argument, defaultValue);
 }
 
 public Native_GetAbilityArgumentFloat(Handle:plugin, numParams)
 {
-	decl String:pluginName[64], String:abilityName[64];
+	decl String:pluginName[64], String:abilityName[64], String:argument[64];
 	GetNativeString(2, pluginName, sizeof(pluginName));
 	GetNativeString(3, abilityName, sizeof(abilityName));
-	return _:GetAbilityArgumentFloatWrapper(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), Float:GetNativeCell(5));
+	GetNativeString(4, argument, sizeof(argument));
+	return _:GetAbilityArgumentFloatWrapper(GetNativeCell(1), pluginName, abilityName, argument, Float:GetNativeCell(5));
 }
 
-public GetAbilityArgumentStringWrapper(boss, const String:pluginName[], const String:abilityName[], arg, String:abilityString[], length, const String:defaultValue[])
+public GetAbilityArgumentStringWrapper(boss, const String:pluginName[], const String:abilityName[], const String:argument[], String:abilityString[], length, const String:defaultValue[])
 {
-	GetAbilityArgumentString(boss, pluginName, abilityName, arg, abilityString, length, defaultValue);
+	GetAbilityArgumentString(boss, pluginName, abilityName, argument, abilityString, length, defaultValue);
 }
 
 public Native_GetAbilityArgumentString(Handle:plugin, numParams)
 {
-	decl String:pluginName[64], String:abilityName[64], String:defaultValue[64];
+	decl String:pluginName[64], String:abilityName[64], String:defaultValue[64], String:argument[64];
 	GetNativeString(2, pluginName, sizeof(pluginName));
 	GetNativeString(3, abilityName, sizeof(abilityName));
+	GetNativeString(4, argument, sizeof(argument));
 	GetNativeString(7, defaultValue, sizeof(defaultValue));
 	new length=GetNativeCell(6);
 	decl String:abilityString[length];
-	GetAbilityArgumentStringWrapper(GetNativeCell(1), pluginName, abilityName, GetNativeCell(4), abilityString, length, defaultValue);
+	GetAbilityArgumentStringWrapper(GetNativeCell(1), pluginName, abilityName, argument, abilityString, length, defaultValue);
 	SetNativeString(5, abilityString, length);
 }
 
@@ -8855,7 +8855,7 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 			{
 				Call_PushCell(2);  //Ready
 				Call_Finish();
-				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(boss, pluginName, abilityName, 1, 1.5);
+				new Float:charge=100.0*0.2/GetAbilityArgumentFloat(boss, pluginName, abilityName, "charge", 1.5);
 				if(BossCharge[boss][slot]+charge<100.0)
 				{
 					BossCharge[boss][slot]+=charge;
@@ -8884,7 +8884,7 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 				CreateDataTimer(0.1, Timer_UseBossCharge, data);
 				WritePackCell(data, boss);
 				WritePackCell(data, slot);
-				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(boss, pluginName, abilityName, 2, 5.0));
+				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(boss, pluginName, abilityName, "cooldown", 5.0));
 				ResetPack(data);
 			}
 			else

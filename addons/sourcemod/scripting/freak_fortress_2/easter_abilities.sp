@@ -32,13 +32,13 @@ public OnPluginStart2()
 	if(FF2_HasAbility(boss, this_plugin_name, OBJECTS))
 	{
 		decl String:model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 2, model, sizeof(model));
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, "model", model, sizeof(model));
 		PrecacheModel(model);
 	}
 	else if(FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
 	{
 		decl String:model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 2, model, sizeof(model));
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, "model", model, sizeof(model));
 		PrecacheModel(model);
 	}
 	return Plugin_Continue;
@@ -57,11 +57,11 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, OBJECTS))
 	{
 		decl String:classname[PLATFORM_MAX_PATH], String:model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 1, classname, sizeof(classname));
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 2, model, sizeof(model));
-		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, 3);
-		new count=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, 4, 14);
-		new Float:distance=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, OBJECTS, 5, 30.0);
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, "classname", classname, sizeof(classname));
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, "model", model, sizeof(model));
+		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, "skin");
+		new count=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, "count", 14);
+		new Float:distance=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, OBJECTS, "distance", 30.0);
 		SpawnManyObjects(classname, client, model, skin, count, distance);
 		return;
 	}
@@ -70,11 +70,11 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
 	{
 		decl String:classname[PLATFORM_MAX_PATH], String:model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 1, classname, sizeof(classname));
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 2, model, sizeof(model));
-		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS_DEATH, 3);
-		new count=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS_DEATH, 4, 14);
-		new Float:distance=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, OBJECTS_DEATH, 5, 30.0);
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, "classname", classname, sizeof(classname));
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, "model", model, sizeof(model));
+		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS_DEATH, "skin");
+		new count=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS_DEATH, "count", 14);
+		new Float:distance=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, OBJECTS_DEATH, "distance", 30.0);
 		SpawnManyObjects(classname, client, model, skin, count, distance);
 		return;
 	}
@@ -97,14 +97,14 @@ public OnProjectileSpawned(entity)
 		if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, PROJECTILE))
 		{
 			decl String:projectile[PLATFORM_MAX_PATH];
-			FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 1, projectile, sizeof(projectile));
+			FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, "classname", projectile, sizeof(projectile));
 
 			decl String:classname[PLATFORM_MAX_PATH];
 			GetEntityClassname(entity, classname, sizeof(classname));
 			if(StrEqual(classname, projectile, false))
 			{
 				decl String:model[PLATFORM_MAX_PATH];
-				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 2, model, sizeof(model));
+				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, "model", model, sizeof(model));
 				if(IsModelPrecached(model))
 				{
 					SetEntityModel(entity, model);

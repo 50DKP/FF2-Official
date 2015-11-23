@@ -67,7 +67,7 @@ public Action:Timer_Disable_Anims(Handle:timer)
 		if(FF2_HasAbility(boss, this_plugin_name, "special_noanims"))
 		{
 			SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 0);
-			SetEntProp(client, Prop_Send, "m_bCustomModelRotates", FF2_GetAbilityArgument(boss, this_plugin_name, "special_noanims", 1, 0));
+			SetEntProp(client, Prop_Send, "m_bCustomModelRotates", FF2_GetAbilityArgument(boss, this_plugin_name, "special_noanims", "rotate model", 0));
 		}
 	}
 	return Plugin_Continue;
@@ -82,13 +82,13 @@ Rage_New_Weapon(boss, const String:ability_name[])
 	}
 
 	decl String:classname[64], String:attributes[256];
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 1, classname, sizeof(classname));
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, attributes, sizeof(attributes));
+	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, "classname", classname, sizeof(classname));
+	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, "attributes", attributes, sizeof(attributes));
 
-	new slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 4);
+	new slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "slot");
 	TF2_RemoveWeaponSlot(client, slot);
 
-	new index=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2);
+	new index=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "index");
 	new weapon=SpawnWeapon(client, classname, index, 101, 5, attributes);
 	if(StrEqual(classname, "tf_weapon_builder") && index!=735)  //PDA, normal sapper
 	{
@@ -107,13 +107,13 @@ Rage_New_Weapon(boss, const String:ability_name[])
 		SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
 	}
 
-	if(FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 6))
+	if(FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "set as active weapon"))
 	{
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 	}
 
-	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 5, 0);
-	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7, 0);
+	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "ammo", 0);
+	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "clip", 0);
 	if(ammo || clip)
 	{
 		FF2_SetAmmo(client, weapon, ammo, clip);

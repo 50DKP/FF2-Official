@@ -90,7 +90,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 			enableSuperDuperJump[client]=false;
 			UberRageCount[client]=0.0;
 		}
-	
+
 		CreateTimer(0.3, Timer_GetBossTeam, _, TIMER_FLAG_NO_MAPCHANGE);
 		CreateTimer(9.11, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);  //TODO: Investigate.
 	}
@@ -103,7 +103,7 @@ public Action:StartBossTimer(Handle:timer)  //TODO: What.
 	{
 		if(FF2_HasAbility(boss, this_plugin_name, "charge_teleport"))
 		{
-			FF2_SetBossCharge(boss, FF2_GetAbilityArgument(boss, this_plugin_name, "charge_teleport", 0, 1), -1.0*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "charge_teleport", 2, 5.0));
+			FF2_SetBossCharge(boss, FF2_GetAbilityArgument(boss, this_plugin_name, "charge_teleport", "slot", 1), -1.0*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "charge_teleport", "cooldown", 5.0));
 		}
 	}
 }
@@ -154,9 +154,9 @@ public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_nam
 	else if(StrEqual(ability_name, "rage_uber"))
 	{
 		new client=GetClientOfUserId(FF2_GetBossUserId(boss));
-		TF2_AddCondition(client, TFCond_Ubercharged, FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 5.0));
+		TF2_AddCondition(client, TFCond_Ubercharged, FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "duration", 5.0));
 		SetEntProp(client, Prop_Data, "m_takedamage", 0);
-		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 5.0), Timer_StopUber, boss);
+		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "duration", 5.0), Timer_StopUber, boss);
 	}
 	else if(StrEqual(ability_name, "rage_stun"))
 	{
@@ -208,7 +208,7 @@ Rage_Stun(const String:ability_name[], boss)
 {
 	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	new Float:bossPosition[3], Float:targetPosition[3];
-	new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 5.0);
+	new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "duration", 5.0);
 	new Float:distance=FF2_GetBossRageDistance(boss, this_plugin_name, ability_name);
 	GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition);
 
@@ -240,7 +240,7 @@ Rage_StunSentry(const String:ability_name[], boss)
 {
 	new Float:bossPosition[3], Float:sentryPosition[3];
 	GetEntPropVector(GetClientOfUserId(FF2_GetBossUserId(boss)), Prop_Send, "m_vecOrigin", bossPosition);
-	new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 7.0);
+	new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "duration", 7.0);
 	new Float:distance=FF2_GetBossRageDistance(boss, this_plugin_name, ability_name);
 
 	new sentry;
@@ -270,7 +270,7 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 {
 	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	new Float:charge=FF2_GetBossCharge(boss, slot);
-	new Float:multiplier=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 3, 1.0);
+	new Float:multiplier=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "multiplier", 1.0);
 
 	switch(status)
 	{
@@ -434,7 +434,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 			while(otherTeamIsAlive && (!IsValidEdict(target) || target==client || (FF2_GetFF2Flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target)));
 
 			decl String:particle[PLATFORM_MAX_PATH];
-			FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, particle, sizeof(particle));
+			FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, "particle", particle, sizeof(particle));
 			if(strlen(particle)>0)
 			{
 				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle)));
