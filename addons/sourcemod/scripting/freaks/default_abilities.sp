@@ -352,15 +352,15 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 			decl String:sound[PLATFORM_MAX_PATH];
 			if(FF2_RandomSound("sound_ability", sound, PLATFORM_MAX_PATH, boss, slot))
 			{
-				EmitSoundToAll(sound, client, _, _, _, _, _, boss, position);
-				EmitSoundToAll(sound, client, _, _, _, _, _, boss, position);
+				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 
 				for(new target=1; target<=MaxClients; target++)
 				{
-					if(IsClientInGame(target) && target!=boss)
+					if(IsClientInGame(target) && target!=client)
 					{
-						EmitSoundToClient(target, sound, client, _, _, _, _, _, boss, position);
-						EmitSoundToClient(target, sound, client, _, _, _, _, _, boss, position);
+						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
+						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
 					}
 				}
 			}
@@ -434,7 +434,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 			while(otherTeamIsAlive && (!IsValidEdict(target) || target==client || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target)));
 
 			decl String:particle[PLATFORM_MAX_PATH];
-			FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 4, particle, 128);
+			FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, particle, sizeof(particle));
 			if(strlen(particle)>0)
 			{
 				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle)));
@@ -457,7 +457,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 				}
 				else
 				{
-					TF2_StunPlayer(client, (enableSuperDuperJump ? 4.0:2.0), 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
+					TF2_StunPlayer(client, (enableSuperDuperJump ? 4.0 : 2.0), 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
 				}
 
 				TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);

@@ -36,7 +36,7 @@ native bool:FF2_IsFF2Enabled();
  * Gets the version of FF2 running on the server
  *
  * @param version   An array of size 3 that will contain the major, minor, and stable version numbers respectively
- * @return          True if the server is running a dev version of FF2, false otherwise
+ * @return			True if the server is running a dev version of FF2, false otherwise
  */
 native FF2_GetFF2Version(version[]=0);
 
@@ -179,16 +179,16 @@ native FF2_SetBossCharge(boss, slot, Float:value);
 /**
  * Gets how much damage is needed in order to activate the rage of the current boss
  *
- * @param boss      Boss index
- * @return          Total damage needed
+ * @param boss	Boss index
+ * @return		Total damage needed
  */
 native FF2_GetBossRageDamage(boss);
 
 /**
  * Sets how much damage is needed in order to activate the rage of the current boss
  *
- * @param boss      Boss index
- * @param damage    New damage value
+ * @param boss		Boss index
+ * @param damage	New damage value
  * @noreturn
  */
 native FF2_SetBossRageDamage(boss, damage);
@@ -289,7 +289,14 @@ native FF2_GetAbilityArgumentString(boss, const String:pluginName[], const Strin
 native bool:FF2_RandomSound(const String:keyvalue[], String:buffer[], bufferLength, boss=0, slot=0);
 
 /**
- * Stops the Boss's music for the specified players
+ * Starts the Boss's music for the specified clients
+ *
+ * @param client	Client's index (0 for all clients)
+ */
+native FF2_StartMusic(client=0);
+
+/**
+ * Stops the Boss's music for the specified clients
  *
  * @param client	Client's index (0 for all clients)
  * @noreturn
@@ -300,8 +307,8 @@ native FF2_StopMusic(client=0);
  * Gets a Boss's KV handle
  *
  * @param boss				Boss's index
- * @param specialIndex		0 - "client" parameter means the index of the boss
- *							1 - "client" parameter means number of the boss in characters.cfg-1
+ * @param specialIndex		0 - 'boss' parameter refers to the index of the boss
+ *							1 - 'boss' parameter refers to the index of the boss in characters.cfg-1
  * @return					Handle of Boss's keyvalues
  */
 native Handle:FF2_GetSpecialKV(boss, specialIndex=0);
@@ -381,27 +388,23 @@ native FF2_GetBossPlayers();
 native bool:FF2_Debug();
 
 /**
- * FF2_OnAbility:
+ * FF2_ONABILITY IS KNOWN TO BE BUGGED AND WILL NOT BE FIXED TO PRESERVE BACKWARDS COMPATABILITY.  DO NOT USE IT.
  * Called when a Boss uses an ability (Rage, jump, teleport, etc)
- * Calls every 0.2 seconds for charge abilities
+ * Called every 0.2 seconds for charge abilities
  *
  * Use FF2_PreAbility with enabled=false ONLY to prevent FF2_OnAbility!
  *
  * @param boss	 		Boss's index
  * @param pluginName	Name of plugin with this ability
  * @param abilityName 	Name of ability
- * @param slot 			Slot of ability
- *							0 - Rage
- *							1 - Jump/teleport
- *							2 - Other charge
- * @param status		Status of ability (for slots 1 and 2)
- *							0 - Not in use
- *							1 - Charging
- *							2 - Charged
- *							3 - In use
+ * @param slot			Slot of ability (THIS DOES NOT RETURN WHAT YOU THINK IT RETURNS FOR FF2_ONABILITY-if you insist on using this, refer to freak_fortress_2.sp to see what it actually does)
+ * 							0 - Rage or life-loss
+ * 							1 - Jump or teleport
+ * 							2 - Other
+ * @param status		Status of ability (DO NOT ACCESS THIS.  IT DOES NOT EXIST AND MIGHT CRASH YOUR SERVER)
  * @return				Plugin_Stop can not prevent the ability. Use FF2_PreAbility with enabled=false
  */
-forward FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[], slot, status, &enabled=true);
+forward FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[], slot, &bool:enabled);
 forward Action:FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[], slot, status);
 
 /**
@@ -430,9 +433,10 @@ forward Action:FF2_OnMusic(String:path[], &Float:time);
  * @param boss			Boss index
  * @param character   	Character index
  * @param characterName	Character name
+ * @param preset		True if the boss was set using a command such as ff2_special
  * @return				You can NOT use Plugin_Stop to prevent this, but you can change specialName and use Plugin_Changed to change the boss.  If you want to change 'character', then make 'characterName' null.
  */
-forward Action:FF2_OnSpecialSelected(boss, &character, String:characterName[]);
+forward Action:FF2_OnSpecialSelected(boss, &character, String:characterName[], bool:preset);
 
 /**
  * Called when FF2 adds queue points
@@ -466,7 +470,7 @@ forward Action:FF2_OnLoseLife(boss, &lives, maxLives);
  * Called when the number of alive players changes.  Note that this will never be 0 as FF2 does not re-calculate the number of players once the round ends.
  *
  * @param players	Number of alive players left on the non-boss team
- * @param bosses	Number of alive players left on the boss team
+ * @param bosses	Number of alive players left on the boss team (this includes minions as well)
  * @noreturn
  */
 forward Action:FF2_OnAlivePlayersChanged(players, bosses);
@@ -611,6 +615,7 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetAbilityArgumentFloat");
 	MarkNativeAsOptional("FF2_GetAbilityArgumentString");
 	MarkNativeAsOptional("FF2_RandomSound");
+	MarkNativeAsOptional("FF2_StartMusic");
 	MarkNativeAsOptional("FF2_StopMusic");
 	MarkNativeAsOptional("FF2_GetSpecialKV");
 	MarkNativeAsOptional("FF2_GetQueuePoints");
@@ -622,5 +627,6 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_SetClientGlow");
 	MarkNativeAsOptional("FF2_GetAlivePlayers");
 	MarkNativeAsOptional("FF2_GetBossPlayers");
+	MarkNativeAsOptional("FF2_Debug");
 }
 #endif

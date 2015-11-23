@@ -4,17 +4,24 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.10.5"
-			"Previous"	"1.10.4"
+			"Latest"	"1.10.7"
+			"Previous"	"1.10.6"
 		}
 
-		"Notes"			"Fixed slow-mo being extremely buggy for players"
-		"Notes"			"Fixed the Festive SMG not getting crits"
-		"Notes"			"Fixed teleport sounds not getting played"
-		"Notes"			"Improved ff2_stop_music"
-		"Notes"			"Fixed many sounds not working after the 3/12/2015 A.D. TF2 update"
-		"Notes"			"It is IMPERATIVE that you manually fix every boss's config file so that vo/*.wav becomes vo/*.mp3"
-		"Notes"			"Fixed FF2_SetBossRageDamage"
+		"Notes"			"Fixed companions always having default rage damage and lives, even if specified otherwise"
+		"Notes"			"Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive"
+		"Notes"			"Fixed minions receiving benefits intended only for normal players"
+		"Notes"			"Minions no longer die after their summoner is killed"
+		"Notes"			"Whitelisted the Shooting Star"
+		"Notes"			"Removed Shortstop reload penalty"
+		"Notes"			"Fixed large amounts of lives being cut off when being displayed"
+		"Notes"			"Fixed the living spectator bug again"
+		"Notes"			"Fixed healthbar not updating when goomba-ing the boss"
+		"Notes"			"Fixed divide by 0 errors"
+		"Notes"			"Fixed OnAlivePlayersChanged not returning the number of minions"
+		"Notes"			"Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace'"
+		"Notes"			"ff2_crits now defaults to 0 instead of 1"
+		"Notes"			"Fixed PDAs and sappers not being usable when given to bosses"
 	}
 
 	"Files"
@@ -22,13 +29,14 @@
 		"Patch"
 		{
 			"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
-			"Plugin"	"Path_SM/plugins/freaks/default_abilities.ff2"
+			"Plugin"	"Path_SM/plugins/freaks/easter_abilities.ff2"
 			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
-			"Plugin"	"Path_SM/translations/freak_fortress_2.phrases.txt"
-			"Plugin"	"Path_SM/translations/de/freak_fortress_2.phrases.txt"
+			"Plugin"	"Path_SM/plugins/freaks/special_noanims.ff2"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
-			"Source"	"Path_SM/scripting/freaks/default_abilities.sp"
+			"Source"	"Path_SM/scripting/freaks/easter_abilities.sp"
 			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
+			"Source"	"Path_SM/scripting/freaks/special_noanims.sp"
+			"Source"	"Path_SM/scripting/include/freak_fortress_2.inc"
 		}
 
 		"Plugin"		"Path_SM/plugins/freak_fortress_2.smx"
@@ -220,7 +228,6 @@
 		"Plugin"		"Path_Mod/sound/freak_fortress_2/demopan/demopan_kspree.wav"
 		"Plugin"		"Path_Mod/sound/freak_fortress_2/demopan/demopan_win.wav"
 		"Plugin"		"Path_Mod/sound/freak_fortress_2/gentlespy/gentle_music.mp3"
-		"Plugin"		"Path_Mod/sound/freak_fortress_2/hhh/hhh_bgm.mp3"
 		"Plugin"		"Path_Mod/sound/freak_fortress_2/ninjaspy/fakedeath_1.wav"
 		"Plugin"		"Path_Mod/sound/freak_fortress_2/ninjaspy/fakedeath_2.wav"
 		"Plugin"		"Path_Mod/sound/freak_fortress_2/ninjaspy/fakedeath_3.wav"

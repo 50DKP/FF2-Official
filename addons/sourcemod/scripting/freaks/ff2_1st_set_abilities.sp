@@ -15,7 +15,7 @@
 #define SOUND_SLOW_MO_END "replay/exitperformancemode.wav"  //Used when Ninja Spy exits slow mo
 #define SOUND_DEMOPAN_RAGE "ui/notification_alert.wav"  //Used when Demopan rages
 
-#define PLUGIN_VERSION "1.10.4"
+#define PLUGIN_VERSION "1.10.7"
 
 public Plugin:myinfo=
 {
@@ -254,7 +254,7 @@ Rage_Clone(const String:ability_name[], boss)
 		clone=GetArrayCell(players, temp);
 		RemoveFromArray(players, temp);
 
-		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM);
+		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_CLASSTIMERDISABLED);
 		ChangeClientTeam(clone, BossTeam);
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=boss;
@@ -292,6 +292,23 @@ Rage_Clone(const String:ability_name[], boss)
 				}
 
 				weapon=SpawnWeapon(clone, classname, index, 101, 0, attributes);
+				if(StrEqual(classname, "tf_weapon_builder") && index!=735)  //PDA, normal sapper
+				{
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 1);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 2);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 3);
+				}
+				else if(StrEqual(classname, "tf_weapon_sapper") || index==735)  //Sappers, normal sapper
+				{
+					SetEntProp(weapon, Prop_Send, "m_iObjectType", 3);
+					SetEntProp(weapon, Prop_Data, "m_iSubType", 3);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 0);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 1);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 2);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
+				}
+
 				if(IsValidEdict(weapon))
 				{
 					SetEntPropEnt(clone, Prop_Send, "m_hActiveWeapon", weapon);
@@ -758,30 +775,47 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	{
 		if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
 		{
-			if(FF2_GetAbilityArgument(boss, this_plugin_name, "special_dropprop", 3, 0))
+			decl String:model[PLATFORM_MAX_PATH];
+			FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
+			if(model[0]!='\0')  //Because you never know when someone is careless and doesn't specify a model...
 			{
-				CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"));
-			}
-
-			new prop=CreateEntityByName("prop_physics_override");
-			if(IsValidEntity(prop))
-			{
-				decl String:model[PLATFORM_MAX_PATH];
-				FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
-				SetEntityModel(prop, model);
-				SetEntityMoveType(prop, MOVETYPE_VPHYSICS);
-				SetEntProp(prop, Prop_Send, "m_CollisionGroup", 1);
-				SetEntProp(prop, Prop_Send, "m_usSolidFlags", 16);
-				DispatchSpawn(prop);
-
-				new Float:position[3];
-				GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
-				position[2]+=20;
-				TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
-				new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "special_dropprop", 2, 0.0);
-				if(duration>0.5)
+				if(!IsModelPrecached(model))  //Make sure the boss author precached the model (similar to above)
 				{
-					CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(prop));
+					new String:bossName[64];
+					FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
+					if(!FileExists(model, true))
+					{
+						LogError("[FF2 Bosses] Model '%s' doesn't exist!  Please check %s's \"mod_precache\"", bossName, model);
+						return Plugin_Continue;
+					}
+
+					LogError("[FF2 Bosses] Model '%s' isn't precached!  Please check %s's \"mod_precache\"", bossName, model);
+					PrecacheModel(model);
+				}
+
+				if(FF2_GetAbilityArgument(boss, this_plugin_name, "special_dropprop", 3, 0))
+				{
+					CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"));
+				}
+
+				new prop=CreateEntityByName("prop_physics_override");
+				if(IsValidEntity(prop))
+				{
+					SetEntityModel(prop, model);
+					SetEntityMoveType(prop, MOVETYPE_VPHYSICS);
+					SetEntProp(prop, Prop_Send, "m_CollisionGroup", 1);
+					SetEntProp(prop, Prop_Send, "m_usSolidFlags", 16);
+					DispatchSpawn(prop);
+
+					new Float:position[3];
+					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
+					position[2]+=20;
+					TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
+					new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "special_dropprop", 2, 0.0);
+					if(duration>0.5)
+					{
+						CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(prop));
+					}
 				}
 			}
 		}
@@ -813,7 +847,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	}
 
 	boss=FF2_GetBossIndex(client);
-	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack") && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack") && FF2_GetAbilityArgument(boss, this_plugin_name, "rage_cloneattack", 12, 1) && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
 		for(new target=1; target<=MaxClients; target++)
 		{
@@ -825,9 +859,10 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 		}
 	}
 
-	if(CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)
+	if(CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)  //Switch clones back to the other team after they die
 	{
 		CloneOwnerIndex[client]=-1;
+		FF2_SetFF2flags(client, FF2_GetFF2flags(client) & ~FF2FLAG_CLASSTIMERDISABLED);
 		ChangeClientTeam(client, (BossTeam==_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
 	}
 	return Plugin_Continue;

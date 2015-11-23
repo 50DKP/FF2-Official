@@ -197,7 +197,7 @@
 	"ff2_hp"
 	{
 		"#format" "{1:s},{2:i},{3:i},{4:s}"
-		"en"	"Current {1}'s hp amount is {2} of {3}{4}"
+		"en"	"{1}'s HP: {2} of {3}{4}"
 	}
 	"ff2_alive"
 	{
@@ -329,6 +329,15 @@
 	"Boss Suicide Pre-round"
 	{
 		"en"	"You are not allowed to suicide before the round starts!"
+	}
+	"Boss Disconnected"
+	{
+		"#format" "{1:N},{2:N}"
+		"en"	"{1} has disconnected and now {2} is the new boss!"
+	}
+	"Replace Disconnected Boss"
+	{
+		"en"	"Surprise! You are now the boss!"
 	}
 	"Backstab"
 	{

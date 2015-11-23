@@ -11,7 +11,7 @@
 #define OBJECTS			"spawn_many_objects_on_kill"
 #define OBJECTS_DEATH	"spawn_many_objects_on_death"
 
-#define PLUGIN_VERSION "1.10.4"
+#define PLUGIN_VERSION "1.10.7"
 
 public Plugin:myinfo=
 {
@@ -91,7 +91,7 @@ public OnEntityCreated(entity, const String:classname[])
 public OnProjectileSpawned(entity)
 {
 	new client=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-	if(client && client<=MaxClients && IsClientInGame(client))
+	if(client>0 && client<=MaxClients && IsClientInGame(client))
 	{
 		new boss=FF2_GetBossIndex(client);
 		if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, PROJECTILE))
@@ -105,7 +105,16 @@ public OnProjectileSpawned(entity)
 			{
 				decl String:model[PLATFORM_MAX_PATH];
 				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, 2, model, sizeof(model));
-				SetEntityModel(entity, model);
+				if(IsModelPrecached(model))
+				{
+					SetEntityModel(entity, model);
+				}
+				else
+				{
+					decl String:bossName[64];
+					FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
+					LogError("[FF2 Bosses] Model %s (used by boss %s for ability %s) isn't precached!", model, bossName, PROJECTILE);
+				}
 			}
 		}
 	}
