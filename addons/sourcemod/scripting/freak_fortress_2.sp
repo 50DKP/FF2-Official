@@ -5705,7 +5705,7 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 	{
 		if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
 		{
-			SetEntityHealth(client,(BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1)); //Set the health early to avoid the boss dying from fire, etc.
+			SetEntityHealth(client, (BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1)); //Set the health early to avoid the boss dying from fire, etc.
 
 			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
 			Call_StartForward(OnLoseLife);
@@ -6088,7 +6088,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							{
 								newhealth=max+100;
 							}
-							SetEntityHealth(client, newhealth);
+							SetEntityHealth(attacker, newhealth);
 						}
 
 						if(TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
@@ -6293,7 +6293,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							health=500;
 						}
-						SetEntityHealth(client, health);
+						SetEntityHealth(attacker, health);
 					}
 					else if(index==461)  //Big Earner
 					{
