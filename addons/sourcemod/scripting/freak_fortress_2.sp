@@ -36,16 +36,16 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "7"
+#define STABLE_REVISION "8"
 //#define DEV_REVISION "Beta"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.7
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.8
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..." (build "...BUILD_NUMBER...")"
 #endif
 
-#define UPDATE_URL "http://ff2.50dkp.com/updater/ff2-official/update.txt"
+#define UPDATE_URL "http://50dkp.github.io/FF2-Official/update.txt"
 
 #define MAXENTITIES 2048
 #define MAXSPECIALS 64
@@ -286,7 +286,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.6",
 	"1.10.7",
 	"1.10.7",
-	"1.10.7"
+	"1.10.7",
+	"1.10.8"
 };
 
 static const String:ff2versiondates[][]=
@@ -357,13 +358,18 @@ static const String:ff2versiondates[][]=
 	"August 10, 2015",		//1.10.6
 	"November 19, 2015",	//1.10.7
 	"November 19, 2015",	//1.10.7
-	"November 19, 2015"		//1.10.7
+	"November 19, 2015",	//1.10.7
+	"November 24, 2015"		//1.10.8
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 67:  //1.10.8
+		{
+			DrawPanelText(panel, "1) Fixed the Powerjack and Kunai killing the boss in one hit (naydef)");
+		}
 		case 66:  //1.10.7
 		{
 			DrawPanelText(panel, "1) Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
@@ -5705,7 +5711,7 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 	{
 		if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
 		{
-			SetEntityHealth(client,(BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1)); //Set the health early to avoid the boss dying from fire, etc.
+			SetEntityHealth(client, (BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1)); //Set the health early to avoid the boss dying from fire, etc.
 
 			new Action:action=Plugin_Continue, bossLives=BossLives[boss];  //Used for the forward
 			Call_StartForward(OnLoseLife);
@@ -6088,7 +6094,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							{
 								newhealth=max+100;
 							}
-							SetEntityHealth(client, newhealth);
+							SetEntityHealth(attacker, newhealth);
 						}
 
 						if(TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
@@ -6293,7 +6299,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						{
 							health=500;
 						}
-						SetEntityHealth(client, health);
+						SetEntityHealth(attacker, health);
 					}
 					else if(index==461)  //Big Earner
 					{
