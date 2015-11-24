@@ -5360,7 +5360,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			else if(!GetRandomInt(0, 2))  //1/3 chance for "sound_kill_<class>"
 			{
 				new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
-				decl String:class[32], String:sound[PLATFORM_MAX_PATH];
+				decl String:class[32];
 				Format(class, sizeof(class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
 				if(RandomSound(class, sound, sizeof(sound), boss))
 				{
