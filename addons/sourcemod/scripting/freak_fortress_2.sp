@@ -36,11 +36,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "8"
-//#define DEV_REVISION "Beta"
+#define STABLE_REVISION "9"
+#define DEV_REVISION "Beta"
 #define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.8
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.9
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..." (build "...BUILD_NUMBER...")"
 #endif
@@ -5352,25 +5352,27 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				firstBlood=false;
 			}
 
-			if(RandomSound("sound_hit", sound, sizeof(sound), boss))
+			if(GetRandomInt(0, 1) && RandomSound("sound_hit", sound, sizeof(sound), boss))
 			{
 				EmitSoundToAll(sound);
 				EmitSoundToAll(sound);
 			}
-
-			if(!GetRandomInt(0, 2))  //1/3 chance for "sound_kill_<class>"
+			else if(!GetRandomInt(0, 2))  //1/3 chance for "sound_kill_<class>"
 			{
-				new Handle:data;
-				CreateDataTimer(0.1, PlaySoundKill, data);
-				WritePackCell(data, GetClientUserId(client));
-				WritePackCell(data, boss);
-				ResetPack(data);
+				new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
+				decl String:class[32], String:sound[PLATFORM_MAX_PATH];
+				Format(class, sizeof(class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
+				if(RandomSound(class, sound, sizeof(sound), boss))
+				{
+					EmitSoundToAll(sound);
+					EmitSoundToAll(sound);
+				}
 			}
 
 			GetGameTime()<=KSpreeTimer[boss] ? (KSpreeCount[boss]+=1) : (KSpreeCount[boss]=1);  //Breaks if you do ++ or remove the parentheses...
 			if(KSpreeCount[boss]==3)
 			{
-				if(RandomSound("sound_kspree", sound, PLATFORM_MAX_PATH, boss))
+				if(RandomSound("sound_kspree", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAll(sound);
 					EmitSoundToAll(sound);
@@ -5425,23 +5427,6 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 					AcceptEntityInput(entity, "kill");
 				}
 			}
-		}
-	}
-	return Plugin_Continue;
-}
-
-public Action:PlaySoundKill(Handle:timer, Handle:data)
-{
-	new client=GetClientOfUserId(ReadPackCell(data));
-	if(client)
-	{
-		new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
-		decl String:class[32], String:sound[PLATFORM_MAX_PATH];
-		Format(class, sizeof(class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
-		if(RandomSound(class, sound, sizeof(sound), ReadPackCell(data)))
-		{
-			EmitSoundToAll(sound);
-			EmitSoundToAll(sound);
 		}
 	}
 	return Plugin_Continue;
