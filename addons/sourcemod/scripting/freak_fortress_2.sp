@@ -1669,11 +1669,11 @@ public LoadCharacter(const String:characterName[])
 		return;
 	}
 
-	KvJumpToKey(BossKV[specials], "abilities");
-	while(KvGotoNextKey(BossKV[specials]))
+	KvJumpToKey(BossKV[Specials], "abilities");
+	while(KvGotoNextKey(BossKV[Specials]))
 	{
 		decl String:pluginName[64];
-		KvGetSectionName(BossKV[specials], pluginName, sizeof(pluginName));
+		KvGetSectionName(BossKV[Specials], pluginName, sizeof(pluginName));
 		BuildPath(Path_SM, config, sizeof(config), "plugins/freak_fortress_2/%s.smx", pluginName);
 		if(!FileExists(config))
 		{
@@ -6441,10 +6441,10 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 						else
 						{
 							decl String:stringLives[MAXRANDOMS][3];
-							new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+							new count=ExplodeString(ability, " ", stringLives, MAXRANDOMS, 3);
 							for(new n; n<count; n++)
 							{
-								if(StringToInt(lives[n])==BossLives[boss])
+								if(StringToInt(stringLives[n])==BossLives[boss])
 								{
 									UseAbility(boss, pluginName, abilityName, -1);
 									KvGoBack(BossKV[character[boss]]);
