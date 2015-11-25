@@ -42,7 +42,7 @@ before_deploy:
     - mv ../../materials freak_fortress_2/
     - mv ../../models freak_fortress_2/
     - mv ../../sound freak_fortress_2/
-    - zip -rqdgs 1m freak_fortress_2 freak_fortress_2
+    - zip --recurse-paths --quiet --display-globaldots --dot-size 1m freak_fortress_2 freak_fortress_2
     - tar -czf freak_fortress_2.tar.gz freak_fortress_2
 deploy:
     provider: releases

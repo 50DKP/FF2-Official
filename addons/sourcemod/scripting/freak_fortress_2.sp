@@ -44,7 +44,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..."-"...DEV_REVISION..."+"...BUILD_NUMBER  //semver.org
 #endif
 
-#define UPDATE_URL "http://ff2.50dkp.com/updater/ff2-official/update.txt"
+#define UPDATE_URL "http://50dkp.github.io/FF2-Official/update.txt"
 
 #define MAXENTITIES 2048
 #define MAXSPECIALS 64
@@ -311,7 +311,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.6",
 	"1.10.7",
 	"1.10.7",
-	"1.10.7"
+	"1.10.7",
+	"1.10.8"
 };
 
 static const String:ff2versiondates[][]=
@@ -382,13 +383,18 @@ static const String:ff2versiondates[][]=
 	"August 10, 2015",		//1.10.6
 	"November 19, 2015",	//1.10.7
 	"November 19, 2015",	//1.10.7
-	"November 19, 2015"		//1.10.7
+	"November 19, 2015",	//1.10.7
+	"November 24, 2015"		//1.10.8
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 67:  //1.10.8
+		{
+			DrawPanelText(panel, "1) Fixed the Powerjack and Kunai killing the boss in one hit (naydef)");
+		}
 		case 66:  //1.10.7
 		{
 			DrawPanelText(panel, "1) Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
@@ -5513,19 +5519,21 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				firstBlood=false;
 			}
 
-			if(RandomSound("sound_hit", sound, sizeof(sound), boss))
+			if(GetRandomInt(0, 1) && RandomSound("sound_hit", sound, sizeof(sound), boss))
 			{
 				EmitSoundToAll(sound);
 				EmitSoundToAll(sound);
 			}
-
-			if(!GetRandomInt(0, 2))  //1/3 chance for "sound_kill_<class>"
+			else if(!GetRandomInt(0, 2))  //1/3 chance for "sound_kill_<class>"
 			{
-				new Handle:data;
-				CreateDataTimer(0.1, PlaySoundKill, data);
-				WritePackCell(data, GetClientUserId(client));
-				WritePackCell(data, boss);
-				ResetPack(data);
+				new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
+				decl String:class[32];
+				Format(class, sizeof(class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
+				if(RandomSound(class, sound, sizeof(sound), boss))
+				{
+					EmitSoundToAll(sound);
+					EmitSoundToAll(sound);
+				}
 			}
 
 			GetGameTime()<=KSpreeTimer[boss] ? (KSpreeCount[boss]+=1) : (KSpreeCount[boss]=1);  //Breaks if you do ++ or remove the parentheses...
@@ -5586,23 +5594,6 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 					AcceptEntityInput(entity, "kill");
 				}
 			}
-		}
-	}
-	return Plugin_Continue;
-}
-
-public Action:PlaySoundKill(Handle:timer, Handle:data)
-{
-	new client=GetClientOfUserId(ReadPackCell(data));
-	if(client)
-	{
-		new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
-		decl String:class[32], String:sound[PLATFORM_MAX_PATH];
-		Format(class, sizeof(class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
-		if(RandomSound(class, sound, sizeof(sound), ReadPackCell(data)))
-		{
-			EmitSoundToAll(sound);
-			EmitSoundToAll(sound);
 		}
 	}
 	return Plugin_Continue;
@@ -6048,7 +6039,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 							{
 								newhealth=max+100;
 							}
-							SetEntityHealth(client, newhealth);
+							SetEntityHealth(attacker, newhealth);
 						}
 
 						if(TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
@@ -6254,7 +6245,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 						{
 							health=500;
 						}
-						SetEntityHealth(client, health);
+						SetEntityHealth(attacker, health);
 					}
 					else if(index==461)  //Big Earner
 					{
@@ -6414,7 +6405,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 		{
 			if(BossHealth[boss]-damage<=BossHealthMax[boss]*lives)
 			{
-				SetEntProp(client, Prop_Data, "m_iHealth", (BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1));  //Set the health early to avoid the boss dying from fire, etc.
+				SetEntityHealth(client, (BossHealth[boss]-damage)-BossHealthMax[boss]*(lives-1));  //Set the health early to avoid the boss dying from fire, etc.
 
 				new Action:action, bossLives=BossLives[boss];  //Used for the forward
 				Call_StartForward(OnLoseLife);
@@ -6424,7 +6415,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 				Call_Finish(action);
 				if(action==Plugin_Stop || action==Plugin_Handled)  //Don't allow any damage to be taken and also don't let the life-loss go through
 				{
-					SetEntProp(client, Prop_Data, "m_iHealth", BossHealth[boss]);
+					SetEntityHealth(client, BossHealth[boss]);
 					return;
 				}
 				else if(action==Plugin_Changed)
