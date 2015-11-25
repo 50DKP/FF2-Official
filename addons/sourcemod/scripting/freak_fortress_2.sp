@@ -1669,23 +1669,16 @@ public LoadCharacter(const String:characterName[])
 		return;
 	}
 
-	for(new i=1; ; i++)
+	KvJumpToKey(BossKV[specials], "abilities");
+	while(KvGotoNextKey(BossKV[specials]))
 	{
-		Format(config, 10, "ability%i", i);
-		if(KvJumpToKey(BossKV[Specials], config))
+		decl String:pluginName[64];
+		KvGetSectionName(BossKV[specials], pluginName, sizeof(pluginName));
+		BuildPath(Path_SM, config, sizeof(config), "plugins/freak_fortress_2/%s.smx", pluginName);
+		if(!FileExists(config))
 		{
-			decl String:plugin_name[64];
-			KvGetString(BossKV[Specials], "plugin_name", plugin_name, 64);
-			BuildPath(Path_SM, config, sizeof(config), "plugins/freak_fortress_2/%s.smx", plugin_name);
-			if(!FileExists(config))
-			{
-				LogError("[FF2] Character %s needs plugin %s!", characterName, plugin_name);
-				return;
-			}
-		}
-		else
-		{
-			break;
+			LogError("[FF2] Character %s needs plugin %s!", characterName, pluginName);
+			return;
 		}
 	}
 	KvRewind(BossKV[Specials]);
@@ -2369,7 +2362,7 @@ public Action:BossInfoTimer_Begin(Handle:timer, any:boss)
 	return Plugin_Continue;
 }
 
-public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
+public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)  //FIXME: THIS IS SO BROKEN
 {
 	if((FF2Flags[Boss[boss]] & FF2FLAG_USINGABILITY))
 	{
@@ -2377,34 +2370,31 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 		return Plugin_Stop;
 	}
 
-	new bool:see;
-	for(new n=1; ; n++)
+	new bool:buttonMode;
+	KvRewind(BossKV[character[boss]]);
+	KvJumpToKey(BossKV[character[boss]], "abilities");
+	while(KvGotoNextKey(BossKV[character[boss]]))
 	{
-		decl String:s[10];
-		Format(s, 10, "ability%i", n);
-		if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])
+		decl String:pluginName[64];
+		KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
+		KvJumpToKey(BossKV[character[boss]], pluginName);
+		while(KvGotoNextKey(BossKV[character[boss]]))
 		{
-			return Plugin_Stop;
-		}
-
-		KvRewind(BossKV[character[boss]]);
-		if(KvJumpToKey(BossKV[character[boss]], s))
-		{
-			decl String:plugin_name[64];
-			KvGetString(BossKV[character[boss]], "plugin_name", plugin_name, 64);
+			decl String:abilityName[64];
+			KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
+			KvJumpToKey(BossKV[character[boss]], abilityName);
 			if(KvGetNum(BossKV[character[boss]], "buttonmode", 0)==2)
 			{
-				see=true;
+				buttonMode=true;
+				KvGoBack(BossKV[character[boss]]);
 				break;
 			}
+			KvGoBack(BossKV[character[boss]]);
 		}
-		else
-		{
-			break;
-		}
+		KvGoBack(BossKV[character[boss]]);
 	}
 
-	new need_info_bout_reload=see && CheckInfoCookies(Boss[boss], 0);
+	new need_info_bout_reload=buttonMode && CheckInfoCookies(Boss[boss], 0);
 	new need_info_bout_rmb=CheckInfoCookies(Boss[boss], 1);
 	if(need_info_bout_reload)
 	{
@@ -5137,16 +5127,18 @@ public Action:BossTimer(Handle:timer)
 
 		SetClientGlow(client, -0.2);
 
-		decl String:lives[MAXRANDOMS][3];
-		for(new i=1; ; i++)
+		decl String:ability[10], String:lives[MAXRANDOMS][3];
+		KvJumpToKey(BossKV[character[boss]], "abilities");
+		while(KvGotoNextKey(BossKV[character[boss]]))
 		{
-			decl String:ability[10];
-			Format(ability, sizeof(ability), "ability%i", i);
-			KvRewind(BossKV[character[boss]]);
-			if(KvJumpToKey(BossKV[character[boss]], ability))
+			decl String:pluginName[64];
+			KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
+			KvJumpToKey(BossKV[character[boss]], pluginName);
+			while(KvGotoNextKey(BossKV[character[boss]]))
 			{
-				decl String:pluginName[64];
-				KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
+				decl String:abilityName[64];
+				KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
+				KvJumpToKey(BossKV[character[boss]], abilityName);
 				new slot=KvGetNum(BossKV[character[boss]], "slot", 0);
 				new buttonmode=KvGetNum(BossKV[character[boss]], "buttonmode", 0);
 				if(slot<1)
@@ -5157,8 +5149,6 @@ public Action:BossTimer(Handle:timer)
 				KvGetString(BossKV[character[boss]], "life", ability, sizeof(ability), "");
 				if(!ability[0])
 				{
-					decl String:abilityName[64];
-					KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
 					UseAbility(boss, pluginName, abilityName, slot, buttonmode);
 				}
 				else
@@ -5168,18 +5158,15 @@ public Action:BossTimer(Handle:timer)
 					{
 						if(StringToInt(lives[n])==BossLives[boss])
 						{
-							decl String:abilityName[64];
-							KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
 							UseAbility(boss, pluginName, abilityName, slot, buttonmode);
+							KvGoBack(BossKV[character[boss]]);
 							break;
 						}
 					}
 				}
+				KvGoBack(BossKV[character[boss]]);
 			}
-			else
-			{
-				break;
-			}
+			KvGoBack(BossKV[character[boss]]);
 		}
 
 		if(RedAlivePlayers==1)
@@ -5341,41 +5328,43 @@ public Action:OnCallForMedic(client, const String:command[], args)
 	if(RoundFloat(BossCharge[boss][0])==100)
 	{
 		decl String:ability[10], String:lives[MAXRANDOMS][3];
-		for(new i=1; i<MAXRANDOMS; i++)
+		KvJumpToKey(BossKV[character[boss]], "abilities");
+		while(KvGotoNextKey(BossKV[character[boss]]))
 		{
-			Format(ability, sizeof(ability), "ability%i", i);
-			KvRewind(BossKV[character[boss]]);
-			if(KvJumpToKey(BossKV[character[boss]], ability))
+			decl String:pluginName[64];
+			KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
+			KvJumpToKey(BossKV[character[boss]], pluginName);
+			while(KvGotoNextKey(BossKV[character[boss]]))
 			{
+				decl String:abilityName[64];
+				KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
+				KvJumpToKey(BossKV[character[boss]], abilityName);
 				if(KvGetNum(BossKV[character[boss]], "slot", 0))
 				{
 					continue;
 				}
 
-				KvGetString(BossKV[character[boss]], "life", ability, sizeof(ability));
+				KvGetString(BossKV[character[boss]], "life", ability, sizeof(ability), "");
 				if(!ability[0])
 				{
-					decl String:abilityName[64], String:pluginName[64];
-					KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
-					KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
 					UseAbility(boss, pluginName, abilityName, 0);
 				}
 				else
 				{
 					new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
-					for(new j; j<count; j++)
+					for(new n; n<count; n++)
 					{
-						if(StringToInt(lives[j])==BossLives[boss])
+						if(StringToInt(lives[n])==BossLives[boss])
 						{
-							decl String:abilityName[64], String:pluginName[64];
-							KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
-							KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
 							UseAbility(boss, pluginName, abilityName, 0);
+							KvGoBack(BossKV[character[boss]]);
 							break;
 						}
 					}
 				}
+				KvGoBack(BossKV[character[boss]]);
 			}
+			KvGoBack(BossKV[character[boss]]);
 		}
 
 		new Float:position[3];
@@ -6427,43 +6416,45 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 					BossLives[boss]=lives=bossLives;
 				}
 
-				decl String:ability[PLATFORM_MAX_PATH];
-				for(new n=1; n<MAXRANDOMS; n++)
+				decl String:ability[PLATFORM_MAX_PATH];  //FIXME: Create a new variable for the translation string later on
+				KvJumpToKey(BossKV[character[boss]], "abilities");
+				while(KvGotoNextKey(BossKV[character[boss]]))
 				{
-					Format(ability, 10, "ability%i", n);
-					KvRewind(BossKV[character[boss]]);
-					if(KvJumpToKey(BossKV[character[boss]], ability))
+					decl String:pluginName[64];
+					KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
+					KvJumpToKey(BossKV[character[boss]], pluginName);
+					while(KvGotoNextKey(BossKV[character[boss]]))
 					{
+						decl String:abilityName[64];
+						KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
+						KvJumpToKey(BossKV[character[boss]], abilityName);
 						if(KvGetNum(BossKV[character[boss]], "slot", 0)!=-1)
 						{
 							continue;
 						}
 
-						KvGetString(BossKV[character[boss]], "life", ability, 10);
+						KvGetString(BossKV[character[boss]], "life", ability, 10, "");
 						if(!ability[0])
 						{
-							decl String:abilityName[64], String:pluginName[64];
-							KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
-							KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
 							UseAbility(boss, pluginName, abilityName, -1);
 						}
 						else
 						{
 							decl String:stringLives[MAXRANDOMS][3];
-							new count=ExplodeString(ability, " ", stringLives, MAXRANDOMS, 3);
-							for(new j; j<count; j++)
+							new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+							for(new n; n<count; n++)
 							{
-								if(StringToInt(stringLives[j])==BossLives[boss])
+								if(StringToInt(lives[n])==BossLives[boss])
 								{
-									decl String:abilityName[64], String:pluginName[64];
-									KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
-									KvGetString(BossKV[character[boss]], "name", abilityName, sizeof(abilityName));
 									UseAbility(boss, pluginName, abilityName, -1);
+									KvGoBack(BossKV[character[boss]]);
 									break;
 								}
 							}
 						}
+						KvGoBack(BossKV[character[boss]]);
 					}
+					KvGoBack(BossKV[character[boss]]);
 				}
 				BossLives[boss]=lives;
 
@@ -7035,25 +7026,13 @@ stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityNa
 	}
 
 	KvRewind(BossKV[character[boss]]);
-	decl String:ability[10];
-	for(new i=1; i<MAXRANDOMS; i++)
+	if(KvJumpToKey(BossKV[character[boss]], "abilities")
+	&& KvJumpToKey(BossKV[character[boss]], pluginName)
+	&& KvJumpToKey(BossKV[character[boss]], abilityName))
 	{
-		Format(ability, sizeof(ability), "ability%i", i);
-		if(KvJumpToKey(BossKV[character[boss]], ability))
-		{
-			decl String:possibleMatch[64];
-			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
-			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
-			{
-				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
-				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
-				{
-					return KvGetNum(BossKV[character[boss]], argument, defaultValue);
-				}
-			}
-			KvGoBack(BossKV[character[boss]]);
-		}
+		return KvGetNum(BossKV[character[boss]], argument, defaultValue);
 	}
+
 	return 0;
 }
 
@@ -7065,25 +7044,13 @@ stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const Strin
 	}
 
 	KvRewind(BossKV[character[boss]]);
-	decl String:ability[10];
-	for(new i=1; i<MAXRANDOMS; i++)
+	if(KvJumpToKey(BossKV[character[boss]], "abilities")
+	&& KvJumpToKey(BossKV[character[boss]], pluginName)
+	&& KvJumpToKey(BossKV[character[boss]], abilityName))
 	{
-		Format(ability, sizeof(ability), "ability%i", i);
-		if(KvJumpToKey(BossKV[character[boss]], ability))
-		{
-			decl String:possibleMatch[64];
-			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
-			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
-			{
-				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
-				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
-				{
-					return KvGetFloat(BossKV[character[boss]], argument, defaultValue);
-				}
-			}
-			KvGoBack(BossKV[character[boss]]);
-		}
+		return KvGetNum(BossKV[character[boss]], argument, defaultValue);
 	}
+
 	return 0.0;
 }
 
@@ -7096,24 +7063,11 @@ stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abi
 	}
 
 	KvRewind(BossKV[character[boss]]);
-	decl String:ability[10];
-	for(new i=1; i<MAXRANDOMS; i++)
+	if(KvJumpToKey(BossKV[character[boss]], "abilities")
+	&& KvJumpToKey(BossKV[character[boss]], pluginName)
+	&& KvJumpToKey(BossKV[character[boss]], abilityName))
 	{
-		Format(ability, sizeof(ability), "ability%i", i);
-		if(KvJumpToKey(BossKV[character[boss]], ability))
-		{
-			decl String:possibleMatch[64];
-			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
-			if(StrEqual(abilityName, possibleMatch))  //See if the ability that we're currently in matches the specified ability
-			{
-				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
-				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))
-				{
-					KvGetString(BossKV[character[boss]], argument, abilityString, length, defaultValue);
-				}
-			}
-			KvGoBack(BossKV[character[boss]]);
-		}
+		return KvGetNum(BossKV[character[boss]], argument, defaultValue);
 	}
 }
 
@@ -8699,25 +8653,9 @@ public bool:HasAbility(boss, const String:pluginName[], const String:abilityName
 	}
 
 	KvRewind(BossKV[character[boss]]);
-
-	decl String:ability[10];
-	for(new i=1; i<MAXRANDOMS; i++)
+	if(KvJumpToKey(BossKV[character[boss]], pluginName) && KvJumpToKey(BossKV[character[boss]], abilityName))
 	{
-		Format(ability, sizeof(ability), "ability%i", i);
-		if(KvJumpToKey(BossKV[character[boss]], ability))
-		{
-			decl String:possibleMatch[64];  //See if the ability that we're currently in matches the specified ability
-			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
-			if(StrEqual(abilityName, possibleMatch))
-			{
-				KvGetString(BossKV[character[boss]], "plugin_name", possibleMatch, sizeof(possibleMatch));
-				if(!pluginName[0] || !possibleMatch[0] || StrEqual(pluginName, possibleMatch))  //Make sure the plugin names are equal
-				{
-					return true;
-				}
-			}
-			KvGoBack(BossKV[character[boss]]);
-		}
+		return true;
 	}
 	return false;
 }
