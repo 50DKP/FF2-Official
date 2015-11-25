@@ -3320,15 +3320,15 @@ EquipBoss(boss)
 			KvGetString(BossKV[Special[boss]], "attributes", attributes, sizeof(attributes));
 			if(attributes[0]!='\0')
 			{
-				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; %s", attributes);
+				Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1 ; %s", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2 ,attributes);
 					//68: +2 cap rate
-					//2: x3 damage
+					//2: x3.1 damage
 			}
 			else
 			{
-				attributes="68 ; 2.0 ; 2 ; 3";
+				Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2);
 					//68: +2 cap rate
-					//2: x3 damage
+					//2: x3.1 damage
 			}
 
 			new index=KvGetNum(BossKV[Special[boss]], "index");
