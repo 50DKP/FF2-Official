@@ -1079,6 +1079,7 @@ public OnPluginStart()
 
 	HookEvent("teamplay_round_start", OnRoundStart);
 	HookEvent("teamplay_round_win", OnRoundEnd);
+	HookEvent("teamplay_broadcast_audio", OnBroadcast, EventHookMode_Pre);
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Pre);
 	HookEvent("post_inventory_application", OnPostInventoryApplication, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
@@ -2723,6 +2724,17 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	CreateTimer(3.0, Timer_CalcQueuePoints, _, TIMER_FLAG_NO_MAPCHANGE);
 	UpdateHealthBar();
 	return Plugin_Continue;
+}
+
+public Action:OnBroadcast(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    decl String:sound[PLATFORM_MAX_PATH];
+    GetEventString(event, "sound", sound, sizeof(sound));
+    if(!StrContains(sound, "Game.Your", false) || StrEqual(sound, "Game.Stalemate", false))
+    {
+        return Plugin_Handled;
+    }
+    return Plugin_Continue;
 }
 
 public Action:Timer_NineThousand(Handle:timer)
