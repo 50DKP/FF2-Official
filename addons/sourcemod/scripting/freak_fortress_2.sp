@@ -7048,7 +7048,7 @@ stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const Strin
 	&& KvJumpToKey(BossKV[character[boss]], pluginName)
 	&& KvJumpToKey(BossKV[character[boss]], abilityName))
 	{
-		return KvGetNum(BossKV[character[boss]], argument, defaultValue);
+		return KvGetFloat(BossKV[character[boss]], argument, defaultValue);
 	}
 
 	return 0.0;
@@ -7067,7 +7067,7 @@ stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abi
 	&& KvJumpToKey(BossKV[character[boss]], pluginName)
 	&& KvJumpToKey(BossKV[character[boss]], abilityName))
 	{
-		return KvGetNum(BossKV[character[boss]], argument, defaultValue);
+		KvGetString(BossKV[character[boss]], argument, abilityString, length, defaultValue);
 	}
 }
 
