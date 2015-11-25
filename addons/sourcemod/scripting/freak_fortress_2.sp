@@ -2730,7 +2730,7 @@ public Action:OnBroadcast(Handle:event, const String:name[], bool:dontBroadcast)
 {
     decl String:sound[PLATFORM_MAX_PATH];
     GetEventString(event, "sound", sound, sizeof(sound));
-    if(!StrContains(sound, "Game.Your", false) || !StrContains(sound, "Game.Stalemate", false))
+    if(!StrContains(sound, "Game.Your", false) || StrEqual(sound, "Game.Stalemate", false))
     {
         return Plugin_Handled;
     }
