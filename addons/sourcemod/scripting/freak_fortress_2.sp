@@ -1041,7 +1041,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 public OnPluginStart()
 {
-	LogMessage("===Freak Fortress 2 Initializing-v%s===", PLUGIN_VERSION);
+	FF2_LogMessage(LogType_Generic,"===Freak Fortress 2 Initializing-v%s===", PLUGIN_VERSION);
 
 	cvarVersion=CreateConVar("ff2_version", PLUGIN_VERSION, "Freak Fortress 2 Version", FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_SPONLY|FCVAR_DONTRECORD);
 	cvarPointType=CreateConVar("ff2_point_type", "0", "0-Use ff2_point_alive, 1-Use ff2_point_time", _, true, 0.0, true, 1.0);
@@ -1079,6 +1079,7 @@ public OnPluginStart()
 
 	HookEvent("teamplay_round_start", OnRoundStart);
 	HookEvent("teamplay_round_win", OnRoundEnd);
+	HookEvent("teamplay_broadcast_audio", OnBroadcast, EventHookMode_Pre);
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Pre);
 	HookEvent("post_inventory_application", OnPostInventoryApplication, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
@@ -1543,7 +1544,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 
 	if(!FileExists(config))
 	{
-		LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
+		FF2_LogMessage(LogType_Error,"[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
 		Enabled2=false;
 		return;
 	}
@@ -1622,7 +1623,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 		new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
 		if(amount % 2)
 		{
-			LogError("[FF2 Bosses] Invalid chances string, disregarding chances");
+			FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Invalid chances string, disregarding chances");
 			strcopy(ChancesString, sizeof(ChancesString), "");
 			amount=0;
 		}
@@ -1635,7 +1636,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 			{
 				if(StringToInt(stringChances[chancesIndex])<=0)
 				{
-					LogError("[FF2 Bosses] Character %i cannot have a zero or negative chance, disregarding chances", chancesIndex-1);
+					FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Character %i cannot have a zero or negative chance, disregarding chances", chancesIndex-1);
 					strcopy(ChancesString, sizeof(ChancesString), "");
 					break;
 				}
@@ -1730,7 +1731,7 @@ public LoadCharacter(const String:character[])
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/%s.cfg", character);
 	if(!FileExists(config))
 	{
-		LogError("[FF2] Character %s does not exist!", character);
+		FF2_LogMessage(LogType_Error,"[FF2] Character %s does not exist!", character);
 		return;
 	}
 	BossKV[Specials]=CreateKeyValues("character");
@@ -1739,7 +1740,7 @@ public LoadCharacter(const String:character[])
 	new version=KvGetNum(BossKV[Specials], "version", 1);
 	if(version!=StringToInt(MAJOR_REVISION))
 	{
-		LogError("[FF2] Character %s is only compatible with FF2 v%i!", character, version);
+		FF2_LogMessage(LogType_Error,"[FF2] Character %s is only compatible with FF2 v%i!", character, version);
 		return;
 	}
 
@@ -1753,7 +1754,7 @@ public LoadCharacter(const String:character[])
 			BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "plugins/freaks/%s.ff2", plugin_name);
 			if(!FileExists(config))
 			{
-				LogError("[FF2] Character %s needs plugin %s!", character, plugin_name);
+				FF2_LogMessage(LogType_Error,"[FF2] Character %s needs plugin %s!", character, plugin_name);
 				return;
 			}
 		}
@@ -1792,7 +1793,7 @@ public LoadCharacter(const String:character[])
 				}
 				else
 				{
-					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, config);
+					FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Character %s is missing file '%s'!", character, config);
 				}
 			}
 		}
@@ -1816,7 +1817,7 @@ public LoadCharacter(const String:character[])
 					}
 					else
 					{
-						LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
+						FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Character %s is missing file '%s'!", character, key);
 					}
 				}
 			}
@@ -1838,7 +1839,7 @@ public LoadCharacter(const String:character[])
 				}
 				else
 				{
-					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
+					FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Character %s is missing file '%s'!", character, key);
 				}
 				Format(key, PLATFORM_MAX_PATH, "%s.vmt", config);
 				if(FileExists(key, true))
@@ -1847,7 +1848,7 @@ public LoadCharacter(const String:character[])
 				}
 				else
 				{
-					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
+					FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Character %s is missing file '%s'!", character, key);
 				}
 			}
 		}
@@ -1882,7 +1883,7 @@ public PrecacheCharacter(characterIndex)
 				}
 				else
 				{
-					LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
+					FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 				}
 			}
 		}
@@ -1905,7 +1906,7 @@ public PrecacheCharacter(characterIndex)
 					}
 					else
 					{
-						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
+						FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 					}
 				}
 				else
@@ -1917,7 +1918,7 @@ public PrecacheCharacter(characterIndex)
 					}
 					else
 					{
-						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
+						FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
 					}
 				}
 			}
@@ -2092,14 +2093,14 @@ stock bool:IsFF2Map()
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/maps.cfg");
 	if(!FileExists(config))
 	{
-		LogError("[FF2] Unable to find %s, disabling plugin.", config);
+		FF2_LogMessage(LogType_Error,"[FF2] Unable to find %s, disabling plugin.", config);
 		return false;
 	}
 
 	new Handle:file=OpenFile(config, "r");
 	if(file==INVALID_HANDLE)
 	{
-		LogError("[FF2] Error reading maps from %s, disabling plugin.", config);
+		FF2_LogMessage(LogType_Error,"[FF2] Error reading maps from %s, disabling plugin.", config);
 		return false;
 	}
 
@@ -2109,7 +2110,7 @@ stock bool:IsFF2Map()
 		tries++;
 		if(tries==100)
 		{
-			LogError("[FF2] Breaking infinite loop when trying to check the map.");
+			FF2_LogMessage(LogType_Error,"[FF2] Breaking infinite loop when trying to check the map.");
 			return false;
 		}
 
@@ -2253,20 +2254,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 		}
 	}
 
-	if(blueBoss)
-	{
-		SetTeamScore(_:TFTeam_Red, GetTeamScore(OtherTeam));
-		SetTeamScore(_:TFTeam_Blue, GetTeamScore(BossTeam));
-		OtherTeam=_:TFTeam_Red;
-		BossTeam=_:TFTeam_Blue;
-	}
-	else
-	{
-		SetTeamScore(_:TFTeam_Red, GetTeamScore(BossTeam));
-		SetTeamScore(_:TFTeam_Blue, GetTeamScore(OtherTeam));
-		OtherTeam=_:TFTeam_Blue;
-		BossTeam=_:TFTeam_Red;
-	}
+	SetBossTeam(blueBoss ? TFTeam_Blue : TFTeam_Red);
 
 	playing=0;
 	for(new client=1; client<=MaxClients; client++)
@@ -2373,7 +2361,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	PickCharacter(0, 0);
 	if((Special[0]<0) || !BossKV[Special[0]])
 	{
-		LogError("[FF2 Bosses] Couldn't find a boss!");
+		FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Couldn't find a boss!");
 		return Plugin_Continue;
 	}
 
@@ -2435,6 +2423,14 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	healthcheckused=0;
 	firstBlood=true;
 	return Plugin_Continue;
+}
+
+public SetBossTeam(TFTeam:bossTeam) // don't change this to "stock" please
+{
+	SetTeamScore(_:(bossTeam==TFTeam_Blue ? TFTeam_Red : TFTeam_Blue), GetTeamScore(OtherTeam));
+	SetTeamScore(_:bossTeam, GetTeamScore(BossTeam));
+	OtherTeam=_:(bossTeam==TFTeam_Blue ? TFTeam_Red : TFTeam_Blue);
+	BossTeam=_:bossTeam;
 }
 
 public Action:Timer_EnableCap(Handle:timer)
@@ -2723,6 +2719,17 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	CreateTimer(3.0, Timer_CalcQueuePoints, _, TIMER_FLAG_NO_MAPCHANGE);
 	UpdateHealthBar();
 	return Plugin_Continue;
+}
+
+public Action:OnBroadcast(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    new String:strAudio[PLATFORM_MAX_PATH];
+    GetEventString(event, "sound", strAudio, sizeof(strAudio));
+    if(strncmp(strAudio, "Game.Your", 9) == 0 || strcmp(strAudio, "Game.Stalemate") == 0)
+    {
+        return Plugin_Handled;
+    }
+    return Plugin_Continue;
 }
 
 public Action:Timer_NineThousand(Handle:timer)
@@ -3308,13 +3315,13 @@ EquipBoss(boss)
 			KvGetString(BossKV[Special[boss]], "attributes", attributes, sizeof(attributes));
 			if(attributes[0]!='\0')
 			{
-				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; %s", attributes);
+				Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1 ; %s", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2 ,attributes);
 					//68: +2 cap rate
 					//2: x3 damage
 			}
 			else
 			{
-				attributes="68 ; 2.0 ; 2 ; 3";
+					Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2);
 					//68: +2 cap rate
 					//2: x3 damage
 			}
@@ -3845,7 +3852,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 			new attrib=StringToInt(weaponAttribsArray[i]);
 			if(!attrib)
 			{
-				LogError("Bad weapon attribute passed: %s ; %s", weaponAttribsArray[i], weaponAttribsArray[i+1]);
+				FF2_LogMessage(LogType_Error,"Bad weapon attribute passed: %s ; %s", weaponAttribsArray[i], weaponAttribsArray[i+1]);
 				CloseHandle(weapon);
 				return INVALID_HANDLE;
 			}
@@ -5232,6 +5239,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
 		}
 		emitRageSound[boss]=true;
+		return Plugin_Handled; // Block out "medic" voiceline
 	}
 	return Plugin_Continue;
 }
@@ -5270,53 +5278,34 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		return Plugin_Continue;
 	}
 
-	new team=_:TFTeam_Unassigned, oldTeam=GetClientTeam(client), String:teamString[10];
+	new TFTeam:team=TFTeam_Unassigned, TFTeam:oldTeam=TF2_GetClientTeam(client), String:teamString[10];
 	GetCmdArg(1, teamString, sizeof(teamString));
 
 	if(StrEqual(teamString, "red", false))
 	{
-		team=_:TFTeam_Red;
+		team=IsBoss(client) ? (TFTeam:BossTeam) : (TFTeam_Red);
 	}
 	else if(StrEqual(teamString, "blue", false))
 	{
-		team=_:TFTeam_Blue;
+		team=IsBoss(client) ? (TFTeam:BossTeam) : (TFTeam_Blue);
 	}
 	else if(StrEqual(teamString, "auto", false))
 	{
-		team=OtherTeam;
+		team=IsBoss(client) ? (TFTeam:BossTeam) : (TFTeam:OtherTeam);
 	}
-	else if(StrEqual(teamString, "spectate", false) && !IsBoss(client) && GetConVarBool(FindConVar("mp_allowspectators")))
+	else if(StrEqual(teamString, "spectate", false) && GetConVarBool(FindConVar("mp_allowspectators")))
 	{
-		team=_:TFTeam_Spectator;
-	}
-
-	if(team==BossTeam && !IsBoss(client))
-	{
-		team=OtherTeam;
-	}
-	else if(team==OtherTeam && IsBoss(client))
-	{
-		team=BossTeam;
+		team=IsBoss(client) ? (TFTeam:BossTeam) : TFTeam_Spectator;
 	}
 
-	if(team>_:TFTeam_Unassigned && team!=oldTeam)
+	if(team>TFTeam_Unassigned && team!=oldTeam)
 	{
-		ChangeClientTeam(client, team);
+		TF2_ChangeClientTeam(client, team);
 	}
 
 	if(CheckRoundState()!=1 && !IsBoss(client) || !IsPlayerAlive(client))  //No point in showing the VGUI if they can't change teams
 	{
-		switch(team)
-		{
-			case TFTeam_Red:
-			{
-				ShowVGUIPanel(client, "class_red");
-			}
-			case TFTeam_Blue:
-			{
-				ShowVGUIPanel(client, "class_blue");
-			}
-		}
+		ShowVGUIPanel(client, team==TFTeam_Red ? "class_red" : "class_blue");
 	}
 	return Plugin_Handled;
 }
@@ -6768,7 +6757,7 @@ stock Operate(Handle:sumArray, &bracket, Float:value, Handle:_operator)
 		{
 			if(!value)
 			{
-				LogError("[FF2 Bosses] Detected a divide by 0!");
+				FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Detected a divide by 0!");
 				bracket=0;
 				return;
 			}
@@ -6849,7 +6838,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 				if(GetArrayCell(_operator, bracket)!=Operator_None)  //Something like (5*)
 				{
-					LogError("[FF2 Bosses] %s's %s formula has an invalid operator at character %i", bossName, key, i+1);
+					FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] %s's %s formula has an invalid operator at character %i", bossName, key, i+1);
 					CloseHandle(sumArray);
 					CloseHandle(_operator);
 					return defaultValue;
@@ -6857,7 +6846,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 
 				if(--bracket<0)  //Something like (5))
 				{
-					LogError("[FF2 Bosses] %s's %s formula has an unbalanced parentheses at character %i", bossName, key, i+1);
+					FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] %s's %s formula has an unbalanced parentheses at character %i", bossName, key, i+1);
 					CloseHandle(sumArray);
 					CloseHandle(_operator);
 					return defaultValue;
@@ -6912,7 +6901,7 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 	CloseHandle(_operator);
 	if(result<=0)
 	{
-		LogError("[FF2] %s has an invalid %s formula, using default!", bossName, key);
+		FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] %s has an invalid %s formula, using default!", bossName, key);
 		return defaultValue;
 	}
 
@@ -7349,7 +7338,7 @@ FindCompanion(boss, players, bool:omit[])
 		}
 		else  //Can't find the companion's character, so just play without the companion
 		{
-			LogError("[FF2 Bosses] Could not find boss %s!", companionName);
+			FF2_LogMessage(LogType_Bosses,"[FF2 Bosses] Could not find boss %s!", companionName);
 			Boss[companion]=0;
 			omit[companion]=false;
 		}
@@ -7386,7 +7375,7 @@ stock SpawnWeapon(client, String:name[], index, level, qual, String:att[])
 			new attrib=StringToInt(atts[i]);
 			if(!attrib)
 			{
-				LogError("Bad weapon attribute passed: %s ; %s", atts[i], atts[i+1]);
+				FF2_LogMessage(LogType_Error,"Bad weapon attribute passed: %s ; %s", atts[i], atts[i+1]);
 				CloseHandle(hWeapon);
 				return -1;
 			}
@@ -8623,7 +8612,7 @@ public Native_HasAbility(Handle:plugin, numParams)
 	KvRewind(BossKV[Special[boss]]);
 	if(!BossKV[Special[boss]])
 	{
-		LogError("Failed KV: %i %i", boss, Special[boss]);
+		FF2_LogMessage(LogType_Error,"Failed KV: %i %i", boss, Special[boss]);
 		return false;
 	}
 
