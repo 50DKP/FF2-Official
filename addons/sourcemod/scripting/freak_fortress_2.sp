@@ -2728,9 +2728,9 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 public Action:OnBroadcast(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    new String:strAudio[PLATFORM_MAX_PATH];
+    decl String:strAudio[PLATFORM_MAX_PATH];
     GetEventString(event, "sound", strAudio, sizeof(strAudio));
-    if(strncmp(strAudio, "Game.Your", 9) == 0 || strcmp(strAudio, "Game.Stalemate") == 0)
+    if(!StrContains(strAudio, "Game.Your", false) || !StrContains(strAudio, "Game.Stalemate", false))
     {
         return Plugin_Handled;
     }
