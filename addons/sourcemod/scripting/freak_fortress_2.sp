@@ -1023,7 +1023,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_SetBossRageDamage", Native_SetBossRageDamage);
 	CreateNative("FF2_GetBossRageDistance", Native_GetBossRageDistance);
 	CreateNative("FF2_GetClientDamage", Native_GetClientDamage);
-	CreateNative("FF2_SetClientDamage", Native_SetDamage);
+	CreateNative("FF2_SetClientDamage", Native_SetClientDamage);
 	CreateNative("FF2_HasAbility", Native_HasAbility);
 	CreateNative("FF2_GetAbilityArgument", Native_GetAbilityArgument);
 	CreateNative("FF2_GetAbilityArgumentFloat", Native_GetAbilityArgumentFloat);
@@ -8651,7 +8651,7 @@ public SetClientDamage(client, damage)
 	Damage[client]=damage;
 }
 
-public Native_SetDamage(Handle:plugin, numParams)
+public Native_SetClientDamage(Handle:plugin, numParams)
 {
 	SetClientDamage(GetNativeCell(1), GetNativeCell(2));
 }
