@@ -5244,6 +5244,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 			FF2flags[Boss[boss]]&=~FF2FLAG_TALKING;
 		}
 		emitRageSound[boss]=true;
+		return Plugin_Handled;
 	}
 	return Plugin_Continue;
 }
