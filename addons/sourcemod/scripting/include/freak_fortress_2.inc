@@ -222,6 +222,15 @@ native Float:FF2_GetBossRageDistance(boss=0, const String:pluginName[]="", const
 native FF2_GetClientDamage(client);
 
 /**
+ * Sets damage dealt by this client
+ *
+ * @param client 	Client's index
+ * @param damage	New damage dealt
+ * @noreturn
+ */
+native FF2_SetClientDamage(client, damage);
+
+/**
  * Finds if a Boss has a certain ability
  *
  * @param boss          Boss's index
@@ -615,6 +624,7 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_SetBossRageDamage");
 	MarkNativeAsOptional("FF2_GetBossRageDistance");
 	MarkNativeAsOptional("FF2_GetClientDamage");
+	MarkNativeAsOptional("FF2_SetClientDamage");
 	MarkNativeAsOptional("FF2_HasAbility");
 	MarkNativeAsOptional("FF2_GetAbilityArgument");
 	MarkNativeAsOptional("FF2_GetAbilityArgumentFloat");
