@@ -3197,55 +3197,75 @@ EquipBoss(boss)
 	DoOverlay(client, "");
 	TF2_RemoveAllWeapons(client);
 	decl String:key[10], String:classname[64], String:attributes[256];
-	for(new i=1; ; i++)
+	if(KvJumpToKey(BossKV[character[boss]], "weapons"))
 	{
-		KvRewind(BossKV[character[boss]]);
-		Format(key, sizeof(key), "weapon%i", i);
-		if(KvJumpToKey(BossKV[character[boss]], key))
+		while(KvGotoNextKey(BossKV[character[boss]]))
 		{
-			KvGetString(BossKV[character[boss]], "name", classname, sizeof(classname));
-			KvGetString(BossKV[character[boss]], "attributes", attributes, sizeof(attributes));
-			if(attributes[0]!='\0')
+			decl String:sectionName[32];
+			KvGetSectionName(BossKV[character[boss]], sectionName, sizeof(sectionName));
+			new index=StringToInt(sectionName);
+			//NOTE: StringToInt returns 0 on failure which corresponds to tf_weapon_bat,
+			//so there's no way to distinguish between an invalid string and 0.
+			//Blocked on bug 6438: https://bugs.alliedmods.net/show_bug.cgi?id=6438
+			if(index>=0)
 			{
-				Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; %s", attributes);
-					//68: +2 cap rate
-					//2: x3 damage
+				KvJumpToKey(BossKV[character[boss]], sectionName);
+				KvGetString(BossKV[character[boss]], "classname", classname, sizeof(classname));
+				if(classname[0]=='\0')
+				{
+					decl String:bossName[64];
+					KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed Name=");
+					LogError("[FF2 Bosses] No classname specified for weapon %i (character %s)!", index, bossName);
+					KvGoBack(BossKV[character[boss]]);
+					continue;
+				}
+
+				KvGetString(BossKV[character[boss]], "attributes", attributes, sizeof(attributes));
+				if(attributes[0]!='\0')
+				{
+					Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; %s", attributes);
+						//68: +2 cap rate
+						//2: x3 damage
+				}
+				else
+				{
+					attributes="68 ; 2.0 ; 2 ; 3";
+						//68: +2 cap rate
+						//2: x3 damage
+				}
+
+				new weapon=SpawnWeapon(client, classname, index, 101, 5, attributes);
+				if(StrEqual(classname, "tf_weapon_builder", false) && index!=735)  //PDA, normal sapper
+				{
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 1);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 2);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 3);
+				}
+				else if(StrEqual(classname, "tf_weapon_sapper", false) || index==735)  //Sappers
+				{
+					SetEntProp(weapon, Prop_Send, "m_iObjectType", 3);
+					SetEntProp(weapon, Prop_Data, "m_iSubType", 3);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 0);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 1);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 2);
+					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
+				}
+
+				if(!KvGetNum(BossKV[character[boss]], "show", 0))
+				{
+					SetEntPropFloat(weapon, Prop_Send, "m_flModelScale", 0.001);
+				}
+				SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
+
+				KvGoBack(BossKV[character[boss]]);
 			}
 			else
 			{
-				attributes="68 ; 2.0 ; 2 ; 3";
-					//68: +2 cap rate
-					//2: x3 damage
+				decl String:bossName[64];
+				KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed Name=");
+				LogError("[FF2 Bosses] Invalid weapon index %s specified for character %s!", sectionName, bossName);
 			}
-
-			new index=KvGetNum(BossKV[character[boss]], "index");
-			new weapon=SpawnWeapon(client, classname, index, 101, 5, attributes);
-			if(StrEqual(classname, "tf_weapon_builder", false) && index!=735)  //PDA, normal sapper
-			{
-				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
-				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 1);
-				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 2);
-				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 3);
-			}
-			else if(StrEqual(classname, "tf_weapon_sapper", false) || index==735)  //Sappers
-			{
-				SetEntProp(weapon, Prop_Send, "m_iObjectType", 3);
-				SetEntProp(weapon, Prop_Data, "m_iSubType", 3);
-				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 0);
-				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 1);
-				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 0, _, 2);
-				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
-			}
-
-			if(!KvGetNum(BossKV[character[boss]], "show", 0))
-			{
-				SetEntPropFloat(weapon, Prop_Send, "m_flModelScale", 0.001);
-			}
-			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
-		}
-		else
-		{
-			break;
 		}
 	}
 
