@@ -1091,6 +1091,7 @@ public OnPluginStart()
 
 	HookEvent("teamplay_round_start", OnRoundStart);
 	HookEvent("teamplay_round_win", OnRoundEnd);
+	HookEvent("teamplay_broadcast_audio", OnBroadcast, EventHookMode_Pre);
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Pre);
 	HookEvent("post_inventory_application", OnPostInventoryApplication, EventHookMode_Pre);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Pre);
@@ -2623,6 +2624,17 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	return Plugin_Continue;
 }
 
+public Action:OnBroadcast(Handle:event, const String:name[], bool:dontBroadcast)
+{
+    decl String:sound[PLATFORM_MAX_PATH];
+    GetEventString(event, "sound", sound, sizeof(sound));
+    if(!StrContains(sound, "Game.Your", false) || StrEqual(sound, "Game.Stalemate", false))
+    {
+        return Plugin_Handled;
+    }
+    return Plugin_Continue;
+}
+
 public Action:Timer_NineThousand(Handle:timer)
 {
 	EmitSoundToAll("saxton_hale/9000.wav", _, _, _, _, _, _, _, _, _, false);
@@ -3223,15 +3235,15 @@ EquipBoss(boss)
 				KvGetString(BossKV[character[boss]], "attributes", attributes, sizeof(attributes));
 				if(attributes[0]!='\0')
 				{
-					Format(attributes, sizeof(attributes), "68 ; 2.0 ; 2 ; 3.0 ; %s", attributes);
+					Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1 ; %s", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2 ,attributes);
 						//68: +2 cap rate
-						//2: x3 damage
+						//2: x3.1 damage
 				}
 				else
 				{
-					attributes="68 ; 2.0 ; 2 ; 3";
+					Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2);
 						//68: +2 cap rate
-						//2: x3 damage
+						//2: x3.1 damage
 				}
 
 				new weapon=SpawnWeapon(client, classname, index, 101, 5, attributes);
@@ -5417,6 +5429,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 			FF2Flags[Boss[boss]]&=~FF2FLAG_TALKING;
 		}
 		emitRageSound[boss]=true;
+		return Plugin_Handled;
 	}
 	return Plugin_Continue;
 }
