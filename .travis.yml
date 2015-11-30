@@ -12,7 +12,7 @@ env:
 
 #And compile!
 install:
-    - wget --input-file=http://sourcemod.net/smdrop/1.8/sourcemod-latest-linux
+    - wget --input-file=http://sourcemod.net/smdrop/$SMVERSION/sourcemod-latest-linux
     - tar -xzf $(cat sourcemod-latest-linux)
 before_script:
     - cd addons/sourcemod/scripting/
