@@ -2061,7 +2061,7 @@ public Action:Timer_Announce(Handle:timer)
 			}
 			case 3:
 			{
-				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default}, {olive}FlaminSarge{default} and {blue}Chdata{default}) === ", PLUGIN_VERSION);
+				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default}, {olive}FlaminSarge{default}, and {blue}Chdata{default}) === ", PLUGIN_VERSION);
 			}
 			case 4:
 			{
