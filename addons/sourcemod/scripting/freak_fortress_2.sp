@@ -3743,12 +3743,12 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 			return Plugin_Changed;
 		}
 	}
-	
+
 	if(!StrContains(classname, "tf_weapon_syringegun_medic")) // Syringe Guns
 	{
 		new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1");
-			//	17: 5% uber on hit
-			//	144: Sets weapon mode?????
+			//17: 5% uber on hit
+			//144: Sets weapon mode?????
 		if(itemOverride!=INVALID_HANDLE)
 		{
 			item=itemOverride;
