@@ -3503,6 +3503,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 237, 265: // Rocket & Sticky Jumper
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, iItemDefinitionIndex==265 ? "" : "265 ; 99999.0", true);
+			// 265: minicrits for 99999 seconds
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3746,6 +3747,8 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	if(!StrContains(classname, "tf_weapon_syringegun_medic")) // Syringe Guns
 	{
 		new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1");
+			//	17: 5% uber on hit
+			//	144: Sets weapon mode?????
 		if(itemOverride!=INVALID_HANDLE)
 		{
 			item=itemOverride;
