@@ -3500,7 +3500,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 
 	switch(iItemDefinitionIndex)
 	{
-		case 237, 265: // Rocket & Sticky Jumper
+		/*case 237, 265: // Rocket & Sticky Jumper (future use? maybe?)
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, iItemDefinitionIndex==265 ? "" : "265 ; 99999.0", true);
 			// 265: minicrits for 99999 seconds
@@ -3509,7 +3509,8 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				item=itemOverride;
 				return Plugin_Changed;
 			}		
-		}
+		}*/
+		
 		case 38, 457:  //Axtinguisher, Postal Pummeler
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "", true);
@@ -3956,6 +3957,13 @@ public Action:CheckItems(Handle:timer, any:userid)
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 				weapon=SpawnWeapon(client, "tf_weapon_minigun", 15, 1, 0, "");
 			}
+			case 237:  //Rocket Jumper
+			{
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
+				weapon=SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "265 ; 99999.0");
+					//265: Mini-crits airborne targets for 99999 seconds
+				FF2_SetAmmo(client, weapon, 20);
+			}
 			case 402:  //Bazaar Bargain
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
@@ -3971,6 +3979,17 @@ public Action:CheckItems(Handle:timer, any:userid)
 	weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 	if(weapon && IsValidEdict(weapon))
 	{
+		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
+		switch(index)
+		{
+			case 265:  //Stickybomb Jumper
+			{
+				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
+				weapon=SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
+				FF2_SetAmmo(client, weapon, 24);
+			}
+		}
+		
 		if(TF2_GetPlayerClass(client)==TFClass_Medic && GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)  //10 means the weapon is customized, so we don't want to touch those
 		{
 			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
