@@ -3500,17 +3500,6 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 
 	switch(iItemDefinitionIndex)
 	{
-		/*case 237, 265: // Rocket & Sticky Jumper (future use? maybe?)
-		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, iItemDefinitionIndex==265 ? "" : "265 ; 99999.0", true);
-			// 265: minicrits for 99999 seconds
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}		
-		}*/
-		
 		case 38, 457:  //Axtinguisher, Postal Pummeler
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "", true);
@@ -3745,7 +3734,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 	}
 
-	if(!StrContains(classname, "tf_weapon_syringegun_medic")) // Syringe Guns
+	if(!StrContains(classname, "tf_weapon_syringegun_medic"))  //Syringe guns
 	{
 		new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1");
 			//17: 5% uber on hit
@@ -3754,9 +3743,9 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		{
 			item=itemOverride;
 			return Plugin_Changed;
-		}	
+		}
 	}
-	else if(!StrContains(classname, "tf_weapon_medigun"))  // Mediguns
+	else if(!StrContains(classname, "tf_weapon_medigun"))  //Mediguns
 	{
 		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
 			//10: +25% faster charge rate
@@ -3988,8 +3977,8 @@ public Action:CheckItems(Handle:timer, any:userid)
 				FF2_SetAmmo(client, weapon, 24);
 			}
 		}
-		
-		if(TF2_GetPlayerClass(client)==TFClass_Medic && GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)  //10 means the weapon is customized, so we don't want to touch those
+
+		if(TF2_GetPlayerClass(client)==TFClass_Medic)
 		{
 			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
 
