@@ -2061,7 +2061,7 @@ public Action:Timer_Announce(Handle:timer)
 			}
 			case 3:
 			{
-				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default} and {olive}FlaminSarge{default}) === ", PLUGIN_VERSION);
+				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default}, {olive}FlaminSarge{default}, and {blue}Chdata{default}) === ", PLUGIN_VERSION);
 			}
 			case 4:
 			{
@@ -3500,6 +3500,17 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 
 	switch(iItemDefinitionIndex)
 	{
+		/*case 237, 265: // Rocket & Sticky Jumper (future use? maybe?)
+		{
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, iItemDefinitionIndex==265 ? "" : "265 ; 99999.0", true);
+			// 265: minicrits for 99999 seconds
+			if(itemOverride!=INVALID_HANDLE)
+			{
+				item=itemOverride;
+				return Plugin_Changed;
+			}		
+		}*/
+		
 		case 38, 457:  //Axtinguisher, Postal Pummeler
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "", true);
@@ -3734,7 +3745,18 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 	}
 
-	if(!StrContains(classname, "tf_weapon_medigun") && (iItemDefinitionIndex!=35 || iItemDefinitionIndex!=411 || iItemDefinitionIndex!=998))  //Kritzkrieg, Quick Fix, Vaccinator
+	if(!StrContains(classname, "tf_weapon_syringegun_medic")) // Syringe Guns
+	{
+		new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1");
+			//17: 5% uber on hit
+			//144: Sets weapon mode?????
+		if(itemOverride!=INVALID_HANDLE)
+		{
+			item=itemOverride;
+			return Plugin_Changed;
+		}	
+	}
+	else if(!StrContains(classname, "tf_weapon_medigun"))  // Mediguns
 	{
 		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
 			//10: +25% faster charge rate
@@ -3929,16 +3951,6 @@ public Action:CheckItems(Handle:timer, any:userid)
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
 		{
-			case 17, 36, 204, 412:  //Syringe Gun, Blutsauger, Strange Syringe Gun, Overdose
-			{
-				if(GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-					SpawnWeapon(client, "tf_weapon_syringegun_medic", (index==204 ? 204 : 17), 1, 10, "17 ; 0.05 ; 144 ; 1");  //Strange if possible
-						//17: +5 uber/hit
-						//144:  NOOP
-				}
-			}
 			case 41:  //Natascha
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
@@ -3976,22 +3988,9 @@ public Action:CheckItems(Handle:timer, any:userid)
 				FF2_SetAmmo(client, weapon, 24);
 			}
 		}
-
+		
 		if(TF2_GetPlayerClass(client)==TFClass_Medic && GetEntProp(weapon, Prop_Send, "m_iEntityQuality")!=10)  //10 means the weapon is customized, so we don't want to touch those
 		{
-			switch(index)
-			{
-				case 35, 411, 998:  //Kritzkrieg, Quick Fix, Vaccinator
-				{
-					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-					weapon=SpawnWeapon(client, "tf_weapon_medigun", 29, 5, 10, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
-						//Switch to regular medigun
-						//10: +25% faster charge rate
-						//178: +25% faster weapon switch
-						//144: Quick-fix speed/jump effects
-						//11: +50% overheal bonus
-				}
-			}
 			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
 
 			if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
