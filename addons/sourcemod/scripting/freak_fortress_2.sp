@@ -3756,8 +3756,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 			return Plugin_Changed;
 		}	
 	}
-
-	if(!StrContains(classname, "tf_weapon_medigun"))  // Mediguns
+	else if(!StrContains(classname, "tf_weapon_medigun"))  // Mediguns
 	{
 		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
 			//10: +25% faster charge rate
