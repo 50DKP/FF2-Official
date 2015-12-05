@@ -3736,7 +3736,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 
 	if(!StrContains(classname, "tf_weapon_syringegun_medic"))  //Syringe guns
 	{
-		new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1");
+		new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1", true);
 			//17: 5% uber on hit
 			//144: Sets weapon mode?????
 		if(itemOverride!=INVALID_HANDLE)
@@ -3747,7 +3747,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	}
 	else if(!StrContains(classname, "tf_weapon_medigun"))  //Mediguns
 	{
-		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
+		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5", true);
 			//10: +25% faster charge rate
 			//178: +25% faster weapon switch
 			//144: Quick-fix speed/jump effects
