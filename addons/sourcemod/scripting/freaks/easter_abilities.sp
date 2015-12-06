@@ -113,7 +113,7 @@ public OnProjectileSpawned(entity)
 				{
 					decl String:bossName[64];
 					FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
-					LogError("[FF2 Bosses] Model %s (used by boss %s for ability %s) isn't precached!", model, bossName, PROJECTILE);
+					FF2_LogMessage(LogType_Bosses,"[Easter Abilities] Model %s (used by boss %s for ability %s) isn't precached!", model, bossName, PROJECTILE);
 				}
 			}
 		}
@@ -142,7 +142,7 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, 
 		new entity=CreateEntityByName(classname);
 		if(!IsValidEntity(entity))
 		{
-			LogError("[FF2] Invalid entity while spawning objects for Easter Abilities-check your configs!");
+			FF2_LogMessage(LogType_Bosses,"[Easter Abilities] Invalid entity while spawning objects for Easter Abilities-check your configs!");
 			continue;
 		}
 
