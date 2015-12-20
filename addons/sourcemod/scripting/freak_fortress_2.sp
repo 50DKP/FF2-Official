@@ -4798,7 +4798,8 @@ public Action:ClientTimer(Handle:timer)
 					if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
 					{
 						new medigun=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-						if(IsValidEdict(medigun))
+						decl String:mediclassname[64];
+						if(IsValidEdict(medigun) && GetEdictClassname(medigun, mediclassname, sizeof(mediclassname)) && !StrContains(mediclassname, "tf_weapon_medigun", false))
 						{
 							SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
 							new charge=RoundToFloor(GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")*100);
