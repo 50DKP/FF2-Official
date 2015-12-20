@@ -3545,11 +3545,12 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 239, 1084, 1100:  //GRU, Festive GRU, Bread Bite
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5", true);
 				//1: -50% damage
 				//107: +50% move speed
 				//128: Only when weapon is active
 				//191: -7 health/second
+				//772: Holsters 50% slower
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3570,19 +3571,6 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		/*case 132, 266, 482:  //Eyelander, HHHH, Nessie's Nine Iron - commented out because
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "202 ; 0.5 ; 125 ; -15", true);
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}*/
-		/*case 211, 663, 796, 805, 885, 894, 903, 912, 961, 970:  //Pre-Gunmettle mediguns - commented out because Gunmettle added too many (now handled below)
-		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5");
-				//10: +25% faster charge rate
-				//178: +25% faster weapon switch
-				//144: Quick-fix speed/jump effects
-				//11: +50% overheal bonus
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3630,10 +3618,10 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 331:  //Fists of Steel
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "177 ; 1.2 ; 205 ; 0.8 ; 206 ; 2.0", true);
-				//177: +20% slower weapon switch
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "205 ; 0.8 ; 206 ; 2.0 ; 772 ; 2.0", true);
 				//205: -80% damage from ranged while active
 				//206: +100% damage from melee while active
+				//772: Holsters 100% slower
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3642,7 +3630,12 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 415:  //Reserve Shooter
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "265 ; 99999.0 ; 178 ; 0.6 ; 179 ; 1 ; 2 ; 1.1 ; 3 ; 0.5", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1 ; 3 ; 0.5 ; 114 ; 1 ; 179 ; 1 ; 547 ; 0.6", true);
+				//2: +10% damage bonus
+				//3: -50% clip size
+				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
+				//179: Minicrits become crits
+				//547: Deploys 40% faster
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3668,6 +3661,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		case 648:  //Wrap Assassin
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "279 ; 2.0");
+				//279: 2 ornaments
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3676,9 +3670,10 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 656:  //Holiday Punch
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "178 ; 0 ; 358 ; 0 ; 362 ; 0 ; 363 ; 0 ; 369 ; 0", true);
-				//178:  +100% faster weapon switch
-				//Other attributes:  Because TF2Items doesn't feel like stripping the Holiday Punch's attributes for some reason
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "199 ; 0 ; 547 ; 0 ; 358 ; 0 ; 362 ; 0 ; 363 ; 0 ; 369 ; 0", true);
+				//199: Holsters 100% faster
+				//547: Deploys 100% faster
+				//Other attributes: Because TF2Items doesn't feel like stripping the Holiday Punch's attributes for some reason
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3720,11 +3715,14 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		new Handle:itemOverride;
 		if(iItemDefinitionIndex==127)  //Direct Hit
 		{
-			itemOverride=PrepareItemHandle(item, _, _, "265 ; 99999.0 ; 179 ; 1.0");
+			itemOverride=PrepareItemHandle(item, _, _, "114 ; 1 ; 179 ; 1.0");
+				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
+				//179: Mini-crits become crits
 		}
 		else
 		{
-			itemOverride=PrepareItemHandle(item, _, _, "265 ; 99999.0");
+			itemOverride=PrepareItemHandle(item, _, _, "114 ; 1");
+				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
 		}
 
 		if(itemOverride!=INVALID_HANDLE)
@@ -3747,11 +3745,12 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	}
 	else if(!StrContains(classname, "tf_weapon_medigun"))  //Mediguns
 	{
-		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 178 ; 0.75 ; 144 ; 2.0 ; 11 ; 1.5", true);
+		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 11 ; 1.5 ; 144 ; 2.0 ; 199 ; 0.75 ; 547 ; 0.75", true);
 			//10: +25% faster charge rate
-			//178: +25% faster weapon switch
-			//144: Quick-fix speed/jump effects
 			//11: +50% overheal bonus
+			//144: Quick-fix speed/jump effects
+			//199: Deploys 25% faster
+			//547: Holsters 25% faster
 		if(itemOverride!=INVALID_HANDLE)
 		{
 			item=itemOverride;
@@ -3948,8 +3947,8 @@ public Action:CheckItems(Handle:timer, any:userid)
 			case 237:  //Rocket Jumper
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				weapon=SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "265 ; 99999.0");
-					//265: Mini-crits airborne targets for 99999 seconds
+				weapon=SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "114 ; 1");
+					//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
 				FF2_SetAmmo(client, weapon, 20);
 			}
 			case 402:  //Bazaar Bargain
@@ -4033,11 +4032,12 @@ public Action:CheckItems(Handle:timer, any:userid)
 			case 43:  //KGB
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-				weapon=SpawnWeapon(client, "tf_weapon_fists", 239, 1, 6, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7");  //GRU
+				weapon=SpawnWeapon(client, "tf_weapon_fists", 239, 1, 6, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5");  //GRU
 					//1: -50% damage
 					//107: +50% move speed
 					//128: Only when weapon is active
 					//191: -7 health/second
+					//772: Holsters 50% slower
 			}
 			case 357:  //Half-Zatoichi
 			{
@@ -4670,21 +4670,6 @@ public Action:ClientTimer(Handle:timer)
 			}
 			new bool:validwep=!StrContains(classname, "tf_weapon", false);
 
-			/*if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))  //Removed in Gunmettle update
-			{
-				if(GetClientCloakIndex(client)==59)  //Dead Ringer
-				{
-					if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
-					{
-						TF2_RemoveCondition(client, TFCond_DeadRingered);
-					}
-				}
-				else
-				{
-					TF2_AddCondition(client, TFCond_DeadRingered, 0.3);
-				}
-			}*/
-
 			new index=(validwep ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 			if(class==TFClass_Medic)
 			{
@@ -4765,7 +4750,7 @@ public Action:ClientTimer(Handle:timer)
 			}
 
 			new bool:addthecrit=false;
-			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee) && strcmp(classname, "tf_weapon_knife", false))  //Every melee except knives
+			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee) && StrContains(classname, "tf_weapon_knife", false)==-1)  //Every melee except knives
 			{
 				addthecrit=true;
 				if(index==416)  //Market Gardener
@@ -5912,31 +5897,34 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			{
 				case TFClass_Spy:
 				{
-					if((GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked)))
+					if(damage >= 620.0)  //Temporary stopgap for small amounts of damage still doing 62 health
 					{
-						if(damagetype & DMG_CRIT)
+						if((GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked)))
 						{
-							damagetype&=~DMG_CRIT;
-						}
-						damage=620.0;
-						return Plugin_Changed;
-					}
-					else if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
-					{
-						if(damagetype & DMG_CRIT)
-						{
-							damagetype&=~DMG_CRIT;
-						}
-
-						if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
-						{
+							if(damagetype & DMG_CRIT)
+							{
+								damagetype&=~DMG_CRIT;
+							}
 							damage=620.0;
+							return Plugin_Changed;
 						}
-						else
+						else if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 						{
-							damage=850.0;
+							if(damagetype & DMG_CRIT)
+							{
+								damagetype&=~DMG_CRIT;
+							}
+
+							if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
+							{
+								damage=620.0;
+							}
+							else
+							{
+								damage=850.0;
+							}
+							return Plugin_Changed;
 						}
-						return Plugin_Changed;
 					}
 				}
 				case TFClass_Soldier:
@@ -5977,7 +5965,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				else if(weapon!=4095 && IsValidEdict(weapon) && weapon==GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee) && damage>1000.0)
 				{
 					decl String:classname[32];
-					if(GetEdictClassname(weapon, classname, sizeof(classname)) && !strcmp(classname, "tf_weapon_knife", false))
+					if(GetEdictClassname(weapon, classname, sizeof(classname)) && !StrContains(classname, "tf_weapon_knife", false))
 					{
 						bIsBackstab=true;
 					}
@@ -6075,12 +6063,22 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						new health=GetClientHealth(attacker);
 						new max=GetEntProp(attacker, Prop_Data, "m_iMaxHealth");
 						new newhealth=health+50;
-						if(health<max+100)
+						if(newhealth<=GetEntProp(attacker, Prop_Data, "m_iMaxHealth"))  //No overheal allowed
 						{
-							if(newhealth>max+100)
-							{
-								newhealth=max+100;
-							}
+							SetEntityHealth(attacker, newhealth);
+						}
+
+						if(TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
+						{
+							TF2_RemoveCondition(attacker, TFCond_OnFire);
+						}
+					}
+					case 310:  //Warrior's Spirit
+					{
+						new health=GetClientHealth(attacker);
+						new newhealth=health+50;
+						if(newhealth<=GetEntProp(attacker, Prop_Data, "m_iMaxHealth"))  //No overheal allowed
+						{
 							SetEntityHealth(attacker, newhealth);
 						}
 
@@ -6092,6 +6090,30 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					case 317:  //Candycane
 					{
 						SpawnSmallHealthPackAt(client, GetClientTeam(attacker));
+					}
+					case 327:  //Claidheamh Mòr
+					{
+						new health=GetClientHealth(attacker);
+						new newhealth=health+25;
+						if(newhealth<=GetEntProp(attacker, Prop_Data, "m_iMaxHealth"))  //No overheal allowed
+						{
+							SetEntityHealth(attacker, newhealth);
+						}
+
+						if(TF2_IsPlayerInCondition(attacker, TFCond_OnFire))
+						{
+							TF2_RemoveCondition(attacker, TFCond_OnFire);
+						}
+
+						new Float:charge=GetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter");
+						if(charge+25.0>=100.0)
+						{
+							SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", 100.0);
+						}
+						else
+						{
+							SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", charge+25.0);
+						}
 					}
 					case 355:  //Fan O' War
 					{
@@ -6246,20 +6268,20 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					if(viewmodel>MaxClients && IsValidEntity(viewmodel) && TF2_GetPlayerClass(attacker)==TFClass_Spy)
 					{
 						new melee=GetIndexOfWeaponSlot(attacker, TFWeaponSlot_Melee);
-						new animation=15;
+						new animation=10;
 						switch(melee)
 						{
-							case 727:  //Black Rose
+							case 225, 356, 423, 461, 574, 649, 1071, //Your Eternal Reward, Conniver's Kunai, Saxxy, Wanga Prick, Big Earner, Spy-cicle, Golden Frying Pan
 							{
-								animation=41;
-							}
-							case 4, 194, 665, 794, 803, 883, 892, 901, 910:  //Knife, Strange Knife, Festive Knife, Botkiller Knifes
-							{
-								animation=10;
+								animation=15;
 							}
 							case 638:  //Sharp Dresser
 							{
 								animation=31;
+							}
+							case 727:  //Black Rose
+							{
+								animation=41;
 							}
 						}
 						SetEntProp(viewmodel, Prop_Send, "m_nSequence", animation);
