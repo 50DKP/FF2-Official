@@ -24,6 +24,14 @@
 #endif
 #define _FF2_included
 
+enum FF2LogType
+{
+	LogType_Generic=0, //Generic messages
+	LogType_Error,	   //FF2-related errors
+	LogType_Bosses,	   //Subplugin-related errors
+	LogType_Debug,	   //Debug messages
+}
+
 /**
  * Is Freak Fortress enabled?
  *
@@ -546,9 +554,10 @@ stock FF2_ShowHudText(client, channel, const String:buffer[], any:...)
  *
  * @param buffer	Debug string to display
  * @param any:...	Formatting rules
+ * @param logging	Log debug message?
  * @noreturn
  */
-stock Debug(String:buffer[], any:...)
+stock Debug(String:buffer[], any:..., bool:logging=false)
 {
 	if(FF2_Debug())
 	{
@@ -556,7 +565,55 @@ stock Debug(String:buffer[], any:...)
 		VFormat(message, sizeof(message), buffer, 2);
 		CPrintToChatAll("{olive}[FF2 {darkorange}DEBUG{olive}]{default} %s", message);
 		PrintToServer("[FF2 DEBUG] %s", message);
+		
+		if(logging)
+		{
+			FF2_LogMessage(LogType_Debug, "%s", message);
+		}
 	}
+}
+
+/**
+ * Used to log ff2-related events to a file
+ *
+ * @param logtype	Type of log
+ * @param buffer	String to display
+ * @param any:...	Formatting rules
+ * @noreturn
+ */
+stock FF2_LogMessage(FF2LogType:logtype, String:buffer[], any:...)
+{
+	decl String:versionNum[32];
+	decl String:message[192], String:logFile[PLATFORM_MAX_PATH];
+	VFormat(message, sizeof(message), buffer, 2);
+	
+	switch(logtype)
+	{
+		case LogType_Generic:
+		{
+			BuildPath(Path_SM, logFile, sizeof(logFile), "logs/freak_fortress_2/ff2.log");
+		}
+		case LogType_Error:
+		{
+			BuildPath(Path_SM, logFile, sizeof(logFile), "logs/freak_fortress_2/ff2_errors.log");
+		}
+		case LogType_Bosses:
+		{
+			BuildPath(Path_SM, logFile, sizeof(logFile), "logs/freak_fortress_2/ff2_bosses.log");
+		}
+		case LogType_Debug:
+		{
+			BuildPath(Path_SM, logFile, sizeof(logFile), "logs/freak_fortress_2/ff2_debug.log");
+		}
+	}
+
+	if(!FileExists(logFile))
+	{
+		OpenFile(logFile, "a+");
+	}
+ 
+	GetConVarString(FindConVar("ff2_version"), versionNum, sizeof(versionNum)); // The FF2_GetFF2Version native is useless for older versions, for debugging purposes.
+	LogToFile(logFile, "%s | FF2 Version: %s", message, versionNum);
 }
 
 // These exist for compatibility reasons (<1.10.1)

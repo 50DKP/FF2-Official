@@ -785,11 +785,11 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 					FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
 					if(!FileExists(model, true))
 					{
-						LogError("[FF2 Bosses] Model '%s' doesn't exist!  Please check %s's \"mod_precache\"", bossName, model);
+						FF2_LogMessage(LogType_Bosses,"[1st Set Abilities] Model '%s' doesn't exist!  Please check %s's \"mod_precache\"", bossName, model);
 						return Plugin_Continue;
 					}
 
-					LogError("[FF2 Bosses] Model '%s' isn't precached!  Please check %s's \"mod_precache\"", bossName, model);
+					FF2_LogMessage(LogType_Bosses,"[1st Set Abilities]] Model '%s' isn't precached!  Please check %s's \"mod_precache\"", bossName, model);
 					PrecacheModel(model);
 				}
 
@@ -901,7 +901,7 @@ stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute
 			new attrib=StringToInt(attributes[i]);
 			if(attrib==0)
 			{
-				LogError("Bad weapon attribute passed: %s ; %s", attributes[i], attributes[i+1]);
+				FF2_LogMessage(LogType_Bosses,"[1st Set Abilities] Bad weapon attribute passed: %s ; %s", attributes[i], attributes[i+1]);
 				return -1;
 			}
 			TF2Items_SetAttribute(weapon, i2, attrib, StringToFloat(attributes[i+1]));

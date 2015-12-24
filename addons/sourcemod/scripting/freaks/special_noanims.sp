@@ -141,7 +141,7 @@ stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute
 			new attrib=StringToInt(attributes[i]);
 			if(!attrib)
 			{
-				LogError("Bad weapon attribute passed: %s ; %s", attributes[i], attributes[i+1]);
+				FF2_LogMessage(LogType_Bosses,"[Special: No Anims] Bad weapon attribute passed: %s ; %s", attributes[i], attributes[i+1]);
 				return -1;
 			}
 			TF2Items_SetAttribute(weapon, i2, attrib, StringToFloat(attributes[i+1]));
