@@ -264,7 +264,7 @@ Rage_Clone(const String:ability_name[], boss)
 		{
 			if(model[0]=='\0')
 			{
-				KvGetString(bossKV[config], "model", model, PLATFORM_MAX_PATH);
+				KvGetString(bossKV[config], "model", model, sizeof(model));
 			}
 			SetVariantString(model);
 			AcceptEntityInput(clone, "SetCustomModel");

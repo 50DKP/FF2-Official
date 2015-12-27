@@ -1712,7 +1712,7 @@ DisableSubPlugins(bool:force=false)
 	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks");
 	decl FileType:filetype;
 	new Handle:directory=OpenDirectory(path);
-	while(ReadDirEntry(directory, filename, PLATFORM_MAX_PATH, filetype))
+	while(ReadDirEntry(directory, filename, sizeof(filename), filetype))
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
@@ -1728,10 +1728,10 @@ public LoadCharacter(const String:character[])
 	new String:extensions[][]={".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd"};
 	decl String:config[PLATFORM_MAX_PATH];
 
-	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/%s.cfg", character);
+	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/%s.cfg", character);
 	if(!FileExists(config))
 	{
-		LogError("[FF2] Character %s does not exist!", character);
+		LogError("[FF2 Bosses] Character %s does not exist!", character);
 		return;
 	}
 	BossKV[Specials]=CreateKeyValues("character");
@@ -1740,7 +1740,7 @@ public LoadCharacter(const String:character[])
 	new version=KvGetNum(BossKV[Specials], "version", 1);
 	if(version!=StringToInt(MAJOR_REVISION))
 	{
-		LogError("[FF2] Character %s is only compatible with FF2 v%i!", character, version);
+		LogError("[FF2] Bosses Character %s is only compatible with FF2 v%i!", character, version);
 		return;
 	}
 
@@ -1751,10 +1751,10 @@ public LoadCharacter(const String:character[])
 		{
 			decl String:plugin_name[64];
 			KvGetString(BossKV[Specials], "plugin_name", plugin_name, 64);
-			BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "plugins/freaks/%s.ff2", plugin_name);
+			BuildPath(Path_SM, config, sizeof(config), "plugins/freaks/%s.ff2", plugin_name);
 			if(!FileExists(config))
 			{
-				LogError("[FF2] Character %s needs plugin %s!", character, plugin_name);
+				LogError("[FF2 Bosses] Character %s needs plugin %s!", character, plugin_name);
 				return;
 			}
 		}
@@ -1767,7 +1767,7 @@ public LoadCharacter(const String:character[])
 
 	decl String:key[PLATFORM_MAX_PATH], String:section[64];
 	KvSetString(BossKV[Specials], "filename", character);
-	KvGetString(BossKV[Specials], "name", config, PLATFORM_MAX_PATH);
+	KvGetString(BossKV[Specials], "name", config, sizeof(config));
 	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "sound_block_vo", 0);
 	BossSpeed[Specials]=KvGetFloat(BossKV[Specials], "maxspeed", 340.0);
 	//BossRageDamage[Specials]=KvGetFloat(BossKV[Specials], "ragedamage", 1900.0);
@@ -1781,7 +1781,7 @@ public LoadCharacter(const String:character[])
 			for(new i=1; ; i++)
 			{
 				IntToString(i, key, sizeof(key));
-				KvGetString(BossKV[Specials], key, config, PLATFORM_MAX_PATH);
+				KvGetString(BossKV[Specials], key, config, sizeof(config));
 				if(!config[0])
 				{
 					break;
@@ -1802,7 +1802,7 @@ public LoadCharacter(const String:character[])
 			for(new i=1; ; i++)
 			{
 				IntToString(i, key, sizeof(key));
-				KvGetString(BossKV[Specials], key, config, PLATFORM_MAX_PATH);
+				KvGetString(BossKV[Specials], key, config, sizeof(config));
 				if(!config[0])
 				{
 					break;
@@ -1827,12 +1827,12 @@ public LoadCharacter(const String:character[])
 			for(new i=1; ; i++)
 			{
 				IntToString(i, key, sizeof(key));
-				KvGetString(BossKV[Specials], key, config, PLATFORM_MAX_PATH);
+				KvGetString(BossKV[Specials], key, config, sizeof(config));
 				if(!config[0])
 				{
 					break;
 				}
-				Format(key, PLATFORM_MAX_PATH, "%s.vtf", config);
+				Format(key, sizeof(key), "%s.vtf", config);
 				if(FileExists(key, true))
 				{
 					AddFileToDownloadsTable(key);
@@ -1841,7 +1841,7 @@ public LoadCharacter(const String:character[])
 				{
 					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
 				}
-				Format(key, PLATFORM_MAX_PATH, "%s.vmt", config);
+				Format(key, sizeof(key), "%s.vmt", config);
 				if(FileExists(key, true))
 				{
 					AddFileToDownloadsTable(key);
