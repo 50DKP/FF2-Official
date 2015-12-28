@@ -6267,7 +6267,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					if(viewmodel>MaxClients && IsValidEntity(viewmodel) && TF2_GetPlayerClass(attacker)==TFClass_Spy)
 					{
 						new melee=GetIndexOfWeaponSlot(attacker, TFWeaponSlot_Melee);
-						new animation=10;
+						new animation=41;
 						switch(melee)
 						{
 							case 225, 356, 423, 461, 574, 649, 1071:  //Your Eternal Reward, Conniver's Kunai, Saxxy, Wanga Prick, Big Earner, Spy-cicle, Golden Frying Pan
@@ -6277,10 +6277,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 							case 638:  //Sharp Dresser
 							{
 								animation=31;
-							}
-							case 727:  //Black Rose
-							{
-								animation=41;
 							}
 						}
 						SetEntProp(viewmodel, Prop_Send, "m_nSequence", animation);
