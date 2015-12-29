@@ -110,8 +110,24 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			Timer_StopSlowMo(INVALID_HANDLE, -1);
 			return Plugin_Continue;
 		}
+
+		if(CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)
+		{
+			CloneOwnerIndex[client]=-1;
+			FF2_SetFF2flags(client, FF2_GetFF2flags(client) & ~FF2FLAG_CLASSTIMERDISABLED);
+		}
 	}
 	return Plugin_Continue;
+}
+
+public OnClientDisconnect(client)
+{
+	FF2Flags[client]=0;
+	if(CloneOwnerIndex[client]!=-1)
+	{
+		CloneOwnerIndex[client]=-1;
+		FF2_SetFF2flags(client, FF2_GetFF2flags(client) & ~FF2FLAG_CLASSTIMERDISABLED);
+	}
 }
 
 public Action:Timer_GetBossTeam(Handle:timer)
@@ -854,6 +870,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 			if(CloneOwnerIndex[target]==boss && IsClientInGame(target) && GetClientTeam(target)==BossTeam)
 			{
 				CloneOwnerIndex[target]=-1;
+				FF2_SetFF2flags(target, FF2_GetFF2flags(target) & ~FF2FLAG_CLASSTIMERDISABLED);
 				ChangeClientTeam(target, (BossTeam==_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
 			}
 		}
