@@ -2926,14 +2926,14 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 		Format(music, 10, "time%i", MusicIndex);
 		new Float:time=KvGetFloat(BossKV[Special[0]], music);
 		Format(music, 10, "path%i", MusicIndex);
-		KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
+		KvGetString(BossKV[Special[0]], music, music, sizeof(music));
 
 		new Action:action=Plugin_Continue;
 		Call_StartForward(OnMusic);
 		decl String:sound2[PLATFORM_MAX_PATH];
 		new Float:time2=time;
-		strcopy(sound2, PLATFORM_MAX_PATH, music);
-		Call_PushStringEx(sound2, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
+		strcopy(sound2, sizeof(sound2), music);
+		Call_PushStringEx(sound2, sizeof(sound2), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_PushFloatRef(time2);
 		Call_Finish(action);
 		switch(action)
@@ -2945,7 +2945,7 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 			}
 			case Plugin_Changed:
 			{
-				strcopy(music, PLATFORM_MAX_PATH, sound2);
+				strcopy(music, sizeof(music), sound2);
 				time=time2;
 			}
 		}
@@ -3002,14 +3002,14 @@ public Action:Timer_MusicTheme(Handle:timer, any:userid)
 			Format(music, 10, "time%i", MusicIndex);
 			new Float:time=KvGetFloat(BossKV[Special[0]], music);
 			Format(music, 10, "path%i", MusicIndex);
-			KvGetString(BossKV[Special[0]], music, music, PLATFORM_MAX_PATH);
+			KvGetString(BossKV[Special[0]], music, music, sizeof(music));
 
 			new Action:action=Plugin_Continue;
 			Call_StartForward(OnMusic);
 			decl String:sound2[PLATFORM_MAX_PATH];
 			new Float:time2=time;
-			strcopy(sound2, PLATFORM_MAX_PATH, music);
-			Call_PushStringEx(sound2, PLATFORM_MAX_PATH, 0, SM_PARAM_COPYBACK);
+			strcopy(sound2, sizeof(sound2), music);
+			Call_PushStringEx(sound2, sizeof(sound2), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 			Call_PushFloatRef(time2);
 			Call_Finish(action);
 			switch(action)
@@ -3021,7 +3021,7 @@ public Action:Timer_MusicTheme(Handle:timer, any:userid)
 				}
 				case Plugin_Changed:
 				{
-					strcopy(music, PLATFORM_MAX_PATH, sound2);
+					strcopy(music, sizeof(music), sound2);
 					time=time2;
 				}
 			}
