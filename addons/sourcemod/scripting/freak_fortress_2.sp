@@ -3927,7 +3927,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 	if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
 	{
 		TF2_RemoveWeaponSlot(client, 4);
-		weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
+		SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
 	}
 
 	if(bMedieval)
@@ -3944,12 +3944,12 @@ public Action:CheckItems(Handle:timer, any:userid)
 			case 41:  //Natascha
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				weapon=SpawnWeapon(client, "tf_weapon_minigun", 15, 1, 0, "");
+				SpawnWeapon(client, "tf_weapon_minigun", 15, 1, 0, "");
 			}
 			case 237:  //Rocket Jumper
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				weapon=SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "114 ; 1");
+				SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "114 ; 1");
 					//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
 				FF2_SetAmmo(client, weapon, 20);
 			}
@@ -3974,7 +3974,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 			case 265:  //Stickybomb Jumper
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				weapon=SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
+				SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
 				FF2_SetAmmo(client, weapon, 24);
 			}
 		}
@@ -3999,7 +3999,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 	shield[client]=playerBack!=-1 ? playerBack : 0;
 	if(IsValidEntity(FindPlayerBack(client, 642)))  //Cozy Camper
 	{
-		weapon=SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
+		SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
 	}
 
 	#if defined _tf2attributes_included
@@ -4034,7 +4034,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 			case 43:  //KGB
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-				weapon=SpawnWeapon(client, "tf_weapon_fists", 239, 1, 6, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5");  //GRU
+				SpawnWeapon(client, "tf_weapon_fists", 239, 1, 6, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5");  //GRU
 					//1: -50% damage
 					//107: +50% move speed
 					//128: Only when weapon is active
@@ -4050,7 +4050,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 				if(!GetConVarBool(cvarEnableEurekaEffect))
 				{
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-					weapon=SpawnWeapon(client, "tf_weapon_wrench", 7, 1, 0, "");
+					SpawnWeapon(client, "tf_weapon_wrench", 7, 1, 0, "");
 				}
 			}
 		}
