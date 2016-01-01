@@ -3922,18 +3922,20 @@ public Action:CheckItems(Handle:timer, any:userid)
 	new index=-1;
 	new civilianCheck[MaxClients+1];
 
-	if(bMedieval)  //Make sure players can't stay cloaked forever in medieval mode
+	//Cloak and Dagger is NEVER allowed, even in Medieval mode
+	new weapon=GetPlayerWeaponSlot(client, 4);
+	if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
 	{
-		new weapon=GetPlayerWeaponSlot(client, 4);
-		if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
-		{
-			TF2_RemoveWeaponSlot(client, 4);
-			weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
-		}
+		TF2_RemoveWeaponSlot(client, 4);
+		weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
+	}
+
+	if(bMedieval)
+	{
 		return Plugin_Continue;
 	}
 
-	new weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
+	weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
 	if(weapon && IsValidEdict(weapon))
 	{
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
@@ -4056,13 +4058,6 @@ public Action:CheckItems(Handle:timer, any:userid)
 	else
 	{
 		civilianCheck[client]++;
-	}
-
-	weapon=GetPlayerWeaponSlot(client, 4);
-	if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
-	{
-		TF2_RemoveWeaponSlot(client, 4);
-		weapon=SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
 	}
 
 	if(civilianCheck[client]==3)
