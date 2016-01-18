@@ -7118,7 +7118,7 @@ stock bool:RandomSoundAbility(const String:sound[], String:file[], length, boss=
 ForceTeamWin(team)
 {
 	new entity=FindEntityByClassname2(-1, "team_control_point_master");
-	if(entity==-1)
+	if(!IsValidEntity(entity))
 	{
 		entity=CreateEntityByName("team_control_point_master");
 		DispatchSpawn(entity);
@@ -8934,7 +8934,7 @@ public OnEntityCreated(entity, const String:classname[])
 			healthBar=entity;
 		}
 
-		if(g_Monoculus==-1 && StrEqual(classname, MONOCULUS))
+		if(!IsValidEntity(g_Monoculus) && StrEqual(classname, MONOCULUS))
 		{
 			g_Monoculus=entity;
 		}
@@ -9009,7 +9009,7 @@ public CheckRoundState()
 FindHealthBar()
 {
 	healthBar=FindEntityByClassname(-1, HEALTHBAR_CLASS);
-	if(healthBar==-1)
+	if(!IsValidEntity(healthBar))
 	{
 		healthBar=CreateEntityByName(HEALTHBAR_CLASS);
 	}
@@ -9017,11 +9017,11 @@ FindHealthBar()
 
 public HealthbarEnableChanged(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	if(Enabled && GetConVarBool(cvarHealthBar) && healthBar!=-1)
+	if(Enabled && GetConVarBool(cvarHealthBar) && IsValidEntity(healthBar))
 	{
 		UpdateHealthBar();
 	}
-	else if(g_Monoculus==-1 && healthBar!=-1)
+	else if(!IsValidEntity(g_Monoculus) && IsValidEntity(healthBar))
 	{
 		SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, 0);
 	}
@@ -9029,7 +9029,7 @@ public HealthbarEnableChanged(Handle:convar, const String:oldValue[], const Stri
 
 UpdateHealthBar()
 {
-	if(!Enabled || !GetConVarBool(cvarHealthBar) || g_Monoculus!=-1 || CheckRoundState()==-1)
+	if(!Enabled || !GetConVarBool(cvarHealthBar) || IsValidEntity(g_Monoculus) || !IsValidEntity(healthBar) || CheckRoundState()==-1)
 	{
 		return;
 	}
