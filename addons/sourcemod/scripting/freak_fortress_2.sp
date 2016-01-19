@@ -6047,6 +6047,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						if(damagecustom==TF_CUSTOM_HEADSHOT)
 						{
 							damage=85.0;  //Final damage 255
+							return Plugin_Changed;
 						}
 					}
 					case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander
@@ -6169,6 +6170,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						if(GetEntProp(attacker, Prop_Send, "m_iRevengeCrits"))  //If a revenge crit was used, give a damage bonus
 						{
 							damage=85.0;  //255 final damage
+							return Plugin_Changed;
 						}
 					}
 					case 528:  //Short Circuit
@@ -6226,6 +6228,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						if(!TF2_IsPlayerInCondition(attacker, TFCond_CritMmmph))
 						{
 							damage/=2.0;
+							return Plugin_Changed;
 						}
 					}
 					case 1099:  //Tide Turner
