@@ -59,7 +59,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define MONOCULUS "eyeball_boss"
 #define DISABLED_PERKS "toxic,noclip,uber,ammo,instant,jump,tinyplayer"
 
-#define FF2_BOSSCONFIGS "configs/freak_fortress_2"
+#define FF2_CONFIGS "configs/freak_fortress_2"
 #define FF2_SETTINGS "data/freak_fortress_2"
 #define BOSS_CONFIG "characters.cfg"
 #define DOORS_CONFIG "doors.cfg"
@@ -1657,7 +1657,7 @@ public LoadCharacter(const String:characterName[])
 	new String:extensions[][]={".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd"};
 	decl String:config[PLATFORM_MAX_PATH];
 
-	BuildPath(Path_SM, config, sizeof(config), "%s/%s.cfg", FF2_BOSSCONFIGS, characterName);
+	BuildPath(Path_SM, config, sizeof(config), "%s/%s.cfg", FF2_CONFIGS, characterName);
 	if(!FileExists(config))
 	{
 		LogError("[FF2 Bosses] Character %s does not exist!", characterName);
