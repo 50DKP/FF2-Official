@@ -5334,24 +5334,35 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				firstBlood=false;
 			}
 
-			if(GetRandomInt(0, 1) && RandomSound("sound_hit", sound, sizeof(sound), boss))
+			if(RedAlivePlayers!=1)  //Don't conflict with end-of-round sounds
 			{
-				EmitSoundToAll(sound);
-				EmitSoundToAll(sound);
-			}
-			else if(!GetRandomInt(0, 2))  //1/3 chance for "sound_kill_<class>"
-			{
-				new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
-				decl String:class[32];
-				Format(class, sizeof(class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
-				if(RandomSound(class, sound, sizeof(sound), boss))
+				if(GetRandomInt(0, 1) && RandomSound("sound_hit", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAll(sound);
 					EmitSoundToAll(sound);
 				}
+				else if(!GetRandomInt(0, 2))  //1/3 chance for "sound_kill_<class>"
+				{
+					new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
+					decl String:class[32];
+					Format(class, sizeof(class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
+					if(RandomSound(class, sound, sizeof(sound), boss))
+					{
+						EmitSoundToAll(sound);
+						EmitSoundToAll(sound);
+					}
+				}
 			}
 
-			GetGameTime()<=KSpreeTimer[boss] ? (KSpreeCount[boss]+=1) : (KSpreeCount[boss]=1);  //Breaks if you do ++ or remove the parentheses...
+			if(GetGameTime()<=KSpreeTimer[boss])
+			{
+				KSpreeCount[boss]++;
+			}
+			else
+			{
+				KSpreeCount[boss]=1;
+			}
+
 			if(KSpreeCount[boss]==3)
 			{
 				if(RandomSound("sound_kspree", sound, sizeof(sound), boss))
