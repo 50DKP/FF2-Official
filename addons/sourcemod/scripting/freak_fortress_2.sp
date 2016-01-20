@@ -60,11 +60,13 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define DISABLED_PERKS "toxic,noclip,uber,ammo,instant,jump,tinyplayer"
 
 #define FF2_CONFIGS "configs/freak_fortress_2"
+#define FF2_SETTINGS "data/freak_fortress_2"
 #define BOSS_CONFIG "characters.cfg"
 #define DOORS_CONFIG "doors.cfg"
 #define WEAPONS_CONFIG "weapons.cfg"
+#define MAPS_CONFIG	"maps.cfg"
 
-#define CHANGELOG "data/ff2_changelog.txt"
+#define CHANGELOG "data/freak_fortress_2/ff2_changelog.txt"
 
 #if defined _steamtools_included
 new bool:steamtools;
@@ -1326,7 +1328,7 @@ public EnableFF2()
 	Enabled2=true;
 
 	new String:config[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, config, sizeof(config), "%s/%s", FF2_CONFIGS, WEAPONS_CONFIG);
+	BuildPath(Path_SM, config, sizeof(config), "%s/%s", FF2_SETTINGS, WEAPONS_CONFIG);
 
 	if(kvWeaponMods!=INVALID_HANDLE)
 	{
@@ -1462,7 +1464,7 @@ public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
 {
 	decl String:config[PLATFORM_MAX_PATH], String:key[4], String:charset[42];
 	Specials=0;
-	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "%s/%s", FF2_SETTINGS, BOSS_CONFIG);
 
 	if(!FileExists(config))
 	{
@@ -1655,7 +1657,7 @@ public LoadCharacter(const String:characterName[])
 	new String:extensions[][]={".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd"};
 	decl String:config[PLATFORM_MAX_PATH];
 
-	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/%s.cfg", characterName);
+	BuildPath(Path_SM, config, sizeof(config), "%s/%s.cfg", FF2_CONFIGS, characterName);
 	if(!FileExists(config))
 	{
 		LogError("[FF2 Bosses] Character %s does not exist!", characterName);
@@ -1989,7 +1991,7 @@ stock bool:IsFF2Map()
 		return true;
 	}
 
-	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/maps.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "%s/%s", FF2_SETTINGS, MAPS_CONFIG);
 	if(!FileExists(config))
 	{
 		LogError("[FF2] Unable to find %s, disabling plugin.", config);
@@ -2065,7 +2067,7 @@ stock bool:CheckToChangeMapDoors()
 
 	decl String:config[PLATFORM_MAX_PATH];
 	checkDoors=false;
-	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/doors.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "%s/%s", FF2_SETTINGS, DOORS_CONFIG);
 	if(!FileExists(config))
 	{
 		if(!strncmp(currentmap, "vsh_lolcano_pb1", 15, false))
@@ -4632,7 +4634,7 @@ public Action:Command_Charset(client, args)
 	ImplodeStrings(rawText, amount, " ", charset, sizeof(charset));
 
 	decl String:config[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "%s/%s", FF2_SETTINGS, BOSS_CONFIG);
 
 	new Handle:Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, config);
@@ -8319,7 +8321,7 @@ public Action:Timer_DisplayCharsetVote(Handle:timer)
 	SetMenuTitle(menu, "%t", "Vote for Character Set");  //"Please vote for the character set for the next map."
 
 	decl String:config[PLATFORM_MAX_PATH], String:charset[64];
-	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "%s/%s", FF2_SETTINGS, BOSS_CONFIG);
 
 	new Handle:Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, config);
