@@ -346,16 +346,17 @@ native FF2_StartMusic(client=0);
 native FF2_StopMusic(client=0);
 
 /**
- * Starts a random Boss sound from its config file
+ * Finds a random Boss sound from its config file
  *
- * @param kv            Name of sound container
- * @param sound         Buffer for result sound path
+ * @param sound         Sound string to look for
+ * @param file          Buffer for sound file
  * @param length        Length of sound
  * @param boss          Boss's index
- * @param slot          Only for "sound_ability" - slot of ability
- * @return              True if sound has been found, false otherwise
+ * @param ability       True if the sound should be played for abilities
+ * @param slot          Slot of ability - only checked if 'ability' is true
+ * @return              True if a sound was found, false otherwise
  */
-native bool:FF2_RandomSound(const String:kv[], String:sound[], length, boss=0, slot=0);
+native bool:FF2_FindSound(const String:sound[], String:file[], length, boss=0, bool:ability=false, slot=0);
 
 /**
  * Gets a client's glow timer

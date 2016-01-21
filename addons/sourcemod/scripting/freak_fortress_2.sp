@@ -65,8 +65,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define DOORS_CONFIG "doors.cfg"
 #define WEAPONS_CONFIG "weapons.cfg"
 #define MAPS_CONFIG	"maps.cfg"
-
-#define CHANGELOG "data/freak_fortress_2/ff2_changelog.txt"
+#define CHANGELOG "ff2_changelog.txt"
 
 #if defined _steamtools_included
 new bool:steamtools;
@@ -1037,7 +1036,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_SetQueuePoints", Native_SetQueuePoints);
 	CreateNative("FF2_StartMusic", Native_StartMusic);
 	CreateNative("FF2_StopMusic", Native_StopMusic);
-	CreateNative("FF2_RandomSound", Native_RandomSound);
+	CreateNative("FF2_FindSound", Native_FindSound);
 	CreateNative("FF2_GetClientGlow", Native_GetClientGlow);
 	CreateNative("FF2_SetClientGlow", Native_SetClientGlow);
 	CreateNative("FF2_Debug", Native_Debug);
@@ -2482,7 +2481,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	if((TFTeam:GetEventInt(event, "team")==BossTeam))
 	{
 		bossWin=true;
-		if(RandomSound("sound_win", sound, sizeof(sound)))
+		if(FindSound("win", sound, sizeof(sound)))
 		{
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
@@ -2548,7 +2547,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			}
 		}
 
-		if(!bossWin && RandomSound("sound_fail", sound, sizeof(sound), boss))
+		if(!bossWin && FindSound("fail", sound, sizeof(sound), boss))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
@@ -2732,7 +2731,7 @@ public Action:Timer_CalcQueuePoints(Handle:timer)
 public Action:StartResponseTimer(Handle:timer)
 {
 	decl String:sound[PLATFORM_MAX_PATH];
-	if(RandomSound("sound_begin", sound, sizeof(sound)))
+	if(FindSound("begin", sound, sizeof(sound)))
 	{
 		EmitSoundToAll(sound);
 		EmitSoundToAll(sound);
@@ -4332,7 +4331,7 @@ public Action:OnObjectDestroyed(Handle:event, const String:name[], bool:dontBroa
 		if(!GetRandomInt(0, 2) && IsBoss(attacker))
 		{
 			decl String:sound[PLATFORM_MAX_PATH];
-			if(RandomSound("sound_kill_buildable", sound, sizeof(sound)))
+			if(FindSound("kill_buildable", sound, sizeof(sound)))
 			{
 				EmitSoundToAll(sound);
 				EmitSoundToAll(sound);
@@ -5128,7 +5127,7 @@ public Action:BossTimer(Handle:timer)
 				FF2_ShowSyncHudText(client, rageHUD, "%t", "Activate Rage");
 
 				decl String:sound[PLATFORM_MAX_PATH];
-				if(RandomSound("sound_full_rage", sound, sizeof(sound), boss) && emitRageSound[boss])
+				if(FindSound("full_rage", sound, sizeof(sound), boss) && emitRageSound[boss])
 				{
 					new Float:position[3];
 					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
@@ -5407,7 +5406,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 
 		decl String:sound[PLATFORM_MAX_PATH];
-		if(RandomSoundAbility("sound_ability", sound, sizeof(sound), boss))
+		if(FindSound("ability", sound, sizeof(sound), boss, true))
 		{
 			FF2Flags[Boss[boss]]|=FF2FLAG_TALKING;
 			EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
@@ -5537,7 +5536,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			new boss=GetBossIndex(attacker);
 			if(firstBlood)  //TF_DEATHFLAG_FIRSTBLOOD is broken
 			{
-				if(RandomSound("sound_first_blood", sound, sizeof(sound), boss))
+				if(FindSound("first_blood", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAll(sound);
 					EmitSoundToAll(sound);
@@ -5547,7 +5546,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 			if(RedAlivePlayers!=1)  //Don't conflict with end-of-round sounds
 			{
-				if(GetRandomInt(0, 1) && RandomSound("sound_hit", sound, sizeof(sound), boss))
+				if(GetRandomInt(0, 1) && FindSound("hit", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAll(sound);
 					EmitSoundToAll(sound);
@@ -5556,8 +5555,8 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				{
 					new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
 					decl String:class[32];
-					Format(class, sizeof(class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
-					if(RandomSound(class, sound, sizeof(sound), boss))
+					Format(class, sizeof(class), "kill_%s", classnames[TF2_GetPlayerClass(client)]);
+					if(FindSound(class, sound, sizeof(sound), boss))
 					{
 						EmitSoundToAll(sound);
 						EmitSoundToAll(sound);
@@ -5576,7 +5575,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 			if(KSpreeCount[boss]==3)
 			{
-				if(RandomSound("sound_kspree", sound, sizeof(sound), boss))
+				if(FindSound("kspree", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAll(sound);
 					EmitSoundToAll(sound);
@@ -5597,7 +5596,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			return Plugin_Continue;
 		}
 
-		if(RandomSound("sound_death", sound, sizeof(sound), boss))
+		if(FindSound("death", sound, sizeof(sound), boss))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
@@ -5734,7 +5733,7 @@ public Action:CheckAlivePlayers(Handle:timer)
 	else if(RedAlivePlayers==1 && BlueAlivePlayers && Boss[0] && !DrawGameTimer)
 	{
 		decl String:sound[PLATFORM_MAX_PATH];
-		if(RandomSound("sound_lastman", sound, sizeof(sound)))
+		if(FindSound("lastman", sound, sizeof(sound)))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
@@ -6332,7 +6331,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 					}
 
 					decl String:sound[PLATFORM_MAX_PATH];
-					if(RandomSound("sound_stabbed", sound, sizeof(sound), boss))
+					if(FindSound("stabbed", sound, sizeof(sound), boss))
 					{
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
@@ -6557,12 +6556,12 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 					}
 				}
 
-				if(BossLives[boss]==1 && RandomSound("sound_last_life", ability, sizeof(ability), boss))
+				if(BossLives[boss]==1 && FindSound("last_life", ability, sizeof(ability), boss))
 				{
 					EmitSoundToAll(ability);
 					EmitSoundToAll(ability);
 				}
-				else if(RandomSound("sound_nextlife", ability, sizeof(ability), boss))
+				else if(FindSound("nextlife", ability, sizeof(ability), boss))
 				{
 					EmitSoundToAll(ability);
 					EmitSoundToAll(ability);
@@ -7157,7 +7156,7 @@ stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abi
 	}
 }
 
-stock bool:RandomSound(const String:sound[], String:file[], length, boss=0)
+stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:ability=false, slot=0)
 {
 	if(boss<0 || character[boss]<0 || !BossKV[character[boss]])
 	{
@@ -7165,74 +7164,32 @@ stock bool:RandomSound(const String:sound[], String:file[], length, boss=0)
 	}
 
 	KvRewind(BossKV[character[boss]]);
-	if(!KvJumpToKey(BossKV[character[boss]], sound))
+	if(!KvJumpToKey(BossKV[character[boss]], "sounds"))
 	{
 		KvRewind(BossKV[character[boss]]);
-		return false;  //Requested sound not implemented for this boss
+		return false;  //Boss doesn't have any sounds
 	}
 
-	decl String:key[4];
-	new sounds;
-	while(++sounds)  //Just keep looping until there's no keys left
+	new i;
+	decl String:sounds[MAXRANDOMS][PLATFORM_MAX_PATH];
+	while(KvGotoNextKey(BossKV[character[boss]]))  //Just keep looping until there's no keys left
 	{
-		IntToString(sounds, key, sizeof(key));
-		KvGetString(BossKV[character[boss]], key, file, length);
-		if(!file[0])
+		if(KvGetNum(BossKV[character[boss]], sound))
 		{
-			sounds--;  //This sound wasn't valid, so don't include it
-			break;  //Assume that there's no more sounds
+			if(!ability || KvGetNum(BossKV[character[boss]], "slot")==slot)
+			{
+				KvGetSectionName(BossKV[character[boss]], sounds[i], PLATFORM_MAX_PATH);
+				i++;
+			}
 		}
 	}
 
-	if(!sounds)
+	if(!i)
 	{
-		return false;  //Found sound, but no sounds inside of it
+		return false;  //No sounds matching what we want
 	}
 
-	IntToString(GetRandomInt(1, sounds), key, sizeof(key));
-	KvGetString(BossKV[character[boss]], key, file, length);  //Populate file
-	return true;
-}
-
-stock bool:RandomSoundAbility(const String:sound[], String:file[], length, boss=0, slot=0)
-{
-	if(boss<0 || character[boss]<0 || !BossKV[character[boss]])
-	{
-		return false;
-	}
-
-	KvRewind(BossKV[character[boss]]);
-	if(!KvJumpToKey(BossKV[character[boss]], sound))
-	{
-		return false;  //Sound doesn't exist
-	}
-
-	decl String:key[10];
-	new sounds, matches, match[MAXRANDOMS];
-	while(++sounds)
-	{
-		IntToString(sounds, key, 4);
-		KvGetString(BossKV[character[boss]], key, file, length);
-		if(!file[0])
-		{
-			break;  //Assume that there's no more sounds
-		}
-
-		Format(key, sizeof(key), "slot%i", sounds);
-		if(KvGetNum(BossKV[character[boss]], key, 0)==slot)
-		{
-			match[matches]=sounds;  //Found a match: let's store it in the array
-			matches++;
-		}
-	}
-
-	if(!matches)
-	{
-		return false;  //Found sound, but no sounds inside of it
-	}
-
-	IntToString(match[GetRandomInt(0, matches-1)], key, 4);
-	KvGetString(BossKV[character[boss]], key, file, length);  //Populate file
+	strcopy(file, length, sounds[GetRandomInt(0, i-1)]);
 	return true;
 }
 
@@ -8231,7 +8188,7 @@ public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH
 	if(channel==SNDCHAN_VOICE && !(FF2Flags[Boss[boss]] & FF2FLAG_TALKING))
 	{
 		decl String:newSound[PLATFORM_MAX_PATH];
-		if(RandomSound("catch_phrase", newSound, sizeof(newSound), boss))
+		if(FindSound("catch_phrase", newSound, sizeof(newSound), boss))
 		{
 			strcopy(sound, sizeof(sound), newSound);
 			return Plugin_Changed;
@@ -8983,28 +8940,14 @@ public Native_StopMusic(Handle:plugin, numParams)
 	StopMusic(GetNativeCell(1));
 }
 
-public bool:ReturnRandomSound(const String:kv[], String:sound[], length, boss, slot)
-{
-	new bool:soundExists;
-	if(StrEqual(kv, "sound_ability"))
-	{
-		soundExists=RandomSoundAbility(kv, sound, length, boss, slot);
-	}
-	else
-	{
-		soundExists=RandomSound(kv, sound, length, boss);
-	}
-	return soundExists;
-}
-
-public Native_RandomSound(Handle:plugin, numParams)
+public Native_FindSound(Handle:plugin, numParams)
 {
 	decl String:kv[64];
 	GetNativeString(1, kv, sizeof(kv));
 
 	new length=GetNativeCell(3);
 	decl String:sound[length];
-	new bool:soundExists=ReturnRandomSound(kv, sound, length, GetNativeCell(4), GetNativeCell(5));
+	new bool:soundExists=FindSound(kv, sound, length, GetNativeCell(4), bool:GetNativeCell(5), GetNativeCell(6));
 	SetNativeString(2, sound, length);
 	return soundExists;
 }
