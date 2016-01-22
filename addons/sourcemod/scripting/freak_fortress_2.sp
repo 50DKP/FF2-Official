@@ -1769,68 +1769,45 @@ public LoadCharacter(const String:characterName[])
 
 public PrecacheCharacter(characterIndex)
 {
-	decl String:file[PLATFORM_MAX_PATH], String:filePath[PLATFORM_MAX_PATH], String:key[8], String:section[16], String:bossName[64];
+	decl String:file[PLATFORM_MAX_PATH], String:bossName[64];
 	KvRewind(BossKV[characterIndex]);
 	KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
 	KvGotoFirstSubKey(BossKV[characterIndex]);
-	while(KvGotoNextKey(BossKV[characterIndex]))
-	{
-		KvGetSectionName(BossKV[characterIndex], section, sizeof(section));
-		if(StrEqual(section, "sound_bgm"))
-		{
-			for(new i=1; ; i++)
-			{
-				Format(key, sizeof(key), "path%d", i);
-				KvGetString(BossKV[characterIndex], key, file, sizeof(file));
-				if(!file[0])
-				{
-					break;
-				}
 
-				Format(filePath, sizeof(filePath), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
-				if(FileExists(filePath, true))
+	if(KvJumpToKey(BossKV[characterIndex], "sounds"))
+	{
+		while(KvGotoNextKey(BossKV[characterIndex]))
+		{
+			if(KvGetNum(BossKV[characterIndex], "precache") || KvGetNum(BossKV[characterIndex], "time"))
+			{
+				KvGetSectionName(BossKV[characterIndex], file, sizeof(file));
+				Format(file, sizeof(file), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
+				if(FileExists(file, true))
 				{
 					PrecacheSound(file);
 				}
 				else
 				{
-					LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", bossName, file);
 				}
 			}
 		}
-		else if(StrEqual(section, "mod_precache") || !StrContains(section, "sound_") || StrEqual(section, "catch_phrase"))
-		{
-			for(new i=1; ; i++)
-			{
-				IntToString(i, key, sizeof(key));
-				KvGetString(BossKV[characterIndex], key, file, sizeof(file));
-				if(!file[0])
-				{
-					break;
-				}
+	}
 
-				if(StrEqual(section, "mod_precache"))
+	if(KvJumpToKey(BossKV[characterIndex], "downloads"))
+	{
+		while(KvGotoNextKey(BossKV[characterIndex]))
+		{
+			if(KvGetNum(BossKV[characterIndex], "precache"))
+			{
+				KvGetSectionName(BossKV[characterIndex], file, sizeof(file));
+				if(FileExists(file, true))
 				{
-					if(FileExists(file, true))
-					{
-						PrecacheModel(file);
-					}
-					else
-					{
-						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
-					}
+					PrecacheSound(file);
 				}
 				else
 				{
-					Format(filePath, sizeof(filePath), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
-					if(FileExists(filePath, true))
-					{
-						PrecacheSound(file);
-					}
-					else
-					{
-						LogError("[FF2 Bosses] Character %s is missing file '%s' in section '%s'!", bossName, filePath, section);
-					}
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", bossName, file);
 				}
 			}
 		}
