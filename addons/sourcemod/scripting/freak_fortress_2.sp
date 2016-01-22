@@ -1803,7 +1803,7 @@ public PrecacheCharacter(characterIndex)
 				KvGetSectionName(BossKV[characterIndex], file, sizeof(file));
 				if(FileExists(file, true))
 				{
-					PrecacheSound(file);
+					PrecacheModel(file);
 				}
 				else
 				{
