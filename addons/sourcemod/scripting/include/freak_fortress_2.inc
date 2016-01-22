@@ -637,7 +637,7 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_SetQueuePoints");
 	MarkNativeAsOptional("FF2_StartMusic");
 	MarkNativeAsOptional("FF2_StopMusic");
-	MarkNativeAsOptional("FF2_RandomSound");
+	MarkNativeAsOptional("FF2_FindSound");
 	MarkNativeAsOptional("FF2_GetClientGlow");
 	MarkNativeAsOptional("FF2_SetClientGlow");
 	MarkNativeAsOptional("FF2_Debug");
