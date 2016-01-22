@@ -1653,9 +1653,7 @@ DisableSubPlugins(bool:force=false)
 
 public LoadCharacter(const String:characterName[])
 {
-	new String:extensions[][]={".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd"};
 	decl String:config[PLATFORM_MAX_PATH];
-
 	BuildPath(Path_SM, config, sizeof(config), "%s/%s.cfg", FF2_CONFIGS, characterName);
 	if(!FileExists(config))
 	{
@@ -1688,7 +1686,8 @@ public LoadCharacter(const String:characterName[])
 	}
 	KvRewind(BossKV[Specials]);
 
-	decl String:key[PLATFORM_MAX_PATH], String:section[64];
+	decl String:file[PLATFORM_MAX_PATH], String:section[64];
+	new String:extensions[][]={".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd"};
 	KvSetString(BossKV[Specials], "filename", characterName);
 	KvGetString(BossKV[Specials], "name", config, sizeof(config));
 	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "sound_block_vo", 0);
@@ -1699,79 +1698,68 @@ public LoadCharacter(const String:characterName[])
 	while(KvGotoNextKey(BossKV[Specials]))
 	{
 		KvGetSectionName(BossKV[Specials], section, sizeof(section));
-		if(StrEqual(section, "download"))
+		if(StrEqual(section, "downloads"))
 		{
-			for(new i=1; ; i++)
+			while(KvGotoNextKey(BossKV[Specials]))
 			{
-				IntToString(i, key, sizeof(key));
-				KvGetString(BossKV[Specials], key, config, sizeof(config));
-				if(!config[0])
+				KvGetSectionName(BossKV[Specials], file, sizeof(file));
+				if(KvGetNum(BossKV[Specials], "model"))
 				{
-					break;
-				}
-
-				if(FileExists(config, true))
-				{
-					AddFileToDownloadsTable(config);
-				}
-				else
-				{
-					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, config);
-				}
-			}
-		}
-		else if(StrEqual(section, "mod_download"))
-		{
-			for(new i=1; ; i++)
-			{
-				IntToString(i, key, sizeof(key));
-				KvGetString(BossKV[Specials], key, config, sizeof(config));
-				if(!config[0])
-				{
-					break;
-				}
-
-				for(new extension; extension<sizeof(extensions); extension++)
-				{
-					Format(key, sizeof(key), "%s%s", config, extensions[extension]);
-					if(FileExists(key, true))
+					for(new extension; extension<sizeof(extensions); extension++)
 					{
-						AddFileToDownloadsTable(key);
+						Format(file, sizeof(file), "%s%s", file, extensions[extension]);
+						if(FileExists(file, true))
+						{
+							AddFileToDownloadsTable(file);
+						}
+						else
+						{
+							LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, file);
+						}
+					}
+
+					if(KvGetNum(BossKV[Specials], "phy"))
+					{
+						Format(file, sizeof(file), "%s.phy", file);
+						if(FileExists(file, true))
+						{
+							AddFileToDownloadsTable(file);
+						}
+						else
+						{
+							LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, file);
+						}
+					}
+				}
+				else if(KvGetNum(BossKV[Specials], "material"))
+				{
+					Format(file, sizeof(file), "%s.vmt", file);
+					if(FileExists(file, true))
+					{
+						AddFileToDownloadsTable(file);
 					}
 					else
 					{
-						LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
+						LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, file);
+					}
+
+					Format(file, sizeof(file), "%s.vtf", file);
+					if(FileExists(file, true))
+					{
+						AddFileToDownloadsTable(file);
+					}
+					else
+					{
+						LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, file);
 					}
 				}
-			}
-		}
-		else if(StrEqual(section, "mat_download"))
-		{
-			for(new i=1; ; i++)
-			{
-				IntToString(i, key, sizeof(key));
-				KvGetString(BossKV[Specials], key, config, sizeof(config));
-				if(!config[0])
+				else if(FileExists(file, true))
 				{
-					break;
-				}
-				Format(key, sizeof(key), "%s.vtf", config);
-				if(FileExists(key, true))
-				{
-					AddFileToDownloadsTable(key);
+					AddFileToDownloadsTable(file);
 				}
 				else
 				{
-					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
-				}
-				Format(key, sizeof(key), "%s.vmt", config);
-				if(FileExists(key, true))
-				{
-					AddFileToDownloadsTable(key);
-				}
-				else
-				{
-					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, key);
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", character, file);
 				}
 			}
 		}
