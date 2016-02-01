@@ -2899,7 +2899,7 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 		return Plugin_Continue;
 	}
 
-	if(timer!=INVALID_HANDLE && MapHasMusic())
+	if(!client && MapHasMusic())
 	{
 		MusicIndex=-1;
 		KillTimer(MusicTimer[client]);
@@ -8707,7 +8707,8 @@ public Native_GetSpecialKV(Handle:plugin, numParams)
 
 public Native_StartMusic(Handle:plugin, numParams)
 {
-	Timer_PlayBGM(INVALID_HANDLE, GetClientUserId(GetNativeCell(1)));  //TODO: Rework so that it doesn't need to directly call the timer
+	new client=GetNativeCell(1);
+	MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Native_StopMusic(Handle:plugin, numParams)
