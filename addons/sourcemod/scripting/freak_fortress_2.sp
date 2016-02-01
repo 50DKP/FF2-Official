@@ -8707,7 +8707,7 @@ public Native_GetSpecialKV(Handle:plugin, numParams)
 
 public Native_StartMusic(Handle:plugin, numParams)
 {
-	Timer_PlayBGM(INVALID_HANDLE, GetNativeCell(1));
+	Timer_PlayBGM(INVALID_HANDLE, GetClientUserId(GetNativeCell(1)));  //TODO: Rework so that it doesn't need to directly call the timer
 }
 
 public Native_StopMusic(Handle:plugin, numParams)
