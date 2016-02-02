@@ -2894,16 +2894,22 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 	new client=GetClientOfUserId(userid);
 	if(CheckRoundState()!=1)
 	{
-		KillTimer(MusicTimer[client]);
-		MusicTimer[client]=INVALID_HANDLE;
+		if(MusicTimer[client]!=INVALID_HANDLE)
+		{
+			KillTimer(MusicTimer[client]);
+			MusicTimer[client]=INVALID_HANDLE;
+		}
 		return Plugin_Continue;
 	}
 
 	if(!client && MapHasMusic())
 	{
 		MusicIndex=-1;
-		KillTimer(MusicTimer[client]);
-		MusicTimer[client]=INVALID_HANDLE;
+		if(MusicTimer[client]!=INVALID_HANDLE)
+		{
+			KillTimer(MusicTimer[client]);
+			MusicTimer[client]=INVALID_HANDLE;
+		}
 		return Plugin_Continue;
 	}
 
@@ -2927,10 +2933,10 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 
 		new Action:action=Plugin_Continue;
 		Call_StartForward(OnMusic);
-		decl String:sound2[PLATFORM_MAX_PATH];
+		decl String:temp[PLATFORM_MAX_PATH];
 		new Float:time2=time;
-		strcopy(sound2, sizeof(sound2), music);
-		Call_PushStringEx(sound2, sizeof(sound2), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		strcopy(temp, sizeof(temp), music);
+		Call_PushStringEx(temp, sizeof(temp), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_PushFloatRef(time2);
 		Call_Finish(action);
 		switch(action)
@@ -2942,12 +2948,13 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 			}
 			case Plugin_Changed:
 			{
-				strcopy(music, sizeof(music), sound2);
+				strcopy(music, sizeof(music), temp);
 				time=time2;
 			}
 		}
 
-		if(FileExists(music, true))
+		Format(temp, sizeof(temp), "sound/%s", music);
+		if(FileExists(temp, true))
 		{
 			if(!client)
 			{
@@ -2998,8 +3005,11 @@ StopMusic(target=0)
 					StopSound(target, SNDCHAN_AUTO, music);
 				}
 
-				KillTimer(MusicTimer[target]);
-				MusicTimer[target]=INVALID_HANDLE;
+				if(MusicTimer[target]!=INVALID_HANDLE)
+				{
+					KillTimer(MusicTimer[target]);
+					MusicTimer[target]=INVALID_HANDLE;
+				}
 			}
 		}
 		else
@@ -3007,8 +3017,11 @@ StopMusic(target=0)
 			StopSound(target, SNDCHAN_AUTO, music);
 			StopSound(target, SNDCHAN_AUTO, music);
 
-			KillTimer(MusicTimer[target]);
-			MusicTimer[target]=INVALID_HANDLE;
+			if(MusicTimer[target]!=INVALID_HANDLE)
+			{
+				KillTimer(MusicTimer[target]);
+				MusicTimer[target]=INVALID_HANDLE;
+			}
 		}
 	}
 }
