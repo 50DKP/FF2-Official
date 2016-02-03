@@ -292,6 +292,7 @@ native bool:FF2_RandomSound(const String:keyvalue[], String:buffer[], bufferLeng
  * Starts the Boss's music for the specified clients
  *
  * @param client	Client's index (0 for all clients)
+ * @noreturn
  */
 native FF2_StartMusic(client=0);
 
