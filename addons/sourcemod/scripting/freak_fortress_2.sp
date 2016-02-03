@@ -2899,8 +2899,7 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 		{
 			case Plugin_Stop, Plugin_Handled:
 			{
-				strcopy(music, sizeof(music), "");
-				time=-1.0;
+				return Plugin_Stop;
 			}
 			case Plugin_Changed:
 			{
