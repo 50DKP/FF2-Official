@@ -80,13 +80,14 @@ new BlueAlivePlayers;
 new RoundCount;
 new character[MAXPLAYERS+1];
 new Incoming[MAXPLAYERS+1];
-new MusicIndex;
 
 new Damage[MAXPLAYERS+1];
 new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
+
+new String:currentBGM[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
 new FF2Flags[MAXPLAYERS+1];
 
@@ -162,7 +163,7 @@ new bool:bossTeleportation=true;
 new shieldCrits;
 new allowedDetonations;
 
-new Handle:MusicTimer;
+new Handle:MusicTimer[MAXPLAYERS+1];
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
 new Handle:DrawGameTimer;
 new Handle:doorCheckTimer;
@@ -1305,7 +1306,25 @@ public OnConfigsExecuted()
 
 public OnMapStart()
 {
+	HPTime=0.0;
+	doorCheckTimer=INVALID_HANDLE;
 	RoundCount=0;
+	for(new client; client<=MaxClients; client++)
+	{
+		KSpreeTimer[client]=0.0;
+		FF2Flags[client]=0;
+		Incoming[client]=-1;
+		MusicTimer[client]=INVALID_HANDLE;
+	}
+
+	for(new specials; specials<MAXSPECIALS; specials++)
+	{
+		if(BossKV[specials]!=INVALID_HANDLE)
+		{
+			CloseHandle(BossKV[specials]);
+			BossKV[specials]=INVALID_HANDLE;
+		}
+	}
 }
 
 public OnMapEnd()
@@ -1412,40 +1431,27 @@ public DisableFF2()
 	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), tf_feign_death_damage_scale);
 	SetConVarFloat(FindConVar("tf_stealth_damage_reduction"), tf_stealth_damage_reduction);
 
-	HPTime=0.0;
-
 	if(doorCheckTimer!=INVALID_HANDLE)
 	{
 		KillTimer(doorCheckTimer);
 		doorCheckTimer=INVALID_HANDLE;
 	}
 
-	if(MusicTimer!=INVALID_HANDLE)
+	for(new client=1; client<=MaxClients; client++)
 	{
-		KillTimer(MusicTimer);
-		MusicTimer=INVALID_HANDLE;
-	}
-
-	for(new boss; boss<=MaxClients; boss++)
-	{
-		Boss[boss]=0;
-		character[boss]=-1;
-		KSpreeTimer[boss]=0.0;
-		FF2Flags[boss]=0;
-		Incoming[boss]=-1;
-		if(BossInfoTimer[boss][1]!=INVALID_HANDLE)
+		if(IsValidClient(client))
 		{
-			KillTimer(BossInfoTimer[boss][1]);
-			BossInfoTimer[boss][1]=INVALID_HANDLE;
+			if(BossInfoTimer[client][1]!=INVALID_HANDLE)
+			{
+				KillTimer(BossInfoTimer[client][1]);
+				BossInfoTimer[client][1]=INVALID_HANDLE;
+			}
 		}
-	}
 
-	for(new characters; characters<=MAXSPECIALS; characters++)
-	{
-		if(BossKV[characters]!=INVALID_HANDLE)
+		if(MusicTimer[client]!=INVALID_HANDLE)
 		{
-			CloseHandle(BossKV[characters]);
-			BossKV[characters]=INVALID_HANDLE;
+			KillTimer(MusicTimer[client]);
+			MusicTimer[client]=INVALID_HANDLE;
 		}
 	}
 
@@ -2454,11 +2460,6 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 
 	StopMusic();
-	if(MusicTimer!=INVALID_HANDLE)
-	{
-		KillTimer(MusicTimer);
-		MusicTimer=INVALID_HANDLE;
-	}
 	DrawGameTimer=INVALID_HANDLE;
 
 	new bool:isBossAlive;
@@ -2747,7 +2748,7 @@ public Action:StartBossTimer(Handle:timer)
 	CreateTimer(0.2, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, StartRound, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, ClientTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(2.0, Timer_MusicPlay, 0, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(2.0, Timer_PlayBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 
 	if(!PointType)
 	{
@@ -2756,49 +2757,39 @@ public Action:StartBossTimer(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:Timer_MusicPlay(Handle:timer, any:client)
+public Action:Timer_PlayBGM(Handle:timer, any:userid)
 {
-	if(CheckRoundState()!=FF2RoundState_RoundRunning)
+	new client=GetClientOfUserId(userid);
+	if(CheckRoundState()!=FF2RoundState_RoundRunning || (!client && MapHasMusic()))
 	{
-		return Plugin_Continue;
-	}
-
-	if(MusicTimer!=INVALID_HANDLE)
-	{
-		KillTimer(MusicTimer);
-		MusicTimer=INVALID_HANDLE;
-	}
-
-	if(timer!=INVALID_HANDLE && MapHasMusic())
-	{
-		MusicIndex=-1;
-		return Plugin_Continue;
+		MusicTimer[client]=INVALID_HANDLE;
+		return Plugin_Stop;
 	}
 
 	KvRewind(BossKV[character[0]]);
 	if(KvJumpToKey(BossKV[character[0]], "sound_bgm"))
 	{
 		decl String:music[PLATFORM_MAX_PATH];
-		MusicIndex=0;
+		new index;
 		do
 		{
-			MusicIndex++;
-			Format(music, 10, "time%i", MusicIndex);
+			index++;
+			Format(music, 10, "time%i", index);
 		}
-		while(KvGetFloat(BossKV[character[0]], music, 0.0)>1);
+		while(KvGetFloat(BossKV[character[0]], music)>1);
 
-		MusicIndex=GetRandomInt(1, MusicIndex-1);
-		Format(music, 10, "time%i", MusicIndex);
+		index=GetRandomInt(1, index-1);
+		Format(music, 10, "time%i", index);
 		new Float:time=KvGetFloat(BossKV[character[0]], music);
-		Format(music, 10, "path%i", MusicIndex);
+		Format(music, 10, "path%i", index);
 		KvGetString(BossKV[character[0]], music, music, sizeof(music));
 
 		new Action:action;
 		Call_StartForward(OnMusic);
-		decl String:sound2[PLATFORM_MAX_PATH];
+		decl String:temp[PLATFORM_MAX_PATH];
 		new Float:time2=time;
-		strcopy(sound2, sizeof(sound2), music);
-		Call_PushStringEx(sound2, sizeof(sound2), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		strcopy(temp, sizeof(temp), music);
+		Call_PushStringEx(temp, sizeof(temp), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_PushFloatRef(time2);
 		Call_Finish(action);
 		switch(action)
@@ -2810,142 +2801,75 @@ public Action:Timer_MusicPlay(Handle:timer, any:client)
 			}
 			case Plugin_Changed:
 			{
-				strcopy(music, sizeof(music), sound2);
+				strcopy(music, sizeof(music), temp);
 				time=time2;
 			}
 		}
 
-		if(strlen(music[0])>5)
+		Format(temp, sizeof(temp), "sound/%s", music);
+		if(FileExists(temp, true))
 		{
 			if(!client)
 			{
+				for(new target; target<=MaxClients; target++)
+				{
+					strcopy(currentBGM[target], PLATFORM_MAX_PATH, music);
+				}
 				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music);
 			}
 			else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 			{
+				strcopy(currentBGM[client], PLATFORM_MAX_PATH, music);
 				EmitSoundToClient(client, music);
-			}
-
-			new userid;
-			if(!client)
-			{
-				userid=0;
-			}
-			else
-			{
-				userid=GetClientUserId(client);
 			}
 
 			if(time>1)
 			{
-				MusicTimer=CreateTimer(time, Timer_MusicTheme, userid, TIMER_FLAG_NO_MAPCHANGE);
-			}
-		}
-	}
-	return Plugin_Continue;
-}
-
-public Action:Timer_MusicTheme(Handle:timer, any:userid)
-{
-	MusicTimer=INVALID_HANDLE;
-	if(Enabled && CheckRoundState()==FF2RoundState_RoundRunning)
-	{
-		KvRewind(BossKV[character[0]]);
-		if(KvJumpToKey(BossKV[character[0]], "sound_bgm"))
-		{
-			new client=GetClientOfUserId(userid);
-			decl String:music[PLATFORM_MAX_PATH];
-			MusicIndex=0;
-			do
-			{
-				MusicIndex++;
-				Format(music, 10, "time%i", MusicIndex);
-			}
-			while(KvGetFloat(BossKV[character[0]], music)>1);
-
-			MusicIndex=GetRandomInt(1, MusicIndex-1);
-			Format(music, 10, "time%i", MusicIndex);
-			new Float:time=KvGetFloat(BossKV[character[0]], music);
-			Format(music, 10, "path%i", MusicIndex);
-			KvGetString(BossKV[character[0]], music, music, sizeof(music));
-
-			new Action:action;
-			Call_StartForward(OnMusic);
-			decl String:sound2[PLATFORM_MAX_PATH];
-			new Float:time2=time;
-			strcopy(sound2, sizeof(sound2), music);
-			Call_PushStringEx(sound2, sizeof(sound2), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-			Call_PushFloatRef(time2);
-			Call_Finish(action);
-			switch(action)
-			{
-				case Plugin_Stop, Plugin_Handled:
-				{
-					strcopy(music, sizeof(music), "");
-					time=-1.0;
-				}
-				case Plugin_Changed:
-				{
-					strcopy(music, sizeof(music), sound2);
-					time=time2;
-				}
-			}
-
-			if(strlen(music[0])>5)
-			{
-				if(!client)
-				{
-					EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music, _, _, _, _, _, _, _, _, _, false);
-				}
-				else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
-				{
-					EmitSoundToClient(client, music);
-				}
-
-				if(time>1)
-				{
-					MusicTimer=CreateTimer(time, Timer_MusicTheme, userid, TIMER_FLAG_NO_MAPCHANGE);
-				}
-			}
-		}
-	}
-	else
-	{
-		return Plugin_Stop;
-	}
-	return Plugin_Continue;
-}
-
-StopMusic(target=0)
-{
-	if(!BossKV[character[0]])
-	{
-		return;
-	}
-
-	KvRewind(BossKV[character[0]]);
-	if(KvJumpToKey(BossKV[character[0]], "sound_bgm"))
-	{
-		decl String:music[PLATFORM_MAX_PATH];
-		Format(music, sizeof(music), "path%i", MusicIndex);
-		KvGetString(BossKV[character[0]], music, music, sizeof(music));
-
-		if(!target || target<0)  //Stop music for all clients
-		{
-			for(target=1; target<=MaxClients; target++)
-			{
-				if(IsValidClient(target))
-				{
-					StopSound(target, SNDCHAN_AUTO, music);
-					StopSound(target, SNDCHAN_AUTO, music);
-				}
+				MusicTimer[client]=CreateTimer(time, Timer_PlayBGM, userid, TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 		else
 		{
-			StopSound(target, SNDCHAN_AUTO, music);
-			StopSound(target, SNDCHAN_AUTO, music);
+			decl String:bossName[64];
+			KvRewind(BossKV[character[0]]);
+			KvGetString(BossKV[character[0]], "filename", bossName, sizeof(bossName));
+			PrintToServer("[FF2 Bosses] Character %s is missing BGM file '%s'!", bossName, music);
 		}
+	}
+	return Plugin_Continue;
+}
+
+StopMusic(client=0)
+{
+	if(client<=0)  //Stop music for all clients
+	{
+		for(client=1; client<=MaxClients; client++)
+		{
+			if(IsValidClient(client))
+			{
+				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+			}
+
+			if(MusicTimer[client]!=INVALID_HANDLE)
+			{
+				KillTimer(MusicTimer[client]);
+				MusicTimer[client]=INVALID_HANDLE;
+			}
+			strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
+		}
+	}
+	else
+	{
+		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+
+		if(MusicTimer[client]!=INVALID_HANDLE)
+		{
+			KillTimer(MusicTimer[client]);
+			MusicTimer[client]=INVALID_HANDLE;
+		}
+		strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
 	}
 }
 
@@ -8060,29 +7984,22 @@ public Action:MusicTogglePanel(client)
 	return Plugin_Continue;
 }
 
-public MusicTogglePanelH(Handle:menu, MenuAction:action, param1, param2)
+public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 {
-	if(IsValidClient(param1))
+	if(IsValidClient(client) && action==MenuAction_Select)
 	{
-		if(action==MenuAction_Select)
+		if(selection==2)  //Off
 		{
-			if(param2==2)
-			{
-				SetClientSoundOptions(param1, SOUNDEXCEPT_MUSIC, false);
-				KvRewind(BossKV[character[0]]);
-				if(KvJumpToKey(BossKV[character[0]],"sound_bgm"))
-				{
-					decl String:s[PLATFORM_MAX_PATH];
-					Format(s,10,"path%i",MusicIndex);
-					KvGetString(BossKV[character[0]], s,s, sizeof(s));
-					StopSound(param1, SNDCHAN_AUTO, s);
-					StopSound(param1, SNDCHAN_AUTO, s);
-				}
-			}
-			else
-				SetClientSoundOptions(param1, SOUNDEXCEPT_MUSIC, true);
-			CPrintToChat(param1,"{olive}[FF2]{default} %t","FF2 Music", param2==2 ? "off" : "on");
+			SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, false);
+			StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+			StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 		}
+		else  //On
+		{
+			SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
+			MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		}
+		CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_music", selection==2 ? "off" : "on");
 	}
 }
 
@@ -8897,7 +8814,9 @@ public Native_SetQueuePoints(Handle:plugin, numParams)
 
 public Native_StartMusic(Handle:plugin, numParams)
 {
-	Timer_MusicPlay(INVALID_HANDLE, GetNativeCell(1));
+	new client=GetNativeCell(1);
+	StopMusic(client);
+	MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Native_StopMusic(Handle:plugin, numParams)

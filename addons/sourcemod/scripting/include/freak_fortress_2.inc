@@ -334,6 +334,7 @@ native FF2_SetQueuePoints(client, value);
  * Starts the Boss's music for the specified clients
  *
  * @param client    Client's index (0 for all clients)
+ * @noreturn
  */
 native FF2_StartMusic(client=0);
 
