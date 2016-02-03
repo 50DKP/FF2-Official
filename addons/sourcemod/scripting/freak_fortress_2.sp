@@ -8694,7 +8694,7 @@ public Native_GetSpecialKV(Handle:plugin, numParams)
 public Native_StartMusic(Handle:plugin, numParams)
 {
 	new client=GetNativeCell(1);
-	FF2_StopMusic(client);
+	StopMusic(client);
 	MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 }
 
