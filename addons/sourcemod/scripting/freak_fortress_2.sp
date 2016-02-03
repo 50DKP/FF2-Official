@@ -1367,37 +1367,7 @@ public OnMapEnd()
 {
 	if(Enabled || Enabled2)
 	{
-		SetConVarInt(FindConVar("tf_arena_use_queue"), tf_arena_use_queue);
-		SetConVarInt(FindConVar("mp_teams_unbalance_limit"), mp_teams_unbalance_limit);
-		SetConVarInt(FindConVar("tf_arena_first_blood"), tf_arena_first_blood);
-		SetConVarInt(FindConVar("mp_forcecamera"), mp_forcecamera);
-		SetConVarInt(FindConVar("tf_dropped_weapon_lifetime"), tf_dropped_weapon_lifetime);
-		SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), tf_feign_death_activate_damage_scale);
-		SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), tf_feign_death_damage_scale);
-		SetConVarFloat(FindConVar("tf_stealth_damage_reduction"), tf_stealth_damage_reduction);
-
-		#if defined _steamtools_included
-		if(steamtools)
-		{
-			Steam_SetGameDescription("Team Fortress");
-		}
-		#endif
-		DisableSubPlugins();
-
-		for(new client; client<=MaxClients; client++)
-		{
-			if(MusicTimer[client]!=INVALID_HANDLE)
-			{
-				KillTimer(MusicTimer[client]);
-				MusicTimer[client]=INVALID_HANDLE;
-			}
-		}
-
-		if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
-		{
-			ServerCommand("smac_addcvar sv_cheats replicated ban 0 0");
-			ServerCommand("smac_addcvar host_timescale replicated ban 1.0 1.0");
-		}
+		DisableFF2();
 	}
 }
 
