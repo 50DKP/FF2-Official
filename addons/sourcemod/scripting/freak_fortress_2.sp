@@ -5794,7 +5794,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			{
 				case TFClass_Spy:
 				{
-					if(damage >= 620.0)  //Temporary stopgap for small amounts of damage still doing 62 health
+					if(damage >= 62.0)  //Temporary stopgap for small amounts of damage still doing 62 health
 					{
 						if((GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked)))
 						{
