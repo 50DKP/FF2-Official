@@ -5796,30 +5796,13 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				{
 					if(damage >= 62.0)  //Temporary stopgap for small amounts of damage still doing 62 health
 					{
-						if((GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked)))
+						if((GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked)) || TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
 						{
 							if(damagetype & DMG_CRIT)
 							{
 								damagetype&=~DMG_CRIT;
 							}
 							damage=620.0;
-							return Plugin_Changed;
-						}
-						else if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
-						{
-							if(damagetype & DMG_CRIT)
-							{
-								damagetype&=~DMG_CRIT;
-							}
-
-							if(TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
-							{
-								damage=620.0;
-							}
-							else
-							{
-								damage=850.0;
-							}
 							return Plugin_Changed;
 						}
 					}
