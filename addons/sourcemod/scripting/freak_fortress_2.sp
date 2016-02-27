@@ -191,7 +191,6 @@ new mp_forcecamera;
 new tf_dropped_weapon_lifetime;
 new Float:tf_feign_death_activate_damage_scale;
 new Float:tf_feign_death_damage_scale;
-new Float:tf_stealth_damage_reduction;
 
 new Handle:cvarNextmap;
 new bool:areSubPluginsEnabled;
@@ -1321,7 +1320,6 @@ public OnConfigsExecuted()
 	tf_dropped_weapon_lifetime=bool:GetConVarInt(FindConVar("tf_dropped_weapon_lifetime"));
 	tf_feign_death_activate_damage_scale=GetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"));
 	tf_feign_death_damage_scale=GetConVarFloat(FindConVar("tf_feign_death_damage_scale"));
-	tf_stealth_damage_reduction=GetConVarFloat(FindConVar("tf_stealth_damage_reduction"));
 
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
@@ -1418,9 +1416,8 @@ public EnableFF2()
 	SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
 	SetConVarInt(FindConVar("mp_forcecamera"), 0);
 	SetConVarInt(FindConVar("tf_dropped_weapon_lifetime"), 0);
-	SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), 0.1);
-	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), 0.1);
-	SetConVarFloat(FindConVar("tf_stealth_damage_reduction"), 0.1);
+	SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), 0.3);
+	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), 0.0);
 
 	new Float:time=Announce;
 	if(time>1.0)
@@ -1468,7 +1465,6 @@ public DisableFF2()
 	SetConVarInt(FindConVar("tf_dropped_weapon_lifetime"), tf_dropped_weapon_lifetime);
 	SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), tf_feign_death_activate_damage_scale);
 	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), tf_feign_death_damage_scale);
-	SetConVarFloat(FindConVar("tf_stealth_damage_reduction"), tf_stealth_damage_reduction);
 
 	if(doorCheckTimer!=INVALID_HANDLE)
 	{
@@ -3873,8 +3869,6 @@ public Action:CheckItems(Handle:timer, any:userid)
 
 		if(TF2_GetPlayerClass(client)==TFClass_Medic)
 		{
-			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
-
 			if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
 			{
 				SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
@@ -4048,7 +4042,7 @@ public Action:OnUberDeployed(Handle:event, const String:name[], bool:dontBroadca
 		{
 			decl String:classname[64];
 			GetEdictClassname(medigun, classname, sizeof(classname));
-			if(!strcmp(classname, "tf_weapon_medigun"))
+			if(StrEqual(classname, "tf_weapon_medigun"))
 			{
 				TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.5, client);
 				new target=GetHealingTarget(client);
@@ -4090,6 +4084,10 @@ public Action:Timer_Uber(Handle:timer, any:medigunid)
 				{
 					uberTarget[client]=-1;
 				}
+			}
+			else
+			{
+				return Plugin_Stop;
 			}
 		}
 	}
@@ -4689,7 +4687,7 @@ public Action:ClientTimer(Handle:timer)
 				{
 					if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
 					{
-						if(!TF2_IsPlayerCritBuffed(client) && !TF2_IsPlayerInCondition(client, TFCond_Buffed) && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && !TF2_IsPlayerInCondition(client, TFCond_Disguised) && !GetEntProp(client, Prop_Send, "m_bFeignDeathReady"))
+						if(!TF2_IsPlayerCritBuffed(client) && !TF2_IsPlayerInCondition(client, TFCond_Buffed) && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && !TF2_IsPlayerInCondition(client, TFCond_Disguised))
 						{
 							TF2_AddCondition(client, TFCond_CritCola, 0.3);
 						}
@@ -5773,30 +5771,10 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				return Plugin_Continue;
 			}
 
-			switch(TF2_GetPlayerClass(client))
+			if(TF2_GetPlayerClass(client)==TFClass_Soldier && IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)))
+			&& GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
 			{
-				case TFClass_Spy:
-				{
-					if(damage >= 62.0)  //Temporary stopgap for small amounts of damage still doing 62 health
-					{
-						if((GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked)) || TF2_IsPlayerInCondition(client, TFCond_DeadRingered))
-						{
-							if(damagetype & DMG_CRIT)
-							{
-								damagetype&=~DMG_CRIT;
-							}
-							damage=620.0;
-							return Plugin_Changed;
-						}
-					}
-				}
-				case TFClass_Soldier:
-				{
-					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
-					{
-						SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
-					}
-				}
+				SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 			}
 
 			if(damage<=160.0)  //TODO: Wat
