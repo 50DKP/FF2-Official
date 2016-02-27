@@ -3636,11 +3636,12 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	}
 	else if(!StrContains(classname, "tf_weapon_medigun"))  //Mediguns
 	{
-		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 11 ; 1.5 ; 144 ; 2.0 ; 199 ; 0.75 ; 547 ; 0.75", true);
-			//10: +25% faster charge rate
+		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.75 ; 11 ; 1.5 ; 144 ; 2.0 ; 199 ; 0.75 ; 314 ; 4 ; 547 ; 0.75", true);
+			//10: +75% faster charge rate
 			//11: +50% overheal bonus
 			//144: Quick-fix speed/jump effects
 			//199: Deploys 25% faster
+			//314: Ubercharge lasts 4 seconds longer (aka 50% longer)
 			//547: Holsters 25% faster
 		if(itemOverride!=INVALID_HANDLE)
 		{
@@ -4060,7 +4061,6 @@ public Action:OnUberDeployed(Handle:event, const String:name[], bool:dontBroadca
 				{
 					uberTarget[client]=-1;
 				}
-				SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", 1.50);
 				CreateTimer(0.4, Timer_Uber, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
@@ -4092,27 +4092,10 @@ public Action:Timer_Uber(Handle:timer, any:medigunid)
 				}
 			}
 		}
-
-		if(charge<=0.05)
-		{
-			CreateTimer(3.0, Timer_ResetUberCharge, EntIndexToEntRef(medigun), TIMER_FLAG_NO_MAPCHANGE);
-			FF2flags[client]&=~FF2FLAG_UBERREADY;
-			return Plugin_Stop;
-		}
 	}
 	else
 	{
 		return Plugin_Stop;
-	}
-	return Plugin_Continue;
-}
-
-public Action:Timer_ResetUberCharge(Handle:timer, any:medigunid)
-{
-	new medigun=EntRefToEntIndex(medigunid);
-	if(IsValidEntity(medigun))
-	{
-		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+0.40);
 	}
 	return Plugin_Continue;
 }
@@ -6089,18 +6072,12 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 								{
 									decl String:medigunClassname[64];
 									GetEdictClassname(medigun, medigunClassname, sizeof(medigunClassname));
-									if(!strcmp(medigunClassname, "tf_weapon_medigun", false))
+									if(StrEqual(medigunClassname, "tf_weapon_medigun", false))
 									{
 										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healerCount);
-										new Float:max=1.0;
-										if(GetEntProp(medigun, Prop_Send, "m_bChargeRelease"))
+										if(uber>1.0)
 										{
-											max=1.5;
-										}
-
-										if(uber>max)
-										{
-											uber=max;
+											uber=1.0;
 										}
 										SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", uber);
 									}
