@@ -1091,11 +1091,12 @@ public OnPluginStart()
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), OnJarate);  //Used to subtract rage when a boss is jarated (not through Sydney Sleeper)
 
-	AddCommandListener(OnCallForMedic, "voicemenu");  //Used to activate rages
-	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding
-	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding
-	AddCommandListener(OnJoinTeam, "jointeam");  //Used to make sure players join the right team
-	AddCommandListener(OnChangeClass, "joinclass");  //Used to make sure bosses don't change class
+	AddCommandListener(OnCallForMedic, "voicemenu");    //Used to activate rages
+	AddCommandListener(OnSuicide, "explode");           //Used to stop boss from suiciding
+	AddCommandListener(OnSuicide, "kill");              //Used to stop boss from suiciding
+	AddCommandListener(OnJoinTeam, "jointeam");         //Used to make sure players join the right team
+	AddCommandListener(OnJoinTeam, "autoteam");         //Used to make sure players don't kill themselves and change team
+	AddCommandListener(OnChangeClass, "joinclass");     //Used to make sure bosses don't change class
 
 	HookConVarChange(cvarEnabled, CvarChange);
 	HookConVarChange(cvarPointDelay, CvarChange);
