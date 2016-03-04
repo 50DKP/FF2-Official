@@ -2614,6 +2614,16 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			}
 		}
 
+		SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
+		for(new client; client<=MaxClients; client++)
+		{
+			if(IsValidClient(client))
+			{
+				FF2_ShowHudText(client, -1, "%s", text);
+			}
+		}
+		CPrintToChatAll("{olive}[FF2]{default} %s", text);
+
 		if(!bossWin && RandomSound("sound_fail", sound, sizeof(sound), boss))
 		{
 			EmitSoundToAll(sound);
@@ -2666,7 +2676,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		}
 	}
 
-	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
+	SetHudTextParams(-1.0, 0.3, 10.0, 255, 255, 255, 255);
 	PrintCenterTextAll("");
 
 	new String:text[128];  //Do not decl this
