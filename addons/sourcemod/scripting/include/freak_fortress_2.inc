@@ -77,8 +77,8 @@ native FF2_GetBossTeam();
  * @param boss	 			Boss's index
  * @param buffer			Buffer for boss' character name
  * @param bufferLength		Length of buffer string
- * @param clientMeaning		0 - "client" parameter means index of current Boss
- *							1 - "client" parameter means number of Boss in characters.cfg-1
+ * @param clientMeaning		0 - "boss" parameter means index of current Boss
+ *							1 - "boss" parameter means number of Boss in characters.cfg-1
  * @return					True if boss exists, false if not
  */
 native bool:FF2_GetBossSpecial(boss=0, String:buffer[], bufferLength, clientMeaning=0);
