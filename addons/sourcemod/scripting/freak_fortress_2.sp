@@ -5055,7 +5055,10 @@ public Action:OnCallForMedic(client, const String:command[], args)
 					decl String:abilityName[64], String:pluginName[64];
 					KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
 					KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
-					UseAbility(abilityName, pluginName, boss, 0);
+					if(!UseAbility(abilityName, pluginName, boss, 0))
+					{
+						return Plugin_Continue;
+					}
 				}
 				else
 				{
@@ -5067,7 +5070,10 @@ public Action:OnCallForMedic(client, const String:command[], args)
 							decl String:abilityName[64], String:pluginName[64];
 							KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
 							KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
-							UseAbility(abilityName, pluginName, boss, 0);
+							if(!UseAbility(abilityName, pluginName, boss, 0))
+							{
+								return Plugin_Continue;
+							}
 							break;
 						}
 					}
@@ -8169,7 +8175,7 @@ stock FindEntityByClassname2(startEnt, const String:classname[])
 	return FindEntityByClassname(startEnt, classname);
 }
 
-UseAbility(const String:ability_name[], const String:plugin_name[], boss, slot, buttonMode=0)
+public bool:UseAbility(const String:ability_name[], const String:plugin_name[], boss, slot, buttonMode=0)
 {
 	new bool:enabled=true;
 	Call_StartForward(PreAbility);
@@ -8182,7 +8188,7 @@ UseAbility(const String:ability_name[], const String:plugin_name[], boss, slot, 
 
 	if(!enabled)
 	{
-		return;
+		return false;
 	}
 
 	new Action:action=Plugin_Continue;
@@ -8291,6 +8297,7 @@ UseAbility(const String:ability_name[], const String:plugin_name[], boss, slot, 
 			Call_Finish(action);
 		}
 	}
+	return true;
 }
 
 public Action:Timer_UseBossCharge(Handle:timer, Handle:data)
