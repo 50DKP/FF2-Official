@@ -2611,6 +2611,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 				KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 				BossLives[boss]>1 ? Format(lives, sizeof(lives), "x%i", BossLives[boss]) : strcopy(lives, 2, "");
 				Format(text, sizeof(text), "%s\n%t", text, "ff2_alive", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				CPrintToChatAll("{olive}[FF2]{default} %t!", "ff2_alive", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
 		}
 
@@ -2622,7 +2623,6 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 				FF2_ShowHudText(client, -1, "%s", text);
 			}
 		}
-		CPrintToChatAll("{olive}[FF2]{default} %s", text);
 
 		if(!bossWin && RandomSound("sound_fail", sound, sizeof(sound), boss))
 		{
