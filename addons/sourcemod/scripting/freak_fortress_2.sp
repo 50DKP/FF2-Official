@@ -109,6 +109,8 @@ new KSpreeCount[MAXPLAYERS+1];
 new Float:GlowTimer[MAXPLAYERS+1];
 new shortname[MAXPLAYERS+1];
 new bool:emitRageSound[MAXPLAYERS+1];
+new bool:bossHasReloadAbility[MAXPLAYERS+1];
+new bool:bossHasRightMouseAbility[MAXPLAYERS+1];
 
 new timeleft;
 
@@ -1489,6 +1491,9 @@ public DisableFF2()
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
 		}
+
+		bossHasReloadAbility[client]=false;
+		bossHasRightMouseAbility[client]=false;
 	}
 
 	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
@@ -2440,46 +2445,11 @@ public Action:BossInfoTimer_Begin(Handle:timer, any:boss)
 
 public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 {
-	if((FF2flags[Boss[boss]] & FF2FLAG_USINGABILITY))
-	{
-		BossInfoTimer[boss][1]=INVALID_HANDLE;
-		return Plugin_Stop;
-	}
-
-	new bool:abilityUsesReloadKey;
-	for(new i=1; ; i++)
-	{
-		decl String:ability[10];
-		Format(ability, sizeof(ability), "ability%i", i);
-		if(boss==-1 || Special[boss]==-1 || !BossKV[Special[boss]])
-		{
-			return Plugin_Stop;
-		}
-
-		KvRewind(BossKV[Special[boss]]);
-		if(KvJumpToKey(BossKV[Special[boss]], ability))
-		{
-			decl String:pluginName[64];
-			KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
-			if(KvGetNum(BossKV[Special[boss]], "buttonmode", 0)==2)
-			{
-				abilityUsesReloadKey=true;
-				break;
-			}
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	new bool:reloadInfo=abilityUsesReloadKey && CheckInfoCookies(Boss[boss], 0);
-	new bool:rightMouseInfo=bool:CheckInfoCookies(Boss[boss], 1);
-	if(reloadInfo)
+	if(bossHasReloadAbility[boss])
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[boss]);
-		if(rightMouseInfo)
+		if(bossHasRightMouseAbility[boss])
 		{
 			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t\n%t", "ff2_buttons_reload", "ff2_buttons_rmb");
 		}
@@ -2488,7 +2458,7 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "ff2_buttons_reload");
 		}
 	}
-	else if(rightMouseInfo)
+	else if(bossHasRightMouseAbility[boss])
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[boss]);
@@ -2579,6 +2549,9 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			{
 				BossCharge[boss][slot]=0.0;
 			}
+
+			bossHasReloadAbility[boss]=false;
+			bossHasRightMouseAbility[boss]=false;
 		}
 		else if(IsValidClient(boss))  //Boss here is actually a client index
 		{
@@ -3017,52 +2990,6 @@ stock EmitSoundToAllExcept(exceptiontype=SOUNDEXCEPT_MUSIC, const String:sample[
 
 	EmitSound(clients, total, sample, entity, channel, level, flags, volume, pitch, speakerentity, origin, dir, updatePos, soundtime);
 }
-
-stock CheckInfoCookies(client, cookie)
-{
-	if(!IsValidClient(client))
-	{
-		return false;
-	}
-
-	if(IsFakeClient(client) || !AreClientCookiesCached(client))
-	{
-		return true;
-	}
-
-	decl String:cookies[24];
-	decl String:cookieValues[8][5];
-	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-	ExplodeString(cookies, " ", cookieValues, 8, 5);
-	new value=StringToInt(cookieValues[cookie+4]);
-	return (value>0 ? value : 0);
-}
-
-stock SetInfoCookies(client, cookie, value)
-{
-	if(!IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client))
-	{
-		return;
-	}
-
-	decl String:cookies[24];
-	decl String:cookieValues[8][5];
-	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-	ExplodeString(cookies, " ", cookieValues, 8, 5);
-	Format(cookies, sizeof(cookies), "%s %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[3]);
-	for(new i; i<cookie; i++)
-	{
-		Format(cookies, sizeof(cookies), "%s %s", cookies, cookieValues[i+4]);
-	}
-
-	Format(cookies, sizeof(cookies), "%s %i", cookies, value);
-	for(new i=cookie+1; i<4; i++)
-	{
-		Format(cookies, sizeof(cookies), "%s %s", cookies, cookieValues[i+4]);
-	}
-	SetClientCookie(client, FF2Cookies, cookies);
-}
-
 
 stock bool:CheckSoundException(client, soundException)
 {
@@ -4453,6 +4380,7 @@ public OnClientPutInServer(client)
 		if(!buffer[0])
 		{
 			SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
+			//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
 		}
 	}
 }
@@ -8265,28 +8193,23 @@ bool:UseAbility(const String:ability_name[], const String:plugin_name[], boss, s
 			case 2:
 			{
 				button=IN_RELOAD;
+				bossHasReloadAbility[boss]=true;
 			}
 			default:
 			{
 				button=IN_DUCK|IN_ATTACK2;
+				bossHasRightMouseAbility[boss]=true;
 			}
 		}
 
 		if(GetClientButtons(Boss[boss]) & button)
 		{
-			if(!(FF2flags[Boss[boss]] & FF2FLAG_USINGABILITY))
+			for(new timer; timer<=1; timer++)
 			{
-				FF2flags[Boss[boss]]|=FF2FLAG_USINGABILITY;
-				switch(buttonMode)
+				if(BossInfoTimer[boss][timer]!=INVALID_HANDLE)
 				{
-					case 2:
-					{
-						SetInfoCookies(Boss[boss], 0, CheckInfoCookies(Boss[boss], 0)-1);
-					}
-					default:
-					{
-						SetInfoCookies(Boss[boss], 1, CheckInfoCookies(Boss[boss], 1)-1);
-					}
+					KillTimer(BossInfoTimer[boss][timer]);
+					BossInfoTimer[boss][timer]=INVALID_HANDLE;
 				}
 			}
 
