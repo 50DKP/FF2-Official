@@ -2772,64 +2772,79 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 	}
 
 	KvRewind(BossKV[character[0]]);
-	if(KvJumpToKey(BossKV[character[0]], "sound_bgm"))
+	if(KvJumpToKey(BossKV[character[0]], "sounds"))
 	{
-		decl String:music[PLATFORM_MAX_PATH];
+		decl String:music[MAXRANDOMS][PLATFORM_MAX_PATH];
+		new time[MAXRANDOMS];
 		new index;
-		do
+		while(KvGotoNextKey(BossKV[character[0]]))
 		{
-			index++;
-			Format(music, 10, "time%i", index);
+			if(KvGetNum(BossKV[character[0]], "time")>=1)
+			{
+				index++;
+				if(index==MAXRANDOMS)
+				{
+					break;
+				}
+
+				KvGetSectionName(BossKV[character[0]], music[index], PLATFORM_MAX_PATH);
+				time[index]=KvGetNum(BossKV[character[0]], "time");
+			}
+			else if(KvGetNum(BossKV[character[0]], "time")<0)
+			{
+				decl String:temp[PLATFORM_MAX_PATH];
+				KvGetSectionName(BossKV[character[0]], temp, sizeof(temp));
+
+				decl String:bossName[64];
+				KvRewind(BossKV[character[0]]);
+				KvGetString(BossKV[character[0]], "filename", bossName, sizeof(bossName));
+				PrintToServer("[FF2 Bosses] Character %s has an invalid time for sound '%s'!", bossName, temp);
+			}
 		}
-		while(KvGetFloat(BossKV[character[0]], music)>1);
 
 		index=GetRandomInt(1, index-1);
-		Format(music, 10, "time%i", index);
-		new Float:time=KvGetFloat(BossKV[character[0]], music);
-		Format(music, 10, "path%i", index);
-		KvGetString(BossKV[character[0]], music, music, sizeof(music));
 
 		new Action:action;
 		Call_StartForward(OnMusic);
 		decl String:temp[PLATFORM_MAX_PATH];
-		new Float:time2=time;
-		strcopy(temp, sizeof(temp), music);
+		new time2=time[index];
+		strcopy(temp, sizeof(temp), music[index]);
 		Call_PushStringEx(temp, sizeof(temp), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-		Call_PushFloatRef(time2);
+		Call_PushCellRef(time2);
 		Call_Finish(action);
 		switch(action)
 		{
 			case Plugin_Stop, Plugin_Handled:
 			{
-				return Plugin_Stop;
+				return action;
 			}
 			case Plugin_Changed:
 			{
-				strcopy(music, sizeof(music), temp);
-				time=time2;
+				strcopy(music[index], PLATFORM_MAX_PATH, temp);
+				time[index]=time2;
 			}
 		}
 
-		Format(temp, sizeof(temp), "sound/%s", music);
+		Format(temp, sizeof(temp), "sound/%s", music[index]);
 		if(FileExists(temp, true))
 		{
 			if(!client)
 			{
 				for(new target; target<=MaxClients; target++)
 				{
-					strcopy(currentBGM[target], PLATFORM_MAX_PATH, music);
+					strcopy(currentBGM[target], PLATFORM_MAX_PATH, music[index]);
 				}
-				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music);
+				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music[index]);
 			}
 			else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 			{
-				strcopy(currentBGM[client], PLATFORM_MAX_PATH, music);
-				EmitSoundToClient(client, music);
+				strcopy(currentBGM[client], PLATFORM_MAX_PATH, music[index]);
+				EmitSoundToClient(client, music[index]);
 			}
 
-			if(time>1)
+			if(time[index])
 			{
-				MusicTimer[client]=CreateTimer(time, Timer_PlayBGM, userid, TIMER_FLAG_NO_MAPCHANGE);
+				MusicTimer[client]=CreateTimer(Float:time[index], Timer_PlayBGM, userid, TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 		else
@@ -2837,7 +2852,7 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 			decl String:bossName[64];
 			KvRewind(BossKV[character[0]]);
 			KvGetString(BossKV[character[0]], "filename", bossName, sizeof(bossName));
-			PrintToServer("[FF2 Bosses] Character %s is missing BGM file '%s'!", bossName, music);
+			PrintToServer("[FF2 Bosses] Character %s is missing BGM file '%s'!", bossName, music[index]);
 		}
 	}
 	return Plugin_Continue;
