@@ -2446,24 +2446,24 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 		return Plugin_Stop;
 	}
 
-	new bool:see;
-	for(new n=1; ; n++)
+	new bool:abilityUsesReloadKey;
+	for(new i=1; ; i++)
 	{
-		decl String:s[10];
-		Format(s, 10, "ability%i", n);
+		decl String:ability[10];
+		Format(ability, sizeof(ability), "ability%i", i);
 		if(boss==-1 || Special[boss]==-1 || !BossKV[Special[boss]])
 		{
 			return Plugin_Stop;
 		}
 
 		KvRewind(BossKV[Special[boss]]);
-		if(KvJumpToKey(BossKV[Special[boss]], s))
+		if(KvJumpToKey(BossKV[Special[boss]], ability))
 		{
-			decl String:plugin_name[64];
-			KvGetString(BossKV[Special[boss]], "plugin_name", plugin_name, 64);
+			decl String:pluginName[64];
+			KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
 			if(KvGetNum(BossKV[Special[boss]], "buttonmode", 0)==2)
 			{
-				see=true;
+				abilityUsesReloadKey=true;
 				break;
 			}
 		}
@@ -2473,13 +2473,13 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 		}
 	}
 
-	new need_info_bout_reload=see && CheckInfoCookies(Boss[boss], 0);
-	new need_info_bout_rmb=CheckInfoCookies(Boss[boss], 1);
-	if(need_info_bout_reload)
+	new bool:reloadInfo=abilityUsesReloadKey && CheckInfoCookies(Boss[boss], 0);
+	new bool:rightMouseInfo=CheckInfoCookies(Boss[boss], 1);
+	if(reloadInfo)
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[boss]);
-		if(need_info_bout_rmb)
+		if(rightMouseInfo)
 		{
 			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t\n%t", "ff2_buttons_reload", "ff2_buttons_rmb");
 		}
@@ -2488,7 +2488,7 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "ff2_buttons_reload");
 		}
 	}
-	else if(need_info_bout_rmb)
+	else if(rightMouseInfo)
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[boss]);
@@ -3004,87 +3004,110 @@ stock EmitSoundToAllExcept(exceptiontype=SOUNDEXCEPT_MUSIC, const String:sample[
 	EmitSound(clients, total, sample, entity, channel, level, flags, volume, pitch, speakerentity, origin, dir, updatePos, soundtime);
 }
 
-stock CheckInfoCookies(client,infonum)
+stock CheckInfoCookies(client, cookie)
 {
-	if(!IsValidClient(client)) return false;
-	if(IsFakeClient(client)) return true;
-	if(!AreClientCookiesCached(client)) return true;
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s, 24);
-	ExplodeString(s, " ", ff2cookies_values,8,5);
-	new see=StringToInt(ff2cookies_values[4+infonum]);
-	return (see>0 ? see : 0);
+	if(!IsValidClient(client))
+	{
+		return false;
+	}
+
+	if(IsFakeClient(client) || !AreClientCookiesCached(client))
+	{
+		return true;
+	}
+
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	new value=StringToInt(cookieValues[cookie+4]);
+	return (value>0 ? value : 0);
 }
 
-stock SetInfoCookies(client,infonum,value)
-{
-	if(!IsValidClient(client)) return ;
-	if(IsFakeClient(client)) return ;
-	if(!AreClientCookiesCached(client)) return ;
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s, 24);
-	ExplodeString(s, " ", ff2cookies_values,8,5);
-	Format(s,24,"%s %s %s %s",ff2cookies_values[0],ff2cookies_values[1],ff2cookies_values[2],ff2cookies_values[3]);
-	for(new i;i<infonum;i++)
-		Format(s,24,"%s %s",s,ff2cookies_values[4+i]);
-	Format(s,24,"%s %i",s,value);
-	for(new i=infonum+1;i<4;i++)
-		Format(s,24,"%s %s",s,ff2cookies_values[4+i]);
-	SetClientCookie(client, FF2Cookies, s);
-}
-
-
-stock bool:CheckSoundException(client, excepttype)
-{
-	if(!IsValidClient(client)) return false;
-	if(IsFakeClient(client)) return true;
-	if(!AreClientCookiesCached(client)) return true;
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s, 24);
-	ExplodeString(s, " ", ff2cookies_values,8,5);
-	if(excepttype==SOUNDEXCEPT_VOICE)
-		return StringToInt(ff2cookies_values[2])==1;
-	return StringToInt(ff2cookies_values[1])==1;
-}
-
-SetClientSoundOptions(client, excepttype, bool:on)
+stock SetInfoCookies(client, cookie, value)
 {
 	if(!IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client))
 	{
 		return;
 	}
 
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s, 24);
-	ExplodeString(s, " ", ff2cookies_values, 8, 5);
-	if(excepttype==SOUNDEXCEPT_VOICE)
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	Format(cookies, sizeof(cookies), "%s %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[3]);
+	for(new i; i<cookie; i++)
 	{
-		if(on)
+		Format(cookies, sizeof(cookies), "%s %s", cookies, cookieValues[i+4]);
+	}
+
+	Format(cookies, sizeof(cookies), "%s %i", cookies, value);
+	for(new i=cookie+1; i<4; i++)
+	{
+		Format(cookies, sizeof(cookies), "%s %s", cookies, cookieValues[i+4]);
+	}
+	SetClientCookie(client, FF2Cookies, cookies);
+}
+
+
+stock bool:CheckSoundException(client, soundException)
+{
+	if(!IsValidClient(client))
+	{
+		return false;
+	}
+
+	if(IsFakeClient(client) || !AreClientCookiesCached(client))
+	{
+		return true;
+	}
+
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	if(soundException==SOUNDEXCEPT_VOICE)
+	{
+		return StringToInt(cookieValues[2])==1;
+	}
+	return StringToInt(cookieValues[1])==1;
+}
+
+SetClientSoundOptions(client, soundException, bool:enable)
+{
+	if(!IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client))
+	{
+		return;
+	}
+
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	if(soundException==SOUNDEXCEPT_VOICE)
+	{
+		if(enable)
 		{
-			ff2cookies_values[2][0]='1';
+			cookieValues[2][0]='1';
 		}
 		else
 		{
-			ff2cookies_values[2][0]='0';
+			cookieValues[2][0]='0';
 		}
 	}
 	else
 	{
-		if(on)
+		if(enable)
 		{
-			ff2cookies_values[1][0]='1';
+			cookieValues[1][0]='1';
 		}
 		else
 		{
-			ff2cookies_values[1][0]='0';
+			cookieValues[1][0]='0';
 		}
 	}
-	Format(s, 24, "%s %s %s %s %s %s %s %s", ff2cookies_values[0], ff2cookies_values[1], ff2cookies_values[2], ff2cookies_values[3], ff2cookies_values[4], ff2cookies_values[5], ff2cookies_values[6], ff2cookies_values[7]);
-	SetClientCookie(client, FF2Cookies, s);
+	Format(cookies, sizeof(cookies), "%s %s %s %s %s %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[3], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
+	SetClientCookie(client, FF2Cookies, cookies);
 }
 
 public Action:Timer_Move(Handle:timer)
