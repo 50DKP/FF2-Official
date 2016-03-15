@@ -2474,7 +2474,7 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 	}
 
 	new bool:reloadInfo=abilityUsesReloadKey && CheckInfoCookies(Boss[boss], 0);
-	new bool:rightMouseInfo=CheckInfoCookies(Boss[boss], 1);
+	new bool:rightMouseInfo=bool:CheckInfoCookies(Boss[boss], 1);
 	if(reloadInfo)
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
