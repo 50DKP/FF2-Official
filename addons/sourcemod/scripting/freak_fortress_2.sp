@@ -3339,7 +3339,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	}
 
 	CreateTimer(0.2, MakeModelTimer, boss, TIMER_FLAG_NO_MAPCHANGE);
-	if(!IsVoteInProgress() && GetClientClassinfoCookie(client))
+	if(!IsVoteInProgress() && GetClientClassInfoCookie(client))
 	{
 		HelpPanelBoss(boss);
 	}
@@ -3814,7 +3814,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		return Plugin_Continue;
 	}
 
-	if(!IsVoteInProgress() && GetClientClassinfoCookie(client) && !(FF2flags[client] & FF2FLAG_CLASSHELPED))
+	if(!IsVoteInProgress() && GetClientClassInfoCookie(client) && !(FF2flags[client] & FF2FLAG_CLASSHELPED))
 	{
 		HelpPanelClass(client);
 	}
@@ -7489,16 +7489,23 @@ public Action:TurnToZeroPanel(client, target)
 	return Plugin_Handled;
 }
 
-bool:GetClientClassinfoCookie(client)
+bool:GetClientClassInfoCookie(client)
 {
-	if(!IsValidClient(client)) return false;
-	if(IsFakeClient(client)) return false;
-	if(!AreClientCookiesCached(client)) return true;
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s,24);
-	ExplodeString(s, " ", ff2cookies_values,8,5);
-	return StringToInt(ff2cookies_values[3])==1;
+	if(!IsValidClient(client) || IsFakeClient(client))
+	{
+		return false;
+	}
+
+	if(!AreClientCookiesCached(client))
+	{
+		return true;
+	}
+
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	return StringToInt(cookieValues[3])==1;
 }
 
 GetClientQueuePoints(client)
@@ -7513,20 +7520,20 @@ GetClientQueuePoints(client)
 		return botqueuepoints;
 	}
 
-	decl String:cookies[24], String:values[8][5];
-	GetClientCookie(client, FF2Cookies, cookies, 24);
-	ExplodeString(cookies, " ", values, 8, 5);
-	return StringToInt(values[0]);
+	decl String:cookies[24], String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	return StringToInt(cookieValues[0]);
 }
 
 SetClientQueuePoints(client, points)
 {
 	if(IsValidClient(client) && !IsFakeClient(client) && AreClientCookiesCached(client))
 	{
-		decl String:cookies[24], String:values[8][5];
+		decl String:cookies[24], String:cookieValues[8][5];
 		GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-		ExplodeString(cookies, " ", values, 8, 5);
-		Format(cookies, sizeof(cookies), "%i %s %s %s %s %s %s %s", points, values[1], values[2], values[3], values[4], values[5], values[6], values[7]);
+		ExplodeString(cookies, " ", cookieValues, 8, 5);
+		Format(cookies, sizeof(cookies), "%i %s %s %s %s %s %s %s", points, cookieValues[1], cookieValues[2], cookieValues[3], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
 		SetClientCookie(client, FF2Cookies, cookies);
 	}
 }
@@ -7730,28 +7737,32 @@ public Action:HelpPanel3(client)
 	SetPanelTitle(panel, "Turn the Freak Fortress 2 class info...");
 	DrawPanelItem(panel, "On");
 	DrawPanelItem(panel, "Off");
-	SendPanelToClient(panel, client, ClassinfoTogglePanelH, MENU_TIME_FOREVER);
+	SendPanelToClient(panel, client, ClassInfoTogglePanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Handled;
 }
 
 
-public ClassinfoTogglePanelH(Handle:menu, MenuAction:action, param1, param2)
+public ClassInfoTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 {
-	if(IsValidClient(param1))
+	if(IsValidClient(client))
 	{
 		if(action==MenuAction_Select)
 		{
-			decl String:s[24];
-			decl String:ff2cookies_values[8][5];
-			GetClientCookie(param1, FF2Cookies, s, 24);
-			ExplodeString(s, " ", ff2cookies_values,8,5);
-			if(param2==2)
-				Format(s,24,"%s %s %s 0 %s %s %s",ff2cookies_values[0],ff2cookies_values[1],ff2cookies_values[2],ff2cookies_values[4],ff2cookies_values[5],ff2cookies_values[6],ff2cookies_values[7]);
+			decl String:cookies[24];
+			decl String:cookieValues[8][5];
+			GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+			ExplodeString(cookies, " ", cookieValues, 8, 5);
+			if(selection==2)
+			{
+				Format(cookies, sizeof(cookies), "%s %s %s 0 %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
+			}
 			else
-				Format(s,24,"%s %s %s 1 %s %s %s",ff2cookies_values[0],ff2cookies_values[1],ff2cookies_values[2],ff2cookies_values[4],ff2cookies_values[5],ff2cookies_values[6],ff2cookies_values[7]);
-			SetClientCookie(param1, FF2Cookies,s);
-			CPrintToChat(param1,"{olive}[VSH]{default} %t","ff2_classinfo", param2==2 ? "off" : "on");
+			{
+				Format(cookies, sizeof(cookies), "%s %s %s 1 %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
+			}
+			SetClientCookie(client, FF2Cookies, cookies);
+			CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_classinfo", selection==2 ? "off" : "on");
 		}
 	}
 }
