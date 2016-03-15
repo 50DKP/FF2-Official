@@ -107,6 +107,8 @@ new KSpreeCount[MAXPLAYERS+1];
 new Float:GlowTimer[MAXPLAYERS+1];
 new shortname[MAXPLAYERS+1];
 new bool:emitRageSound[MAXPLAYERS+1];
+new bool:bossHasReloadAbility[MAXPLAYERS+1];
+new bool:bossHasRightMouseAbility[MAXPLAYERS+1];
 
 new timeleft;
 
@@ -1450,6 +1452,9 @@ public DisableFF2()
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
 		}
+
+		bossHasReloadAbility[client]=false;
+		bossHasRightMouseAbility[client]=false;
 	}
 
 	#if defined _steamtools_included
@@ -2335,45 +2340,13 @@ public Action:BossInfoTimer_Begin(Handle:timer, any:boss)
 	return Plugin_Continue;
 }
 
-public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)  //FIXME: THIS IS SO BROKEN
+public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 {
-	if((FF2Flags[Boss[boss]] & FF2FLAG_USINGABILITY))
-	{
-		BossInfoTimer[boss][1]=INVALID_HANDLE;
-		return Plugin_Stop;
-	}
-
-	new bool:abilityUsesReloadKey;
-	for(new i=1; ; i++)
-	{
-		decl String:ability[10];
-		Format(ability, sizeof(ability), "ability%i", i);
-		if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])
-		{
-			return Plugin_Stop;
-		}
-
-		KvRewind(BossKV[character[boss]]);
-		if(KvJumpToKey(BossKV[character[boss]], ability))
-		{
-			decl String:pluginName[64];
-			KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
-			if(KvGetNum(BossKV[character[boss]], "buttonmode", 0)==2)
-			{
-				abilityUsesReloadKey=true;
-				break;
-			}
-			KvGoBack(BossKV[character[boss]]);
-		}
-	}
-
-	new bool:reloadInfo=abilityUsesReloadKey && CheckInfoCookies(Boss[boss], 0);
-	new bool:rightMouseInfo=bool:CheckInfoCookies(Boss[boss], 1);
-	if(reloadInfo)
+	if(bossHasReloadAbility[boss])
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[boss]);
-		if(rightMouseInfo)
+		if(bossHasRightMouseAbility[boss])
 		{
 			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t\n%t", "Ability uses Reload", "Ability uses Right Mouse");
 		}
@@ -2382,7 +2355,7 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)  //FIXME: THIS IS S
 			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "Ability uses Reload");
 		}
 	}
-	else if(rightMouseInfo)
+	else if(bossHasRightMouseAbility[boss])
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[boss]);
@@ -2473,6 +2446,9 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			{
 				BossCharge[boss][slot]=0.0;
 			}
+
+			bossHasReloadAbility[boss]=false;
+			bossHasRightMouseAbility[boss]=false;
 		}
 		else if(IsValidClient(boss))  //Boss here is actually a client index
 		{
@@ -2505,7 +2481,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 				KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 				BossLives[boss]>1 ? Format(lives, sizeof(lives), "x%i", BossLives[boss]) : strcopy(lives, 2, "");
 				Format(text, sizeof(text), "%s\n%t", text, "Boss Win Final Health", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
-				CPrintToChatAll("{olive}[FF2]{default} %t!", "Boss Win Final Health", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Win Final Health", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 			}
 		}
 
@@ -2816,12 +2792,14 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 		{
 			case Plugin_Stop, Plugin_Handled:
 			{
+				Debug("NEED INPUT!");
 				return action;
 			}
 			case Plugin_Changed:
 			{
 				strcopy(music[index], PLATFORM_MAX_PATH, temp);
 				time[index]=time2;
+				Debug("OOO... INPUT! %s | %f", music[index], time[index]);
 			}
 		}
 
@@ -2846,6 +2824,7 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 			{
 				MusicTimer[client]=CreateTimer(Float:time[index], Timer_PlayBGM, userid, TIMER_FLAG_NO_MAPCHANGE);
 			}
+			Debug("AHH..INPUT! %s | MORE INPUT! %f", music[index], time[index]);
 		}
 		else
 		{
@@ -2853,6 +2832,7 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 			KvRewind(BossKV[character[0]]);
 			KvGetString(BossKV[character[0]], "filename", bossName, sizeof(bossName));
 			PrintToServer("[FF2 Bosses] Character %s is missing BGM file '%s'!", bossName, music[index]);
+			Debug("{red}MALFUNCTION! NEED INPUT!");
 		}
 	}
 	return Plugin_Continue;
@@ -2866,12 +2846,17 @@ StopMusic(client=0)
 		{
 			if(IsValidClient(client))
 			{
+				if(!currentBGM[client])
+				{
+					Debug("{green}MALFUNCTION! NEED INPUT!");
+				}
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 			}
 
 			if(MusicTimer[client]!=INVALID_HANDLE)
 			{
+				Debug("TERMINATING INPUT!");
 				KillTimer(MusicTimer[client]);
 				MusicTimer[client]=INVALID_HANDLE;
 			}
@@ -2880,11 +2865,16 @@ StopMusic(client=0)
 	}
 	else
 	{
+		if(!currentBGM[client])
+		{
+			Debug("{green}MALFUNCTION! NEED INPUT!");
+		}
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 
 		if(MusicTimer[client]!=INVALID_HANDLE)
 		{
+			Debug("END INPUT FOR %N!", client);
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
 		}
@@ -2913,52 +2903,6 @@ stock EmitSoundToAllExcept(exceptiontype=SOUNDEXCEPT_MUSIC, const String:sample[
 
 	EmitSound(clients, total, sample, entity, channel, level, flags, volume, pitch, speakerentity, origin, dir, updatePos, soundtime);
 }
-
-stock CheckInfoCookies(client, cookie)
-{
-	if(!IsValidClient(client))
-	{
-		return false;
-	}
-
-	if(IsFakeClient(client) || !AreClientCookiesCached(client))
-	{
-		return true;
-	}
-
-	decl String:cookies[24];
-	decl String:cookieValues[8][5];
-	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-	ExplodeString(cookies, " ", cookieValues, 8, 5);
-	new value=StringToInt(cookieValues[cookie+4]);
-	return (value>0 ? value : 0);
-}
-
-stock SetInfoCookies(client, cookie, value)
-{
-	if(!IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client))
-	{
-		return;
-	}
-
-	decl String:cookies[24];
-	decl String:cookieValues[8][5];
-	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-	ExplodeString(cookies, " ", cookieValues, 8, 5);
-	Format(cookies, sizeof(cookies), "%s %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[3]);
-	for(new i; i<cookie; i++)
-	{
-		Format(cookies, sizeof(cookies), "%s %s", cookies, cookieValues[i+4]);
-	}
-
-	Format(cookies, sizeof(cookies), "%s %i", cookies, value);
-	for(new i=cookie+1; i<4; i++)
-	{
-		Format(cookies, sizeof(cookies), "%s %s", cookies, cookieValues[i+4]);
-	}
-	SetClientCookie(client, FF2Cookies, cookies);
-}
-
 
 stock bool:CheckSoundException(client, soundException)
 {
@@ -4656,6 +4600,7 @@ public OnClientPutInServer(client)
 		if(!buffer[0])
 		{
 			SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
+			//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
 		}
 	}
 }
@@ -8695,28 +8640,23 @@ bool:UseAbility(boss, const String:pluginName[], const String:abilityName[], slo
 			case 2:
 			{
 				button=IN_RELOAD;
+				bossHasReloadAbility[boss]=true;
 			}
 			default:
 			{
 				button=IN_DUCK|IN_ATTACK2;
+				bossHasRightMouseAbility[boss]=true;
 			}
 		}
 
 		if(GetClientButtons(Boss[boss]) & button)
 		{
-			if(!(FF2Flags[Boss[boss]] & FF2FLAG_USINGABILITY))
+			for(new timer; timer<=1; timer++)
 			{
-				FF2Flags[Boss[boss]]|=FF2FLAG_USINGABILITY;
-				switch(buttonMode)
+				if(BossInfoTimer[boss][timer]!=INVALID_HANDLE)
 				{
-					case 2:
-					{
-						SetInfoCookies(Boss[boss], 0, CheckInfoCookies(Boss[boss], 0)-1);
-					}
-					default:
-					{
-						SetInfoCookies(Boss[boss], 1, CheckInfoCookies(Boss[boss], 1)-1);
-					}
+					KillTimer(BossInfoTimer[boss][timer]);
+					BossInfoTimer[boss][timer]=INVALID_HANDLE;
 				}
 			}
 
