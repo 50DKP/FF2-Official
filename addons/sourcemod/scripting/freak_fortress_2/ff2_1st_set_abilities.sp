@@ -115,7 +115,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 				return Plugin_Continue;
 			}
 
-			if(CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)
+			if(IsClientInGame(client) && CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)
 			{
 				CloneOwnerIndex[client]=-1;
 				FF2_SetFF2Flags(client, FF2_GetFF2Flags(client) & ~FF2FLAG_CLASSTIMERDISABLED);

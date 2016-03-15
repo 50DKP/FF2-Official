@@ -77,11 +77,11 @@ native TFTeam:FF2_GetBossTeam();
  * @param boss              Boss's index
  * @param bossName          Buffer for boss' character name
  * @param length            Length of buffer string
- * @param clientMeaning     0 - 'client' parameter means index of current Boss
- *                          1 - 'client' parameter means number of Boss in characters.cfg-1
+ * @param bossMeaning       0 - "boss" parameter means index of current Boss
+ *                          1 - "boss" parameter means number of Boss in characters.cfg-1
  * @return                  True if boss exists, false if not
  */
-native bool:FF2_GetBossSpecial(boss=0, String:bossName[], length, clientMeaning=0);
+native bool:FF2_GetBossSpecial(boss=0, String:bossName[], length, bossMeaning=0);
 
 /**
  * Gets a Boss's KV handle

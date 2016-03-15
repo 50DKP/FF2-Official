@@ -182,7 +182,6 @@ new mp_forcecamera;
 new tf_dropped_weapon_lifetime;
 new Float:tf_feign_death_activate_damage_scale;
 new Float:tf_feign_death_damage_scale;
-new Float:tf_stealth_damage_reduction;
 
 new Handle:cvarNextmap;
 
@@ -1105,11 +1104,12 @@ public OnPluginStart()
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), OnJarate);  //Used to subtract rage when a boss is jarated (not through Sydney Sleeper)
 
-	AddCommandListener(OnCallForMedic, "voicemenu");  //Used to activate rages
-	AddCommandListener(OnSuicide, "explode");  //Used to stop boss from suiciding
-	AddCommandListener(OnSuicide, "kill");  //Used to stop boss from suiciding
-	AddCommandListener(OnJoinTeam, "jointeam");  //Used to make sure players join the right team
-	AddCommandListener(OnChangeClass, "joinclass");  //Used to make sure bosses don't change class
+	AddCommandListener(OnCallForMedic, "voicemenu");    //Used to activate rages
+	AddCommandListener(OnSuicide, "explode");           //Used to stop boss from suiciding
+	AddCommandListener(OnSuicide, "kill");              //Used to stop boss from suiciding
+	AddCommandListener(OnJoinTeam, "jointeam");         //Used to make sure players join the right team
+	AddCommandListener(OnJoinTeam, "autoteam");         //Used to make sure players don't kill themselves and change team
+	AddCommandListener(OnChangeClass, "joinclass");     //Used to make sure bosses don't change class
 
 	HookConVarChange(cvarEnabled, CvarChange);
 	HookConVarChange(cvarPointDelay, CvarChange);
@@ -1285,7 +1285,6 @@ public OnConfigsExecuted()
 	tf_dropped_weapon_lifetime=bool:GetConVarInt(FindConVar("tf_dropped_weapon_lifetime"));
 	tf_feign_death_activate_damage_scale=GetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"));
 	tf_feign_death_damage_scale=GetConVarFloat(FindConVar("tf_feign_death_damage_scale"));
-	tf_stealth_damage_reduction=GetConVarFloat(FindConVar("tf_stealth_damage_reduction"));
 
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
@@ -1385,9 +1384,8 @@ public EnableFF2()
 	SetConVarInt(FindConVar("tf_arena_first_blood"), 0);
 	SetConVarInt(FindConVar("mp_forcecamera"), 0);
 	SetConVarInt(FindConVar("tf_dropped_weapon_lifetime"), 0);
-	SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), 0.1);
-	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), 0.1);
-	SetConVarFloat(FindConVar("tf_stealth_damage_reduction"), 0.1);
+	SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), 0.3);
+	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), 0.0);
 
 	new Float:time=Announce;
 	if(time>1.0)
@@ -1429,7 +1427,6 @@ public DisableFF2()
 	SetConVarInt(FindConVar("tf_dropped_weapon_lifetime"), tf_dropped_weapon_lifetime);
 	SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), tf_feign_death_activate_damage_scale);
 	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), tf_feign_death_damage_scale);
-	SetConVarFloat(FindConVar("tf_stealth_damage_reduction"), tf_stealth_damage_reduction);
 
 	if(doorCheckTimer!=INVALID_HANDLE)
 	{
@@ -2346,39 +2343,37 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)  //FIXME: THIS IS S
 		return Plugin_Stop;
 	}
 
-	new bool:buttonMode;
-	KvRewind(BossKV[character[boss]]);
-	if(KvJumpToKey(BossKV[character[boss]], "abilities"))
+	new bool:abilityUsesReloadKey;
+	for(new i=1; ; i++)
 	{
-		while(KvGotoNextKey(BossKV[character[boss]]))
+		decl String:ability[10];
+		Format(ability, sizeof(ability), "ability%i", i);
+		if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])
+		{
+			return Plugin_Stop;
+		}
+
+		KvRewind(BossKV[character[boss]]);
+		if(KvJumpToKey(BossKV[character[boss]], ability))
 		{
 			decl String:pluginName[64];
-			KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
-			KvJumpToKey(BossKV[character[boss]], pluginName);
-			while(KvGotoNextKey(BossKV[character[boss]]))
+			KvGetString(BossKV[character[boss]], "plugin_name", pluginName, sizeof(pluginName));
+			if(KvGetNum(BossKV[character[boss]], "buttonmode", 0)==2)
 			{
-				decl String:abilityName[64];
-				KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
-				KvJumpToKey(BossKV[character[boss]], abilityName);
-				if(KvGetNum(BossKV[character[boss]], "buttonmode", 0)==2)
-				{
-					buttonMode=true;
-					KvGoBack(BossKV[character[boss]]);
-					break;
-				}
-				KvGoBack(BossKV[character[boss]]);
+				abilityUsesReloadKey=true;
+				break;
 			}
 			KvGoBack(BossKV[character[boss]]);
 		}
 	}
 
-	new need_info_bout_reload=buttonMode && CheckInfoCookies(Boss[boss], 0);
-	new need_info_bout_rmb=CheckInfoCookies(Boss[boss], 1);
-	if(need_info_bout_reload)
+	new bool:reloadInfo=abilityUsesReloadKey && CheckInfoCookies(Boss[boss], 0);
+	new bool:rightMouseInfo=bool:CheckInfoCookies(Boss[boss], 1);
+	if(reloadInfo)
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[boss]);
-		if(need_info_bout_rmb)
+		if(rightMouseInfo)
 		{
 			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t\n%t", "Ability uses Reload", "Ability uses Right Mouse");
 		}
@@ -2387,7 +2382,7 @@ public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)  //FIXME: THIS IS S
 			FF2_ShowSyncHudText(Boss[boss], abilitiesHUD, "%t", "Ability uses Reload");
 		}
 	}
-	else if(need_info_bout_rmb)
+	else if(rightMouseInfo)
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
 		SetGlobalTransTarget(Boss[boss]);
@@ -2510,6 +2505,16 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 				KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 				BossLives[boss]>1 ? Format(lives, sizeof(lives), "x%i", BossLives[boss]) : strcopy(lives, 2, "");
 				Format(text, sizeof(text), "%s\n%t", text, "Boss Win Final Health", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+				CPrintToChatAll("{olive}[FF2]{default} %t!", "Boss Win Final Health", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
+			}
+		}
+
+		SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
+		for(new client; client<=MaxClients; client++)
+		{
+			if(IsValidClient(client))
+			{
+				FF2_ShowHudText(client, -1, "%s", text);
 			}
 		}
 
@@ -2565,7 +2570,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		}
 	}
 
-	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
+	SetHudTextParams(-1.0, 0.3, 10.0, 255, 255, 255, 255);
 	PrintCenterTextAll("");
 
 	new String:text[128];  //Do not decl this
@@ -2796,8 +2801,7 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 		{
 			case Plugin_Stop, Plugin_Handled:
 			{
-				strcopy(music, sizeof(music), "");
-				time=-1.0;
+				return Plugin_Stop;
 			}
 			case Plugin_Changed:
 			{
@@ -2895,87 +2899,110 @@ stock EmitSoundToAllExcept(exceptiontype=SOUNDEXCEPT_MUSIC, const String:sample[
 	EmitSound(clients, total, sample, entity, channel, level, flags, volume, pitch, speakerentity, origin, dir, updatePos, soundtime);
 }
 
-stock CheckInfoCookies(client,infonum)
+stock CheckInfoCookies(client, cookie)
 {
-	if(!IsValidClient(client)) return false;
-	if(IsFakeClient(client)) return true;
-	if(!AreClientCookiesCached(client)) return true;
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s, 24);
-	ExplodeString(s, " ", ff2cookies_values,8,5);
-	new see=StringToInt(ff2cookies_values[4+infonum]);
-	return (see>0 ? see : 0);
+	if(!IsValidClient(client))
+	{
+		return false;
+	}
+
+	if(IsFakeClient(client) || !AreClientCookiesCached(client))
+	{
+		return true;
+	}
+
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	new value=StringToInt(cookieValues[cookie+4]);
+	return (value>0 ? value : 0);
 }
 
-stock SetInfoCookies(client,infonum,value)
-{
-	if(!IsValidClient(client)) return ;
-	if(IsFakeClient(client)) return ;
-	if(!AreClientCookiesCached(client)) return ;
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s, 24);
-	ExplodeString(s, " ", ff2cookies_values,8,5);
-	Format(s,24,"%s %s %s %s",ff2cookies_values[0],ff2cookies_values[1],ff2cookies_values[2],ff2cookies_values[3]);
-	for(new i;i<infonum;i++)
-		Format(s,24,"%s %s",s,ff2cookies_values[4+i]);
-	Format(s,24,"%s %i",s,value);
-	for(new i=infonum+1;i<4;i++)
-		Format(s,24,"%s %s",s,ff2cookies_values[4+i]);
-	SetClientCookie(client, FF2Cookies, s);
-}
-
-
-stock bool:CheckSoundException(client, excepttype)
-{
-	if(!IsValidClient(client)) return false;
-	if(IsFakeClient(client)) return true;
-	if(!AreClientCookiesCached(client)) return true;
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s, 24);
-	ExplodeString(s, " ", ff2cookies_values,8,5);
-	if(excepttype==SOUNDEXCEPT_VOICE)
-		return StringToInt(ff2cookies_values[2])==1;
-	return StringToInt(ff2cookies_values[1])==1;
-}
-
-SetClientSoundOptions(client, excepttype, bool:on)
+stock SetInfoCookies(client, cookie, value)
 {
 	if(!IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client))
 	{
 		return;
 	}
 
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s, 24);
-	ExplodeString(s, " ", ff2cookies_values, 8, 5);
-	if(excepttype==SOUNDEXCEPT_VOICE)
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	Format(cookies, sizeof(cookies), "%s %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[3]);
+	for(new i; i<cookie; i++)
 	{
-		if(on)
+		Format(cookies, sizeof(cookies), "%s %s", cookies, cookieValues[i+4]);
+	}
+
+	Format(cookies, sizeof(cookies), "%s %i", cookies, value);
+	for(new i=cookie+1; i<4; i++)
+	{
+		Format(cookies, sizeof(cookies), "%s %s", cookies, cookieValues[i+4]);
+	}
+	SetClientCookie(client, FF2Cookies, cookies);
+}
+
+
+stock bool:CheckSoundException(client, soundException)
+{
+	if(!IsValidClient(client))
+	{
+		return false;
+	}
+
+	if(IsFakeClient(client) || !AreClientCookiesCached(client))
+	{
+		return true;
+	}
+
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	if(soundException==SOUNDEXCEPT_VOICE)
+	{
+		return StringToInt(cookieValues[2])==1;
+	}
+	return StringToInt(cookieValues[1])==1;
+}
+
+SetClientSoundOptions(client, soundException, bool:enable)
+{
+	if(!IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client))
+	{
+		return;
+	}
+
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	if(soundException==SOUNDEXCEPT_VOICE)
+	{
+		if(enable)
 		{
-			ff2cookies_values[2][0]='1';
+			cookieValues[2][0]='1';
 		}
 		else
 		{
-			ff2cookies_values[2][0]='0';
+			cookieValues[2][0]='0';
 		}
 	}
 	else
 	{
-		if(on)
+		if(enable)
 		{
-			ff2cookies_values[1][0]='1';
+			cookieValues[1][0]='1';
 		}
 		else
 		{
-			ff2cookies_values[1][0]='0';
+			cookieValues[1][0]='0';
 		}
 	}
-	Format(s, 24, "%s %s %s %s %s %s %s %s", ff2cookies_values[0], ff2cookies_values[1], ff2cookies_values[2], ff2cookies_values[3], ff2cookies_values[4], ff2cookies_values[5], ff2cookies_values[6], ff2cookies_values[7]);
-	SetClientCookie(client, FF2Cookies, s);
+	Format(cookies, sizeof(cookies), "%s %s %s %s %s %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[3], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
+	SetClientCookie(client, FF2Cookies, cookies);
 }
 
 public Action:Timer_Move(Handle:timer)
@@ -3227,7 +3254,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	}
 
 	CreateTimer(0.2, MakeModelTimer, boss, TIMER_FLAG_NO_MAPCHANGE);
-	if(!IsVoteInProgress() && GetClientClassinfoCookie(client))
+	if(!IsVoteInProgress() && GetClientClassInfoCookie(client))
 	{
 		HelpPanelBoss(boss);
 	}
@@ -3832,11 +3859,12 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	}
 	else if(!StrContains(classname, "tf_weapon_medigun"))  //Mediguns
 	{
-		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.25 ; 11 ; 1.5 ; 144 ; 2.0 ; 199 ; 0.75 ; 547 ; 0.75", true);
-			//10: +25% faster charge rate
+		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.75 ; 11 ; 1.5 ; 144 ; 2.0 ; 199 ; 0.75 ; 314 ; 4 ; 547 ; 0.75", true);
+			//10: +75% faster charge rate
 			//11: +50% overheal bonus
 			//144: Quick-fix speed/jump effects
 			//199: Deploys 25% faster
+			//314: Ubercharge lasts 4 seconds longer (aka 50% longer)
 			//547: Holsters 25% faster
 		if(itemOverride!=INVALID_HANDLE)
 		{
@@ -3981,7 +4009,7 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		return Plugin_Continue;
 	}
 
-	if(!IsVoteInProgress() && GetClientClassinfoCookie(client) && !(FF2Flags[client] & FF2FLAG_CLASSHELPED))
+	if(!IsVoteInProgress() && GetClientClassInfoCookie(client) && !(FF2Flags[client] & FF2FLAG_CLASSHELPED))
 	{
 		HelpPanelClass(client);
 	}
@@ -4070,8 +4098,6 @@ public Action:CheckItems(Handle:timer, any:userid)
 
 		if(TF2_GetPlayerClass(client)==TFClass_Medic)
 		{
-			SetEntPropFloat(weapon, Prop_Send, "m_flChargeLevel", 0.40);
-
 			if(GetIndexOfWeaponSlot(client, TFWeaponSlot_Melee)==142)  //Gunslinger (Randomizer, etc. compatability)
 			{
 				SetEntityRenderMode(weapon, RENDER_TRANSCOLOR);
@@ -4253,7 +4279,6 @@ public Action:OnUberDeployed(Handle:event, const String:name[], bool:dontBroadca
 				{
 					uberTarget[client]=-1;
 				}
-				SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", 1.50);
 				CreateTimer(0.4, Timer_Uber, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
@@ -4284,28 +4309,15 @@ public Action:Timer_Uber(Handle:timer, any:medigunid)
 					uberTarget[client]=-1;
 				}
 			}
-		}
-
-		if(charge<=0.05)
-		{
-			CreateTimer(3.0, Timer_ResetUberCharge, EntIndexToEntRef(medigun), TIMER_FLAG_NO_MAPCHANGE);
-			FF2Flags[client]&=~FF2FLAG_UBERREADY;
-			return Plugin_Stop;
+			else
+			{
+				return Plugin_Stop;
+			}
 		}
 	}
 	else
 	{
 		return Plugin_Stop;
-	}
-	return Plugin_Continue;
-}
-
-public Action:Timer_ResetUberCharge(Handle:timer, any:medigunid)
-{
-	new medigun=EntRefToEntIndex(medigunid);
-	if(IsValidEntity(medigun))
-	{
-		SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+0.40);
 	}
 	return Plugin_Continue;
 }
@@ -4911,7 +4923,7 @@ public Action:ClientTimer(Handle:timer)
 				{
 					if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
 					{
-						if(!TF2_IsPlayerCritBuffed(client) && !TF2_IsPlayerInCondition(client, TFCond_Buffed) && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && !TF2_IsPlayerInCondition(client, TFCond_Disguised) && !GetEntProp(client, Prop_Send, "m_bFeignDeathReady"))
+						if(!TF2_IsPlayerCritBuffed(client) && !TF2_IsPlayerInCondition(client, TFCond_Buffed) && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && !TF2_IsPlayerInCondition(client, TFCond_Disguised))
 						{
 							TF2_AddCondition(client, TFCond_CritCola, 0.3);
 						}
@@ -5270,7 +5282,10 @@ public Action:OnCallForMedic(client, const String:command[], args)
 					KvGetString(BossKV[character[boss]], "life", ability, sizeof(ability), "");
 					if(!ability[0])
 					{
-						UseAbility(boss, pluginName, abilityName, 0);
+						if(!UseAbility(boss, pluginName, abilityName, 0))
+						{
+							return Plugin_Continue;
+						}
 					}
 					else
 					{
@@ -5279,7 +5294,10 @@ public Action:OnCallForMedic(client, const String:command[], args)
 						{
 							if(StringToInt(lives[n])==BossLives[boss])
 							{
-								UseAbility(boss, pluginName, abilityName, 0);
+								if(!UseAbility(boss, pluginName, abilityName, 0))
+								{
+									return Plugin_Continue;
+								}
 								KvGoBack(BossKV[character[boss]]);
 								break;
 							}
@@ -5815,52 +5833,17 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
 				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
 				TF2_AddCondition(client, TFCond_Bonked, 0.1);
+				damage=0.0;
 				shield[client]=0;
-				return Plugin_Continue;
+				return Plugin_Changed;
 			}
 
-			switch(TF2_GetPlayerClass(client))
+			if(TF2_GetPlayerClass(client)==TFClass_Soldier
+			&& IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)))
+			&& GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226  //Battalion's Backup
+			&& !(FF2Flags[client] & FF2FLAG_ISBUFFED))
 			{
-				case TFClass_Spy:
-				{
-					if(damage>=62.0)  //Temporary stopgap for small amounts of damage still doing 62 health
-					{
-						if((GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked)))
-						{
-							if(damagetype & DMG_CRIT)
-							{
-								damagetype&=~DMG_CRIT;
-							}
-							damage=62.0;
-							return Plugin_Changed;
-						}
-						else if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
-						{
-							if(damagetype & DMG_CRIT)
-							{
-								damagetype&=~DMG_CRIT;
-							}
-
-							if((GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && !TF2_IsPlayerInCondition(client, TFCond_Cloaked)))
-							{
-								damage=62.0;
-								return Plugin_Changed;
-							}
-							else if(TF2_IsPlayerInCondition(client, TFCond_Cloaked))
-							{
-								damage=85.0;
-								return Plugin_Changed;
-							}
-						}
-					}
-				}
-				case TFClass_Soldier:
-				{
-					if(IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2Flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
-					{
-						SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
-					}
-				}
+				SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 			}
 		}
 	}
@@ -6112,15 +6095,9 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 									if(StrEqual(medigunClassname, "tf_weapon_medigun", false))
 									{
 										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healerCount);
-										new Float:max=1.0;
-										if(GetEntProp(medigun, Prop_Send, "m_bChargeRelease"))
+										if(uber>1.0)
 										{
-											max=1.5;
-										}
-
-										if(uber>max)
-										{
-											uber=max;
+											uber=1.0;
 										}
 										SetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel", uber);
 									}
@@ -7573,16 +7550,23 @@ public Action:TurnToZeroPanel(client, target)
 	return Plugin_Handled;
 }
 
-bool:GetClientClassinfoCookie(client)
+bool:GetClientClassInfoCookie(client)
 {
-	if(!IsValidClient(client)) return false;
-	if(IsFakeClient(client)) return false;
-	if(!AreClientCookiesCached(client)) return true;
-	decl String:s[24];
-	decl String:ff2cookies_values[8][5];
-	GetClientCookie(client, FF2Cookies, s,24);
-	ExplodeString(s, " ", ff2cookies_values,8,5);
-	return StringToInt(ff2cookies_values[3])==1;
+	if(!IsValidClient(client) || IsFakeClient(client))
+	{
+		return false;
+	}
+
+	if(!AreClientCookiesCached(client))
+	{
+		return true;
+	}
+
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	return StringToInt(cookieValues[3])==1;
 }
 
 GetClientQueuePoints(client)
@@ -7597,20 +7581,20 @@ GetClientQueuePoints(client)
 		return botqueuepoints;
 	}
 
-	decl String:cookies[24], String:values[8][5];
-	GetClientCookie(client, FF2Cookies, cookies, 24);
-	ExplodeString(cookies, " ", values, 8, 5);
-	return StringToInt(values[0]);
+	decl String:cookies[24], String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	return StringToInt(cookieValues[0]);
 }
 
 SetClientQueuePoints(client, points)
 {
 	if(IsValidClient(client) && !IsFakeClient(client) && AreClientCookiesCached(client))
 	{
-		decl String:cookies[24], String:values[8][5];
+		decl String:cookies[24], String:cookieValues[8][5];
 		GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-		ExplodeString(cookies, " ", values, 8, 5);
-		Format(cookies, sizeof(cookies), "%i %s %s %s %s %s %s %s", points, values[1], values[2], values[3], values[4], values[5], values[6], values[7]);
+		ExplodeString(cookies, " ", cookieValues, 8, 5);
+		Format(cookies, sizeof(cookies), "%i %s %s %s %s %s %s %s", points, cookieValues[1], cookieValues[2], cookieValues[3], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
 		SetClientCookie(client, FF2Cookies, cookies);
 	}
 }
@@ -7814,28 +7798,32 @@ public Action:HelpPanel3(client)
 	SetPanelTitle(panel, "Turn the Freak Fortress 2 class info...");
 	DrawPanelItem(panel, "On");
 	DrawPanelItem(panel, "Off");
-	SendPanelToClient(panel, client, ClassinfoTogglePanelH, MENU_TIME_FOREVER);
+	SendPanelToClient(panel, client, ClassInfoTogglePanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Handled;
 }
 
 
-public ClassinfoTogglePanelH(Handle:menu, MenuAction:action, param1, param2)
+public ClassInfoTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 {
-	if(IsValidClient(param1))
+	if(IsValidClient(client))
 	{
 		if(action==MenuAction_Select)
 		{
-			decl String:s[24];
-			decl String:ff2cookies_values[8][5];
-			GetClientCookie(param1, FF2Cookies, s, 24);
-			ExplodeString(s, " ", ff2cookies_values,8,5);
-			if(param2==2)
-				Format(s,24,"%s %s %s 0 %s %s %s",ff2cookies_values[0],ff2cookies_values[1],ff2cookies_values[2],ff2cookies_values[4],ff2cookies_values[5],ff2cookies_values[6],ff2cookies_values[7]);
+			decl String:cookies[24];
+			decl String:cookieValues[8][5];
+			GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+			ExplodeString(cookies, " ", cookieValues, 8, 5);
+			if(selection==2)
+			{
+				Format(cookies, sizeof(cookies), "%s %s %s 0 %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
+			}
 			else
-				Format(s,24,"%s %s %s 1 %s %s %s",ff2cookies_values[0],ff2cookies_values[1],ff2cookies_values[2],ff2cookies_values[4],ff2cookies_values[5],ff2cookies_values[6],ff2cookies_values[7]);
-			SetClientCookie(param1, FF2Cookies,s);
-			CPrintToChat(param1,"{olive}[FF2]{default} %t","FF2 Class Info", param2==2 ? "off" : "on");
+			{
+				Format(cookies, sizeof(cookies), "%s %s %s 1 %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
+			}
+			SetClientCookie(client, FF2Cookies, cookies);
+			CPrintToChat(client, "{olive}[FF2]{default} %t", "FF2 Class Info", selection==2 ? "off" : "on");
 		}
 	}
 }
@@ -8651,7 +8639,7 @@ public Native_GetAbilityArgumentString(Handle:plugin, numParams)
 	SetNativeString(5, abilityString, length);
 }
 
-UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, buttonMode=0)
+bool:UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, buttonMode=0)
 {
 	new Action:action;
 	Call_StartForward(PreAbility);
@@ -8663,7 +8651,7 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 
 	if(action==Plugin_Handled || action==Plugin_Stop)
 	{
-		return;
+		return false;
 	}
 
 	Call_StartForward(OnAbility);
@@ -8772,6 +8760,7 @@ UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, bu
 			Call_Finish();
 		}
 	}
+	return true;
 }
 
 public Native_UseAbility(Handle:plugin, numParams)
