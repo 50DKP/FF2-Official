@@ -2970,7 +2970,7 @@ StopMusic(client=0)
 
 			if(MusicTimer[client]!=INVALID_HANDLE)
 			{
-				if("TERMINATING INPUT!");
+				Debug("TERMINATING INPUT!");
 				KillTimer(MusicTimer[client]);
 				MusicTimer[client]=INVALID_HANDLE;
 			}
