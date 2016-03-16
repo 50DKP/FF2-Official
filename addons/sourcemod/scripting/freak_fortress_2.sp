@@ -2354,25 +2354,6 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 		return Plugin_Continue;
 	}
 
-	KvRewind(BossKV[Special[0]]);
-	BossRageDamage[0]=KvGetNum(BossKV[Special[0]], "ragedamage", 1900);
-	if(BossRageDamage[0]<=0)
-	{
-		decl String:bossName[64];
-		KvGetString(BossKV[Special[0]], "name", bossName, sizeof(bossName));
-		PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is 0 or below, setting to 1900", bossName);
-		BossRageDamage[0]=1900;
-	}
-
-	BossLivesMax[0]=KvGetNum(BossKV[Special[0]], "lives", 1);
-	if(BossLivesMax[0]<=0)
-	{
-		decl String:bossName[64];
-		KvGetString(BossKV[Special[0]], "name", bossName, sizeof(bossName));
-		PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", bossName);
-		BossLivesMax[0]=1;
-	}
-
 	FindCompanion(0, playing, omit);  //Find companions for the boss!
 
 	for(new boss; boss<=MaxClients; boss++)
@@ -2817,16 +2798,6 @@ public Action:StartBossTimer(Handle:timer)
 		}
 	}
 
-	for(new boss; boss<=MaxClients; boss++)
-	{
-		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
-		{
-			BossHealthMax[boss]=ParseFormula(boss, "health_formula", "(((760.8+n)*(n-1))^1.0341)+2046", RoundFloat(Pow((760.8+float(playing))*(float(playing)-1.0), 1.0341)+2046.0));
-			BossLives[boss]=BossLivesMax[boss];
-			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
-			BossHealthLast[boss]=BossHealth[boss];
-		}
-	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, StartRound, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -3257,6 +3228,29 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	{
 		AssignTeam(client, BossTeam);
 	}
+
+	BossRageDamage[boss]=KvGetNum(BossKV[Special[boss]], "ragedamage", 1900);
+	if(BossRageDamage[boss]<=0)
+	{
+		decl String:bossName[64];
+		KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName));
+		PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is 0 or below, setting to 1900", bossName);
+		BossRageDamage[boss]=1900;
+	}
+
+	BossLivesMax[boss]=KvGetNum(BossKV[Special[boss]], "lives", 1);
+	if(BossLivesMax[boss]<=0)
+	{
+		decl String:bossName[64];
+		KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName));
+		PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", bossName);
+		BossLivesMax[boss]=1;
+	}
+
+	BossHealthMax[boss]=ParseFormula(boss, "health_formula", "(((760.8+n)*(n-1))^1.0341)+2046", RoundFloat(Pow((760.8+float(playing))*(float(playing)-1.0), 1.0341)+2046.0));
+	BossLives[boss]=BossLivesMax[boss];
+	BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
+	BossHealthLast[boss]=BossHealth[boss];
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 	TF2_RemovePlayerDisguise(client);
@@ -4722,12 +4716,7 @@ stock FindSentry(client)
 
 public Action:BossTimer(Handle:timer)
 {
-	if(!Enabled)
-	{
-		return Plugin_Stop;
-	}
-
-	if(CheckRoundState()==2)
+	if(!Enabled || CheckRoundState()==2)
 	{
 		return Plugin_Stop;
 	}
@@ -7169,21 +7158,6 @@ FindCompanion(boss, players, bool:omit[])
 		omit[companion]=true;
 		if(PickCharacter(boss, companion))  //TODO: This is a bit misleading
 		{
-			KvRewind(BossKV[Special[companion]]);
-			BossRageDamage[companion]=KvGetNum(BossKV[Special[companion]], "ragedamage", 1900);
-			if(BossRageDamage[companion]<=0)
-			{
-				PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is below 0, setting to 1900", companionName);
-				BossRageDamage[companion]=1900;
-			}
-
-			BossLivesMax[companion]=KvGetNum(BossKV[Special[companion]], "lives", 1);
-			if(BossLivesMax[companion]<=0)
-			{
-				PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
-				BossLivesMax[companion]=1;
-			}
-
 			playersNeeded++;
 			FindCompanion(companion, players, omit);  //Make sure this companion doesn't have a companion of their own
 		}
