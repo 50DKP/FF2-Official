@@ -30,6 +30,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 //#tryinclude <smac>
 #tryinclude <goomba>
 #tryinclude <rtd>
+#tryinclude <rtd2>
 #tryinclude <tf2attributes>
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
@@ -6326,6 +6327,16 @@ public OnStompPost(attacker, victim, Float:damageMultiplier, Float:damageBonus, 
 	}
 }
 
+#if defined _rtd2_included
+public Action:RTD2_CanRollDice(client)
+{
+	if(Enabled && IsBoss(client) && !canBossRTD)
+	{
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
+#else
 public Action:RTD_CanRollDice(client)
 {
 	if(Enabled && IsBoss(client) && !canBossRTD)
@@ -6334,6 +6345,7 @@ public Action:RTD_CanRollDice(client)
 	}
 	return Plugin_Continue;
 }
+#endif
 
 public Action:OnGetMaxHealth(client, &maxHealth)
 {
