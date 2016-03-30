@@ -6329,15 +6329,9 @@ public OnStompPost(attacker, victim, Float:damageMultiplier, Float:damageBonus, 
 
 #if defined _rtd2_included
 public Action:RTD2_CanRollDice(client)
-{
-	if(Enabled && IsBoss(client) && !canBossRTD)
-	{
-		return Plugin_Handled;
-	}
-	return Plugin_Continue;
-}
 #else
 public Action:RTD_CanRollDice(client)
+#endif
 {
 	if(Enabled && IsBoss(client) && !canBossRTD)
 	{
@@ -6345,7 +6339,6 @@ public Action:RTD_CanRollDice(client)
 	}
 	return Plugin_Continue;
 }
-#endif
 
 public Action:OnGetMaxHealth(client, &maxHealth)
 {
