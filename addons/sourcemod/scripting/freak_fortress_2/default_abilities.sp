@@ -349,7 +349,7 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 
 			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, velocity);
 			decl String:sound[PLATFORM_MAX_PATH];
-			if(FF2_RandomSound("sound_ability", sound, sizeof(sound), boss, slot))
+			if(FF2_FindSound("sound_ability", sound, sizeof(sound), boss, true, slot))
 			{
 				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
@@ -469,7 +469,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 			}
 
 			decl String:sound[PLATFORM_MAX_PATH];
-			if(FF2_RandomSound("sound_ability", sound, sizeof(sound), boss, slot))
+			if(FF2_FindSound("sound_ability", sound, sizeof(sound), boss, true, slot))
 			{
 				EmitSoundToAll(sound, boss, _, _, _, _, _, boss, position);
 				EmitSoundToAll(sound, boss, _, _, _, _, _, boss, position);
