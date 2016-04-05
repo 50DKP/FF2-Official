@@ -12,10 +12,6 @@ Plugin thread on AlliedMods: http://forums.alliedmods.net/showthread.php?t=18210
 Updated by Otokiru, Powerlord, and RavensBro after Rainbolt Dash got sucked into DOTA2
 
 Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
-
-Some code courtesy of Koishi/Shadow's FF2 fork.
-
-Also, for some reason, a certain individual seems to have a deep mancrush on one of our contributors. Please stop, it's getting pretty annoying.
 */
 #pragma semicolon 1
 
@@ -8241,7 +8237,7 @@ public Action:Timer_UseBossCharge(Handle:timer, Handle:data)
 	return Plugin_Continue;
 }
 
-public StripShield(client, attacker, Float:position[3])
+stock StripShield(client, attacker, Float:position[3])
 {
 	TF2_RemoveWearable(client, shield[client]);
 	EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
