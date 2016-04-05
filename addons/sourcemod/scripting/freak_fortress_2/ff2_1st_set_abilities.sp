@@ -757,7 +757,7 @@ public bool:TraceRayDontHitSelf(entity, mask)
 			if(strlen(s)>5)
 				SetEntityModel(proj,s);
 			FF2_SetBossCharge(index,slot,-5*FF2_GetAbilityArgumentFloat(index,this_plugin_name,ability_name,2,5.0));
-			if(FF2_RandomSound("sound_ability",s,PLATFORM_MAX_PATH,index,slot))
+			if(FF2_FindSound("sound_ability", s, PLATFORM_MAX_PATH, index, true, slot))
 			{
 				EmitSoundToAll(s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 				EmitSoundToAll(s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
