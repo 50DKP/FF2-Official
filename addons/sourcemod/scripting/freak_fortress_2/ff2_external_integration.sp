@@ -8,6 +8,7 @@
 #undef REQUIRE_PLUGIN
 #tryinclude <goomba>
 #tryinclude <rtd>
+#tryinclude <rtd2>
 #define REQUIRE_PLUGIN
 
 #pragma newdecls required
@@ -66,6 +67,11 @@ public Action OnStomp(int attacker, int victim, float &damageMultiplier, float &
 }
 
 public Action RTD_CanRollDice(int client)
+{
+	return (FF2_GetBossIndex(client)!=-1 && cvarRTD.BoolValue && !cvarBossRTD.BoolValue) ? Plugin_Handled : Plugin_Continue;
+}
+
+public Action RTD2_CanRollDice(int client)
 {
 	return (FF2_GetBossIndex(client)!=-1 && cvarRTD.BoolValue && !cvarBossRTD.BoolValue) ? Plugin_Handled : Plugin_Continue;
 }
