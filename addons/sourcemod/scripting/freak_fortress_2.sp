@@ -5732,15 +5732,8 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 			if(shield[client] && damage)
 			{
-				TF2_RemoveWearable(client, shield[client]);
-				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-				TF2_AddCondition(client, TFCond_Bonked, 0.1);
-				damage=0.0;
-				shield[client]=0;
-				return Plugin_Changed;
+				RemoveShield(client, attacker, position);
+				return Plugin_Handled;
 			}
 
 			if(TF2_GetPlayerClass(client)==TFClass_Soldier && IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)))
@@ -6291,14 +6284,7 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 		{
 			new Float:position[3];
 			GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
-
-			TF2_RemoveWearable(victim, shield[victim]);
-			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			EmitSoundToClient(victim, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			TF2_AddCondition(victim, TFCond_Bonked, 0.1);
-			shield[victim]=0;
+			RemoveShield(victim, attacker, position);
 			return Plugin_Handled;
 		}
 		damageMultiplier=900.0;
@@ -8249,6 +8235,17 @@ public Action:Timer_UseBossCharge(Handle:timer, Handle:data)
 {
 	BossCharge[ReadPackCell(data)][ReadPackCell(data)]=ReadPackFloat(data);
 	return Plugin_Continue;
+}
+
+stock RemoveShield(client, attacker, Float:position[3])
+{
+	TF2_RemoveWearable(client, shield[client]);
+	EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+	EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+	EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+	EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+	TF2_AddCondition(client, TFCond_Bonked, 0.1); // Shows "MISS!" upon breaking shield
+	shield[client]=0;
 }
 
 public Native_IsEnabled(Handle:plugin, numParams)
