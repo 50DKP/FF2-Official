@@ -5732,7 +5732,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 			if(shield[client] && damage)
 			{
-				StripShield(client, attacker, position);
+				RemoveShield(client, attacker, position);
 				return Plugin_Handled;
 			}
 
@@ -6284,7 +6284,7 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 		{
 			new Float:position[3];
 			GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
-			StripShield(victim, attacker, position);
+			RemoveShield(victim, attacker, position);
 			return Plugin_Handled;
 		}
 		damageMultiplier=900.0;
@@ -8237,7 +8237,7 @@ public Action:Timer_UseBossCharge(Handle:timer, Handle:data)
 	return Plugin_Continue;
 }
 
-stock StripShield(client, attacker, Float:position[3])
+stock RemoveShield(client, attacker, Float:position[3])
 {
 	TF2_RemoveWearable(client, shield[client]);
 	EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
