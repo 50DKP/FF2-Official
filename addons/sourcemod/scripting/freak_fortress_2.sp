@@ -8244,6 +8244,7 @@ stock RemoveShield(client, attacker, Float:position[3])
 	EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
 	EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
 	EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+	TF2_AddCondition(client, TFCond_Bonked, 0.1); // is this even needed?
 	shield[client]=0;
 }
 
