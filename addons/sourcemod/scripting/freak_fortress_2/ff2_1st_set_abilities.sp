@@ -974,7 +974,7 @@ stock UpdateClientCheatValue(value)
 {
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsClientInGame(client) && IsPlayerAlive(client) && !IsFakeClient(client))
+		if(IsClientInGame(client) && !IsFakeClient(client))
 		{
 			SendConVarValue(client, cvarCheats, value ? "1" : "0");
 		}

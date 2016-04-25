@@ -2251,25 +2251,6 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 		return Plugin_Continue;
 	}
 
-	/*KvRewind(BossKV[character[0]]);
-	BossRageDamage[0]=KvGetNum(BossKV[character[0]], "ragedamage", 1900);
-	if(BossRageDamage[0]<=0)
-	{
-		decl String:bossName[64];
-		KvGetString(BossKV[character[0]], "name", bossName, sizeof(bossName));
-		PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is 0 or below, setting to 1900", bossName);
-		BossRageDamage[0]=1900;
-	}
-
-	BossLivesMax[0]=KvGetNum(BossKV[character[0]], "lives", 1);
-	if(BossLivesMax[0]<=0)
-	{
-		decl String:bossName[64];
-		KvGetString(BossKV[character[0]], "name", bossName, sizeof(bossName));
-		PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", bossName);
-		BossLivesMax[0]=1;
-	}*/
-
 	FindCompanion(0, playing, omit);  //Find companions for the boss!
 
 	for(new boss; boss<=MaxClients; boss++)
@@ -2714,17 +2695,6 @@ public Action:StartBossTimer(Handle:timer)
 		}
 	}
 
-	for(new boss; boss<=MaxClients; boss++)
-	{
-		if(Boss[boss] && IsValidEdict(Boss[boss]) && IsPlayerAlive(Boss[boss]))
-		{
-			BossHealthMax[boss]=ParseFormula(boss, "health", RoundFloat(Pow((760.8+float(playing))*(float(playing)-1.0), 1.0341)+2046.0));
-			BossLivesMax[boss]=BossLives[boss]=ParseFormula(boss, "lives", 1);
-			BossHealth[boss]=BossHealthLast[boss]=BossHealthMax[boss]*BossLivesMax[boss];
-			BossRageDamage[boss]=ParseFormula(boss, "rage_damage", 1900);
-			BossSpeed[boss]=float(ParseFormula(boss, "speed", 340));
-		}
-	}
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, StartRound, _, TIMER_FLAG_NO_MAPCHANGE);
@@ -3190,6 +3160,12 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	{
 		AssignTeam(client, BossTeam);
 	}
+
+	BossHealthMax[boss]=ParseFormula(boss, "health", RoundFloat(Pow((760.8+float(playing))*(float(playing)-1.0), 1.0341)+2046.0));
+	BossLivesMax[boss]=BossLives[boss]=ParseFormula(boss, "lives", 1);
+	BossHealth[boss]=BossHealthLast[boss]=BossHealthMax[boss]*BossLivesMax[boss];
+	BossRageDamage[boss]=ParseFormula(boss, "rage_damage", 1900);
+	BossSpeed[boss]=float(ParseFormula(boss, "speed", 340));
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 	TF2_RemovePlayerDisguise(client);
@@ -4942,12 +4918,7 @@ stock FindSentry(client)
 
 public Action:BossTimer(Handle:timer)
 {
-	if(!Enabled)
-	{
-		return Plugin_Stop;
-	}
-
-	if(CheckRoundState()==FF2RoundState_RoundEnd)
+	if(!Enabled || CheckRoundState()==FF2RoundState_RoundEnd)
 	{
 		return Plugin_Stop;
 	}
@@ -5244,6 +5215,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 					{
 						if(!UseAbility(boss, pluginName, abilityName, 0))
 						{
+							Debug("OnCallForMedic: Returning from a normal ability");
 							return Plugin_Continue;
 						}
 					}
@@ -5256,6 +5228,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 							{
 								if(!UseAbility(boss, pluginName, abilityName, 0))
 								{
+									Debug("OnCallForMedic: Returning from a life-loss ability");
 									return Plugin_Continue;
 								}
 								KvGoBack(BossKV[character[boss]]);
@@ -5275,6 +5248,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 		decl String:sound[PLATFORM_MAX_PATH];
 		if(FindSound("ability", sound, sizeof(sound), boss, true))
 		{
+			Debug("Playing ability sound");
 			FF2Flags[Boss[boss]]|=FF2FLAG_TALKING;
 			EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 			EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
@@ -5787,14 +5761,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 
 			if(shield[client] && damage)
 			{
-				TF2_RemoveWearable(client, shield[client]);
-				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-				TF2_AddCondition(client, TFCond_Bonked, 0.1);
-				damage=0.0;
-				shield[client]=0;
+				RemoveShield(client, attacker, position);
 				return Plugin_Changed;
 			}
 
@@ -7247,21 +7214,6 @@ FindCompanion(boss, players, bool:omit[])
 		omit[companion]=true;
 		if(PickCharacter(boss, companion))  //TODO: This is a bit misleading
 		{
-			KvRewind(BossKV[character[companion]]);
-			BossRageDamage[companion]=KvGetNum(BossKV[character[companion]], "ragedamage", 1900);
-			if(BossRageDamage[companion]<=0)
-			{
-				PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is below 0, setting to 1900", companionName);
-				BossRageDamage[companion]=1900;
-			}
-
-			BossLivesMax[companion]=KvGetNum(BossKV[character[companion]], "lives", 1);
-			if(BossLivesMax[companion]<=0)
-			{
-				PrintToServer("[FF2 Bosses] Warning: Boss %s has an invalid amount of lives, setting to 1", companionName);
-				BossLivesMax[companion]=1;
-			}
-
 			playersNeeded++;
 			FindCompanion(companion, players, omit);  //Make sure this companion doesn't have a companion of their own
 		}
@@ -8199,6 +8151,17 @@ public Action:Timer_UseBossCharge(Handle:timer, Handle:data)
 	return Plugin_Continue;
 }
 
+stock RemoveShield(client, attacker, Float:position[3])
+{
+	TF2_RemoveWearable(client, shield[client]);
+	EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+	EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+	EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+	EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+	TF2_AddCondition(client, TFCond_Bonked, 0.1); // Shows "MISS!" upon breaking shield
+	shield[client]=0;
+}
+
 //Natives aren't inlined because of https://github.com/50DKP/FF2-Official/issues/263
 
 public bool:IsFF2Enabled()
@@ -8611,6 +8574,7 @@ bool:UseAbility(boss, const String:pluginName[], const String:abilityName[], slo
 
 	if(action==Plugin_Handled || action==Plugin_Stop)
 	{
+		Debug("UseAbility: Returning false");
 		return false;
 	}
 
