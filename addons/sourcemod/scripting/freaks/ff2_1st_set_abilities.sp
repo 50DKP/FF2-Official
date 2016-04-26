@@ -325,7 +325,7 @@ Rage_Clone(const String:ability_name[], boss)
 					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
 				}
 
-				if(IsValidEdict(weapon))
+				if(IsValidEntity(weapon))
 				{
 					SetEntPropEnt(clone, Prop_Send, "m_hActiveWeapon", weapon);
 					SetEntProp(weapon, Prop_Send, "m_iWorldModelIndex", -1);
@@ -417,13 +417,13 @@ public Action:SaveMinion(client, &attacker, &inflictor, &Float:damage, &damagety
 	if(attacker>MaxClients)
 	{
 		decl String:edict[64];
-		if(GetEdictClassname(attacker, edict, sizeof(edict)) && !strcmp(edict, "trigger_hurt", false))
+		if(GetEntityClassname(attacker, edict, sizeof(edict)) && !strcmp(edict, "trigger_hurt", false))
 		{
 			new target, Float:position[3];
 			new bool:otherTeamIsAlive;
 			for(new clone=1; clone<=MaxClients; clone++)
 			{
-				if(IsValidEdict(clone) && IsClientInGame(clone) && IsPlayerAlive(clone) && GetClientTeam(clone)!=BossTeam)
+				if(IsValidEntity(clone) && IsClientInGame(clone) && IsPlayerAlive(clone) && GetClientTeam(clone)!=BossTeam)
 				{
 					otherTeamIsAlive=true;
 					break;
@@ -440,7 +440,7 @@ public Action:SaveMinion(client, &attacker, &inflictor, &Float:damage, &damagety
 					return Plugin_Continue;
 				}
 			}
-			while(otherTeamIsAlive && (!IsValidEdict(target) || GetClientTeam(target)==BossTeam || !IsPlayerAlive(target)));
+			while(otherTeamIsAlive && (!IsValidEntity(target) || GetClientTeam(target)==BossTeam || !IsPlayerAlive(target)));
 
 			GetEntPropVector(target, Prop_Data, "m_vecOrigin", position);
 			TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
@@ -943,7 +943,7 @@ stock SpawnWeapon(client, String:name[], index, level, quality, String:attribute
 public Action:Timer_RemoveEntity(Handle:timer, any:entid)
 {
 	new entity=EntRefToEntIndex(entid);
-	if(IsValidEdict(entity) && entity>MaxClients)
+	if(IsValidEntity(entity) && entity>MaxClients)
 	{
 		AcceptEntityInput(entity, "Kill");
 	}

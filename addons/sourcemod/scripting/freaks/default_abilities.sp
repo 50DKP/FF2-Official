@@ -197,7 +197,7 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 				return Plugin_Continue;
 			}
 		}
-		while(!IsValidEdict(target) || target==client || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target));
+		while(!IsValidEntity(target) || target==client || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target));
 
 		GetEntPropVector(target, Prop_Data, "m_vecOrigin", position);
 		TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
@@ -431,7 +431,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 					return;
 				}
 			}
-			while(otherTeamIsAlive && (!IsValidEdict(target) || target==client || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target)));
+			while(otherTeamIsAlive && (!IsValidEntity(target) || target==client || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target)));
 
 			decl String:particle[PLATFORM_MAX_PATH];
 			FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, particle, sizeof(particle));
@@ -443,7 +443,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 
 			new Float:position[3];
 			GetEntPropVector(target, Prop_Data, "m_vecOrigin", position);
-			if(IsValidEdict(target))
+			if(IsValidEntity(target))
 			{
 				GetEntPropVector(target, Prop_Send, "m_vecOrigin", position);
 				SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime() + (enableSuperDuperJump ? 4.0:2.0));
@@ -497,7 +497,7 @@ public Action:Timer_ResetCharge(Handle:timer, any:boss)  //FIXME: What.
 public Action:Timer_StunBoss(Handle:timer, any:boss)
 {
 	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
-	if(!IsValidEdict(client))
+	if(!IsValidEntity(client))
 	{
 		return;
 	}
@@ -561,7 +561,7 @@ Charge_WeighDown(boss, slot)  //TODO: Create a HUD for this
 public Action:Timer_ResetGravity(Handle:timer, Handle:data)
 {
 	new client=GetClientOfUserId(ReadPackCell(data));
-	if(client && IsValidEdict(client) && IsClientInGame(client))
+	if(client && IsValidEntity(client) && IsClientInGame(client))
 	{
 		SetEntityGravity(client, ReadPackFloat(data));
 	}
@@ -588,7 +588,7 @@ public Action:Timer_DissolveRagdoll(Handle:timer, any:userid)
 		ragdoll=GetEntPropEnt(client, Prop_Send, "m_hRagdoll");
 	}
 
-	if(ragdoll!=-1)
+	if(IsValidEntity(ragdoll))
 	{
 		DissolveRagdoll(ragdoll);
 	}
@@ -613,7 +613,7 @@ DissolveRagdoll(ragdoll)
 public Action:RemoveEntity(Handle:timer, any:entid)
 {
 	new entity=EntRefToEntIndex(entid);
-	if(IsValidEdict(entity) && entity>MaxClients)
+	if(IsValidEntity(entity) && entity>MaxClients)
 	{
 		AcceptEntityInput(entity, "Kill");
 	}
