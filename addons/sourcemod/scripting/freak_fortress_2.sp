@@ -6323,7 +6323,7 @@ stock GetClientCloakIndex(client)
 
 	decl String:classname[64];
 	GetEntityClassname(weapon, classname, sizeof(classname));
-	if(strncmp(classname, "tf_wea", sizeof(classname), false))
+	if(strncmp(classname, "tf_wea", 6, false))
 	{
 		return -1;
 	}
