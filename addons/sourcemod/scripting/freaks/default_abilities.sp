@@ -151,7 +151,7 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 		new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 		TF2_AddCondition(client, TFCond_Ubercharged, FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 5.0));
 		SetEntProp(client, Prop_Data, "m_takedamage", 0);
-		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 5.0), Timer_StopUber, boss);
+		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 5.0), Timer_StopUber, boss, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else if(!strcmp(ability_name, "rage_stun"))
 	{
@@ -226,7 +226,7 @@ Rage_Stun(const String:ability_name[], boss)
 					TF2_RemoveCondition(target, TFCond_Parachute);
 				}
 				TF2_StunPlayer(target, duration, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, client);
-				CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(target, "yikes_fx", 75.0)));
+				CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(target, "yikes_fx", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 	}
@@ -252,8 +252,8 @@ Rage_StunSentry(const String:ability_name[], boss)
 		if(GetVectorDistance(bossPosition, sentryPosition)<=distance)
 		{
 			SetEntProp(sentry, Prop_Send, "m_bDisabled", 1);
-			CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(sentry, "yikes_fx", 75.0)));
-			CreateTimer(duration, Timer_EnableSentry, EntIndexToEntRef(sentry));
+			CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(sentry, "yikes_fx", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(duration, Timer_EnableSentry, EntIndexToEntRef(sentry), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 }
@@ -406,7 +406,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 			}
 			else if(charge<100)
 			{
-				CreateTimer(0.1, Timer_ResetCharge, boss*10000+slot);  //FIXME: Investigate.
+				CreateTimer(0.1, Timer_ResetCharge, boss*10000+slot, TIMER_FLAG_NO_MAPCHANGE);  //FIXME: Investigate.
 				return;
 			}
 
@@ -437,8 +437,8 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 			FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, particle, sizeof(particle));
 			if(strlen(particle)>0)
 			{
-				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle)));
-				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle, _, false)));
+				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle)), TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle, _, false)), TIMER_FLAG_NO_MAPCHANGE);
 			}
 
 			new Float:position[3];
@@ -463,8 +463,8 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 				TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
 				if(strlen(particle)>0)
 				{
-					CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle)));
-					CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle, _, false)));
+					CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle)), TIMER_FLAG_NO_MAPCHANGE);
+					CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle, _, false)), TIMER_FLAG_NO_MAPCHANGE);
 				}
 			}
 
@@ -574,7 +574,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	new boss=FF2_GetBossIndex(GetClientOfUserId(GetEventInt(event, "attacker")));
 	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "special_dissolve"))
 	{
-		CreateTimer(0.1, Timer_DissolveRagdoll, GetEventInt(event, "userid"));
+		CreateTimer(0.1, Timer_DissolveRagdoll, GetEventInt(event, "userid"), TIMER_FLAG_NO_MAPCHANGE);
 	}
 	return Plugin_Continue;
 }
