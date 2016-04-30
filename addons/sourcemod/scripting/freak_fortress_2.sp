@@ -50,14 +50,15 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define MAXSPECIALS 64
 #define MAXRANDOMS 16
 
-#define SOUNDEXCEPT_MUSIC 0
-#define SOUNDEXCEPT_VOICE 1
-
 #define HEALTHBAR_CLASS "monster_resource"
 #define HEALTHBAR_PROPERTY "m_iBossHealthPercentageByte"
 #define HEALTHBAR_MAX 255
 #define MONOCULUS "eyeball_boss"
-#define DISABLED_PERKS "toxic,noclip,uber,ammo,instant,jump,tinyplayer"
+
+#define FF2SOUND_MUTENONE 1<<0
+#define FF2SOUND_MUTEMUSIC 1<<1
+#define FF2SOUND_MUTEVOICE 1<<2
+#define FF2SOUND_MUTEALL 1<<3
 
 #define FF2_CONFIGS "configs/freak_fortress_2"
 #define FF2_SETTINGS "data/freak_fortress_2"
@@ -86,6 +87,9 @@ new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
+new queuePoints[MAXPLAYERS+1];
+new muteSound[MAXPLAYERS+1];
+new bool:displayInfo[MAXPLAYERS+1];
 
 new String:currentBGM[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
@@ -138,7 +142,9 @@ new Handle:cvarUpdater;
 new Handle:cvarDebug;
 new Handle:cvarPreroundBossDisconnect;
 
-new Handle:FF2Cookies;
+new Handle:FF2Cookie_QueuePoints;
+new Handle:FF2Cookie_MuteSound;
+new Handle:FF2Cookie_DisplayInfo;
 
 new Handle:jumpHUD;
 new Handle:rageHUD;
@@ -1190,7 +1196,9 @@ public OnPluginStart()
 
 	AutoExecConfig(true, "freak_fortress_2/freak_fortress_2");
 
-	FF2Cookies=RegClientCookie("ff2_cookies_mk2", "", CookieAccess_Protected);
+	FF2Cookie_QueuePoints=RegClientCookie("ff2_cookie_queuepoints", "Client's queue points", CookieAccess_Protected);
+	FF2Cookie_MuteSound=RegClientCookie("ff2_cookie_mutesound", "Client's sound preferences", CookieAccess_Public);
+	FF2Cookie_DisplayInfo=RegClientCookie("ff2_cookie_displayinfo", "Client's display info preferences", CookieAccess_Public);
 
 	jumpHUD=CreateHudSynchronizer();
 	rageHUD=CreateHudSynchronizer();
@@ -2403,8 +2411,8 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		bossWin=true;
 		if(FindSound("win", sound, sizeof(sound)))
 		{
-			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
-			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
 		}
 	}
 
@@ -2566,9 +2574,8 @@ public Action:OnBroadcast(Handle:event, const String:name[], bool:dontBroadcast)
 
 public Action:Timer_NineThousand(Handle:timer)
 {
-	EmitSoundToAll("saxton_hale/9000.wav", _, _, _, _, _, _, _, _, _, false);
-	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
-	EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
+	EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
+	EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, "saxton_hale/9000.wav", _, SNDCHAN_VOICE, _, _, _, _, _, _, _, false);
 	return Plugin_Continue;
 }
 
@@ -2782,9 +2789,9 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 				{
 					strcopy(currentBGM[target], PLATFORM_MAX_PATH, music[index]);
 				}
-				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music[index]);
+				EmitSoundToAllExcept(FF2SOUND_MUTEMUSIC, music[index]);
 			}
-			else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
+			else if(CheckSoundFlags(client, FF2SOUND_MUTEMUSIC))
 			{
 				strcopy(currentBGM[client], PLATFORM_MAX_PATH, music[index]);
 				EmitSoundToClient(client, music[index]);
@@ -2852,14 +2859,14 @@ StopMusic(client=0)
 	}
 }
 
-stock EmitSoundToAllExcept(exceptiontype=SOUNDEXCEPT_MUSIC, const String:sample[], entity=SOUND_FROM_PLAYER, channel=SNDCHAN_AUTO, level=SNDLEVEL_NORMAL, flags=SND_NOFLAGS, Float:volume=SNDVOL_NORMAL, pitch=SNDPITCH_NORMAL, speakerentity=-1, const Float:origin[3]=NULL_VECTOR, const Float:dir[3]=NULL_VECTOR, bool:updatePos=true, Float:soundtime=0.0)
+stock EmitSoundToAllExcept(soundFlags, const String:sample[], entity=SOUND_FROM_PLAYER, channel=SNDCHAN_AUTO, level=SNDLEVEL_NORMAL, flags=SND_NOFLAGS, Float:volume=SNDVOL_NORMAL, pitch=SNDPITCH_NORMAL, speakerentity=-1, const Float:origin[3]=NULL_VECTOR, const Float:dir[3]=NULL_VECTOR, bool:updatePos=true, Float:soundtime=0.0)
 {
 	new clients[MaxClients], total;
 	for(new client=1; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client) && IsClientInGame(client))
 		{
-			if(CheckSoundException(client, exceptiontype))
+			if(CheckSoundFlags(client, soundFlags))
 			{
 				clients[total++]=client;
 			}
@@ -2874,64 +2881,37 @@ stock EmitSoundToAllExcept(exceptiontype=SOUNDEXCEPT_MUSIC, const String:sample[
 	EmitSound(clients, total, sample, entity, channel, level, flags, volume, pitch, speakerentity, origin, dir, updatePos, soundtime);
 }
 
-stock bool:CheckSoundException(client, soundException)
+stock bool:CheckSoundFlags(client, soundFlags)
 {
 	if(!IsValidClient(client))
 	{
 		return false;
 	}
 
-	if(IsFakeClient(client) || !AreClientCookiesCached(client))
+	if(IsFakeClient(client))
 	{
 		return true;
 	}
 
-	decl String:cookies[24];
-	decl String:cookieValues[8][5];
-	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-	ExplodeString(cookies, " ", cookieValues, 8, 5);
-	if(soundException==SOUNDEXCEPT_VOICE)
+	if(muteSound[client] & soundFlags)
 	{
-		return StringToInt(cookieValues[2])==1;
+		return true;
 	}
-	return StringToInt(cookieValues[1])==1;
+	return false;
 }
 
-SetClientSoundOptions(client, soundException, bool:enable)
+SetSoundFlags(client, soundFlags)
 {
-	if(!IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client))
+	if(!IsValidClient(client) || IsFakeClient(client))
 	{
 		return;
 	}
 
-	decl String:cookies[24];
-	decl String:cookieValues[8][5];
-	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-	ExplodeString(cookies, " ", cookieValues, 8, 5);
-	if(soundException==SOUNDEXCEPT_VOICE)
-	{
-		if(enable)
-		{
-			cookieValues[2][0]='1';
-		}
-		else
-		{
-			cookieValues[2][0]='0';
-		}
-	}
-	else
-	{
-		if(enable)
-		{
-			cookieValues[1][0]='1';
-		}
-		else
-		{
-			cookieValues[1][0]='0';
-		}
-	}
-	Format(cookies, sizeof(cookies), "%s %s %s %s %s %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[3], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
-	SetClientCookie(client, FF2Cookies, cookies);
+	decl String:buffer[4];
+	GetClientCookie(client, FF2Cookie_MuteSound, buffer, sizeof(buffer));
+	IntToString((StringToInt(buffer) | soundFlags), buffer, sizeof(buffer));
+	SetClientCookie(client, FF2Cookie_MuteSound, buffer);
+	muteSound[client] |= soundFlags;
 }
 
 public Action:Timer_Move(Handle:timer)
@@ -4568,17 +4548,32 @@ public OnClientPutInServer(client)
 	FF2Flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
+}
 
-	if(AreClientCookiesCached(client))
+public OnClientCookiesCached(client)
+{
+	decl String:buffer[4];
+	GetClientCookie(client, FF2Cookie_QueuePoints, buffer, sizeof(buffer));
+	if(!buffer[0])
 	{
-		new String:buffer[24];
-		GetClientCookie(client, FF2Cookies, buffer, sizeof(buffer));
-		if(!buffer[0])
-		{
-			SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
-			//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
-		}
+		SetClientCookie(client, FF2Cookie_QueuePoints, "0");
 	}
+	queuePoints[client]=StringToInt(buffer);
+
+	GetClientCookie(client, FF2Cookie_MuteSound, buffer, sizeof(buffer));
+	if(!buffer[0])
+	{
+		SetClientCookie(client, FF2Cookie_MuteSound, "0");
+	}
+	muteSound[client]=StringToInt(buffer);
+
+	GetClientCookie(client, FF2Cookie_DisplayInfo, buffer, sizeof(buffer));
+	if(!buffer[0])
+	{
+		SetClientCookie(client, FF2Cookie_DisplayInfo, "1");
+		buffer="1";
+	}
+	displayInfo[client]=bool:StringToInt(buffer);
 }
 
 public OnClientDisconnect(client)
@@ -6126,8 +6121,8 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 					decl String:sound[PLATFORM_MAX_PATH];
 					if(FindSound("stabbed", sound, sizeof(sound), boss))
 					{
-						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
-						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
+						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
+						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
 					}
 
 					if(Stabbed[boss]<3)
@@ -7469,21 +7464,12 @@ bool:GetClientClassInfoCookie(client)
 		return false;
 	}
 
-	if(!AreClientCookiesCached(client))
-	{
-		return true;
-	}
-
-	decl String:cookies[24];
-	decl String:cookieValues[8][5];
-	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-	ExplodeString(cookies, " ", cookieValues, 8, 5);
-	return StringToInt(cookieValues[3])==1;
+	return displayInfo[client];
 }
 
 GetClientQueuePoints(client)
 {
-	if(!IsValidClient(client) || !AreClientCookiesCached(client))
+	if(!IsValidClient(client))
 	{
 		return 0;
 	}
@@ -7493,21 +7479,17 @@ GetClientQueuePoints(client)
 		return botqueuepoints;
 	}
 
-	decl String:cookies[24], String:cookieValues[8][5];
-	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-	ExplodeString(cookies, " ", cookieValues, 8, 5);
-	return StringToInt(cookieValues[0]);
+	return queuePoints[client];
 }
 
 SetClientQueuePoints(client, points)
 {
-	if(IsValidClient(client) && !IsFakeClient(client) && AreClientCookiesCached(client))
+	if(IsValidClient(client) && !IsFakeClient(client))
 	{
-		decl String:cookies[24], String:cookieValues[8][5];
-		GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-		ExplodeString(cookies, " ", cookieValues, 8, 5);
-		Format(cookies, sizeof(cookies), "%i %s %s %s %s %s %s %s", points, cookieValues[1], cookieValues[2], cookieValues[3], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
-		SetClientCookie(client, FF2Cookies, cookies);
+		decl String:buffer[12];
+		IntToString(points, buffer, sizeof(buffer));
+		SetClientCookie(client, FF2Cookie_QueuePoints, buffer);
+		queuePoints[client] = points;
 	}
 }
 
@@ -7722,19 +7704,8 @@ public ClassInfoTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 	{
 		if(action==MenuAction_Select)
 		{
-			decl String:cookies[24];
-			decl String:cookieValues[8][5];
-			GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
-			ExplodeString(cookies, " ", cookieValues, 8, 5);
-			if(selection==2)
-			{
-				Format(cookies, sizeof(cookies), "%s %s %s 0 %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
-			}
-			else
-			{
-				Format(cookies, sizeof(cookies), "%s %s %s 1 %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
-			}
-			SetClientCookie(client, FF2Cookies, cookies);
+			SetClientCookie(client, FF2Cookie_DisplayInfo, selection==2 ? "0" : "1");
+			displayInfo[client] = selection==2 ? false : true;
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "FF2 Class Info", selection==2 ? "off" : "on");
 		}
 	}
@@ -7890,13 +7861,13 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 	{
 		if(selection==2)  //Off
 		{
-			SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, false);
+			SetSoundFlags(client, ~FF2SOUND_MUTEMUSIC);
 			StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 			StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 		}
 		else  //On
 		{
-			SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
+			SetSoundFlags(client, FF2SOUND_MUTEMUSIC);
 			MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
 		CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_music", selection==2 ? "off" : "on");
@@ -7938,11 +7909,11 @@ public VoiceTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 		{
 			if(selection==2)
 			{
-				SetClientSoundOptions(client, SOUNDEXCEPT_VOICE, false);
+				SetSoundFlags(client, ~FF2SOUND_MUTEVOICE);
 			}
 			else
 			{
-				SetClientSoundOptions(client, SOUNDEXCEPT_VOICE, true);
+				SetSoundFlags(client, FF2SOUND_MUTEVOICE);
 			}
 
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "FF2 Voice", selection==2 ? "off" : "on");
