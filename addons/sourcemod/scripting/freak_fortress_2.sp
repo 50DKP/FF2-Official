@@ -1163,6 +1163,7 @@ public OnPluginStart()
 	RegAdminCmd("ff2_addpoints", Command_Points, ADMFLAG_CHEATS, "Usage:  ff2_addpoints <target> <points>.  Adds queue points to any player");
 	RegAdminCmd("ff2_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable the control point if ff2_point_type is 0");
 	RegAdminCmd("ff2_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable the control point if ff2_point_type is 0");
+	RegAdminCmd("ff2_start_music", Command_StartMusic, ADMFLAG_CHEATS, "Start the Boss's music");
 	RegAdminCmd("ff2_stop_music", Command_StopMusic, ADMFLAG_CHEATS, "Stop any currently playing Boss music");
 	RegAdminCmd("ff2_resetqueuepoints", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 	RegAdminCmd("ff2_resetq", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
@@ -1174,6 +1175,7 @@ public OnPluginStart()
 	RegAdminCmd("hale_addpoints", Command_Points, ADMFLAG_CHEATS, "Usage:  hale_addpoints <target> <points>.  Adds queue points to any player");
 	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable the control point if ff2_point_type is 0");
 	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable the control point if ff2_point_type is 0");
+	RegAdminCmd("hale_start_music", Command_StartMusic, ADMFLAG_CHEATS, "Start the Boss's music");
 	RegAdminCmd("hale_stop_music", Command_StopMusic, ADMFLAG_CHEATS, "Stop any currently playing Boss music");
 	RegAdminCmd("hale_resetqueuepoints", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 	RegAdminCmd("hale_resetq", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
@@ -2896,6 +2898,26 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 	return Plugin_Continue;
 }
 
+StartMusic(client=0)
+{
+	if(client<=0)  //Start music for all clients
+	{
+		for(client=1; client<=MaxClients; client++)
+		{
+			if(IsValidClient(client))
+			{
+				StopMusic(client);
+				MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			}
+		}
+	}
+	else
+	{
+		StopMusic(client);
+		MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+	}
+}
+
 StopMusic(client=0)
 {
 	if(client<=0)  //Stop music for all clients
@@ -2904,7 +2926,7 @@ StopMusic(client=0)
 		{
 			if(IsValidClient(client))
 			{
-				if(!currentBGM[client])
+				if(!currentBGM[client][0])
 				{
 					Debug("{green}MALFUNCTION! NEED INPUT!");
 				}
@@ -2923,7 +2945,7 @@ StopMusic(client=0)
 	}
 	else
 	{
-		if(!currentBGM[client])
+		if(!currentBGM[client][0])
 		{
 			Debug("{green}MALFUNCTION! NEED INPUT!");
 		}
@@ -4219,6 +4241,46 @@ public Action:Command_Points(client, args)
 	}
 	CReplyToCommand(client, "{olive}[FF2]{default} Added %d queue points to %s", points, targetName);
 	return Plugin_Handled;
+}
+
+public Action:Command_StartMusic(client, args)
+{
+	if(Enabled2)
+	{
+		if(args)
+		{
+			decl String:pattern[MAX_TARGET_LENGTH];
+			GetCmdArg(1, pattern, sizeof(pattern));
+			new String:targetName[MAX_TARGET_LENGTH];
+			new targets[MAXPLAYERS], matches;
+			new bool:targetNounIsMultiLanguage;
+			if((matches=ProcessTargetString(pattern, client, targets, sizeof(targets), COMMAND_FILTER_NO_BOTS, targetName, sizeof(targetName), targetNounIsMultiLanguage))<=0)
+			{
+				ReplyToTargetError(client, matches);
+				return Plugin_Handled;
+			}
+
+			if(matches>1)
+			{
+				for(new target; target<matches; target++)
+				{
+					StartMusic(targets[target]);
+				}
+			}
+			else
+			{
+				StartMusic(targets[0]);
+			}
+			CReplyToCommand(client, "{olive}[FF2]{default} Started boss music for %s.", targetName);
+		}
+		else
+		{
+			StartMusic();
+			CReplyToCommand(client, "{olive}[FF2]{default} Started boss music for all clients.");
+		}
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
 }
 
 public Action:Command_StopMusic(client, args)
@@ -7828,8 +7890,12 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 		}
 		else  //On
 		{
-			SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
-			MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			//If they already have music enabled don't do anything
+			if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
+			{
+				SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
+				MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			}
 		}
 		CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_music", selection==2 ? "off" : "on");
 	}
@@ -8565,9 +8631,7 @@ public Native_GetSpecialKV(Handle:plugin, numParams)
 
 public Native_StartMusic(Handle:plugin, numParams)
 {
-	new client=GetNativeCell(1);
-	StopMusic(client);
-	MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+	StartMusic(GetNativeCell(1));
 }
 
 public Native_StopMusic(Handle:plugin, numParams)
