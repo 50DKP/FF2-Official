@@ -143,6 +143,7 @@ new Handle:cvarBossRTD;
 new Handle:cvarUpdater;
 new Handle:cvarDebug;
 new Handle:cvarPreroundBossDisconnect;
+new Handle:cvarNameChange;
 
 new Handle:FF2Cookies;
 
@@ -209,6 +210,9 @@ static bool:executed=false;
 static bool:executed2=false;
 
 new changeGamemode;
+
+new Handle:hostName;
+new String:oldName[256];
 
 enum Operators
 {
@@ -1074,6 +1078,7 @@ public OnPluginStart()
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", _, true, 0.0, true, 1.0);
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", _, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", _, true, 0.0, true, 1.0);
+	cvarNameChange=CreateConVar("ff2_name_change", "1", "Change the Host name to the current boss? 0-Leave it alone, 1-Change it", _, true, 0.0, true, 1.0);
 
 	//The following are used in various subplugins
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
@@ -1341,6 +1346,8 @@ public OnConfigsExecuted()
 		Updater_AddPlugin(UPDATE_URL);
 	}
 	#endif
+	
+	GetConVarString(hostName=FindConVar("hostname"), oldName, sizeof(oldName));
 }
 
 public OnMapStart()
@@ -2395,6 +2402,15 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	healthcheckused=0;
 	firstBlood=true;
 	return Plugin_Continue;
+	
+	if(GetConVarBool(cvarNameChange))
+	{
+		decl String:newName[256], String:bossName[64];
+		SetConVarString(hostName, oldName);
+		KvGetString(BossKV[Special[0]], "name", bossName, sizeof(bossName));
+		Format(newName, sizeof(newName), "%s | %s", oldName, bossName);
+		SetConVarString(hostName, newName);
+	}
 }
 
 public Action:Timer_EnableCap(Handle:timer)
