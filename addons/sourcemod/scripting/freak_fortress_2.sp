@@ -3291,7 +3291,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		{
 			switch(GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex"))
 			{
-				case 438, 463, 167, 477, 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 1015, 5607:  //Action slot items
+				case 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 5607:  //Action slot items
 				{
 					//NOOP
 				}
