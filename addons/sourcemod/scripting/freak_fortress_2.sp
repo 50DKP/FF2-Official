@@ -2919,7 +2919,7 @@ StopMusic(client=0)
 {
 	if(client<=0)  //Stop music for all clients
 	{
-		for(client=1; client<=MaxClients; client++)
+		for(client=0; client<=MaxClients; client++)
 		{
 			if(IsValidClient(client))
 			{
