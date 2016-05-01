@@ -2816,7 +2816,7 @@ public Action:StartBossTimer(Handle:timer)
 public Action:Timer_PlayBGM(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
-	if(CheckRoundState()!=1 || (!client && MapHasMusic()))
+	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid))
 	{
 		MusicTimer[client]=INVALID_HANDLE;
 		return Plugin_Stop;
@@ -2871,6 +2871,10 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 				for(new target; target<=MaxClients; target++)
 				{
 					strcopy(currentBGM[target], PLATFORM_MAX_PATH, music);
+					if(time>1 && GetClientUserId(target))
+					{
+						MusicTimer[target]=CreateTimer(time, Timer_PlayBGM, GetClientUserId(target), TIMER_FLAG_NO_MAPCHANGE);
+					}
 				}
 				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music);
 			}
@@ -2878,11 +2882,10 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 			{
 				strcopy(currentBGM[client], PLATFORM_MAX_PATH, music);
 				EmitSoundToClient(client, music);
-			}
-
-			if(time>1)
-			{
-				MusicTimer[client]=CreateTimer(time, Timer_PlayBGM, userid, TIMER_FLAG_NO_MAPCHANGE);
+				if(time>1)
+				{
+					MusicTimer[client]=CreateTimer(time, Timer_PlayBGM, userid, TIMER_FLAG_NO_MAPCHANGE);
+				}
 			}
 			Debug("AHH..INPUT! %s | MORE INPUT! %f", music, time);
 		}
@@ -2902,19 +2905,13 @@ StartMusic(client=0)
 {
 	if(client<=0)  //Start music for all clients
 	{
-		for(client=1; client<=MaxClients; client++)
-		{
-			if(IsValidClient(client))
-			{
-				StopMusic(client);
-				MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			}
-		}
+		StopMusic();
+		CreateTimer(0.0, Timer_PlayBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
 	{
 		StopMusic(client);
-		MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
@@ -7894,7 +7891,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 			if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 			{
 				SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
-				MusicTimer[client]=CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 		CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_music", selection==2 ? "off" : "on");
