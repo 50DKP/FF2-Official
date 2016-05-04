@@ -2868,10 +2868,10 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 		{
 			if(!client)
 			{
-				for(new target; target<=MaxClients; target++)
+				for(new target=1; target<=MaxClients; target++)
 				{
 					strcopy(currentBGM[target], PLATFORM_MAX_PATH, music);
-					if(time>1 && GetClientUserId(target))
+					if(time>1 && IsClientInGame(target))
 					{
 						MusicTimer[target]=CreateTimer(time, Timer_PlayBGM, GetClientUserId(target), TIMER_FLAG_NO_MAPCHANGE);
 					}
@@ -7888,7 +7888,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 		else  //On
 		{
 			//If they already have music enabled don't do anything
-			if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
+			if(!CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 			{
 				SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
 				CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
