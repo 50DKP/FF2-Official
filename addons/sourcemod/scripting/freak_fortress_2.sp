@@ -2427,13 +2427,13 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 
 	for(new entity=MaxClients+1; entity<MAXENTITIES; entity++)
 	{
-		if(!IsValidEdict(entity))
+		if(!IsValidEntity(entity))
 		{
 			continue;
 		}
 
 		decl String:classname[64];
-		GetEdictClassname(entity, classname, 64);
+		GetEntityClassname(entity, classname, sizeof(classname));
 		if(!strcmp(classname, "func_regenerate"))
 		{
 			AcceptEntityInput(entity, "Kill");
@@ -3342,13 +3342,13 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	}
 
 	new entity=-1;
-	while((entity=FindEntityByClassname2(entity, "tf_wearable"))!=-1)
+	while((entity=FindEntityByClassname2(entity, "tf_wear*"))!=-1)
 	{
 		if(IsBoss(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")))
 		{
 			switch(GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex"))
 			{
-				case 438, 463, 167, 477, 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 1015, 5607:  //Action slot items
+				case 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 5607:  //Action slot items
 				{
 					//NOOP
 				}
@@ -3366,34 +3366,6 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		if(IsBoss(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")))
 		{
 			TF2_RemoveWearable(client, entity);
-		}
-	}
-
-	entity=-1;
-	while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)
-	{
-		if(IsBoss(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")))
-		{
-			TF2_RemoveWearable(client, entity);
-		}
-	}
-
-	entity=-1;
-	while((entity=FindEntityByClassname2(entity, "tf_usableitem"))!=-1)
-	{
-		if(IsBoss(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")))
-		{
-			switch(GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex"))
-			{
-				case 438, 463, 167, 477, 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542:  //Action slot items
-				{
-					//NOOP
-				}
-				default:
-				{
-					TF2_RemoveWearable(client, entity);
-				}
-			}
 		}
 	}
 
@@ -3683,9 +3655,9 @@ public Action:Timer_NoHonorBound(Handle:timer, any:userid)
 		new index=((IsValidEntity(melee) && melee>MaxClients) ? GetEntProp(melee, Prop_Send, "m_iItemDefinitionIndex") : -1);
 		new weapon=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 		new String:classname[64];
-		if(IsValidEdict(weapon))
+		if(IsValidEntity(weapon))
 		{
-			GetEdictClassname(weapon, classname, sizeof(classname));
+			GetEntityClassname(weapon, classname, sizeof(classname));
 		}
 		if(index==357 && weapon==melee && !strcmp(classname, "tf_weapon_katana", false))
 		{
@@ -3838,7 +3810,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 
 	//Cloak and Dagger is NEVER allowed, even in Medieval mode
 	new weapon=GetPlayerWeaponSlot(client, 4);
-	if(weapon && IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
+	if(IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
 	{
 		TF2_RemoveWeaponSlot(client, 4);
 		SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
@@ -3850,7 +3822,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 	}
 
 	weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Primary);
-	if(weapon && IsValidEdict(weapon))
+	if(IsValidEntity(weapon))
 	{
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
@@ -3880,7 +3852,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 	}
 
 	weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-	if(weapon && IsValidEdict(weapon))
+	if(IsValidEntity(weapon))
 	{
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
@@ -3908,7 +3880,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 	}
 
 	new playerBack=FindPlayerBack(client, 57);  //Razorback
-	shield[client]=playerBack!=-1 ? playerBack : 0;
+	shield[client]=IsValidEntity(playerBack) ? playerBack : 0;
 	if(IsValidEntity(FindPlayerBack(client, 642)))  //Cozy Camper
 	{
 		SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
@@ -3938,7 +3910,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 	}
 
 	weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
-	if(weapon && IsValidEdict(weapon))
+	if(IsValidEntity(weapon))
 	{
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
@@ -4067,7 +4039,7 @@ public Action:OnUberDeployed(Handle:event, const String:name[], bool:dontBroadca
 		if(IsValidEntity(medigun))
 		{
 			decl String:classname[64];
-			GetEdictClassname(medigun, classname, sizeof(classname));
+			GetEntityClassname(medigun, classname, sizeof(classname));
 			if(StrEqual(classname, "tf_weapon_medigun"))
 			{
 				TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.5, client);
@@ -4435,7 +4407,7 @@ stock SetControlPoint(bool:enable)
 	new controlPoint=MaxClients+1;
 	while((controlPoint=FindEntityByClassname2(controlPoint, "team_control_point"))!=-1)
 	{
-		if(controlPoint>MaxClients && IsValidEdict(controlPoint))
+		if(controlPoint>MaxClients && IsValidEntity(controlPoint))
 		{
 			AcceptEntityInput(controlPoint, (enable ? "ShowModel" : "HideModel"));
 			SetVariantInt(enable ? 0 : 1);
@@ -4447,7 +4419,7 @@ stock SetControlPoint(bool:enable)
 stock SetArenaCapEnableTime(Float:time)
 {
 	new entity=-1;
-	if((entity=FindEntityByClassname2(-1, "tf_logic_arena"))!=-1 && IsValidEdict(entity))
+	if((entity=FindEntityByClassname2(-1, "tf_logic_arena"))!=-1 && IsValidEntity(entity))
 	{
 		decl String:timeString[32];
 		FloatToString(time, timeString, sizeof(timeString));
@@ -4598,7 +4570,7 @@ public Action:ClientTimer(Handle:timer)
 
 			new TFClassType:class=TF2_GetPlayerClass(client);
 			new weapon=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-			if(weapon<=MaxClients || !IsValidEntity(weapon) || !GetEdictClassname(weapon, classname, sizeof(classname)))
+			if(weapon<=MaxClients || !IsValidEntity(weapon) || !GetEntityClassname(weapon, classname, sizeof(classname)))
 			{
 				strcopy(classname, sizeof(classname), "");
 			}
@@ -4611,7 +4583,7 @@ public Action:ClientTimer(Handle:timer)
 				{
 					new medigun=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 					decl String:mediclassname[64];
-					if(IsValidEdict(medigun) && GetEdictClassname(medigun, mediclassname, sizeof(mediclassname)) && !StrContains(mediclassname, "tf_weapon_medigun", false))
+					if(IsValidEntity(medigun) && GetEntityClassname(medigun, mediclassname, sizeof(mediclassname)) && !StrContains(mediclassname, "tf_weapon_medigun", false))
 					{
 						new charge=RoundToFloor(GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")*100);
 						SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
@@ -4718,7 +4690,7 @@ public Action:ClientTimer(Handle:timer)
 					{
 						new medigun=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 						decl String:mediclassname[64];
-						if(IsValidEdict(medigun) && GetEdictClassname(medigun, mediclassname, sizeof(mediclassname)) && !StrContains(mediclassname, "tf_weapon_medigun", false))
+						if(IsValidEntity(medigun) && GetEntityClassname(medigun, mediclassname, sizeof(mediclassname)) && !StrContains(mediclassname, "tf_weapon_medigun", false))
 						{
 							SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
 							new charge=RoundToFloor(GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")*100);
@@ -5073,7 +5045,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 	}
 
 	new boss=GetBossIndex(client);
-	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]))
+	if(boss==-1 || !Boss[boss] || !IsValidEntity(Boss[boss]))
 	{
 		return Plugin_Continue;
 	}
@@ -5348,9 +5320,9 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 		FakeClientCommand(client, "destroy 2");
 		for(new entity=MaxClients+1; entity<MAXENTITIES; entity++)
 		{
-			if(IsValidEdict(entity))
+			if(IsValidEntity(entity))
 			{
-				GetEdictClassname(entity, name, sizeof(name));
+				GetEntityClassname(entity, name, sizeof(name));
 				if(!StrContains(name, "obj_sentrygun") && (GetEntPropEnt(entity, Prop_Send, "m_hBuilder")==client))
 				{
 					SetVariantInt(GetEntPropEnt(entity, Prop_Send, "m_iMaxHealth")+1);
@@ -5604,7 +5576,7 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 	new boss=GetBossIndex(client);
 	new damage=GetEventInt(event, "damageamount");
 	new custom=GetEventInt(event, "custom");
-	if(boss==-1 || !Boss[boss] || !IsValidEdict(Boss[boss]) || client==attacker)
+	if(boss==-1 || !Boss[boss] || !IsValidEntity(Boss[boss]) || client==attacker)
 	{
 		return Plugin_Continue;
 	}
@@ -5776,7 +5748,7 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 
 public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damagetype, &weapon, Float:damageForce[3], Float:damagePosition[3], damagecustom)
 {
-	if(!Enabled || !IsValidEdict(attacker))
+	if(!Enabled || !IsValidEntity(attacker))
 	{
 		return Plugin_Continue;
 	}
@@ -5836,7 +5808,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 				return Plugin_Handled;
 			}
 
-			if(TF2_GetPlayerClass(client)==TFClass_Soldier && IsValidEdict((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)))
+			if(TF2_GetPlayerClass(client)==TFClass_Soldier && IsValidEntity((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)))
 			&& GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
 			{
 				SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
@@ -5868,10 +5840,10 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						bIsTelefrag=true;
 					}
 				}
-				else if(weapon!=4095 && IsValidEdict(weapon) && weapon==GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee) && damage>1000.0)
+				else if(weapon!=4095 && IsValidEntity(weapon) && weapon==GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee) && damage>1000.0)
 				{
 					decl String:classname[32];
-					if(GetEdictClassname(weapon, classname, sizeof(classname)) && !StrContains(classname, "tf_weapon_knife", false))
+					if(GetEntityClassname(weapon, classname, sizeof(classname)) && !StrContains(classname, "tf_weapon_knife", false))
 					{
 						bIsBackstab=true;
 					}
@@ -6114,7 +6086,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 								if(IsValidEntity(medigun))
 								{
 									decl String:medigunClassname[64];
-									GetEdictClassname(medigun, medigunClassname, sizeof(medigunClassname));
+									GetEntityClassname(medigun, medigunClassname, sizeof(medigunClassname));
 									if(StrEqual(medigunClassname, "tf_weapon_medigun", false))
 									{
 										new Float:uber=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")+(0.1/healerCount);
@@ -6267,7 +6239,7 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			else
 			{
 				decl String:classname[64];
-				if(GetEdictClassname(attacker, classname, sizeof(classname)) && !strcmp(classname, "trigger_hurt", false))
+				if(GetEntityClassname(attacker, classname, sizeof(classname)) && !strcmp(classname, "trigger_hurt", false))
 				{
 					new Action:action=Plugin_Continue;
 					Call_StartForward(OnTriggerHurt);
@@ -6500,7 +6472,7 @@ stock FindTeleOwner(client)
 
 	new teleporter=GetEntPropEnt(client, Prop_Send, "m_hGroundEntity");
 	decl String:classname[32];
-	if(IsValidEntity(teleporter) && GetEdictClassname(teleporter, classname, sizeof(classname)) && !strcmp(classname, "obj_teleporter", false))
+	if(IsValidEntity(teleporter) && GetEntityClassname(teleporter, classname, sizeof(classname)) && !strcmp(classname, "obj_teleporter", false))
 	{
 		new owner=GetEntPropEnt(teleporter, Prop_Send, "m_hBuilder");
 		if(IsValidClient(owner, false))
@@ -8034,10 +8006,10 @@ stock GetHealingTarget(client, bool:checkgun=false)
 		return -1;
 	}
 
-	if(IsValidEdict(medigun))
+	if(IsValidEntity(medigun))
 	{
 		decl String:classname[64];
-		GetEdictClassname(medigun, classname, sizeof(classname));
+		GetEntityClassname(medigun, classname, sizeof(classname));
 		if(!strcmp(classname, "tf_weapon_medigun", false))
 		{
 			if(GetEntProp(medigun, Prop_Send, "m_bHealing"))
