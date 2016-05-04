@@ -2852,14 +2852,12 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 		{
 			case Plugin_Stop, Plugin_Handled:
 			{
-				Debug("NEED INPUT!");
 				return Plugin_Stop;
 			}
 			case Plugin_Changed:
 			{
 				strcopy(music, sizeof(music), temp);
 				time=time2;
-				Debug("OOO... INPUT! %s | %f", music, time);
 			}
 		}
 
@@ -2887,7 +2885,6 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 					MusicTimer[client]=CreateTimer(time, Timer_PlayBGM, userid, TIMER_FLAG_NO_MAPCHANGE);
 				}
 			}
-			Debug("AHH..INPUT! %s | MORE INPUT! %f", music, time);
 		}
 		else
 		{
@@ -2895,7 +2892,6 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 			KvRewind(BossKV[Special[0]]);
 			KvGetString(BossKV[Special[0]], "filename", bossName, sizeof(bossName));
 			PrintToServer("[FF2 Bosses] Character %s is missing BGM file '%s'!", bossName, music);
-			Debug("{red}MALFUNCTION! NEED INPUT!");
 		}
 	}
 	return Plugin_Continue;
@@ -2923,17 +2919,12 @@ StopMusic(client=0)
 		{
 			if(IsValidClient(client))
 			{
-				if(!currentBGM[client][0])
-				{
-					Debug("{green}MALFUNCTION! NEED INPUT!");
-				}
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 			}
 
 			if(MusicTimer[client]!=INVALID_HANDLE)
 			{
-				Debug("TERMINATING INPUT!");
 				KillTimer(MusicTimer[client]);
 				MusicTimer[client]=INVALID_HANDLE;
 			}
@@ -2942,16 +2933,11 @@ StopMusic(client=0)
 	}
 	else
 	{
-		if(!currentBGM[client][0])
-		{
-			Debug("{green}MALFUNCTION! NEED INPUT!");
-		}
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 
 		if(MusicTimer[client]!=INVALID_HANDLE)
 		{
-			Debug("END INPUT FOR %N!", client);
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
 		}
