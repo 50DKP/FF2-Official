@@ -4,19 +4,43 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.10.8"
-			"Previous"	"1.10.7"
+			"Latest"	"1.10.9"
+			"Previous"	"1.10.8"
 		}
 
-		"Notes"			"Fixed the Powerjack and Kunai killing the boss in one hit"
-	}
+		"Notes"			"Fixed a critical exploit related to sv_cheats"
+		"Notes"			"Updated weapons for the Tough Break update"
+		"Notes"			"Partially synced with VSH"
+		"Notes"			"VSH: Don't play end-of-round announcer sounds"
+		"Notes"			"VSH: Increase boss damage to 210% (up from 200%)"
+		"Notes"			"VSH: Give scout bosses +3 capture rate instead of +4"
+		"Notes"			"VSH: Don't actually call for medic when activating rage"
+		"Notes"			"VSH: Override attributes for all mediguns and syringe guns"
+		"Notes"			"Fixed Ambassador, Diamondback, Phlogistinator, and the Manmelter not dealing the correct damage"
+		"Notes"			"Adjusted medgiun and Dead Ringer mechanics to provide a more native experience"
+		"Notes"			"Prevent `autoteam` spam and possible crashes"
+		"Notes"			"Fixed boss's health not appearing correctly before round start"
+		"Notes"			"Fixed ff2_alive...again"
+		"Notes"			"Fixed BossInfoTimer (that thing no one knows about because it never worked)"
+		"Notes"			"Reset clone status properly"
+		"Notes"			"Don't allow sound_kill_* and sound_hit to overlap each other"
+		"Notes"			"Prevent sound_lastman sounds from overlapping with regular kill sounds"
+		"Notes"			"[Server] Make sure the entity is valid before creating a healthbar"
+		"Notes"			"[Server] Fixed invalid client errors originating from ff2_1st_set_abilities.sp"
+		"Notes"			"[Server] Added ff2_start_music command for symmetry"
+		"Notes"			"[Dev] Actually make FF2_OnMusic work"
+		"Notes"			"[Dev] Rewrote BGM code"
+		"Notes"			"[Dev] Fixed ability sounds playing even if the ability was canceled in FF2_PreAbility"
 
 	"Files"
 	{
 		"Patch"
 		{
 			"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
+			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
+			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
+			"Source"	"Path_SM/scripting/include/freak_fortress_2.inc"
 		}
 
 		"Plugin"		"Path_SM/plugins/freak_fortress_2.smx"
