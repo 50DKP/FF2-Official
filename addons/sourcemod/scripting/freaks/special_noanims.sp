@@ -52,8 +52,8 @@ public Action:FF2_OnAbility2(client, const String:plugin_name[], const String:ab
 
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	CreateTimer(0.41, Timer_Disable_Anims);
-	CreateTimer(9.31, Timer_Disable_Anims);
+	CreateTimer(0.41, Timer_Disable_Anims, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(9.31, Timer_Disable_Anims, _, TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Continue;
 }
 
