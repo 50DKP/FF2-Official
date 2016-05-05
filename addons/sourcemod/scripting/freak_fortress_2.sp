@@ -5108,7 +5108,6 @@ public Action:OnCallForMedic(client, const String:command[], args)
 					KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
 					if(!UseAbility(abilityName, pluginName, boss, 0))
 					{
-						Debug("OnCallForMedic: Returning from a normal ability");
 						return Plugin_Continue;
 					}
 				}
@@ -5124,7 +5123,6 @@ public Action:OnCallForMedic(client, const String:command[], args)
 							KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
 							if(!UseAbility(abilityName, pluginName, boss, 0))
 							{
-								Debug("OnCallForMedic: Returning from a life-loss ability");
 								return Plugin_Continue;
 							}
 							break;
@@ -5140,7 +5138,6 @@ public Action:OnCallForMedic(client, const String:command[], args)
 		decl String:sound[PLATFORM_MAX_PATH];
 		if(RandomSoundAbility("sound_ability", sound, sizeof(sound), boss))
 		{
-			Debug("Playing ability sound");
 			FF2flags[Boss[boss]]|=FF2FLAG_TALKING;
 			EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 			EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
@@ -8228,7 +8225,6 @@ bool:UseAbility(const String:ability_name[], const String:plugin_name[], boss, s
 
 	if(!enabled)
 	{
-		Debug("UseAbility: Returning false");
 		return false;
 	}
 
