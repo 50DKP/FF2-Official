@@ -78,7 +78,7 @@ public OnMapStart()
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	CreateTimer(0.3, Timer_GetBossTeam);
-	for(new client; client<=MaxClients; client++)
+	for(new client=1; client<=MaxClients; client++)
 	{
 		FF2Flags[client]=0;
 		CloneOwnerIndex[client]=-1;
@@ -99,7 +99,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 
 public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	for(new client; client<=MaxClients; client++)
+	for(new client=1; client<=MaxClients; client++)
 	{
 		if(FF2Flags[client] & FLAG_ONSLOWMO)
 		{
@@ -111,7 +111,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			return Plugin_Continue;
 		}
 
-		if(IsClientInGame(client) && CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)
+		if(CloneOwnerIndex[client]!=-1 && GetClientTeam(client)==BossTeam)
 		{
 			CloneOwnerIndex[client]=-1;
 			FF2_SetFF2flags(client, FF2_GetFF2flags(client) & ~FF2FLAG_CLASSTIMERDISABLED);
@@ -867,11 +867,14 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	{
 		for(new target=1; target<=MaxClients; target++)
 		{
-			if(CloneOwnerIndex[target]==boss && IsClientInGame(target) && GetClientTeam(target)==BossTeam)
+			if(CloneOwnerIndex[target]==boss)
 			{
 				CloneOwnerIndex[target]=-1;
 				FF2_SetFF2flags(target, FF2_GetFF2flags(target) & ~FF2FLAG_CLASSTIMERDISABLED);
-				ChangeClientTeam(target, (BossTeam==_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
+				if(IsClientInGame(target) && GetClientTeam(target)==BossTeam)
+				{
+					ChangeClientTeam(target, (BossTeam==_:TFTeam_Blue) ? (_:TFTeam_Red) : (_:TFTeam_Blue));
+				}
 			}
 		}
 	}
