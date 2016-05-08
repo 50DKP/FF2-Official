@@ -82,7 +82,7 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 
 public OnEntityCreated(entity, const String:classname[])
 {
-	if(IsValidEdict(entity) && StrContains(classname, "tf_projectile")>=0)
+	if(IsValidEntity(entity) && StrContains(classname, "tf_projectile")>=0)
 	{
 		SDKHook(entity, SDKHook_SpawnPost, OnProjectileSpawned);
 	}
