@@ -367,11 +367,11 @@ static const String:ff2versiondates[][]=
 	"November 19, 2015",	//1.10.7
 	"November 19, 2015",	//1.10.7
 	"November 24, 2015",	//1.10.8
-	"May 3, 2015",			//1.10.9
-	"May 3, 2015",			//1.10.9
-	"May 3, 2015",			//1.10.9
-	"May 3, 2015",			//1.10.9
-	"May 3, 2015"			//1.10.9
+	"May 7, 2015",			//1.10.9
+	"May 7, 2015",			//1.10.9
+	"May 7, 2015",			//1.10.9
+	"May 7, 2015",			//1.10.9
+	"May 7, 2015"			//1.10.9
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
@@ -384,7 +384,7 @@ stock FindVersionData(Handle:panel, versionIndex)
 			DrawPanelText(panel, "2) Updated weapons for the Tough Break update (Wliu)");
 			DrawPanelText(panel, "Partially synced with VSH (all changes listed courtesy of VSH contributors and shadow93)");
 			DrawPanelText(panel, "2) VSH: Don't play end-of-round announcer sounds");
-			DrawPanelText(panel, "3) VSH: Increase boss damage to 210%% (up from 200%%)");
+			DrawPanelText(panel, "3) VSH: Increase boss damage to 210% (up from 200%)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 71:  //1.10.9
@@ -409,16 +409,17 @@ stock FindVersionData(Handle:panel, versionIndex)
 		{
 			DrawPanelText(panel, "13) Don't allow sound_kill_* and sound_hit to overlap each other (Wliu from WakaFlocka)");
 			DrawPanelText(panel, "14) Prevent sound_lastman sounds from overlapping with regular kill sounds (Wliu from WakaFlocka)");
-			DrawPanelText(panel, "15) [Server] Make sure the entity is valid before creating a healthbar (shadow93)");
-			DrawPanelText(panel, "16) [Server] Fixed invalid client errors originating from ff2_1st_set_abilities.sp (Wliu)");
-			DrawPanelText(panel, "17) [Server] Added ff2_start_music command for symmetry (Wliu from WakaFlocka)");
+			DrawPanelText(panel, "15) Updated Russian translation (silenser)");
+			DrawPanelText(panel, "16) [Server] Make sure the entity is valid before creating a healthbar (shadow93)");
+			DrawPanelText(panel, "17) [Server] Fixed invalid client errors originating from ff2_1st_set_abilities.sp (Wliu)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
 		case 68:  //1.10.9
 		{
-			DrawPanelText(panel, "18) [Dev] Actually make FF2_OnMusic work (Wliu from shadow93)");
-			DrawPanelText(panel, "19) [Dev] Rewrote BGM code (Wliu)");
-			DrawPanelText(panel, "20) [Dev] Fixed ability sounds playing even if the ability was canceled in FF2_PreAbility (Wliu from xNanoChip)");
+			DrawPanelText(panel, "18) [Server] Added ff2_start_music command for symmetry (Wliu from WakaFlocka)");
+			DrawPanelText(panel, "19) [Dev] Actually make FF2_OnMusic work (Wliu from shadow93)");
+			DrawPanelText(panel, "20) [Dev] Rewrote BGM code (Wliu)");
+			DrawPanelText(panel, "21) [Dev] Fixed ability sounds playing even if the ability was canceled in FF2_PreAbility (Wliu from xNanoChip)");
 		}
 		case 67:  //1.10.8
 		{

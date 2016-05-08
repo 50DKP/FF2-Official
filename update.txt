@@ -25,6 +25,7 @@
 		"Notes"			"Reset clone status properly"
 		"Notes"			"Don't allow sound_kill_* and sound_hit to overlap each other"
 		"Notes"			"Prevent sound_lastman sounds from overlapping with regular kill sounds"
+		"Notes"			"Updated Russian translation"
 		"Notes"			"[Server] Make sure the entity is valid before creating a healthbar"
 		"Notes"			"[Server] Fixed invalid client errors originating from ff2_1st_set_abilities.sp"
 		"Notes"			"[Server] Added ff2_start_music command for symmetry"
