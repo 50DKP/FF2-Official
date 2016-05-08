@@ -77,11 +77,11 @@ native FF2_GetBossTeam();
  * @param boss	 			Boss's index
  * @param buffer			Buffer for boss' character name
  * @param bufferLength		Length of buffer string
- * @param clientMeaning		0 - "client" parameter means index of current Boss
- *							1 - "client" parameter means number of Boss in characters.cfg-1
+ * @param bossMeaning		0 - "boss" parameter means index of current Boss
+ *							1 - "boss" parameter means number of Boss in characters.cfg-1
  * @return					True if boss exists, false if not
  */
-native bool:FF2_GetBossSpecial(boss=0, String:buffer[], bufferLength, clientMeaning=0);
+native bool:FF2_GetBossSpecial(boss=0, String:buffer[], bufferLength, bossMeaning=0);
 
 /**
  * Gets the current health value of the Boss
@@ -292,6 +292,7 @@ native bool:FF2_RandomSound(const String:keyvalue[], String:buffer[], bufferLeng
  * Starts the Boss's music for the specified clients
  *
  * @param client	Client's index (0 for all clients)
+ * @noreturn
  */
 native FF2_StartMusic(client=0);
 
@@ -434,7 +435,7 @@ forward Action:FF2_OnMusic(String:path[], &Float:time);
  * @param character   	Character index
  * @param characterName	Character name
  * @param preset		True if the boss was set using a command such as ff2_special
- * @return				You can NOT use Plugin_Stop to prevent this, but you can change specialName and use Plugin_Changed to change the boss.  If you want to change 'character', then make 'characterName' null.
+ * @return				You can NOT use Plugin_Stop to prevent this, but you can change characterName and use Plugin_Changed to change the boss.  If you want to change 'character', then make 'characterName' null.
  */
 forward Action:FF2_OnSpecialSelected(boss, &character, String:characterName[], bool:preset);
 
@@ -450,9 +451,9 @@ forward Action:FF2_OnAddQueuePoints(add_points[MAXPLAYERS+1]);
 /**
  * Called when FF2 picks a character set for the map
  *
- * @param charSetNum	Number of boss
- * @param charSetName	Name of boss
- * @return				You can NOT use Plugin_Stop to prevent this, but you can change CharSetName and use Plugin_Changed to change the character set.  If you want to change charSetNum, then make charSetName null.
+ * @param charSetNum	Number of character set
+ * @param charSetName	Name of character set
+ * @return				You can NOT use Plugin_Stop to prevent this, but you can change charSetName and use Plugin_Changed to change the character set.  If you want to change charSetNum, then make charSetName null.
  */
 forward Action:FF2_OnLoadCharacterSet(&charSetNum, String:charSetName[]);
 
