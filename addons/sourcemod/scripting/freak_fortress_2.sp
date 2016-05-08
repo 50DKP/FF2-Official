@@ -431,6 +431,8 @@ public OnPluginStart()
 	RegConsoleCmd("ff2classinfo", Command_HelpPanelClass);
 	RegConsoleCmd("ff2_new", Command_ShowChangelog);
 	RegConsoleCmd("ff2new", Command_ShowChangelog);
+	RegConsoleCmd("ff2_changelog", Command_ShowChangelog);
+	RegConsoleCmd("ff2changelog", Command_ShowChangelog);
 	RegConsoleCmd("ff2music", MusicTogglePanelCmd);
 	RegConsoleCmd("ff2_music", MusicTogglePanelCmd);
 	RegConsoleCmd("ff2voice", VoiceTogglePanelCmd);
@@ -447,6 +449,8 @@ public OnPluginStart()
 	RegConsoleCmd("haleclassinfo", Command_HelpPanelClass);
 	RegConsoleCmd("hale_new", Command_ShowChangelog);
 	RegConsoleCmd("halenew", Command_ShowChangelog);
+	RegConsoleCmd("hale_changelog", Command_ShowChangelog);
+	RegConsoleCmd("halechangelog", Command_ShowChangelog);
 	RegConsoleCmd("halemusic", MusicTogglePanelCmd);
 	RegConsoleCmd("hale_music", MusicTogglePanelCmd);
 	RegConsoleCmd("halevoice", VoiceTogglePanelCmd);
