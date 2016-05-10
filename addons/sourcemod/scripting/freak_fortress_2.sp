@@ -660,6 +660,8 @@ public EnableFF2()
 		return;
 	}
 
+	ParseChangelog();
+
 	//Cache cvars
 	SetConVarString(FindConVar("ff2_version"), PLUGIN_VERSION);
 	Announce=GetConVarFloat(cvarAnnounce);
@@ -903,7 +905,7 @@ stock ParseChangelog()
 		return;
 	}
 
-	Handle kv = CreateKeyValues("changelog");
+	new Handle:kv = CreateKeyValues("changelog");
 	FileToKeyValues(kv, changelog);
 
 	new i, j;
@@ -6902,8 +6904,6 @@ public Action:ShowChangelog(client)
 	{
 		return Plugin_Continue;
 	}
-
-	ParseChangelog();
 
 	new Handle:menu=CreateMenu(Handler_ChangelogMenu);
 
