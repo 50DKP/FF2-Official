@@ -89,6 +89,7 @@ new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
+new bool:playMusic[MAXPLAYERS+1];
 
 new String:currentBGM[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
@@ -2869,9 +2870,13 @@ public Action:StartBossTimer(Handle:timer)
 public Action:Timer_PlayBGM(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
-	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid))
+	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid) || !playMusic[client])
 	{
-		MusicTimer[client]=INVALID_HANDLE;
+		if(MusicTimer[client]!=INVALID_HANDLE)
+		{
+			KillTimer(MusicTimer[client]);
+			MusicTimer[client]=INVALID_HANDLE;
+		}
 		return Plugin_Stop;
 	}
 
@@ -2955,11 +2960,13 @@ StartMusic(client=0)
 	if(client<=0)  //Start music for all clients
 	{
 		StopMusic();
+		playMusic[0]=true;
 		CreateTimer(0.0, Timer_PlayBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
 	{
 		StopMusic(client);
+		playMusic[client]=true;
 		CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
@@ -2983,6 +2990,7 @@ StopMusic(client=0)
 			}
 			strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
 		}
+		playMusic[0]=false;
 	}
 	else
 	{
@@ -2995,6 +3003,7 @@ StopMusic(client=0)
 			MusicTimer[client]=INVALID_HANDLE;
 		}
 		strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
+		playMusic[client]=false;
 	}
 }
 
