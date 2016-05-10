@@ -137,30 +137,18 @@
 	{
 		"en"		"Exit"
 	}
-	"New Version"
-	{
-		"#format"	"{1:s},{2:s}"
-		"en"		"What's new in v{1} ({2})"
-	}
 	"FF2 Objective"
 	{
 		"en"		"===Freak Fortress 2===\nOne (or more) players become one of the Bosses.\nThe other players have to defeat them."
 	}
-	"Older Version"
+	"Changelog"
 	{
-		"en"		"Display older"
+		"en"		"Freak Fortress 2 Changelog"
 	}
-	"No Older Version"
+	"Version"
 	{
-		"en"		"No older versions available"
-	}
-	"Newer Version"
-	{
-		"en"		"Display newer"
-	}
-	"No Newer Version"
-	{
-		"en"		"No newer versions available"
+		"format"	"{1:s},{2:s}"
+		"en"		"==={1} ({2})==="
 	}
 	"Class Changes"
 	{

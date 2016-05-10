@@ -82,7 +82,6 @@ new character[MAXPLAYERS+1];
 new Incoming[MAXPLAYERS+1];
 
 new Damage[MAXPLAYERS+1];
-new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
@@ -940,7 +939,7 @@ stock ParseChangelog()
 						continue;
 					}
 					KvGetString(kv, NULL_STRING, text, sizeof(text));
-					Format(temp, sizeof(temp), "%s (%i)", version, i);
+					Format(temp, sizeof(temp), "%s %i", version, j);
 					SetTrieString(changelogTrie, temp, text);
 					j++;
 				}
@@ -6855,7 +6854,7 @@ public Handler_FF2Panel(Handle:menu, MenuAction:action, client, selection)
 			}
 			case 3:
 			{
-				ShowChangelog(client, 0);
+				ShowChangelog(client);
 			}
 			case 4:
 			{
@@ -6881,19 +6880,9 @@ public Handler_FF2Panel(Handle:menu, MenuAction:action, client, selection)
 	}
 }
 
-public Handler_ChangelogPanel(Handle:menu, MenuAction:action, client, selection)
+public Handler_ChangelogMenu(Handle:menu, MenuAction:action, client, selection)
 {
-	if(action==MenuAction_Select)
-	{
-		if(selection==1)
-		{
-			ShowChangelog(client, ++curHelp[client]);
-		}
-		else if(selection==2)
-		{
-			ShowChangelog(client, --curHelp[client]);
-		}
-	}
+	//noop
 }
 
 public Action:Command_ShowChangelog(client, args)
@@ -6903,63 +6892,49 @@ public Action:Command_ShowChangelog(client, args)
 		return Plugin_Continue;
 	}
 
-	ShowChangelog(client, 0);
+	ShowChangelog(client);
 	return Plugin_Handled;
 }
 
-public Action:ShowChangelog(client, versionIndex)
+public Action:ShowChangelog(client)
 {
 	if(!Enabled2)
 	{
 		return Plugin_Continue;
 	}
 
-	curHelp[client]=versionIndex;
-	new Handle:panel=CreatePanel();
-	decl String:text[90];
-
-	decl String:version[64], String:date[64], String:temp[64];
-
 	ParseChangelog();
 
-	SetGlobalTransTarget(client);
+	new Handle:menu=CreateMenu(Handler_ChangelogMenu);
 
-	IntToString(versionIndex, temp, sizeof(temp));
-	GetTrieString(versionTrie, temp, version, sizeof(version));
+	decl String:version[64], String:date[64], String:text[256], String:temp[256];
 
-	Format(temp, sizeof(temp), "%s date", version);
-	GetTrieString(changelogTrie, "version", date, sizeof(date));
-	Format(text, sizeof(text), "=%t:=", "New Version", version, date);
-	SetPanelTitle(panel, text);
+	SetMenuTitle(menu, "%t", "Changelog");
 
-	IntToString(versionIndex+1, temp, sizeof(temp));
-	if(GetTrieString(versionTrie, temp, version, sizeof(version)))
+	new i, j;
+	Format(temp, sizeof(temp), "%i", i);
+	while(GetTrieString(versionTrie, temp, version, sizeof(version)))
 	{
-		Format(text, sizeof(text), "%t", "Older Version");
-		DrawPanelItem(panel, text);
-	}
-	else
-	{
-		Format(text, sizeof(text), "%t", "No Older Version");
-		DrawPanelText(panel, text);
-	}
+		Format(temp, sizeof(temp), "%s date", version);
+		GetTrieString(changelogTrie, temp, date, sizeof(date));
 
-	IntToString(versionIndex-1, temp, sizeof(temp));
-	if(GetTrieString(versionTrie, temp, version, sizeof(version)))
-	{
-		Format(text, sizeof(text), "%t", "Newer Version");
-		DrawPanelItem(panel, text);
-	}
-	else
-	{
-		Format(text, sizeof(text), "%t", "No Newer Version");
-		DrawPanelText(panel, text);
-	}
+		Format(text, sizeof(text), "%t", "Version", version, date);
+		AddMenuItem(menu, temp, text, ITEMDRAW_DISABLED);
 
-	Format(text, sizeof(text), "%t", "Exit Menu");
-	DrawPanelItem(panel, text);
-	SendPanelToClient(panel, client, Handler_ChangelogPanel, MENU_TIME_FOREVER);
-	CloseHandle(panel);
+		j=0;
+		Format(temp, sizeof(temp), "%s %i", version, j);
+		while(GetTrieString(changelogTrie, temp, text, sizeof(text)))
+		{
+			AddMenuItem(menu, temp, text, ITEMDRAW_DISABLED);
+
+			j++;
+			Format(temp, sizeof(temp), "%s %i", version, j);
+		}
+
+		i++;
+		Format(temp, sizeof(temp), "%i", i);
+	}
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 	return Plugin_Continue;
 }
 
