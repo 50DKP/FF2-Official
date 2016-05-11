@@ -1549,6 +1549,7 @@ public DisableFF2()
 
 		bossHasReloadAbility[client]=false;
 		bossHasRightMouseAbility[client]=false;
+		playMusic[client]=true;
 	}
 
 	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
