@@ -65,7 +65,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define DOORS_CONFIG "doors.cfg"
 #define WEAPONS_CONFIG "weapons.cfg"
 #define MAPS_CONFIG	"maps.cfg"
-#define CHANGELOG "ff2_changelog.txt"
+#define CHANGELOG "changelog.txt"
 
 #if defined _steamtools_included
 new bool:steamtools;
@@ -144,8 +144,7 @@ new Handle:FF2Cookie_QueuePoints;
 new Handle:FF2Cookie_MuteSound;
 new Handle:FF2Cookie_DisplayInfo;
 
-new Handle:versionTrie;
-new Handle:changelogTrie;
+new Handle:changelogMenu;
 
 new Handle:jumpHUD;
 new Handle:rageHUD;
@@ -449,9 +448,6 @@ public OnPluginStart()
 	FF2Cookie_QueuePoints=RegClientCookie("ff2_cookie_queuepoints", "Client's queue points", CookieAccess_Protected);
 	FF2Cookie_MuteSound=RegClientCookie("ff2_cookie_mutesound", "Client's sound preferences", CookieAccess_Public);
 	FF2Cookie_DisplayInfo=RegClientCookie("ff2_cookie_displayinfo", "Client's display info preferences", CookieAccess_Public);
-
-	versionTrie=CreateTrie();
-	changelogTrie=CreateTrie();
 
 	jumpHUD=CreateHudSynchronizer();
 	rageHUD=CreateHudSynchronizer();
@@ -869,22 +865,21 @@ stock ParseChangelog()
 		return;
 	}
 
-	new Handle:kv = CreateKeyValues("changelog");
+	new Handle:kv=CreateKeyValues("Changelog");
 	FileToKeyValues(kv, changelog);
+
+	changelogMenu=CreateMenu(Handler_ChangelogMenu);
+	SetMenuTitle(changelogMenu, "%t", "Changelog");
 
 	new i, j;
 	if(KvGotoFirstSubKey(kv))
 	{
-		decl String:version[64];
-		decl String:text[256];
-		decl String:temp[70];
-		decl String:section[64];
-
+		decl String:version[64], String:text[256], String:temp[70];
 		do
 		{
 			KvGetSectionName(kv, version, sizeof(version));
 			Format(temp, sizeof(temp), "%i", i);
-			SetTrieString(versionTrie, temp, version);
+			AddMenuItem(changelogMenu, temp, version, ITEMDRAW_DISABLED);
 			i++;
 
 			if(KvGotoFirstSubKey(kv, false))
@@ -892,21 +887,9 @@ stock ParseChangelog()
 				j=0;
 				do
 				{
-					KvGetSectionName(kv, section, sizeof(section));
-					if(StrEqual(section, "date"))
-					{
-						KvGetString(kv, NULL_STRING, text, sizeof(text));
-						Format(temp, sizeof(temp), "%s date", version);
-						if(!SetTrieString(changelogTrie, temp, text, false))
-						{
-							LogError("[FF2] Duplicate 'date' key (value %s) for version %s detected in changelog %s!", version, text, changelog);
-							return;
-						}
-						continue;
-					}
 					KvGetString(kv, NULL_STRING, text, sizeof(text));
 					Format(temp, sizeof(temp), "%s %i", version, j);
-					SetTrieString(changelogTrie, temp, text);
+					AddMenuItem(changelogMenu, temp, text, ITEMDRAW_DISABLED);
 					j++;
 				}
 				while(KvGotoNextKey(kv, false));
@@ -1205,9 +1188,7 @@ public Action:Timer_Announce(Handle:timer)
 			case 5:
 			{
 				announcecount=0;
-				decl String:version[64];
-				GetTrieString(versionTrie, "0", version, sizeof(version));
-				CPrintToChatAll("{olive}[FF2]{default} %t", "Last FF2 Update", PLUGIN_VERSION, version);
+				CPrintToChatAll("{olive}[FF2]{default} %t", "Last FF2 Update", PLUGIN_VERSION);
 			}
 			default:
 			{
@@ -6864,41 +6845,10 @@ public Action:Command_ShowChangelog(client, args)
 
 public Action:ShowChangelog(client)
 {
-	if(!Enabled2)
+	if(Enabled2)
 	{
-		return Plugin_Continue;
+		DisplayMenu(changelogMenu, client, MENU_TIME_FOREVER);
 	}
-
-	new Handle:menu=CreateMenu(Handler_ChangelogMenu);
-
-	decl String:version[64], String:date[64], String:text[256], String:temp[256];
-
-	SetMenuTitle(menu, "%t", "Changelog");
-
-	new i, j;
-	Format(temp, sizeof(temp), "%i", i);
-	while(GetTrieString(versionTrie, temp, version, sizeof(version)))
-	{
-		Format(temp, sizeof(temp), "%s date", version);
-		GetTrieString(changelogTrie, temp, date, sizeof(date));
-
-		Format(text, sizeof(text), "%t", "Version", version, date);
-		AddMenuItem(menu, temp, text, ITEMDRAW_DISABLED);
-
-		j=0;
-		Format(temp, sizeof(temp), "%s %i", version, j);
-		while(GetTrieString(changelogTrie, temp, text, sizeof(text)))
-		{
-			AddMenuItem(menu, temp, text, ITEMDRAW_DISABLED);
-
-			j++;
-			Format(temp, sizeof(temp), "%s %i", version, j);
-		}
-
-		i++;
-		Format(temp, sizeof(temp), "%i", i);
-	}
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 	return Plugin_Continue;
 }
 

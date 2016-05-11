@@ -1,13 +1,11 @@
-"FF2 Changelog"
+"Changelog"
 {
-	"1.10.8"
+	"1.10.8 (November 24, 2015)"
 	{
-		"date" "November 24, 2015"
 		"1" "Fixed the Powerjack and Kunai killing the boss in one hit (naydef)");
 	}
-	"1.10.7"
+	"1.10.7 (November 19, 2015)"
 	{
-		"date" "November 19, 2015"
 		"1" "Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
 		"2" "Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive (Shadow from Spyper)");
 		"3" "Fixed minions receiving benefits intended only for normal players (Wliu)");
@@ -23,9 +21,8 @@
 		"13" "[Dev] Fixed FF2_OnAlivePlayersChanged not returning the number of minions (Wliu)");
 		"14" "[Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)");
 	}
-	"1.10.6"
+	"1.10.6 (August 10, 2015)"
 	{
-		"date" "August 10, 2015"
 		"1" "Updated the default health formula to match VSH's (Wliu)");
 		"2" "Updated for compatability with the Gunmettle update (Wliu, Shadow, Starblaster64, Chdata, sarysa, and others)");
 		"3" "Fixed boss weapon animations sometimes not working (Chdata)");
@@ -48,9 +45,8 @@
 		"20" "[Dev] Prioritized exact matches in OnSpecialSelected and added a 'preset' bool (Wliu from Shadow)");
 		"21" "[Dev] Removed deprecated FCVAR_PLUGIN cvar flags (Wliu)");
 	}
-	"1.10.5"
+	"1.10.5 (March 13, 2015)"
 	{
-		"date" "March 13, 2015"
 		"1" "Fixed slow-mo being extremely buggy (Wliu from various)");
 		"2" "Fixed the Festive SMG not getting crits (Wliu from Dalix)");
 		"3" "Fixed teleport sounds not being played (Wliu from Dalix)");
@@ -58,9 +54,8 @@
 		"5" "[Server] Fixed multiple sounds not working after TF2 changed the default sound extension type (Wliu)");
 		"6" "[Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
 	}
-	"1.10.4"
+	"1.10.4 (March 1, 2015)"
 	{
-		"date" "March 1, 2015"
 		"1" "Fixed players getting overheal after winning as a boss (Wliu/FlaminSarge)");
 		"2" "Rebalanced the Baby Face's Blaster (Shadow)");
 		"3" "Fixed the Baby Face's Blaster being unusable when FF2 was disabled (Wliu from Curtgust)");
@@ -85,9 +80,8 @@
 		"22" "[Dev] Improved FF2_OnSpecialSelected so that only part of a boss name is needed (Wliu)");
 		"23" "[Dev] Added FF2_{Get|Set}BossRageDamage (Wliu from WildCard65)");
 	}
-	"1.10.3"
+	"1.10.3 (November 6, 2014)"
 	{
-		"date" "November 6, 2014"
 		"1" "Fixed bosses appearing to be overhealed (War3Evo/Wliu)");
 		"2" "Rebalanced many weapons based on misc. feedback (Wliu/various)");
 		"3" "Fixed not being able to use strange syringe guns or mediguns (Chris from Spyper)");
@@ -116,15 +110,13 @@
 		"26" "[Dev] Fixed weapons not being hidden when asked to (friagram)");
 		"27" "[Dev] Fixed not being able to set constant health values for bosses (Wliu from braak0405)");
 	}
-	"1.10.2"
+	"1.10.2 (August 28, 2014)"
 	{
-		"date" "August 28, 2014"
 		"1" "Fixed a critical bug that rendered most bosses as errors without sound (Wliu; thanks to slavko17 for reporting)");
 		"2" "Reverted escape sequences change, which is what caused this bug");
 	}
-	"1.10.1"
+	"1.10.1 (August 28, 2014)"
 	{
-		"date" "August 28, 2014"
 		"1" "Fixed a rare bug where rage could go over 100% (Wliu)");
 		"2" "Updated to use Sourcemod 1.6.1 (Powerlord)");
 		"3" "Fixed goomba stomp ignoring demoshields (Wliu)");
@@ -149,9 +141,8 @@
 		"22" "[Dev] Fixed a bug in the main include file (Wliu)");
 		"23" "[Dev] Enabled escape sequences in configs (Wliu)");
 	}
-	"1.10.0"
+	"1.10.0 (July 26, 2014)"
 	{
-		"date" "July 26, 2014"
 		"1" "Rage is now activated by calling for medic (Wliu)");
 		"2" "Balanced Goomba Stomp and RTD (WildCard65)");
 		"3" "Fixed BGM not stopping if the boss suicides at the beginning of the round (Wliu)");
@@ -186,17 +177,15 @@
 		"32" "[Dev] FF2 now checks for sane values for \"lives\" and \"health_formula\" (Wliu)");
 		"33" "Big thanks to GIANT_CRAB, WildCard65, and kniL for their devotion to this release!");
 	}
-	"1.9.3"
+	"1.9.3 (April 5, 2014)"
 	{
-		"date" "April 5, 2014"
 		"1" "Fixed a bug in 1.9.2 where the changelog was off by one version (Wliu)");
 		"2" "Fixed a bug in 1.9.2 where one dead player would not be cloned in rage_cloneattack (Wliu)");
 		"3" "Fixed a bug in 1.9.2 where sentries would be permanently disabled after a rage (Wliu)");
 		"4" "[Server] Removed ff2_halloween (Wliu)");
 	}
-	"1.9.2"
+	"1.9.2 (March 22, 2014)"
 	{
-		"date" "March 22, 2014"
 		"1" "Fixed a bug in 1.9.1 that allowed the same player to be the boss over and over again (Wliu)");
 		"2" "Fixed a bug where last player glow was being incorrectly removed on the boss (Wliu)");
 		"3" "Fixed a bug where the boss would be assumed dead (Wliu)");
@@ -207,18 +196,16 @@
 		"8" "[Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)");
 		"9" "            Servers can now safely have smac_cvars enabled");
 	}
-	"1.9.1"
+	"1.9.1 (March 18, 2014)"
 	{
-		"date" "March 18, 2014"
 		"1" "Fixed some minor leaderboard bugs and also improved the leaderboard text (Wliu)");
 		"2" "Fixed a minor round end bug (Wliu)");
 		"3" "[Server] Fixed improper unloading of subplugins (WildCard65)");
 		"4" "[Server] Removed leftover console messages (Wliu)");
 		"5" "[Server] Fixed sound not precached warnings (Wliu)");
 	}
-	"1.9.0"
+	"1.9.0 (March 6, 2014)"
 	{
-		"date" "March 6, 2014"
 		"1" "Removed checkFirstHale (Wliu)");
 		"2" "[Server] Fixed invalid healthbar entity bug (Wliu)");
 		"3" "Changed default medic ubercharge percentage to 40% (Wliu)");
@@ -230,9 +217,8 @@
 		"9" "Minor grammar/spelling improvements (Wliu)");
 		"10" "[Server] Minor subplugin load/unload fixes (Wliu)");
 	}
-	"1.0.8"
+	"1.0.8 (October 30, 2013)"
 	{
-		"date" "October 30, 2013"
 		"1" "Wliu, Chris, Lawd, and Carge of 50DKP have taken over FF2 development");
 		"2" "Prevented spy bosses from changing disguises (Powerlord)");
 		"3" "Added Saxton Hale stab sounds (Powerlord/AeroAcrobat)");
@@ -265,40 +251,35 @@
 		"30" "Changed versioning format to x.y.z and month day, year (Wliu)");
 		"31" "HAPPY HALLOWEEN!");
 	}
-	"1.07"
+	"1.07 (14 Dec 2012)"
 	{
-		"date" "14 Dec 2012"
 		"1" "[Players] Holiday Punch is now replaced by Fists");
 		"2" "[Players] Bosses will have any disguises removed on round start");
 		"3" "[Players] Bosses can no longer see all players health, as it wasn't working any more");
 		"4" "[Server] ff2_addpoints no longer targets SourceTV or replay");
 	}
-	"1.07 beta 6"
+	"1.07 beta 6 (9 Nov 2012)"
 	{
-		"date" "9 Nov 2012"
 		"1" "[Dev] Fixed issue with sound hook not stopping sound when sound_block_vo was in use");
 		"2" "[Dev] If ff2_charset was used, don't run the character set vote");
 		"3" "[Dev] If a vote is already running, Character set vote will retry every 5 seconds or until map changes ");
 	}
-	"1.07 beta 5"
+	"1.07 beta 5 (18 Oct 2012)"
 	{
-		"date" "18 Oct 2012"
 		"1" "[Dev] Fixed issue with character sets not working.");
 		"2" "[Dev] Improved IsValidClient replay check");
 		"3" "[Dev] IsValidClient is now called when loading companion bosses");
 		"4" "   This should prevent GetEntProp issues with m_iClass");
 	}
-	"1.07 beta 4"
+	"1.07 beta 4 (11 Oct 2012)"
 	{
-		"date" "11 Oct 2012"
 		"1" "[Players] Dead Ringers have no cloak defense buff. Normal cloaks do.");
 		"2" "[Players] Fixed Sniper Rifle reskin behavior");
 		"3" "[Players] Boss has small amount of stun resistance after rage");
 		"4" "[Players] Various bugfixes and changes 1.7.0 beta 1");
 	}
-	"1.07 beta"
+	"1.07 beta (8 Oct 2012)"
 	{
-		"date" "8 Oct 2012"
 		"1" "[Dev] Prevent boss rage from being activated if the boss is already taunting or is dead.");
 		"2" "[Dev] Cache the result of the newer backstab detection");
 		"3" "[Dev] Reworked Medic damage code slightly");
@@ -327,61 +308,53 @@
 		"26" "[Players] Scaled sniper rifle glow time a bit better");
 		"27" "[Players] Fixed Dead Ringer spy death icon");
 	}
-	"1.06h"
+	"1.06h (6 Sep 2012)"
 	{
-		"date" "6 Sep 2012"
 		"1" "[Players] Remove MvM powerup_bottle on Bosses. (RavensBro)");
 	}
-	"1.06g"
+	"1.06g (5 Sep 2012)"
 	{
-		"date" "5 Sep 2012"
 		"1" "[Players] Fixed vote for charset. (RavensBro)");
 	}
-	"1.06f"
+	"1.06f (5 Sep 2012)"
 	{
-		"date" "5 Aug 2012"
 		"1" "[Players] Changelog now divided into [Players] and [Dev] sections. (Otokiru)");
 		"2" "[Players] Don't bother reading [Dev] changelogs because you'll have no idea what it's stated. (Otokiru)");
 		"3" "[Players] Fixed civilian glitch. (Otokiru)");
 		"4" "[Players] Fixed hale HP bar. (Valve) lol?");
 		"5" "[Dev] Fixed \"GetEntProp\" reported: Entity XXX (XXX) is invalid on checkFirstHale(). (Otokiru)");
 	}
-	"1.06e"
+	"1.06e (24 Aug 2012)"
 	{
-		"date" "24 Aug 2012"
 		"1" "[Players] Remove MvM water-bottle on hales. (Otokiru)");
 		"2" "[Dev] Fixed \"GetEntProp\" reported: Property \"m_iClass\" not found (entity 0/worldspawn) error on checkFirstHale(). (Otokiru)");
 		"3" "[Dev] Change how FF2 check for player weapons. Now also checks when spawned in the middle of the round. (Otokiru)");
 		"4" "[Dev] Changed some FF2 warning messages color such as \"First-Hale Checker\" and \"Change class exploit\". (Otokiru)");
 	}
-	"1.06d"
+	"1.06d (3 July 2012)"
 	{
-		"date" "3 July 2012"
 		"1" "Fix first boss having missing health or abilities. (Otokiru)");
 		"2" "Health bar now goes away if the boss wins the round. (Powerlord)");
 		"3" "Health bar cedes control to Monoculus if he is summoned. (Powerlord)");
 		"4" "Health bar instantly updates if enabled or disabled via cvar mid-game. (Powerlord)");
 	}
-	"1.06c"
+	"1.06c (23 June 2012)"
 	{
-		"date" "23 June 2012"
 		"1" "Remove weapons if a player tries to switch classes when they become boss to prevent an exploit. (Otokiru)");
 		"2" "Reset hale's queue points to prevent the 'retry' exploit. (Otokiru)");
 		"3" "Better detection of backstabs. (Powerlord)");
 		"4" "Boss now has optional life meter on screen. (Powerlord)");
 	}
-	"1.06"
+	"1.06 (1 May 2012)"
 	{
-		"date" "1 May 2012"
 		"1" "Fixed attributes key for weaponN block. Now 1 space needed for explode string.");
 		"2" "Disabled vote for charset when there is only 1 not hidden chatset.");
 		"3" "Fixed \"Invalid key value handle 0 (error 4)\" when when round starts.");
 		"4" "Fixed ammo for special_noanims.ff2\\rage_new_weapon ability.");
 		"5" "Coming soon: weapon balance will be moved into config file.");
 	}
-	"1.05"
+	"1.05 (29 April 2012)"
 	{
-		"date" "29 April 2012"
 		"1" "Added \"hidden\" key for charsets.");
 		"2" "Added \"sound_stabbed\" key for characters.");
 		"3" "Mantread stomp deals 5x damage to Boss.");
@@ -394,9 +367,8 @@
 		"10" "FF2FLAG_HUDDISABLED flag blocks EVERYTHING of FF2's HUD.");
 		"11" "Changed FF2_PreAbility native to fix bug about broken Boss' abilities.");
 	}
-	"1.04"
+	"1.04 (21 April 2012)"
 	{
-		"date" "21 April 2012"
 		"1" "Seeldier's minions have protection (teleport) from pits for first 4 seconds after spawn.");
 		"2" "Seeldier's minions correctly dies when owner-Seeldier dies.");
 		"3" "Added multiplier for brave jump ability in char.configs (arg3, default is 1.0).");
@@ -404,17 +376,15 @@
 		"5" "Fixed potential exploits associated with feign death.");
 		"6" "Added ff2_reload_subplugins command to reload FF2's subplugins.");
 	}
-	"1.03"
+	"1.03 (19 April 2012)"
 	{
-		"date" "19 April 2012"
 		"1" "Finally fixed exploit about queue points.");
 		"2" "Fixed non-regular bug with 'UTIL_SetModel: not precached'.");
 		"3" "Fixed potential bug about reducing of Boss' health by healing.");
 		"4" "Fixed Boss' stun when round begins.");
 	}
-	"1.02"
+	"1.02 (17 April 2012)"
 	{
-		"date" "17 April 2012"
 		"1" "Added isNumOfSpecial parameter into FF2_GetSpecialKV and FF2_GetBossSpecial natives");
 		"2" "Added FF2_PreAbility forward. Plz use it to prevent FF2_OnAbility only.");
 		"3" "Added FF2_DoAbility native.");
@@ -423,9 +393,8 @@
 		"6" "FF2FLAG_HUDDISABLED flag disables Boss' HUD too.");
 		"7" "Added FF2_GetQueuePoints and FF2_SetQueuePoints natives.");
 	}
-	"1.01"
+	"1.01 (14 April 2012)"
 	{
-		"date" "14 April 2012"
 		"1" "Fixed \"classmix\" bug associated with Boss' class restoring.");
 		"2" "Fixed other little bugs.");
 		"3" "Fixed bug about instant kill of Seeldier's minions.");
@@ -436,9 +405,8 @@
 		"8" "Fixed bug when boss' music have a chance to DON'T play.");
 		"9" "Fixed bug associated with ff2_enabled in cfg/sourcemod/freak_fortress_2.cfg and disabling of pugin.");
 	}
-	"1.0"
+	"1.0 (6 April 2012)"
 	{
-		"date" "6 April 2012"
 		"1" "Boss' health devided by 3,6 in medieval mode");
 		"2" "Restoring player's default class, after his round as Boss");
 		"3" "===UPDATES OF VS SAXTON HALE MODE===");

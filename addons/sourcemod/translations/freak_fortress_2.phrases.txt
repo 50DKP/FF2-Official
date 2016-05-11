@@ -145,11 +145,6 @@
 	{
 		"en"		"Freak Fortress 2 Changelog"
 	}
-	"Version"
-	{
-		"format"	"{1:s},{2:s}"
-		"en"		"==={1} ({2})==="
-	}
 	"Class Changes"
 	{
 		"en"		"Changes to my class in FF2 (/ff2classinfo)"
@@ -265,8 +260,8 @@
 	}
 	"Last FF2 Update"
 	{
-		"#format"	"{1:s},{2:s}"
-		"en"		"What's new in v{olive}{1}{default} ({olive}{2}{default})? Type {olive}/ff2new{default}."
+		"#format"	"{1:s}"
+		"en"		"Type {olive}/ff2_changelog{default} to view the {olive}{1}{default} changelog."
 	}
 	"Charge Status"
 	{
