@@ -119,15 +119,15 @@
 	}
 	"Observe Health Value"
 	{
-		"en"		"Investigate the boss's current health level (/ff2hp)"
+		"en"		"Investigate the boss's current health level (/ff2_hp)"
 	}
 	"FF2 Help"
 	{
-		"en"		"FF2 help (/ff2help)."
+		"en"		"FF2 help (/ff2_help)."
 	}
 	"What's New in FF2"
 	{
-		"en"		"What's new? (/ff2new)."
+		"en"		"What's new? (/ff2_new)."
 	}
 	"View Queue Points"
 	{
@@ -147,7 +147,7 @@
 	}
 	"Class Changes"
 	{
-		"en"		"Changes to my class in FF2 (/ff2classinfo)"
+		"en"		"Changes to my class in FF2 (/ff2_classinfo)"
 	}
 	"Total Damage Dealt"
 	{
@@ -220,7 +220,7 @@
 	}
 	"Next Boss"
 	{
-		"en"		"You will become the Boss soon. Type {olive}/ff2next{default} to make sure."
+		"en"		"You will become the Boss soon. Type {olive}/ff2_next{default} to make sure."
 	}
 	"Arena Rounds Left"
 	{
@@ -243,11 +243,11 @@
 	}
 	"Toggle Music"
 	{
-		"en"		"Toggle music (/ff2music)"
+		"en"		"Toggle music (/ff2_music)"
 	}
 	"Toggle Monologue"
 	{
-		"en"		"Toggle monologues (/ff2voice)"
+		"en"		"Toggle monologues (/ff2_voice)"
 	}
 	"Toggle Class Changes"
 	{
