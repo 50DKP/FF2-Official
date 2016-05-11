@@ -88,7 +88,7 @@ new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
-new bool:playMusic[MAXPLAYERS+1];
+new bool:playMusic[MAXPLAYERS+1]=true;
 
 new String:currentBGM[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
