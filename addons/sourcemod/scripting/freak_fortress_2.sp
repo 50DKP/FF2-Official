@@ -423,39 +423,12 @@ public OnPluginStart()
 
 	RegConsoleCmd("ff2", FF2Panel);
 	RegConsoleCmd("ff2_hp", Command_GetHPCmd);
-	RegConsoleCmd("ff2hp", Command_GetHPCmd);
 	RegConsoleCmd("ff2_next", QueuePanelCmd);
-	RegConsoleCmd("ff2next", QueuePanelCmd);
 	RegConsoleCmd("ff2_classinfo", Command_HelpPanelClass);
-	RegConsoleCmd("ff2classinfo", Command_HelpPanelClass);
-	RegConsoleCmd("ff2_new", Command_ShowChangelog);
-	RegConsoleCmd("ff2new", Command_ShowChangelog);
 	RegConsoleCmd("ff2_changelog", Command_ShowChangelog);
-	RegConsoleCmd("ff2changelog", Command_ShowChangelog);
-	RegConsoleCmd("ff2music", MusicTogglePanelCmd);
 	RegConsoleCmd("ff2_music", MusicTogglePanelCmd);
-	RegConsoleCmd("ff2voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("ff2_voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("ff2_resetpoints", ResetQueuePointsCmd);
-	RegConsoleCmd("ff2resetpoints", ResetQueuePointsCmd);
-
-	RegConsoleCmd("hale", FF2Panel);
-	RegConsoleCmd("hale_hp", Command_GetHPCmd);
-	RegConsoleCmd("halehp", Command_GetHPCmd);
-	RegConsoleCmd("hale_next", QueuePanelCmd);
-	RegConsoleCmd("halenext", QueuePanelCmd);
-	RegConsoleCmd("hale_classinfo", Command_HelpPanelClass);
-	RegConsoleCmd("haleclassinfo", Command_HelpPanelClass);
-	RegConsoleCmd("hale_new", Command_ShowChangelog);
-	RegConsoleCmd("halenew", Command_ShowChangelog);
-	RegConsoleCmd("hale_changelog", Command_ShowChangelog);
-	RegConsoleCmd("halechangelog", Command_ShowChangelog);
-	RegConsoleCmd("halemusic", MusicTogglePanelCmd);
-	RegConsoleCmd("hale_music", MusicTogglePanelCmd);
-	RegConsoleCmd("halevoice", VoiceTogglePanelCmd);
-	RegConsoleCmd("hale_voice", VoiceTogglePanelCmd);
-	RegConsoleCmd("hale_resetpoints", ResetQueuePointsCmd);
-	RegConsoleCmd("haleresetpoints", ResetQueuePointsCmd);
 
 	RegConsoleCmd("nextmap", Command_Nextmap);
 	RegConsoleCmd("say", Command_Say);
@@ -470,15 +443,6 @@ public OnPluginStart()
 	RegAdminCmd("ff2_resetq", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 	RegAdminCmd("ff2_charset", Command_Charset, ADMFLAG_CHEATS, "Usage:  ff2_charset <charset>.  Forces FF2 to use a given character set");
 	RegAdminCmd("ff2_reload_subplugins", Command_ReloadSubPlugins, ADMFLAG_RCON, "Reload FF2's subplugins.");
-
-	RegAdminCmd("hale_select", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
-	RegAdminCmd("hale_special", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
-	RegAdminCmd("hale_addpoints", Command_Points, ADMFLAG_CHEATS, "Usage:  hale_addpoints <target> <points>.  Adds queue points to any player");
-	RegAdminCmd("hale_point_enable", Command_Point_Enable, ADMFLAG_CHEATS, "Enable the control point if ff2_point_type is 0");
-	RegAdminCmd("hale_point_disable", Command_Point_Disable, ADMFLAG_CHEATS, "Disable the control point if ff2_point_type is 0");
-	RegAdminCmd("hale_stop_music", Command_StopMusic, ADMFLAG_CHEATS, "Stop any currently playing Boss music");
-	RegAdminCmd("hale_resetqueuepoints", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
-	RegAdminCmd("hale_resetq", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 
 	AutoExecConfig(true, "freak_fortress_2/freak_fortress_2");
 
