@@ -2870,7 +2870,7 @@ public Action:StartBossTimer(Handle:timer)
 public Action:Timer_PlayBGM(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
-	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid) || !playMusic[client])
+	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid) || !playMusic[0] || !playMusic[client])
 	{
 		if(MusicTimer[client]!=INVALID_HANDLE)
 		{
