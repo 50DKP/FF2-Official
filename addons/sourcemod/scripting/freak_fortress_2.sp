@@ -4445,6 +4445,7 @@ public OnClientPutInServer(client)
 	FF2flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
+	playMusic[client]=true;
 
 	if(AreClientCookiesCached(client))
 	{
