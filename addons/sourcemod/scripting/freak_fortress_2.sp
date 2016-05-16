@@ -7902,6 +7902,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 			{
 				SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
 			}
+			
 			if(!currentBGM[client][0])
 			{
 				CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
