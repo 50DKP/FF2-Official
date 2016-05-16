@@ -88,7 +88,6 @@ new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
-new bool:playMusic[MAXPLAYERS+1]=true;
 
 new String:currentBGM[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
@@ -1549,7 +1548,6 @@ public DisableFF2()
 
 		bossHasReloadAbility[client]=false;
 		bossHasRightMouseAbility[client]=false;
-		playMusic[client]=true;
 	}
 
 	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
@@ -2870,7 +2868,7 @@ public Action:StartBossTimer(Handle:timer)
 public Action:Timer_PlayBGM(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
-	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid) || !playMusic[0] || !playMusic[client])
+	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid) || currentBGM[0][0] || currentBGM[0][client])
 	{
 		if(MusicTimer[client]!=INVALID_HANDLE)
 		{
@@ -2960,13 +2958,11 @@ StartMusic(client=0)
 	if(client<=0)  //Start music for all clients
 	{
 		StopMusic();
-		playMusic[0]=true;
 		CreateTimer(0.0, Timer_PlayBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
 	{
 		StopMusic(client);
-		playMusic[client]=true;
 		CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
@@ -2990,7 +2986,6 @@ StopMusic(client=0)
 			}
 			strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
 		}
-		playMusic[0]=false;
 	}
 	else
 	{
@@ -3003,7 +2998,6 @@ StopMusic(client=0)
 			MusicTimer[client]=INVALID_HANDLE;
 		}
 		strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
-		playMusic[client]=false;
 	}
 }
 
@@ -4445,7 +4439,6 @@ public OnClientPutInServer(client)
 	FF2flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
-	playMusic[client]=true;
 
 	if(AreClientCookiesCached(client))
 	{
@@ -7900,8 +7893,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 		if(selection==2)  //Off
 		{
 			SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, false);
-			StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
-			StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+			StopMusic(client);
 		}
 		else  //On
 		{
@@ -7909,6 +7901,9 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 			if(!CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 			{
 				SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
+			}
+			if(!currentBGM[client][0])
+			{
 				CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
