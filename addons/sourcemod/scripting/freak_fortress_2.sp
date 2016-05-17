@@ -2868,7 +2868,7 @@ public Action:StartBossTimer(Handle:timer)
 public Action:Timer_PlayBGM(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
-	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid) || currentBGM[0][0] || currentBGM[0][client])
+	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid) || currentBGM[!client ? 0 : client][0] || StrEqual(currentBGM[!client ? 0 : client][0], "ff2_stop_music", false))
 	{
 		if(MusicTimer[client]!=INVALID_HANDLE)
 		{
@@ -2967,7 +2967,7 @@ StartMusic(client=0)
 	}
 }
 
-StopMusic(client=0)
+StopMusic(client=0, bool:disable=false)
 {
 	if(client<=0)  //Stop music for all clients
 	{
@@ -2984,7 +2984,7 @@ StopMusic(client=0)
 				KillTimer(MusicTimer[client]);
 				MusicTimer[client]=INVALID_HANDLE;
 			}
-			strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
+			strcopy(currentBGM[client], PLATFORM_MAX_PATH, !disable ? "" : "ff2_stop_music");
 		}
 	}
 	else
@@ -2997,7 +2997,7 @@ StopMusic(client=0)
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
 		}
-		strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
+		strcopy(currentBGM[client], PLATFORM_MAX_PATH, !disable ? "" : "ff2_stop_music");
 	}
 }
 
@@ -4275,17 +4275,23 @@ public Action:Command_StartMusic(client, args)
 			{
 				for(new target; target<matches; target++)
 				{
+					strcopy(currentBGM[targets[target]], PLATFORM_MAX_PATH, "");
 					StartMusic(targets[target]);
 				}
 			}
 			else
 			{
+				strcopy(currentBGM[targets[0]], PLATFORM_MAX_PATH, "");
 				StartMusic(targets[0]);
 			}
 			CReplyToCommand(client, "{olive}[FF2]{default} Started boss music for %s.", targetName);
 		}
 		else
 		{
+			for(new target=MaxClients;target;target--)
+			{
+				strcopy(currentBGM[target], PLATFORM_MAX_PATH, "");
+			}
 			StartMusic();
 			CReplyToCommand(client, "{olive}[FF2]{default} Started boss music for all clients.");
 		}
@@ -4315,18 +4321,18 @@ public Action:Command_StopMusic(client, args)
 			{
 				for(new target; target<matches; target++)
 				{
-					StopMusic(targets[target]);
+					StopMusic(targets[target], true);
 				}
 			}
 			else
 			{
-				StopMusic(targets[0]);
+				StopMusic(targets[0], true);
 			}
 			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for %s.", targetName);
 		}
 		else
 		{
-			StopMusic();
+			StopMusic(_, true);
 			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for all clients.");
 		}
 		return Plugin_Handled;
@@ -7902,7 +7908,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 			{
 				SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
 			}
-			
+
 			if(!currentBGM[client][0])
 			{
 				CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
