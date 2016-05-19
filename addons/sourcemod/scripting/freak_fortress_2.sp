@@ -2645,7 +2645,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	Damage[0]=0;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(Damage[client]<=0 || IsBoss(client))
+		if(!IsValidClient(client) || Damage[client]<=0 || IsBoss(client))
 		{
 			continue;
 		}
@@ -4483,6 +4483,9 @@ public OnClientDisconnect(client)
 			CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
+	FF2flags[client]=0;
+	Damage[client]=0;
+	uberTarget[client]=-1;
 }
 
 public Action:OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
