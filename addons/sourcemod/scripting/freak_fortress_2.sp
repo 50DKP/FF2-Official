@@ -2845,14 +2845,10 @@ public Action:StartBossTimer(Handle:timer)
 	playing=0;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client))
+		if(IsValidClient(client) && !IsBoss(client) && IsPlayerAlive(client))
 		{
-			if(!IsBoss(client) && IsPlayerAlive(client))
-			{
-				playing++;
-				CreateTimer(0.15, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);  //TODO:  Is this needed?
-			}
-			PlayBGM(client);
+			playing++;
+			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);  //TODO:  Is this needed?
 		}
 	}
 
@@ -2860,6 +2856,7 @@ public Action:StartBossTimer(Handle:timer)
 	CreateTimer(0.2, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, StartRound, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, ClientTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(2.0, Timer_PlayBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 
 	if(!PointType)
 	{
@@ -2868,7 +2865,7 @@ public Action:StartBossTimer(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:Timer_Launch_PlayBGM(Handle:timer, any:userid)
+public Action:Timer_PlayBGM(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
 	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid))
@@ -2882,13 +2879,37 @@ public Action:Timer_Launch_PlayBGM(Handle:timer, any:userid)
 		{
 			if(IsValidClient(client))
 			{
-				PlayBGM(client);
+				if(CheckRoundState()==1 && (!currentBGM[client][0] || !StrEqual(currentBGM[client], "ff2_stop_music", false)))
+				{
+					PrepareBGM(client);
+				}
+				else
+				{
+					if(MusicTimer[client]!=INVALID_HANDLE)
+					{
+						KillTimer(MusicTimer[client]);
+						MusicTimer[client]=INVALID_HANDLE;
+					}			
+					return Plugin_Stop;
+				}
 			}
 		}
 	}
 	else
 	{
-		PlayBGM(client);
+		if(CheckRoundState()==1 && (!currentBGM[client][0] || !StrEqual(currentBGM[client], "ff2_stop_music", false)))
+		{
+			PrepareBGM(client);
+		}
+		else
+		{
+			if(MusicTimer[client]!=INVALID_HANDLE)
+			{
+				KillTimer(MusicTimer[client]);
+				MusicTimer[client]=INVALID_HANDLE;
+			}
+			return Plugin_Stop;
+		}
 	}
 	return Plugin_Continue;
 }
@@ -2898,12 +2919,12 @@ StartMusic(client=0)
 	if(client<=0)  //Start music for all clients
 	{
 		StopMusic();
-		CreateTimer(0.0, Timer_Launch_PlayBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(0.0, Timer_PlayBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
 	{
 		StopMusic(client);
-		PlayBGM(client);
+		CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
@@ -2949,18 +2970,8 @@ StopMusic(client=0, bool:disable=false)
 	}
 }
 
-PlayBGM(client)
+PrepareBGM(client)
 {
-	if(CheckRoundState()!=1 || currentBGM[client][0] || StrEqual(currentBGM[client], "ff2_stop_music", false))
-	{
-		if(MusicTimer[client]!=INVALID_HANDLE)
-		{
-			KillTimer(MusicTimer[client]);
-			MusicTimer[client]=INVALID_HANDLE;
-		}
-		return;
-	}
-
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 	{
@@ -3009,7 +3020,7 @@ PlayBGM(client)
 				EmitSoundToClient(client, music);
 				if(time>1)
 				{
-					MusicTimer[client]=CreateTimer(time, Timer_Launch_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+					MusicTimer[client]=CreateTimer(time, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 				}
 			}
 		}
@@ -4478,8 +4489,6 @@ public OnClientPutInServer(client)
 			//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
 		}
 	}
-	
-	PlayBGM(client);
 }
 
 public OnClientDisconnect(client)
@@ -7933,7 +7942,10 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 				SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
 			}
 
-			PlayBGM(client);
+			if(!currentBGM[client][0])
+			{
+				CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			}
 		}
 		CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_music", selection==2 ? "off" : "on");
 	}
