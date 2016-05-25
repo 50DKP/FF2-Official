@@ -2928,7 +2928,7 @@ StartMusic(client=0)
 	}
 }
 
-StopMusic(client=0, bool:disable=false)
+StopMusic(client=0, bool:permanent=false)
 {
 	if(client<=0)  //Stop music for all clients
 	{
@@ -2948,7 +2948,7 @@ StopMusic(client=0, bool:disable=false)
 			
 			if(!StrEqual(currentBGM[client], "ff2_stop_music"))
 			{
-				strcopy(currentBGM[client], PLATFORM_MAX_PATH, !disable ? "" : "ff2_stop_music");
+				strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
 			}
 		}
 	}
@@ -2965,7 +2965,7 @@ StopMusic(client=0, bool:disable=false)
 		
 		if(!StrEqual(currentBGM[client], "ff2_stop_music"))
 		{
-			strcopy(currentBGM[client], PLATFORM_MAX_PATH, !disable ? "" : "ff2_stop_music");
+			strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
 		}
 	}
 }
