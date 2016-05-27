@@ -88,7 +88,6 @@ new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
-new bool:playMusic[MAXPLAYERS+1]=true;
 
 new String:currentBGM[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
@@ -1549,7 +1548,6 @@ public DisableFF2()
 
 		bossHasReloadAbility[client]=false;
 		bossHasRightMouseAbility[client]=false;
-		playMusic[client]=true;
 	}
 
 	if(smac && FindPluginByFile("smac_cvars.smx")!=INVALID_HANDLE)
@@ -2870,16 +2868,110 @@ public Action:StartBossTimer(Handle:timer)
 public Action:Timer_PlayBGM(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
-	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid) || !playMusic[0] || !playMusic[client])
+	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid))
 	{
+		return Plugin_Stop;
+	}
+	
+	if(!client)
+	{
+		for(client=MaxClients;client;client--)
+		{
+			if(IsValidClient(client))
+			{
+				if(CheckRoundState()==1 && (!currentBGM[client][0] || !StrEqual(currentBGM[client], "ff2_stop_music", false)))
+				{
+					PrepareBGM(client);
+				}
+				else
+				{
+					if(MusicTimer[client]!=INVALID_HANDLE)
+					{
+						KillTimer(MusicTimer[client]);
+						MusicTimer[client]=INVALID_HANDLE;
+					}			
+					return Plugin_Stop;
+				}
+			}
+		}
+	}
+	else
+	{
+		if(CheckRoundState()==1 && (!currentBGM[client][0] || !StrEqual(currentBGM[client], "ff2_stop_music", false)))
+		{
+			PrepareBGM(client);
+		}
+		else
+		{
+			if(MusicTimer[client]!=INVALID_HANDLE)
+			{
+				KillTimer(MusicTimer[client]);
+				MusicTimer[client]=INVALID_HANDLE;
+			}
+			return Plugin_Stop;
+		}
+	}
+	return Plugin_Continue;
+}
+
+StartMusic(client=0)
+{
+	if(client<=0)  //Start music for all clients
+	{
+		StopMusic();
+		CreateTimer(0.0, Timer_PlayBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
+	}
+	else
+	{
+		StopMusic(client);
+		CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+	}
+}
+
+StopMusic(client=0, bool:permanent=false)
+{
+	if(client<=0)  //Stop music for all clients
+	{
+		for(client=1; client<=MaxClients; client++)
+		{
+			if(IsValidClient(client))
+			{
+				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+			}
+
+			if(MusicTimer[client]!=INVALID_HANDLE)
+			{
+				KillTimer(MusicTimer[client]);
+				MusicTimer[client]=INVALID_HANDLE;
+			}
+			
+			if(!StrEqual(currentBGM[client], "ff2_stop_music"))
+			{
+				strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
+			}
+		}
+	}
+	else
+	{
+		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+
 		if(MusicTimer[client]!=INVALID_HANDLE)
 		{
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
 		}
-		return Plugin_Stop;
+		
+		if(!StrEqual(currentBGM[client], "ff2_stop_music"))
+		{
+			strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
+		}
 	}
+}
 
+PrepareBGM(client)
+{
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 	{
@@ -2910,7 +3002,7 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 		{
 			case Plugin_Stop, Plugin_Handled:
 			{
-				return Plugin_Stop;
+				return;
 			}
 			case Plugin_Changed:
 			{
@@ -2922,25 +3014,13 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 		Format(temp, sizeof(temp), "sound/%s", music);
 		if(FileExists(temp, true))
 		{
-			if(!client)
-			{
-				for(new target=1; target<=MaxClients; target++)
-				{
-					strcopy(currentBGM[target], PLATFORM_MAX_PATH, music);
-					if(time>1 && IsClientInGame(target))
-					{
-						MusicTimer[target]=CreateTimer(time, Timer_PlayBGM, GetClientUserId(target), TIMER_FLAG_NO_MAPCHANGE);
-					}
-				}
-				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music);
-			}
-			else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
+			if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 			{
 				strcopy(currentBGM[client], PLATFORM_MAX_PATH, music);
 				EmitSoundToClient(client, music);
 				if(time>1)
 				{
-					MusicTimer[client]=CreateTimer(time, Timer_PlayBGM, userid, TIMER_FLAG_NO_MAPCHANGE);
+					MusicTimer[client]=CreateTimer(time, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 				}
 			}
 		}
@@ -2951,59 +3031,6 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 			KvGetString(BossKV[Special[0]], "filename", bossName, sizeof(bossName));
 			PrintToServer("[FF2 Bosses] Character %s is missing BGM file '%s'!", bossName, music);
 		}
-	}
-	return Plugin_Continue;
-}
-
-StartMusic(client=0)
-{
-	if(client<=0)  //Start music for all clients
-	{
-		StopMusic();
-		playMusic[0]=true;
-		CreateTimer(0.0, Timer_PlayBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
-	}
-	else
-	{
-		StopMusic(client);
-		playMusic[client]=true;
-		CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-	}
-}
-
-StopMusic(client=0)
-{
-	if(client<=0)  //Stop music for all clients
-	{
-		for(client=1; client<=MaxClients; client++)
-		{
-			if(IsValidClient(client))
-			{
-				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
-				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
-			}
-
-			if(MusicTimer[client]!=INVALID_HANDLE)
-			{
-				KillTimer(MusicTimer[client]);
-				MusicTimer[client]=INVALID_HANDLE;
-			}
-			strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
-		}
-		playMusic[0]=false;
-	}
-	else
-	{
-		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
-		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
-
-		if(MusicTimer[client]!=INVALID_HANDLE)
-		{
-			KillTimer(MusicTimer[client]);
-			MusicTimer[client]=INVALID_HANDLE;
-		}
-		strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
-		playMusic[client]=false;
 	}
 }
 
@@ -4281,17 +4308,23 @@ public Action:Command_StartMusic(client, args)
 			{
 				for(new target; target<matches; target++)
 				{
+					strcopy(currentBGM[targets[target]], PLATFORM_MAX_PATH, "");
 					StartMusic(targets[target]);
 				}
 			}
 			else
 			{
+				strcopy(currentBGM[targets[0]], PLATFORM_MAX_PATH, "");
 				StartMusic(targets[0]);
 			}
 			CReplyToCommand(client, "{olive}[FF2]{default} Started boss music for %s.", targetName);
 		}
 		else
 		{
+			for(new target=MaxClients;target;target--)
+			{
+				strcopy(currentBGM[target], PLATFORM_MAX_PATH, "");
+			}
 			StartMusic();
 			CReplyToCommand(client, "{olive}[FF2]{default} Started boss music for all clients.");
 		}
@@ -4321,18 +4354,18 @@ public Action:Command_StopMusic(client, args)
 			{
 				for(new target; target<matches; target++)
 				{
-					StopMusic(targets[target]);
+					StopMusic(targets[target], true);
 				}
 			}
 			else
 			{
-				StopMusic(targets[0]);
+				StopMusic(targets[0], true);
 			}
 			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for %s.", targetName);
 		}
 		else
 		{
-			StopMusic();
+			StopMusic(_, true);
 			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for all clients.");
 		}
 		return Plugin_Handled;
@@ -4445,7 +4478,6 @@ public OnClientPutInServer(client)
 	FF2flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
-	playMusic[client]=true;
 
 	if(AreClientCookiesCached(client))
 	{
@@ -7903,8 +7935,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 		if(selection==2)  //Off
 		{
 			SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, false);
-			StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
-			StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+			StopMusic(client);
 		}
 		else  //On
 		{
@@ -7912,6 +7943,10 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 			if(!CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 			{
 				SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
+			}
+
+			if(!currentBGM[client][0])
+			{
 				CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
