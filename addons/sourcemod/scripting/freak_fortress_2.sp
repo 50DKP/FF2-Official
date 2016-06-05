@@ -2480,6 +2480,12 @@ public Action:BossInfoTimer_Begin(Handle:timer, any:boss)
 
 public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 {
+	if(!IsValidClient(Boss[boss]))
+	{
+		BossInfoTimer[boss][1]=INVALID_HANDLE;
+		return Plugin_Stop;
+	}
+
 	if(bossHasReloadAbility[boss])
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
@@ -4516,6 +4522,7 @@ public OnClientDisconnect(client)
 			CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
+
 	FF2flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
