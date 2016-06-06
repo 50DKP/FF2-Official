@@ -2899,6 +2899,12 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 					return Plugin_Stop;
 				}
 			}
+
+			if(MusicTimer[client]!=INVALID_HANDLE)
+			{
+				KillTimer(MusicTimer[client]);
+				MusicTimer[client]=INVALID_HANDLE;
+			}
 		}
 	}
 	else
