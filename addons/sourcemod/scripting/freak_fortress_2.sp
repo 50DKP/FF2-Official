@@ -4325,7 +4325,6 @@ public Action:Command_StartMusic(client, args)
 			}
 			else
 			{
-				strcopy(currentBGM[targets[0]], PLATFORM_MAX_PATH, "");
 				StartMusic(targets[0]);
 			}
 			CReplyToCommand(client, "{olive}[FF2]{default} Started boss music for %s.", targetName);
