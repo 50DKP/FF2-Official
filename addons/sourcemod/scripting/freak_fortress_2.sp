@@ -4320,7 +4320,6 @@ public Action:Command_StartMusic(client, args)
 			{
 				for(new target; target<matches; target++)
 				{
-					strcopy(currentBGM[targets[target]], PLATFORM_MAX_PATH, "");
 					StartMusic(targets[target]);
 				}
 			}
@@ -4333,11 +4332,6 @@ public Action:Command_StartMusic(client, args)
 		}
 		else
 		{
-			for(new target=1; target<=MaxClients; target++)
-			{
-				strcopy(currentBGM[target], PLATFORM_MAX_PATH, "");
-			}
-
 			StartMusic();
 			CReplyToCommand(client, "{olive}[FF2]{default} Started boss music for all clients.");
 		}
