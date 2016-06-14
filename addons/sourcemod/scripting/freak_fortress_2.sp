@@ -2896,8 +2896,8 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 						KillTimer(MusicTimer[client]);
 						MusicTimer[client]=INVALID_HANDLE;
 					}
-					return Plugin_Stop;
 				}
+				continue;
 			}
 
 			if(MusicTimer[client]!=INVALID_HANDLE)
