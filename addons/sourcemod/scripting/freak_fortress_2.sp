@@ -1540,7 +1540,7 @@ public DisableFF2()
 			}
 		}
 
-		if(MusicTimer[client]!=INVALID_HANDLE)
+		if(MusicTimer[client])
 		{
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
@@ -2891,7 +2891,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 				}
 				else
 				{
-					if(MusicTimer[client]!=INVALID_HANDLE)
+					if(MusicTimer[client])
 					{
 						KillTimer(MusicTimer[client]);
 						MusicTimer[client]=INVALID_HANDLE;
@@ -2900,7 +2900,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 				continue;
 			}
 
-			if(MusicTimer[client]!=INVALID_HANDLE)
+			if(MusicTimer[client])
 			{
 				KillTimer(MusicTimer[client]);
 				MusicTimer[client]=INVALID_HANDLE;
@@ -2915,7 +2915,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 		}
 		else
 		{
-			if(MusicTimer[client]!=INVALID_HANDLE)
+			if(MusicTimer[client])
 			{
 				KillTimer(MusicTimer[client]);
 				MusicTimer[client]=INVALID_HANDLE;
@@ -3016,7 +3016,7 @@ StopMusic(client=0, bool:permanent=false)
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 			}
 
-			if(MusicTimer[client]!=INVALID_HANDLE)
+			if(MusicTimer[client])
 			{
 				KillTimer(MusicTimer[client]);
 				MusicTimer[client]=INVALID_HANDLE;
@@ -3033,7 +3033,7 @@ StopMusic(client=0, bool:permanent=false)
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 
-		if(MusicTimer[client]!=INVALID_HANDLE)
+		if(MusicTimer[client])
 		{
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
