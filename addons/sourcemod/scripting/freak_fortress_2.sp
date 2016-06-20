@@ -2896,8 +2896,8 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 						KillTimer(MusicTimer[client]);
 						MusicTimer[client]=INVALID_HANDLE;
 					}
-					return Plugin_Stop;
 				}
+				continue;
 			}
 
 			if(MusicTimer[client]!=INVALID_HANDLE)
@@ -4525,6 +4525,12 @@ public OnClientDisconnect(client)
 	FF2flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
+	
+	if(MusicTimer[client]!=INVALID_HANDLE)
+	{
+		KillTimer(MusicTimer[client]);
+		MusicTimer[client]=INVALID_HANDLE;
+	}
 }
 
 public Action:OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
