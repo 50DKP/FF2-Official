@@ -3030,7 +3030,7 @@ StopMusic(client=0, bool:permanent=false)
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 
-		if(MusicTimer[client])
+		if(MusicTimer[client]!=INVALID_HANDLE)
 		{
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
@@ -4519,7 +4519,7 @@ public OnClientDisconnect(client)
 	FF2flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
-	
+
 	if(MusicTimer[client]!=INVALID_HANDLE)
 	{
 		KillTimer(MusicTimer[client]);
