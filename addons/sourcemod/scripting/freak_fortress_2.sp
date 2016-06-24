@@ -3014,16 +3014,13 @@ StopMusic(client=0, bool:permanent=false)
 			{
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
-			}
 
-			if(MusicTimer[client]!=INVALID_HANDLE)
-			{
-				KillTimer(MusicTimer[client]);
-				MusicTimer[client]=INVALID_HANDLE;
-			}
+				if(MusicTimer[client])
+				{
+					KillTimer(MusicTimer[client]);
+					MusicTimer[client]=INVALID_HANDLE;
+				}
 
-			if(!StrEqual(currentBGM[client], "ff2_stop_music"))
-			{
 				strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
 			}
 		}
@@ -3033,16 +3030,13 @@ StopMusic(client=0, bool:permanent=false)
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 
-		if(MusicTimer[client]!=INVALID_HANDLE)
+		if(MusicTimer[client])
 		{
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
 		}
 
-		if(!StrEqual(currentBGM[client], "ff2_stop_music"))
-		{
-			strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
-		}
+		strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
 	}
 }
 
