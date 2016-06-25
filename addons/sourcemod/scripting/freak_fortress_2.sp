@@ -2996,11 +2996,13 @@ StartMusic(client=0)
 	{
 		StopMusic();
 		CreateTimer(0.0, Timer_PrepareBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
+		SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
 	}
 	else
 	{
 		StopMusic(client);
 		CreateTimer(0.0, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
 	}
 }
 
@@ -3014,6 +3016,7 @@ StopMusic(client=0, bool:permanent=false)
 			{
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+				SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, false);
 
 				if(MusicTimer[client])
 				{
@@ -3029,6 +3032,7 @@ StopMusic(client=0, bool:permanent=false)
 	{
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 		StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+		SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, false);
 
 		if(MusicTimer[client]!=INVALID_HANDLE)
 		{
