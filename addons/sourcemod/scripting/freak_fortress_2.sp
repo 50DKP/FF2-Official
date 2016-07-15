@@ -3505,16 +3505,6 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}*/
-		case 220:  //Shortstop
-		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "241 ; 1.0");
-				//241: No reload penalty
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
 		case 226:  //Battalion's Backup
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "140 ; 10.0");
@@ -3664,7 +3654,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	{
 		new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1", true);
 			//17: 5% uber on hit
-			//144: Sets weapon mode?????
+			//144: Sets weapon mode - *possibly* the overdose speed effect
 		if(itemOverride!=INVALID_HANDLE)
 		{
 			item=itemOverride;
