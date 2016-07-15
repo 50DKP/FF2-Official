@@ -32,17 +32,18 @@
 		"Notes"			"[Dev] Actually make FF2_OnMusic work"
 		"Notes"			"[Dev] Rewrote BGM code"
 		"Notes"			"[Dev] Fixed ability sounds playing even if the ability was canceled in FF2_PreAbility"
+	}
 
 	"Files"
 	{
 		"Patch"
 		{
-			"Plugin"	"Path_SM/addons/sourcemod/plugins/freak_fortress_2.smx"
-			"Plugin"	"Path_SM/addons/sourcemod/plugins/freaks/ff2_1st_set_abilities.ff2"
-			"Plugin"	"Path_SM/addons/sourcemod/translations/ru/freak_fortress_2.phrases.txt"
-			"Source"	"Path_SM/addons/sourcemod/scripting/freak_fortress_2.sp"
-			"Source"	"Path_SM/addons/sourcemod/scripting/freaks/ff2_1st_set_abilities.sp"
-			"Source"	"Path_SM/addons/sourcemod/scripting/include/freak_fortress_2.inc"
+			"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
+			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
+			"Plugin"	"Path_SM/translations/ru/freak_fortress_2.phrases.txt"
+			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
+			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
+			"Source"	"Path_SM/scripting/include/freak_fortress_2.inc"
 		}
 
 		"Plugin"		"Path_SM/plugins/freak_fortress_2.smx"
