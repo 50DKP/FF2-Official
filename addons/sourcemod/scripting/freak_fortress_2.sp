@@ -3020,9 +3020,8 @@ StopMusic(client=0, bool:permanent=false)
 					KillTimer(MusicTimer[client]);
 					MusicTimer[client]=INVALID_HANDLE;
 				}
-
-				strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
 			}
+			strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
 		}
 	}
 	else
@@ -3035,7 +3034,6 @@ StopMusic(client=0, bool:permanent=false)
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
 		}
-
 		strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
 	}
 }
@@ -7940,11 +7938,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 			if(!CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 			{
 				SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
-			}
-
-			if(!currentBGM[client][0])
-			{
-				CreateTimer(0.0, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+				StartMusic(client);
 			}
 		}
 		CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_music", selection==2 ? "off" : "on");
