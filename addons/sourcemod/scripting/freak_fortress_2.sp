@@ -1706,23 +1706,23 @@ EnableSubPlugins(bool:force=false)
 
 	areSubPluginsEnabled=true;
 	decl String:path[PLATFORM_MAX_PATH], String:filename[PLATFORM_MAX_PATH], String:filename_old[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks");
-	decl FileType:filetype;
+	BuildPath(Path_SM, path, sizeof(path), "plugins/freaks");
+	new FileType:filetype;
 	new Handle:directory=OpenDirectory(path);
-	while(ReadDirEntry(directory, filename, PLATFORM_MAX_PATH, filetype))
+	while(ReadDirEntry(directory, filename, sizeof(filename), filetype))
 	{
 		if(filetype==FileType_File && StrContains(filename, ".smx", false)!=-1)
 		{
-			Format(filename_old, PLATFORM_MAX_PATH, "%s/%s", path, filename);
-			ReplaceString(filename, PLATFORM_MAX_PATH, ".smx", ".ff2", false);
-			Format(filename, PLATFORM_MAX_PATH, "%s/%s", path, filename);
-			DeleteFile(filename);
+			Format(filename_old, sizeof(filename_old), "%s/%s", path, filename);
+			ReplaceString(filename, sizeof(filename), ".smx", ".ff2", false);
+			Format(filename, sizeof(filename), "%s/%s", path, filename);
+			DeleteFile(filename); // Just in case filename.ff2 also exists: delete it and replace it with the new .smx version
 			RenameFile(filename, filename_old);
 		}
 	}
 
 	directory=OpenDirectory(path);
-	while(ReadDirEntry(directory, filename, PLATFORM_MAX_PATH, filetype))
+	while(ReadDirEntry(directory, filename, sizeof(filename), filetype))
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
