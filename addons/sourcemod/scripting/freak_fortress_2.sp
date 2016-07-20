@@ -4458,24 +4458,29 @@ stock SetArenaCapEnableTime(Float:time)
 	}
 }
 
-public OnClientPutInServer(client)
+public OnClientPostAdminCheck(client)
 {
-	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
-	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
-
-	FF2flags[client]=0;
-	Damage[client]=0;
-	uberTarget[client]=-1;
-
-	if(AreClientCookiesCached(client))
+	if(Enabled)
 	{
-		new String:buffer[24];
-		GetClientCookie(client, FF2Cookies, buffer, sizeof(buffer));
-		if(!buffer[0])
+		SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+		SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+
+		FF2flags[client]=0;
+		Damage[client]=0;
+		uberTarget[client]=-1;
+
+		if(AreClientCookiesCached(client))
 		{
-			SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
-			//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
+			new String:buffer[24];
+			GetClientCookie(client, FF2Cookies, buffer, sizeof(buffer));
+			if(!buffer[0])
+			{
+				SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
+				//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
+			}
 		}
+
+		StartMusic(client);
 	}
 }
 
