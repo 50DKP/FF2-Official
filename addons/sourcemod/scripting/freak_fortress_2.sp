@@ -88,6 +88,7 @@ new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
+new bool:playBGM[MAXPLAYERS+1]=true;
 
 new String:currentBGM[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
@@ -2885,7 +2886,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 		{
 			if(IsValidClient(client))
 			{
-				if(CheckRoundState()==1 && (!currentBGM[client][0] || !StrEqual(currentBGM[client], "ff2_stop_music", false)))
+				if(CheckRoundState()==1 && playBGM[client] && !currentBGM[client][0])
 				{
 					PlayBGM(client);
 				}
@@ -2909,7 +2910,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 	}
 	else
 	{
-		if(CheckRoundState()==1 && (!currentBGM[client][0] || !StrEqual(currentBGM[client], "ff2_stop_music", false)))
+		if(CheckRoundState()==1 && playBGM[client] && !currentBGM[client][0])
 		{
 			PlayBGM(client);
 		}
@@ -2995,11 +2996,16 @@ StartMusic(client=0)
 	if(client<=0)  //Start music for all clients
 	{
 		StopMusic();
+		for(new target; target<=MaxClients; target++)
+		{
+			playBGM[target]=true;
+		}
 		CreateTimer(0.0, Timer_PrepareBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
 	{
 		StopMusic(client);
+		playBGM[client]=true;
 		CreateTimer(0.0, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
@@ -3021,7 +3027,12 @@ StopMusic(client=0, bool:permanent=false)
 					MusicTimer[client]=INVALID_HANDLE;
 				}
 			}
-			strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
+
+			strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
+			if(permanent)
+			{
+				playBGM[client]=false;
+			}
 		}
 	}
 	else
@@ -3034,7 +3045,12 @@ StopMusic(client=0, bool:permanent=false)
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
 		}
-		strcopy(currentBGM[client], PLATFORM_MAX_PATH, !permanent ? "" : "ff2_stop_music");
+
+		strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
+		if(permanent)
+		{
+			playBGM[client]=false;
+		}
 	}
 }
 
@@ -4512,6 +4528,7 @@ public OnClientDisconnect(client)
 	FF2flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
+	playBGM[client]=true;
 
 	if(MusicTimer[client]!=INVALID_HANDLE)
 	{
@@ -7935,7 +7952,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 		if(selection==2)  //Off
 		{
 			SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, false);
-			StopMusic(client);
+			StopMusic(client, true);
 		}
 		else  //On
 		{
