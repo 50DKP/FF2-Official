@@ -294,7 +294,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.9",
 	"1.10.9",
 	"1.10.9",
-	"1.10.9"
+	"1.10.9",
+	"1.10.10"
 };
 
 static const String:ff2versiondates[][]=
@@ -371,13 +372,23 @@ static const String:ff2versiondates[][]=
 	"May 7, 2016",			//1.10.9
 	"May 7, 2016",			//1.10.9
 	"May 7, 2016",			//1.10.9
-	"May 7, 2016"			//1.10.9
+	"May 7, 2016",			//1.10.9
+	"July 24, 2016"			//1.10.10
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 73:  //1.10.10
+		{
+			DrawPanelText(panel, "1) Fixed multiple BGM issues in 1.10.9 (Wliu, shadow93, Nopied, WakaFlocka, and others)");
+			DrawPanelText(panel, "2) Automatically start BGMs for new clients (Wliu)");
+			DrawPanelText(panel, "3) Fixed the top damage dealt sometimes displaying as 0 damage (naydef)");
+			DrawPanelText(panel, "4) Added back Shortstop reload penalty to reflect its buff in the Meet Your Match update (Wliu)");
+			DrawPanelText(panel, "5) [Server] Fixed an invalid client error in ff2_1st_set_abilities.sp (Wliu)");
+			DrawPanelText(panel, "6) [Server] Fixed a GetEntProp error (Wliu from Hemen353)");
+		}
 		case 72:  //1.10.9
 		{
 			DrawPanelText(panel, "1) Fixed a critical exploit related to sv_cheats (naydef)");
