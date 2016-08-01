@@ -36,10 +36,10 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "10"
+#define STABLE_REVISION "11"
 #define DEV_REVISION "Beta"
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.10
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.11
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
@@ -2897,7 +2897,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 		{
 			if(IsValidClient(client))
 			{
-				if(CheckRoundState()==1 && playBGM[client] && !currentBGM[client][0])
+				if(CheckRoundState()==1 && playBGM[client])
 				{
 					PlayBGM(client);
 				}
@@ -2921,7 +2921,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 	}
 	else
 	{
-		if(CheckRoundState()==1 && playBGM[client] && !currentBGM[client][0])
+		if(CheckRoundState()==1 && playBGM[client])
 		{
 			PlayBGM(client);
 		}
