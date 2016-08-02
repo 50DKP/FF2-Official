@@ -36,13 +36,12 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "9"
+#define STABLE_REVISION "11"
 //#define DEV_REVISION "Beta"
-#define BUILD_NUMBER "manual"  //This gets automagically updated by Jenkins
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.9
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.11
 #else
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION..." (build "...BUILD_NUMBER...")"
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
 
 #define UPDATE_URL "http://50dkp.github.io/FF2-Official/update.txt"
@@ -89,6 +88,7 @@ new curHelp[MAXPLAYERS+1];
 new uberTarget[MAXPLAYERS+1];
 new shield[MAXPLAYERS+1];
 new detonations[MAXPLAYERS+1];
+new bool:playBGM[MAXPLAYERS+1]=true;
 
 new String:currentBGM[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
@@ -294,7 +294,9 @@ static const String:ff2versiontitles[][]=
 	"1.10.9",
 	"1.10.9",
 	"1.10.9",
-	"1.10.9"
+	"1.10.9",
+	"1.10.10",
+	"1.10.11"
 };
 
 static const String:ff2versiondates[][]=
@@ -367,17 +369,32 @@ static const String:ff2versiondates[][]=
 	"November 19, 2015",	//1.10.7
 	"November 19, 2015",	//1.10.7
 	"November 24, 2015",	//1.10.8
-	"May 7, 2015",			//1.10.9
-	"May 7, 2015",			//1.10.9
-	"May 7, 2015",			//1.10.9
-	"May 7, 2015",			//1.10.9
-	"May 7, 2015"			//1.10.9
+	"May 7, 2016",			//1.10.9
+	"May 7, 2016",			//1.10.9
+	"May 7, 2016",			//1.10.9
+	"May 7, 2016",			//1.10.9
+	"May 7, 2016",			//1.10.9
+	"August 1, 2016",		//1.10.10
+	"August 1, 2016"		//1.10.11
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 74:  //1.10.11
+		{
+			DrawPanelText(panel, "1) Fixed BGMs not looping (Wliu from WakaFlocka)");
+		}
+		case 73:  //1.10.10
+		{
+			DrawPanelText(panel, "1) Fixed multiple BGM issues in 1.10.9 (Wliu, shadow93, Nopied, WakaFlocka, and others)");
+			DrawPanelText(panel, "2) Automatically start BGMs for new clients (Wliu)");
+			DrawPanelText(panel, "3) Fixed the top damage dealt sometimes displaying as 0 damage (naydef)");
+			DrawPanelText(panel, "4) Added back Shortstop reload penalty to reflect its buff in the Meet Your Match update (Wliu)");
+			DrawPanelText(panel, "5) [Server] Fixed an invalid client error in ff2_1st_set_abilities.sp (Wliu)");
+			DrawPanelText(panel, "6) [Server] Fixed a GetEntProp error (Wliu from Hemen353)");
+		}
 		case 72:  //1.10.9
 		{
 			DrawPanelText(panel, "1) Fixed a critical exploit related to sv_cheats (naydef)");
@@ -1707,23 +1724,23 @@ EnableSubPlugins(bool:force=false)
 
 	areSubPluginsEnabled=true;
 	decl String:path[PLATFORM_MAX_PATH], String:filename[PLATFORM_MAX_PATH], String:filename_old[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "plugins/freaks");
-	decl FileType:filetype;
+	BuildPath(Path_SM, path, sizeof(path), "plugins/freaks");
+	new FileType:filetype;
 	new Handle:directory=OpenDirectory(path);
-	while(ReadDirEntry(directory, filename, PLATFORM_MAX_PATH, filetype))
+	while(ReadDirEntry(directory, filename, sizeof(filename), filetype))
 	{
 		if(filetype==FileType_File && StrContains(filename, ".smx", false)!=-1)
 		{
-			Format(filename_old, PLATFORM_MAX_PATH, "%s/%s", path, filename);
-			ReplaceString(filename, PLATFORM_MAX_PATH, ".smx", ".ff2", false);
-			Format(filename, PLATFORM_MAX_PATH, "%s/%s", path, filename);
-			DeleteFile(filename);
+			Format(filename_old, sizeof(filename_old), "%s/%s", path, filename);
+			ReplaceString(filename, sizeof(filename), ".smx", ".ff2", false);
+			Format(filename, sizeof(filename), "%s/%s", path, filename);
+			DeleteFile(filename); // Just in case filename.ff2 also exists: delete it and replace it with the new .smx version
 			RenameFile(filename, filename_old);
 		}
 	}
 
 	directory=OpenDirectory(path);
-	while(ReadDirEntry(directory, filename, PLATFORM_MAX_PATH, filetype))
+	while(ReadDirEntry(directory, filename, sizeof(filename), filetype))
 	{
 		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
@@ -2481,6 +2498,12 @@ public Action:BossInfoTimer_Begin(Handle:timer, any:boss)
 
 public Action:BossInfoTimer_ShowInfo(Handle:timer, any:boss)
 {
+	if(!IsValidClient(Boss[boss]))
+	{
+		BossInfoTimer[boss][1]=INVALID_HANDLE;
+		return Plugin_Stop;
+	}
+
 	if(bossHasReloadAbility[boss])
 	{
 		SetHudTextParams(0.75, 0.7, 0.15, 255, 255, 255, 255);
@@ -2644,7 +2667,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	Damage[0]=0;
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(Damage[client]<=0 || IsBoss(client))
+		if(!IsValidClient(client) || Damage[client]<=0 || IsBoss(client))
 		{
 			continue;
 		}
@@ -2857,7 +2880,7 @@ public Action:StartBossTimer(Handle:timer)
 	CreateTimer(0.2, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, StartRound, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, ClientTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(2.0, Timer_PlayBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(2.0, Timer_PrepareBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 
 	if(!PointType)
 	{
@@ -2866,15 +2889,56 @@ public Action:StartBossTimer(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:Timer_PlayBGM(Handle:timer, any:userid)
+public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
 	if(CheckRoundState()!=1 || (!client && MapHasMusic()) || (!client && userid))
 	{
-		MusicTimer[client]=INVALID_HANDLE;
 		return Plugin_Stop;
 	}
 
+	if(!client)
+	{
+		for(client=1; client<=MaxClients; client++)
+		{
+			if(IsValidClient(client))
+			{
+				if(playBGM[client])
+				{
+					PlayBGM(client);
+				}
+				else if(MusicTimer[client]!=INVALID_HANDLE)
+				{
+					KillTimer(MusicTimer[client]);
+					MusicTimer[client]=INVALID_HANDLE;
+				}
+			}
+
+			if(MusicTimer[client]!=INVALID_HANDLE)
+			{
+				KillTimer(MusicTimer[client]);
+				MusicTimer[client]=INVALID_HANDLE;
+			}
+		}
+	}
+	else
+	{
+		if(playBGM[client])
+		{
+			PlayBGM(client);
+		}
+		else if(MusicTimer[client]!=INVALID_HANDLE)
+		{
+			KillTimer(MusicTimer[client]);
+			MusicTimer[client]=INVALID_HANDLE;
+			return Plugin_Stop;
+		}
+	}
+	return Plugin_Continue;
+}
+
+PlayBGM(client)
+{
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 	{
@@ -2905,7 +2969,7 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 		{
 			case Plugin_Stop, Plugin_Handled:
 			{
-				return Plugin_Stop;
+				return;
 			}
 			case Plugin_Changed:
 			{
@@ -2917,25 +2981,13 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 		Format(temp, sizeof(temp), "sound/%s", music);
 		if(FileExists(temp, true))
 		{
-			if(!client)
-			{
-				for(new target=1; target<=MaxClients; target++)
-				{
-					strcopy(currentBGM[target], PLATFORM_MAX_PATH, music);
-					if(time>1 && IsClientInGame(target))
-					{
-						MusicTimer[target]=CreateTimer(time, Timer_PlayBGM, GetClientUserId(target), TIMER_FLAG_NO_MAPCHANGE);
-					}
-				}
-				EmitSoundToAllExcept(SOUNDEXCEPT_MUSIC, music);
-			}
-			else if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
+			if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 			{
 				strcopy(currentBGM[client], PLATFORM_MAX_PATH, music);
 				EmitSoundToClient(client, music);
 				if(time>1)
 				{
-					MusicTimer[client]=CreateTimer(time, Timer_PlayBGM, userid, TIMER_FLAG_NO_MAPCHANGE);
+					MusicTimer[client]=CreateTimer(time, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 				}
 			}
 		}
@@ -2947,7 +2999,6 @@ public Action:Timer_PlayBGM(Handle:timer, any:userid)
 			PrintToServer("[FF2 Bosses] Character %s is missing BGM file '%s'!", bossName, music);
 		}
 	}
-	return Plugin_Continue;
 }
 
 StartMusic(client=0)
@@ -2955,16 +3006,21 @@ StartMusic(client=0)
 	if(client<=0)  //Start music for all clients
 	{
 		StopMusic();
-		CreateTimer(0.0, Timer_PlayBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
+		for(new target; target<=MaxClients; target++)
+		{
+			playBGM[target]=true;
+		}
+		CreateTimer(0.0, Timer_PrepareBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
 	{
 		StopMusic(client);
-		CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		playBGM[client]=true;
+		CreateTimer(0.0, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
-StopMusic(client=0)
+StopMusic(client=0, bool:permanent=false)
 {
 	if(client<=0)  //Stop music for all clients
 	{
@@ -2974,14 +3030,19 @@ StopMusic(client=0)
 			{
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+
+				if(MusicTimer[client])
+				{
+					KillTimer(MusicTimer[client]);
+					MusicTimer[client]=INVALID_HANDLE;
+				}
 			}
 
-			if(MusicTimer[client]!=INVALID_HANDLE)
-			{
-				KillTimer(MusicTimer[client]);
-				MusicTimer[client]=INVALID_HANDLE;
-			}
 			strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
+			if(permanent)
+			{
+				playBGM[client]=false;
+			}
 		}
 	}
 	else
@@ -2994,7 +3055,12 @@ StopMusic(client=0)
 			KillTimer(MusicTimer[client]);
 			MusicTimer[client]=INVALID_HANDLE;
 		}
+
 		strcopy(currentBGM[client], PLATFORM_MAX_PATH, "");
+		if(permanent)
+		{
+			playBGM[client]=false;
+		}
 	}
 }
 
@@ -3463,16 +3529,6 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				return Plugin_Changed;
 			}
 		}*/
-		case 220:  //Shortstop
-		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "241 ; 1.0");
-				//241: No reload penalty
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
 		case 226:  //Battalion's Backup
 		{
 			new Handle:itemOverride=PrepareItemHandle(item, _, _, "140 ; 10.0");
@@ -3622,7 +3678,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	{
 		new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1", true);
 			//17: 5% uber on hit
-			//144: Sets weapon mode?????
+			//144: Sets weapon mode - *possibly* the overdose speed effect
 		if(itemOverride!=INVALID_HANDLE)
 		{
 			item=itemOverride;
@@ -4312,18 +4368,18 @@ public Action:Command_StopMusic(client, args)
 			{
 				for(new target; target<matches; target++)
 				{
-					StopMusic(targets[target]);
+					StopMusic(targets[target], true);
 				}
 			}
 			else
 			{
-				StopMusic(targets[0]);
+				StopMusic(targets[0], true);
 			}
 			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for %s.", targetName);
 		}
 		else
 		{
-			StopMusic();
+			StopMusic(_, true);
 			CReplyToCommand(client, "{olive}[FF2]{default} Stopped boss music for all clients.");
 		}
 		return Plugin_Handled;
@@ -4428,24 +4484,29 @@ stock SetArenaCapEnableTime(Float:time)
 	}
 }
 
-public OnClientPutInServer(client)
+public OnClientPostAdminCheck(client)
 {
-	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
-	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
-
-	FF2flags[client]=0;
-	Damage[client]=0;
-	uberTarget[client]=-1;
-
-	if(AreClientCookiesCached(client))
+	if(Enabled)
 	{
-		new String:buffer[24];
-		GetClientCookie(client, FF2Cookies, buffer, sizeof(buffer));
-		if(!buffer[0])
+		SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+		SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+
+		FF2flags[client]=0;
+		Damage[client]=0;
+		uberTarget[client]=-1;
+
+		if(AreClientCookiesCached(client))
 		{
-			SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
-			//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
+			new String:buffer[24];
+			GetClientCookie(client, FF2Cookies, buffer, sizeof(buffer));
+			if(!buffer[0])
+			{
+				SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
+				//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
+			}
 		}
+
+		StartMusic(client);
 	}
 }
 
@@ -4472,6 +4533,17 @@ public OnClientDisconnect(client)
 		{
 			CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 		}
+	}
+
+	FF2flags[client]=0;
+	Damage[client]=0;
+	uberTarget[client]=-1;
+	playBGM[client]=true;
+
+	if(MusicTimer[client]!=INVALID_HANDLE)
+	{
+		KillTimer(MusicTimer[client]);
+		MusicTimer[client]=INVALID_HANDLE;
 	}
 }
 
@@ -7890,8 +7962,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 		if(selection==2)  //Off
 		{
 			SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, false);
-			StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
-			StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+			StopMusic(client, true);
 		}
 		else  //On
 		{
@@ -7899,7 +7970,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 			if(!CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 			{
 				SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, true);
-				CreateTimer(0.0, Timer_PlayBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+				StartMusic(client);
 			}
 		}
 		CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_music", selection==2 ? "off" : "on");

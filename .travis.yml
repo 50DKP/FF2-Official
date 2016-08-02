@@ -1,17 +1,18 @@
-#Use the new container-based infrastructure
+# Use the new container-based infrastructure
 sudo: false
 
-#Install some apt packages needed for spcomp
+# Install some apt packages needed for spcomp
 addons:
     apt_packages:
         - lib32stdc++6
 
-#Set the build environment
+# Set the build environment
 env:
-    - SMVERSION=1.7
-    - SMVERSION=1.8
+    - SMVERSION=1.7 # Legacy
+    - SMVERSION=1.8 # Stable
+    - SMVERSION=1.9 # Unstable
 
-#And compile!
+# And compile!
 install:
     - wget --input-file=http://sourcemod.net/smdrop/$SMVERSION/sourcemod-latest-linux
     - tar -xzf $(cat sourcemod-latest-linux)
@@ -28,7 +29,7 @@ before_script:
     - mkdir compiled compiled/freaks
 script: ./compile.sh freak_fortress_2.sp freaks/*.sp
 
-#Releases
+# Releases
 before_deploy:
     - cd compiled/freaks
     - rename 's/.smx/.ff2/' *.smx
@@ -60,6 +61,6 @@ deploy:
         repo: 50DKP/FF2-Official
         tags: true
 
-#Notifications
+# Notifications
 notifications:
     email: false
