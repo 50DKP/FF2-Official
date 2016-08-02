@@ -36,10 +36,10 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "10"
-//#define DEV_REVISION "Beta"
+#define STABLE_REVISION "11"
+#define DEV_REVISION "Beta"
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.10
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.11
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
@@ -295,7 +295,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.9",
 	"1.10.9",
 	"1.10.9",
-	"1.10.10"
+	"1.10.10",
+	"1.10.11"
 };
 
 static const String:ff2versiondates[][]=
@@ -373,13 +374,18 @@ static const String:ff2versiondates[][]=
 	"May 7, 2016",			//1.10.9
 	"May 7, 2016",			//1.10.9
 	"May 7, 2016",			//1.10.9
-	"August 1, 2016"		//1.10.10
+	"August 1, 2016",		//1.10.10
+	"August 1, 2016"		//1.10.11
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 74:  //1.10.11
+		{
+			DrawPanelText(panel, "1) Fixed BGMs not looping (Wliu from WakaFlocka)");
+		}
 		case 73:  //1.10.10
 		{
 			DrawPanelText(panel, "1) Fixed multiple BGM issues in 1.10.9 (Wliu, shadow93, Nopied, WakaFlocka, and others)");
@@ -2897,19 +2903,15 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 		{
 			if(IsValidClient(client))
 			{
-				if(CheckRoundState()==1 && playBGM[client] && !currentBGM[client][0])
+				if(playBGM[client])
 				{
 					PlayBGM(client);
 				}
-				else
+				else if(MusicTimer[client]!=INVALID_HANDLE)
 				{
-					if(MusicTimer[client]!=INVALID_HANDLE)
-					{
-						KillTimer(MusicTimer[client]);
-						MusicTimer[client]=INVALID_HANDLE;
-					}
+					KillTimer(MusicTimer[client]);
+					MusicTimer[client]=INVALID_HANDLE;
 				}
-				continue;
 			}
 
 			if(MusicTimer[client]!=INVALID_HANDLE)
@@ -2921,17 +2923,14 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 	}
 	else
 	{
-		if(CheckRoundState()==1 && playBGM[client] && !currentBGM[client][0])
+		if(playBGM[client])
 		{
 			PlayBGM(client);
 		}
-		else
+		else if(MusicTimer[client]!=INVALID_HANDLE)
 		{
-			if(MusicTimer[client]!=INVALID_HANDLE)
-			{
-				KillTimer(MusicTimer[client]);
-				MusicTimer[client]=INVALID_HANDLE;
-			}
+			KillTimer(MusicTimer[client]);
+			MusicTimer[client]=INVALID_HANDLE;
 			return Plugin_Stop;
 		}
 	}

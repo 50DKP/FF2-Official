@@ -4,16 +4,11 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.10.10"
-			"Previous"	"1.10.9"
+			"Latest"	"1.10.11"
+			"Previous"	"1.10.10"
 		}
 
-		"Notes"			"Fixed multiple BGM issues in 1.10.9 (Wliu, shadow93, Nopied, WakaFlocka, and others)"
-		"Notes"			"Automatically start BGMs for new clients (Wliu)"
-		"Notes"			"Fixed the top damage dealt sometimes displaying as 0 damage (naydef)"
-		"Notes"			"Added back Shortstop reload penalty to reflect its buff in the Meet Your Match update (Wliu)"
-		"Notes"			"[Server] Fixed an invalid client error in ff2_1st_set_abilities.sp (Wliu)"
-		"Notes"			"[Server] Fixed a GetEntProp error (Wliu from Hemen353)"
+		"Notes"			"Fixed BGMs not looping (Wliu from WakaFlocka)"
 	}
 
 	"Files"
@@ -21,9 +16,7 @@
 		"Patch"
 		{
 			"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
-			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
-			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
 		}
 
 		"Plugin"		"Path_SM/plugins/freak_fortress_2.smx"
