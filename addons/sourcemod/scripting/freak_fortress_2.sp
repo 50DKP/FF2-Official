@@ -2897,19 +2897,15 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 		{
 			if(IsValidClient(client))
 			{
-				if(CheckRoundState()==1 && playBGM[client])
+				if(playBGM[client])
 				{
 					PlayBGM(client);
 				}
-				else
+				else if(MusicTimer[client]!=INVALID_HANDLE)
 				{
-					if(MusicTimer[client]!=INVALID_HANDLE)
-					{
-						KillTimer(MusicTimer[client]);
-						MusicTimer[client]=INVALID_HANDLE;
-					}
+					KillTimer(MusicTimer[client]);
+					MusicTimer[client]=INVALID_HANDLE;
 				}
-				continue;
 			}
 
 			if(MusicTimer[client]!=INVALID_HANDLE)
@@ -2921,17 +2917,14 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 	}
 	else
 	{
-		if(CheckRoundState()==1 && playBGM[client])
+		if(playBGM[client])
 		{
 			PlayBGM(client);
 		}
-		else
+		else if(MusicTimer[client]!=INVALID_HANDLE)
 		{
-			if(MusicTimer[client]!=INVALID_HANDLE)
-			{
-				KillTimer(MusicTimer[client]);
-				MusicTimer[client]=INVALID_HANDLE;
-			}
+			KillTimer(MusicTimer[client]);
+			MusicTimer[client]=INVALID_HANDLE;
 			return Plugin_Stop;
 		}
 	}
