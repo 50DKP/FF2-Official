@@ -295,7 +295,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.9",
 	"1.10.9",
 	"1.10.9",
-	"1.10.10"
+	"1.10.10",
+	"1.10.11"
 };
 
 static const String:ff2versiondates[][]=
@@ -373,13 +374,18 @@ static const String:ff2versiondates[][]=
 	"May 7, 2016",			//1.10.9
 	"May 7, 2016",			//1.10.9
 	"May 7, 2016",			//1.10.9
-	"August 1, 2016"		//1.10.10
+	"August 1, 2016",		//1.10.10
+	"August 1, 2016"		//1.10.11
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 74:  //1.10.11
+		{
+			DrawPanelText(panel, "1) Fixed BGMs not looping (Wliu from WakaFlocka)");
+		}
 		case 73:  //1.10.10
 		{
 			DrawPanelText(panel, "1) Fixed multiple BGM issues in 1.10.9 (Wliu, shadow93, Nopied, WakaFlocka, and others)");
