@@ -27,7 +27,7 @@ before_script:
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508" -O include/tf2attributes.inc
 
     # RTD is particularly annoying since it doesn't handle optional plugin dependencies correctly
-    - sed -i'' 's/required = 1/#if defined REQUIRE_PLUGIN required = 1 \#else required = 0/' include/rtd.inc
+    - sed -i'' 's/required = 1/#if defined REQUIRE_PLUGIN\nrequired = 1\n\#else\nrequired = 0/' include/rtd.inc
 
     - chmod +x spcomp
     - mkdir compiled compiled/freaks
