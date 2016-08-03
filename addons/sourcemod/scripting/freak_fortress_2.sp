@@ -2912,6 +2912,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 					KillTimer(MusicTimer[client]);
 					MusicTimer[client]=INVALID_HANDLE;
 				}
+				continue;
 			}
 
 			if(MusicTimer[client]!=INVALID_HANDLE)
