@@ -3007,6 +3007,7 @@ StartMusic(client=0)
 	if(client<=0)  //Start music for all clients
 	{
 		StopMusic();
+		playBGM[0]=true;
 		for(new target; target<=MaxClients; target++)
 		{
 			playBGM[target]=true;
@@ -3025,6 +3026,11 @@ StopMusic(client=0, bool:permanent=false)
 {
 	if(client<=0)  //Stop music for all clients
 	{
+		if(permanent)
+		{
+			playBGM[0]=false;
+		}
+
 		for(client=1; client<=MaxClients; client++)
 		{
 			if(IsValidClient(client))
@@ -4507,7 +4513,12 @@ public OnClientPostAdminCheck(client)
 			}
 		}
 
-		StartMusic(client);
+		//We use the 0th index here because client indices can change.
+		//If this is false that means music is disabled for all clients, so don't play it for new clients either.
+		if(playBGM[0])
+		{
+			CreateTimer(0.0, Timer_PrepareBGM, client, TIMER_FLAG_NO_MAPCHANGE);
+		}
 	}
 }
 
