@@ -25,6 +25,10 @@ before_script:
     - wget "https://raw.githubusercontent.com/Flyflo/SM-Goomba-Stomp/master/addons/sourcemod/scripting/include/goomba.inc" -O include/goomba.inc
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=115795&d=1360508618" -O include/rtd.inc
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508" -O include/tf2attributes.inc
+
+    # RTD is particularly annoying since it doesn't handle optional plugin dependencies correctly
+    - sed -i'' 's/required = 1/#if defined REQUIRE_PLUGIN\nrequired = 1\n\#else\nrequired = 0/' include/rtd.inc
+
     - chmod +x spcomp
     - mkdir compiled compiled/freaks
 script: ./compile.sh freak_fortress_2.sp freaks/*.sp
