@@ -377,7 +377,7 @@ static const String:ff2versiondates[][]=
 	"May 7, 2016",			//1.10.9
 	"August 1, 2016",		//1.10.10
 	"August 1, 2016",		//1.10.11
-	"August 3, 2016"		//1.10.12
+	"August 4, 2016"		//1.10.12
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
