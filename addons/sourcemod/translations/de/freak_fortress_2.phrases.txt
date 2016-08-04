@@ -348,11 +348,11 @@
 		"Damage Spectate"
 	{
 		"#format"	"{1:i},{2:N},{3:i}"
-		"en"		"Schaden: %d-%N's Schaden: %d"
+		"de"		"Schaden: %d-%N's Schaden: %d"
 	}
 	"Damage Self"
 	{
 		"#format"	"{1:i}"
-		"en"		"Schaden: %d"
+		"de"		"Schaden: %d"
 	}
 }
