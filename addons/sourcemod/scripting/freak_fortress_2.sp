@@ -4523,7 +4523,7 @@ public OnClientPostAdminCheck(client)
 		//If this is false that means music is disabled for all clients, so don't play it for new clients either.
 		if(playBGM[0])
 		{
-			CreateTimer(0.0, Timer_PrepareBGM, client, TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(0.0, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 }
