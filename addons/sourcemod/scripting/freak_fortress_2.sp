@@ -3014,10 +3014,9 @@ StartMusic(client=0)
 	if(client<=0)  //Start music for all clients
 	{
 		StopMusic();
-		playBGM[0]=true;
 		for(new target; target<=MaxClients; target++)
 		{
-			playBGM[target]=true;
+			playBGM[target]=true;  //This includes the 0th index
 		}
 		CreateTimer(0.0, Timer_PrepareBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 	}
