@@ -36,10 +36,10 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "11"
-//#define DEV_REVISION "Beta"
+#define STABLE_REVISION "12"
+#define DEV_REVISION "Beta"
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.11
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.12
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
@@ -296,7 +296,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.9",
 	"1.10.9",
 	"1.10.10",
-	"1.10.11"
+	"1.10.11",
+	"1.10.12"
 };
 
 static const String:ff2versiondates[][]=
@@ -375,13 +376,19 @@ static const String:ff2versiondates[][]=
 	"May 7, 2016",			//1.10.9
 	"May 7, 2016",			//1.10.9
 	"August 1, 2016",		//1.10.10
-	"August 1, 2016"		//1.10.11
+	"August 1, 2016",		//1.10.11
+	"August 4, 2016"		//1.10.12
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 75:  //1.10.12
+		{
+			DrawPanelText(panel, "1) Actually fixed BGMs not looping (Wliu from WakaFlocka, again)");
+			DrawPanelText(panel, "2) Fixed new clients not respecting the current music state (Wliu from shadow93)");
+		}
 		case 74:  //1.10.11
 		{
 			DrawPanelText(panel, "1) Fixed BGMs not looping (Wliu from WakaFlocka)");
@@ -2912,6 +2919,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 					KillTimer(MusicTimer[client]);
 					MusicTimer[client]=INVALID_HANDLE;
 				}
+				continue;
 			}
 
 			if(MusicTimer[client]!=INVALID_HANDLE)
@@ -3008,7 +3016,7 @@ StartMusic(client=0)
 		StopMusic();
 		for(new target; target<=MaxClients; target++)
 		{
-			playBGM[target]=true;
+			playBGM[target]=true;  //This includes the 0th index
 		}
 		CreateTimer(0.0, Timer_PrepareBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 	}
@@ -3024,6 +3032,11 @@ StopMusic(client=0, bool:permanent=false)
 {
 	if(client<=0)  //Stop music for all clients
 	{
+		if(permanent)
+		{
+			playBGM[0]=false;
+		}
+
 		for(client=1; client<=MaxClients; client++)
 		{
 			if(IsValidClient(client))
@@ -4506,7 +4519,12 @@ public OnClientPostAdminCheck(client)
 			}
 		}
 
-		StartMusic(client);
+		//We use the 0th index here because client indices can change.
+		//If this is false that means music is disabled for all clients, so don't play it for new clients either.
+		if(playBGM[0])
+		{
+			CreateTimer(0.0, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		}
 	}
 }
 
