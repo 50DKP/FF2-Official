@@ -4,11 +4,12 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.10.8"
-			"Previous"	"1.10.7"
+			"Latest"	"1.10.12"
+			"Previous"	"1.10.11"
 		}
 
-		"Notes"			"Fixed the Powerjack and Kunai killing the boss in one hit"
+		"Notes"			"Actually fixed BGMs not looping (Wliu from WakaFlocka, again)"
+		"Notes"			"Fixed new clients not respecting the current music state (Wliu from shadow93)"
 	}
 
 	"Files"

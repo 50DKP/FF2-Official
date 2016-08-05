@@ -53,8 +53,8 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 {
 	if(FF2_IsFF2Enabled())
 	{
-		CreateTimer(0.41, Timer_Disable_Anims);
-		CreateTimer(9.31, Timer_Disable_Anims);
+		CreateTimer(0.41, Timer_Disable_Anims, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(9.31, Timer_Disable_Anims, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	return Plugin_Continue;
 }

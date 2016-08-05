@@ -1,16 +1,18 @@
-#Use the new container-based infrastructure
+# Use the new container-based infrastructure
 sudo: false
 
-#Install some apt packages needed for spcomp
+# Install some apt packages needed for spcomp
 addons:
     apt_packages:
         - lib32stdc++6
 
-#Set the build environment
+# Set the build environment
 env:
-    - SMVERSION=1.8
+    - SMVERSION=1.7 # Legacy
+    - SMVERSION=1.8 # Stable
+    - SMVERSION=1.9 # Unstable
 
-#And compile!
+# And compile!
 install:
     - wget --input-file=http://sourcemod.net/smdrop/$SMVERSION/sourcemod-latest-linux
     - tar -xzf $(cat sourcemod-latest-linux)
@@ -23,11 +25,15 @@ before_script:
     - wget "https://raw.githubusercontent.com/Flyflo/SM-Goomba-Stomp/master/addons/sourcemod/scripting/include/goomba.inc" -O include/goomba.inc
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=115795&d=1360508618" -O include/rtd.inc
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508" -O include/tf2attributes.inc
+
+    # RTD is particularly annoying since it doesn't handle optional plugin dependencies correctly
+    - sed -i'' 's/required = 1/#if defined REQUIRE_PLUGIN\nrequired = 1\n\#else\nrequired = 0/' include/rtd.inc
+
     - chmod +x spcomp
     - mkdir compiled compiled/freak_fortress_2
 script: ./compile.sh freak_fortress_2.sp freak_fortress_2/*.sp
 
-#Releases
+# Releases
 before_deploy:
     - cd ../
     - mkdir freak_fortress_2 freak_fortress_2/addons freak_fortress_2/addons/sourcemod freak_fortress_2/addons/sourcemod/configs freak_fortress_2/addons/sourcemod/gamedata freak_fortress_2/addons/sourcemod/scripting freak_fortress_2/addons/sourcemod/scripting/freaks freak_fortress_2/addons/sourcemod/scripting/include freak_fortress_2/addons/sourcemod/translations
@@ -57,6 +63,6 @@ deploy:
         repo: 50DKP/FF2-Official
         tags: true
 
-#Notifications
+# Notifications
 notifications:
     email: false

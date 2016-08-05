@@ -32,7 +32,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 {
 	if(FF2_IsFF2Enabled())
 	{
-		CreateTimer(0.3, Timer_GetBossTeam);
+		CreateTimer(0.3, Timer_GetBossTeam, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	return Plugin_Continue;
 }
@@ -65,7 +65,7 @@ Rage_Overlay(boss, const String:ability_name[])
 		}
 	}
 
-	CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "duration", 6.0), Timer_Remove_Overlay);
+	CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "duration", 6.0), Timer_Remove_Overlay, TIMER_FLAG_NO_MAPCHANGE);
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
 }
 
