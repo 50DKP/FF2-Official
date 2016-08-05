@@ -360,14 +360,14 @@
 		"#format"	"{1:i}"
 		"en"		"You have {1} detonations left!"
 	}
-	"Damage Spectate"
+	"Damage Other"
 	{
-		"#format"	"{1:i},{2:N},{3:i}"
-		"en"		"Damage: %d-%N's Damage: %d"
+		"#format"	"{1:N},{2:i}"
+		"en"		"{1}'s Damage: {2}"
 	}
 	"Damage Self"
 	{
 		"#format"	"{1:i}"
-		"en"		"Damage: %d"
+		"en"		"Damage: {1}"
 	}
 }

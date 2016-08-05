@@ -4649,7 +4649,7 @@ public Action:ClientTimer(Handle:timer)
 				new observer=GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
 				if(IsValidClient(observer) && !IsBoss(observer) && observer!=client)
 				{
-					FF2_ShowSyncHudText(client, rageHUD, "%t", "Damage Spectate", Damage[client], observer, Damage[observer]);
+					FF2_ShowSyncHudText(client, rageHUD, "%t-%t", "Damage Self", Damage[client], "Damage Other", observer, Damage[observer]);
 				}
 				else
 				{

@@ -345,14 +345,14 @@
 	{
 		"de"	"Du wurdest gegärtnert!"
 	}
-		"Damage Spectate"
+		"Damage Other"
 	{
-		"#format"	"{1:i},{2:N},{3:i}"
-		"de"		"Schaden: %d-%N's Schaden: %d"
+		"#format"	"{1:N},{2:i}"
+		"de"		"{1}'s Schaden: {2}"
 	}
 	"Damage Self"
 	{
 		"#format"	"{1:i}"
-		"de"		"Schaden: %d"
+		"de"		"Schaden: {1}"
 	}
 }
