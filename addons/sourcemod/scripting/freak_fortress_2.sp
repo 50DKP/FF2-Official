@@ -7079,29 +7079,30 @@ HelpPanelBoss(boss)
 		return;
 	}
 
-	decl String:text[512], String:language[20];
-	GetLanguageInfo(GetClientLanguage(Boss[boss]), language, 8, text, 8);
-	Format(language, sizeof(language), "description_%s", language);
-
 	KvRewind(BossKV[character[boss]]);
-	//KvSetEscapeSequences(BossKV[character[boss]], true);  //Not working
-	KvGetString(BossKV[character[boss]], language, text, sizeof(text));
-	if(!text[0])
+	if(KvJumpToKey(BossKV[character[boss]], "description"))
 	{
-		KvGetString(BossKV[character[boss]], "description_en", text, sizeof(text));  //Default to English if their language isn't available
+		decl String:text[512], String:language[8];
+		GetLanguageInfo(GetClientLanguage(Boss[boss]), language, sizeof(language));
+		//KvSetEscapeSequences(BossKV[character[boss]], true);  //Not working
+		KvGetString(BossKV[character[boss]], language, text, sizeof(text));
 		if(!text[0])
 		{
-			return;
+			KvGetString(BossKV[character[boss]], "en", text, sizeof(text));  //Default to English if their language isn't available
+			if(!text[0])
+			{
+				return;
+			}
 		}
-	}
-	ReplaceString(text, sizeof(text), "\\n", "\n");
-	//KvSetEscapeSequences(BossKV[character[boss]], false);  //We don't want to interfere with the download paths
+		ReplaceString(text, sizeof(text), "\\n", "\n");
+		//KvSetEscapeSequences(BossKV[character[boss]], false);  //We don't want to interfere with the download paths
 
-	new Handle:panel=CreatePanel();
-	SetPanelTitle(panel, text);
-	DrawPanelItem(panel, "Exit");
-	SendPanelToClient(panel, Boss[boss], HintPanelH, 20);
-	CloseHandle(panel);
+		new Handle:panel=CreatePanel();
+		SetPanelTitle(panel, text);
+		DrawPanelItem(panel, "Exit");
+		SendPanelToClient(panel, Boss[boss], HintPanelH, 20);
+		CloseHandle(panel);
+	}
 }
 
 public Action:MusicTogglePanelCmd(client, args)
