@@ -2441,7 +2441,7 @@ public Action:MakeBoss(Handle:timer, any:boss)
 	BossHealthMax[boss]=ParseFormula(boss, "health", RoundFloat(Pow((760.8+float(playing))*(float(playing)-1.0), 1.0341)+2046.0));
 	BossLivesMax[boss]=BossLives[boss]=ParseFormula(boss, "lives", 1);
 	BossHealth[boss]=BossHealthLast[boss]=BossHealthMax[boss]*BossLivesMax[boss];
-	BossRageDamage[boss]=ParseFormula(boss, "rage_damage", 1900);
+	BossRageDamage[boss]=ParseFormula(boss, "rage damage", 1900);
 	BossSpeed[boss]=float(ParseFormula(boss, "speed", 340));
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
@@ -5993,12 +5993,42 @@ stock OperateString(Handle:sumArray, &bracket, String:value[], size, Handle:_ope
 	}
 }
 
+/*
+ * Parses a mathematical formula and returns the result,
+ * or `defaultValue` if there is an error while parsing
+ *
+ * Variables may be present in the formula as long as they
+ * are in the format `{variable}`.  Unknown variables will
+ * be passed to the `OnParseUnknownVariable` forward
+ *
+ * Known variables include:
+ * - players
+ * - lives
+ * - health
+ * - speed
+ *
+ * @param boss          Boss index
+ * @param key           The key to retrieve the formula from.  If the
+ *                      key is nested, the nested sections must be
+ *                      delimited by a `>` symbol like so:
+ *                      "plugin name > ability name > distance"
+ * @param defaultValue  The default value to return in case of error
+ * @return The value of the formula, or `defaultValue` in case of error
+ */
 stock ParseFormula(boss, const String:key[], defaultValue)
 {
 	decl String:formula[1024], String:bossName[64];
 	KvRewind(BossKV[character[boss]]);
 	KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
-	KvGetString(BossKV[character[boss]], key, formula, sizeof(formula));
+
+	decl String:keyPortions[5][128];
+	new portions=ExplodeString(key, ">", keyPortions, sizeof(keyPortions), 128);
+	for(new i=1; i<portions; i++)
+	{
+		KvJumpToKey(BossKV[character[boss]], keyPortions[i]);
+	}
+	KvGetString(BossKV[character[boss]], keyPortions[portions-1], formula, sizeof(formula));
+
 	if(!formula[0])
 	{
 		return defaultValue;
@@ -7646,41 +7676,33 @@ public Native_SetBossRageDamage(Handle:plugin, numParams)
 	SetBossRageDamage(GetNativeCell(1), GetNativeCell(2));
 }
 
-public Float:GetBossRageDistance(boss, const String:pluginName[], const String:abilityName[])
+public GetBossRageDistance(boss, const String:pluginName[], const String:abilityName[])
 {
 	if(!BossKV[character[boss]])  //Invalid boss
 	{
-		return 0.0;
+		return 0;
 	}
 
 	KvRewind(BossKV[character[boss]]);
 	if(!abilityName[0])  //Return the global rage distance if there's no ability specified
 	{
-		return KvGetFloat(BossKV[character[boss]], "ragedist", 400.0);
+		return ParseFormula(boss, "rage distance", 400);
 	}
 
-	decl String:ability[10];
-	new Float:distance;
-	for(new key=1; key<MAXRANDOMS; key++)
+	if(HasAbility(boss, pluginName, abilityName))
 	{
-		Format(ability, sizeof(ability), "ability%i", key);
-		if(KvJumpToKey(BossKV[character[boss]], ability))
+		decl String:key[128];
+		Format(key, sizeof(key), "%s > %s > distance", pluginName, abilityName);
+
+		new distance;
+		if((distance=ParseFormula(boss, key, -1))<0)  //Distance doesn't exist, return the global rage distance instead
 		{
-			decl String:possibleMatch[64];  //See if the ability that we're currently in matches the specified ability
-			KvGetString(BossKV[character[boss]], "name", possibleMatch, sizeof(possibleMatch));
-			if(StrEqual(abilityName, possibleMatch))
-			{
-				if((distance=KvGetFloat(BossKV[character[boss]], "dist", -1.0))<0)  //Dist doesn't exist, return the global rage distance instead
-				{
-					KvRewind(BossKV[character[boss]]);
-					distance=KvGetFloat(BossKV[character[boss]], "ragedist", 400.0);
-				}
-				return distance;
-			}
-			KvGoBack(BossKV[character[boss]]);
+			KvRewind(BossKV[character[boss]]);
+			distance=ParseFormula(boss, "rage distance", 400);
 		}
+		return distance;
 	}
-	return 0.0;
+	return 0;
 }
 
 public Native_GetBossRageDistance(Handle:plugin, numParams)
@@ -7688,7 +7710,7 @@ public Native_GetBossRageDistance(Handle:plugin, numParams)
 	decl String:pluginName[64], String:abilityName[64];
 	GetNativeString(2, pluginName, sizeof(pluginName));
 	GetNativeString(3, abilityName, sizeof(abilityName));
-	return _:GetBossRageDistance(GetNativeCell(1), pluginName, abilityName);
+	return GetBossRageDistance(GetNativeCell(1), pluginName, abilityName);
 }
 
 public GetClientDamage(client)
