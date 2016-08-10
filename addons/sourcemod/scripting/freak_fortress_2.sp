@@ -945,7 +945,7 @@ public LoadCharacter(const String:characterName[])
 	new String:extensions[][]={".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd"};
 	KvSetString(BossKV[Specials], "filename", characterName);
 	KvGetString(BossKV[Specials], "name", config, sizeof(config));
-	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "sound_block_vo", 0);
+	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "block voice", 0);
 	//BossSpeed[Specials]=KvGetFloat(BossKV[Specials], "maxspeed", 340.0);
 	//BossRageDamage[Specials]=KvGetFloat(BossKV[Specials], "ragedamage", 1900.0);
 	KvGotoFirstSubKey(BossKV[Specials]);
@@ -1036,10 +1036,21 @@ public PrecacheCharacter(characterIndex)
 			if(KvGetNum(BossKV[characterIndex], "precache") || KvGetNum(BossKV[characterIndex], "time"))
 			{
 				KvGetSectionName(BossKV[characterIndex], file, sizeof(file));
-				Format(file, sizeof(file), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
 				if(FileExists(file, true))
 				{
 					PrecacheSound(file);
+				}
+				else
+				{
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", bossName, file);
+				}
+			}
+
+			if(KvGetNum(BossKV[characterIndex], "download"))
+			{
+				if(FileExists(file, true))
+				{
+					AddFileToDownloadsTable(file);
 				}
 				else
 				{
@@ -3420,7 +3431,7 @@ public Action:OnObjectDestroyed(Handle:event, const String:name[], bool:dontBroa
 		if(!GetRandomInt(0, 2) && IsBoss(attacker))
 		{
 			decl String:sound[PLATFORM_MAX_PATH];
-			if(FindSound("kill_buildable", sound, sizeof(sound)))
+			if(FindSound("destroy building", sound, sizeof(sound)))
 			{
 				EmitSoundToAll(sound);
 				EmitSoundToAll(sound);
@@ -4692,7 +4703,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 				{
 					new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
 					decl String:class[32];
-					Format(class, sizeof(class), "kill_%s", classnames[TF2_GetPlayerClass(client)]);
+					Format(class, sizeof(class), "kill %s", classnames[TF2_GetPlayerClass(client)]);
 					if(FindSound(class, sound, sizeof(sound), boss))
 					{
 						EmitSoundToAll(sound);
@@ -5645,12 +5656,12 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 					}
 				}
 
-				if(BossLives[boss]==1 && FindSound("last_life", ability, sizeof(ability), boss))
+				if(BossLives[boss]==1 && FindSound("last life", ability, sizeof(ability), boss))
 				{
 					EmitSoundToAll(ability);
 					EmitSoundToAll(ability);
 				}
-				else if(FindSound("nextlife", ability, sizeof(ability), boss))
+				else if(FindSound("next life", ability, sizeof(ability), boss))
 				{
 					EmitSoundToAll(ability);
 					EmitSoundToAll(ability);
@@ -6419,7 +6430,7 @@ public bool:PickCharacter(boss, companion)
 			}
 
 			KvRewind(BossKV[character[boss]]);
-			if(KvGetNum(BossKV[character[boss]], "blocked"))
+			if(KvGetNum(BossKV[character[boss]], "hidden"))
 			{
 				character[boss]=-1;
 				continue;
@@ -7221,7 +7232,7 @@ public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH
 	if(channel==SNDCHAN_VOICE && !(FF2Flags[Boss[boss]] & FF2FLAG_TALKING))
 	{
 		decl String:newSound[PLATFORM_MAX_PATH];
-		if(FindSound("catch_phrase", newSound, sizeof(newSound), boss))
+		if(FindSound("catch phrase", newSound, sizeof(newSound), boss))
 		{
 			strcopy(sound, sizeof(sound), newSound);
 			return Plugin_Changed;
