@@ -925,7 +925,7 @@ public LoadCharacter(const String:characterName[])
 		return;
 	}
 
-	if(KvJumpToKey(BossKV[Specials], "abilities"))
+	/*if(KvJumpToKey(BossKV[Specials], "abilities"))
 	{
 		while(KvGotoNextKey(BossKV[Specials]))
 		{
@@ -938,7 +938,7 @@ public LoadCharacter(const String:characterName[])
 				return;
 			}
 		}
-	}
+	}*/
 	KvRewind(BossKV[Specials]);
 
 	decl String:file[PLATFORM_MAX_PATH], String:section[64];
