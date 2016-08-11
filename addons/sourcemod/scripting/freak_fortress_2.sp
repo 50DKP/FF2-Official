@@ -933,7 +933,8 @@ public LoadCharacter(const String:characterName[])
 
 	if(KvJumpToKey(BossKV[Specials], "abilities"))
 	{
-		while(KvGotoNextKey(BossKV[Specials]))
+		KvGotoFirstSubKey(BossKV[Specials]);
+		do
 		{
 			decl String:pluginName[64];
 			KvGetSectionName(BossKV[Specials], pluginName, sizeof(pluginName));
@@ -943,6 +944,7 @@ public LoadCharacter(const String:characterName[])
 				return;
 			}
 		}
+		while(KvGotoNextKey(BossKV[Specials]));
 	}
 	KvRewind(BossKV[Specials]);
 
