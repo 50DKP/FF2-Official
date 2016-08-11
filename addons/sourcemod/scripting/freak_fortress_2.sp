@@ -2626,8 +2626,11 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 				TF2Items_SetLevel(weapon, level);
 				Debug("\t\tGave new weapon with classname %s, index %i, quality %i, and level %i", classname, index, quality, level);
 				new entity=TF2Items_GiveNamedItem(client, weapon);
-				CloseHandle(weapon);
 				EquipPlayerWeapon(client, entity);
+
+				CloseHandle(weapon);
+				weapon=INVALID_HANDLE;
+
 				KvGoBack(kvWeaponMods);
 			}
 
@@ -2742,6 +2745,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 							{
 								LogError("[FF2 Weapons] Bad weapon attribute passed for weapon %s", classname);
 								CloseHandle(weapon);
+								weapon=INVALID_HANDLE;
 								return Plugin_Stop;
 							}
 
@@ -2798,6 +2802,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 							{
 								LogError("[FF2 Weapons] Bad weapon attribute passed for weapon %s: %s ; %s", classname, attributes[attribute], attributes[attribute+1]);
 								CloseHandle(weapon);
+								weapon=INVALID_HANDLE;
 								return Plugin_Stop;
 							}
 
@@ -2822,6 +2827,8 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		{
 			Debug("Keyvalues differentClass: Gave weapon!");
 			TF2Items_GiveNamedItem(client, weapon);
+			CloseHandle(weapon);
+			weapon=INVALID_HANDLE;
 			return Plugin_Stop;
 		}*/
 	}
