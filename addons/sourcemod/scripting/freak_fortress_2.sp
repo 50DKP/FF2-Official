@@ -2349,10 +2349,12 @@ EquipBoss(boss)
 	new client=Boss[boss];
 	DoOverlay(client, "");
 	TF2_RemoveAllWeapons(client);
-	decl String:classname[64], String:attributes[256];
+	decl String:classname[64], String:attributes[256], String:bossName[64];
+	KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed Name=");
 	if(KvJumpToKey(BossKV[character[boss]], "weapons"))
 	{
-		while(KvGotoNextKey(BossKV[character[boss]]))
+		KvGotoFirstSubKey(BossKV[character[boss]]);
+		do
 		{
 			decl String:sectionName[32];
 			KvGetSectionName(BossKV[character[boss]], sectionName, sizeof(sectionName));
@@ -2366,8 +2368,6 @@ EquipBoss(boss)
 				KvGetString(BossKV[character[boss]], "classname", classname, sizeof(classname));
 				if(classname[0]=='\0')
 				{
-					decl String:bossName[64];
-					KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed Name=");
 					LogError("[FF2 Bosses] No classname specified for weapon %i (character %s)!", index, bossName);
 					KvGoBack(BossKV[character[boss]]);
 					continue;
@@ -2415,14 +2415,13 @@ EquipBoss(boss)
 			}
 			else
 			{
-				decl String:bossName[64];
-				KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed Name=");
 				LogError("[FF2 Bosses] Invalid weapon index %s specified for character %s!", sectionName, bossName);
 			}
 		}
+		while(KvGotoNextKey(BossKV[character[boss]]));
 	}
 
-	KvGoBack(BossKV[character[boss]]);
+	KvRewind(BossKV[character[boss]]);
 	new TFClassType:class=TFClassType:KvGetNum(BossKV[character[boss]], "class", 1);
 	if(TF2_GetPlayerClass(client)!=class)
 	{
@@ -3110,7 +3109,8 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 	{
 		LogError("[FF2 Weapons] Unbalanced attributes array %s", att);
 		CloseHandle(weapon);
-		return INVALID_HANDLE;
+		weapon=INVALID_HANDLE;
+		return weapon;
 	}
 
 	new flags=OVERRIDE_ATTRIBUTES;
@@ -3185,7 +3185,8 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 			{
 				LogError("[FF2 Weapons] Bad weapon attribute passed: %s ; %s", weaponAttribsArray[i], weaponAttribsArray[i+1]);
 				CloseHandle(weapon);
-				return INVALID_HANDLE;
+				weapon=INVALID_HANDLE;
+				return weapon;
 			}
 
 			TF2Items_SetAttribute(weapon, i2, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
