@@ -61,6 +61,8 @@ public OnPluginStart()
 	LoadTranslations("freak_fortress_2.phrases");
 
 	AutoExecConfig(true, "freak_fortress_2/default_abilities");
+
+	FF2_RegisterSubplugin(PLUGIN_NAME);
 }
 
 public OnConfigsExecuted()

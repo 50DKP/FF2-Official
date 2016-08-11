@@ -26,6 +26,8 @@ public Plugin:myinfo=
 public OnPluginStart()
 {
 	HookEvent("teamplay_round_start", OnRoundStart);
+
+	FF2_RegisterSubplugin(PLUGIN_NAME);
 }
 
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)

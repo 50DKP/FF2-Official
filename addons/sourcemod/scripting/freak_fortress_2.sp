@@ -141,6 +141,8 @@ new Handle:cvarUpdater;
 new Handle:cvarDebug;
 new Handle:cvarPreroundBossDisconnect;
 
+new Handle:subpluginArray;
+
 new Handle:FF2Cookie_QueuePoints;
 new Handle:FF2Cookie_MuteSound;
 new Handle:FF2Cookie_DisplayInfo;
@@ -446,6 +448,8 @@ public OnPluginStart()
 	RegAdminCmd("ff2_reload_subplugins", Command_ReloadSubPlugins, ADMFLAG_RCON, "Reload FF2's subplugins.");
 
 	AutoExecConfig(true, "freak_fortress_2/freak_fortress_2");
+
+	subpluginArray=CreateArray(64);
 
 	FF2Cookie_QueuePoints=RegClientCookie("ff2_cookie_queuepoints", "Client's queue points", CookieAccess_Protected);
 	FF2Cookie_MuteSound=RegClientCookie("ff2_cookie_mutesound", "Client's sound preferences", CookieAccess_Public);
@@ -925,20 +929,19 @@ public LoadCharacter(const String:characterName[])
 		return;
 	}
 
-	/*if(KvJumpToKey(BossKV[Specials], "abilities"))
+	if(KvJumpToKey(BossKV[Specials], "abilities"))
 	{
 		while(KvGotoNextKey(BossKV[Specials]))
 		{
 			decl String:pluginName[64];
 			KvGetSectionName(BossKV[Specials], pluginName, sizeof(pluginName));
-			BuildPath(Path_SM, config, sizeof(config), "plugins/freak_fortress_2/%s.smx", pluginName);
-			if(!FileExists(config))
+			if(FindStringInArray(subpluginArray, pluginName)<0)
 			{
 				LogError("[FF2 Bosses] Character %s needs plugin %s!", characterName, pluginName);
 				return;
 			}
 		}
-	}*/
+	}
 	KvRewind(BossKV[Specials]);
 
 	decl String:file[PLATFORM_MAX_PATH], String:section[64];
@@ -7434,6 +7437,34 @@ public bool:IsFF2Enabled()
 public Native_IsFF2Enabled(Handle:plugin, numParams)
 {
 	return IsFF2Enabled();
+}
+
+public RegisterSubplugin(String:pluginName[])
+{
+	PushArrayString(subpluginArray, pluginName);
+}
+
+public Native_RegisterSubplugin(Handle:plugin, numParams)
+{
+	decl String:pluginName[64];
+	GetNativeString(1, pluginName, sizeof(pluginName));
+	RegisterSubplugin(pluginName);
+}
+
+public UnregisterSubplugin(String:pluginName[])
+{
+	new index=FindStringInArray(subpluginArray, pluginName);
+	if(index>=0)
+	{
+		RemoveFromArray(subpluginArray, index);
+	}
+}
+
+public Native_UnregisterSubplugin(Handle:plugin, numParams)
+{
+	decl String:pluginName[64];
+	GetNativeString(1, pluginName, sizeof(pluginName));
+	UnregisterSubplugin(pluginName);
 }
 
 public bool:GetFF2Version()

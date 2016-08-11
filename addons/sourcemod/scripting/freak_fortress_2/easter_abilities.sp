@@ -25,6 +25,8 @@ public OnPluginStart()
 {
 	HookEvent("player_death", OnPlayerDeath);
 	PrecacheSound("items/pumpkin_pickup.wav");
+
+	FF2_RegisterSubplugin(PLUGIN_NAME);
 }
 
 /*public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])  //Re-enable in v2 or whenever the late-loading forward bug is fixed

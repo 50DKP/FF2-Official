@@ -33,6 +33,24 @@
 native bool:FF2_IsFF2Enabled();
 
 /**
+ * Register a subplugin with FF2
+ *
+ * @param pluginName Name of the subplugin to register
+ *
+ * @noreturn
+ */
+native FF2_RegisterSubplugin(String:pluginName[]);
+
+/**
+ * Unregister a subplugin with FF2
+ *
+ * @param pluginName Name of the subplugin to unregister
+ *
+ * @noreturn
+ */
+native FF2_UnregisterSubplugin(String:pluginName[]);
+
+/**
  * Gets the version of FF2 running on the server
  *
  * @param version   An array of size 3 that will contain the major, minor, and stable version numbers respectively
@@ -605,6 +623,8 @@ public SharedPlugin:__pl_FF2=
 public __pl_FF2_SetNTVOptional()
 {
 	MarkNativeAsOptional("FF2_IsFF2Enabled");
+    MarkNativeAsOptional("FF2_RegisterSubplugin");
+    MarkNativeAsOptional("FF2_UnregisterSubplugin");
 	MarkNativeAsOptional("FF2_GetFF2Version");
 	MarkNativeAsOptional("FF2_GetRoundState");
 	MarkNativeAsOptional("FF2_GetBossUserId");

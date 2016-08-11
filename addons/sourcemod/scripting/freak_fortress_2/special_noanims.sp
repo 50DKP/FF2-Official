@@ -29,7 +29,7 @@ public Plugin:myinfo=
 	version=PLUGIN_VERSION
 };
 
-public OnPluginStart2()
+public OnPluginStart()
 {
 	new version[3];
 	FF2_GetFF2Version(version);
@@ -39,6 +39,8 @@ public OnPluginStart2()
 	}
 
 	HookEvent("teamplay_round_start", OnRoundStart);
+
+	FF2_RegisterSubplugin(PLUGIN_NAME);
 }
 
 public FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[], slot, status)
