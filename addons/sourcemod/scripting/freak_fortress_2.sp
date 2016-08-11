@@ -5507,10 +5507,6 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 							damage=1500.0;
 						}
 
-						if(StrEqual(currentmap, "arena_arakawa_b3", false) && damage>1000.0)
-						{
-							damage=490.0;
-						}
 						BossHealth[boss]-=RoundFloat(damage);
 						BossCharge[boss][0]+=damage*100.0/BossRageDamage[boss];
 						if(BossHealth[boss]<=0)  //TODO: Wat
@@ -5549,19 +5545,6 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 					{
 						SetEntProp(weapon, Prop_Send, "m_bBroken", 0);
 						SetEntProp(weapon, Prop_Send, "m_iDetonated", 0);
-					}
-				}
-			}
-
-			if(IsValidClient(client, false) && TF2_GetPlayerClass(client)==TFClass_Soldier)  //TODO: Wat
-			{
-				if(damagetype & DMG_FALL)
-				{
-					new secondary=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-					if(secondary<=0 || !IsValidEntity(secondary))
-					{
-						damage/=10.0;
-						return Plugin_Changed;
 					}
 				}
 			}
