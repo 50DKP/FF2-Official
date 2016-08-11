@@ -17,8 +17,8 @@ rage_new_weapon:	slot - slot (def.0)
 #include <tf2items>
 #include <tf2_stocks>
 #include <freak_fortress_2>
-#include <freak_fortress_2_subplugin>
 
+#define PLUGIN_NAME "noanims and new weapon"
 #define PLUGIN_VERSION "2.0.0"
 
 public Plugin:myinfo=
@@ -41,11 +41,11 @@ public OnPluginStart2()
 	HookEvent("teamplay_round_start", OnRoundStart);
 }
 
-public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
+public FF2_OnAbility2(boss, const String:pluginName[], const String:abilityName[], slot, status)
 {
-	if(StrEqual(ability_name, "equip weapon", false))
+	if(StrEqual(abilityName, "equip weapon", false))
 	{
-		Rage_New_Weapon(boss, ability_name);
+		Rage_New_Weapon(boss, abilityName);
 	}
 }
 
@@ -64,16 +64,16 @@ public Action:Timer_Disable_Anims(Handle:timer)
 	new client;
 	for(new boss; (client=GetClientOfUserId(FF2_GetBossUserId(boss)))>0; boss++)
 	{
-		if(FF2_HasAbility(boss, this_plugin_name, "no animations"))
+		if(FF2_HasAbility(boss, PLUGIN_NAME, "no animations"))
 		{
 			SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 0);
-			SetEntProp(client, Prop_Send, "m_bCustomModelRotates", FF2_GetAbilityArgument(boss, this_plugin_name, "no animations", "rotate model", 0));
+			SetEntProp(client, Prop_Send, "m_bCustomModelRotates", FF2_GetAbilityArgument(boss, PLUGIN_NAME, "no animations", "rotate model", 0));
 		}
 	}
 	return Plugin_Continue;
 }
 
-Rage_New_Weapon(boss, const String:ability_name[])
+Rage_New_Weapon(boss, const String:abilityName[])
 {
 	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	if(!client || !IsClientInGame(client) || !IsPlayerAlive(client))
@@ -82,13 +82,13 @@ Rage_New_Weapon(boss, const String:ability_name[])
 	}
 
 	decl String:classname[64], String:attributes[256];
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, "classname", classname, sizeof(classname));
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, "attributes", attributes, sizeof(attributes));
+	FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, abilityName, "classname", classname, sizeof(classname));
+	FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, abilityName, "attributes", attributes, sizeof(attributes));
 
-	new slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "slot");
+	new slot=FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "slot");
 	TF2_RemoveWeaponSlot(client, slot);
 
-	new index=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "index");
+	new index=FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "index");
 	new weapon=SpawnWeapon(client, classname, index, 101, 5, attributes);
 	if(StrEqual(classname, "tf_weapon_builder") && index!=735)  //PDA, normal sapper
 	{
@@ -107,13 +107,13 @@ Rage_New_Weapon(boss, const String:ability_name[])
 		SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
 	}
 
-	if(FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "set as active weapon"))
+	if(FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "set as active weapon"))
 	{
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 	}
 
-	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "ammo", 0);
-	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "clip", 0);
+	new ammo=FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "ammo", 0);
+	new clip=FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "clip", 0);
 	if(ammo || clip)
 	{
 		FF2_SetAmmo(client, weapon, ammo, clip);

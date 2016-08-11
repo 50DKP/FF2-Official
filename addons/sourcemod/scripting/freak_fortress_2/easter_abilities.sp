@@ -5,12 +5,12 @@
 #include <sdkhooks>
 #include <tf2_stocks>
 #include <freak_fortress_2>
-#include <freak_fortress_2_subplugin>
 
 #define PROJECTILE		"replace projectile model"
 #define OBJECTS			"spawn many objects on kill"
 #define OBJECTS_DEATH	"spawn many objects on death"
 
+#define PLUGIN_NAME "easter abilities"
 #define PLUGIN_VERSION "2.0.0"
 
 public Plugin:myinfo=
@@ -21,7 +21,7 @@ public Plugin:myinfo=
 	version=PLUGIN_VERSION,
 };
 
-public OnPluginStart2()
+public OnPluginStart()
 {
 	HookEvent("player_death", OnPlayerDeath);
 	PrecacheSound("items/pumpkin_pickup.wav");
@@ -29,16 +29,16 @@ public OnPluginStart2()
 
 /*public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])  //Re-enable in v2 or whenever the late-loading forward bug is fixed
 {
-	if(FF2_HasAbility(boss, this_plugin_name, OBJECTS))
+	if(FF2_HasAbility(boss, PLUGIN_NAME, OBJECTS))
 	{
 		decl String:model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, "model", model, sizeof(model));
+		FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, OBJECTS, "model", model, sizeof(model));
 		PrecacheModel(model);
 	}
-	else if(FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
+	else if(FF2_HasAbility(boss, PLUGIN_NAME, OBJECTS_DEATH))
 	{
 		decl String:model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, "model", model, sizeof(model));
+		FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, OBJECTS_DEATH, "model", model, sizeof(model));
 		PrecacheModel(model);
 	}
 	return Plugin_Continue;
@@ -54,27 +54,27 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 
 	new boss=FF2_GetBossIndex(attacker);
-	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, OBJECTS))
+	if(boss!=-1 && FF2_HasAbility(boss, PLUGIN_NAME, OBJECTS))
 	{
 		decl String:classname[PLATFORM_MAX_PATH], String:model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, "classname", classname, sizeof(classname));
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, "model", model, sizeof(model));
-		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, "skin");
-		new count=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS, "count", 14);
-		new Float:distance=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, OBJECTS, "distance", 30.0);
+		FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, OBJECTS, "classname", classname, sizeof(classname));
+		FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, OBJECTS, "model", model, sizeof(model));
+		new skin=FF2_GetAbilityArgument(boss, PLUGIN_NAME, OBJECTS, "skin");
+		new count=FF2_GetAbilityArgument(boss, PLUGIN_NAME, OBJECTS, "count", 14);
+		new Float:distance=FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, OBJECTS, "distance", 30.0);
 		SpawnManyObjects(classname, client, model, skin, count, distance);
 		return;
 	}
 
 	boss=FF2_GetBossIndex(client);
-	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
+	if(boss!=-1 && FF2_HasAbility(boss, PLUGIN_NAME, OBJECTS_DEATH))
 	{
 		decl String:classname[PLATFORM_MAX_PATH], String:model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, "classname", classname, sizeof(classname));
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, "model", model, sizeof(model));
-		new skin=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS_DEATH, "skin");
-		new count=FF2_GetAbilityArgument(boss, this_plugin_name, OBJECTS_DEATH, "count", 14);
-		new Float:distance=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, OBJECTS_DEATH, "distance", 30.0);
+		FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, OBJECTS_DEATH, "classname", classname, sizeof(classname));
+		FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, OBJECTS_DEATH, "model", model, sizeof(model));
+		new skin=FF2_GetAbilityArgument(boss, PLUGIN_NAME, OBJECTS_DEATH, "skin");
+		new count=FF2_GetAbilityArgument(boss, PLUGIN_NAME, OBJECTS_DEATH, "count", 14);
+		new Float:distance=FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, OBJECTS_DEATH, "distance", 30.0);
 		SpawnManyObjects(classname, client, model, skin, count, distance);
 		return;
 	}
@@ -94,17 +94,17 @@ public OnProjectileSpawned(entity)
 	if(client>0 && client<=MaxClients && IsClientInGame(client))
 	{
 		new boss=FF2_GetBossIndex(client);
-		if(boss>=0 && FF2_HasAbility(boss, this_plugin_name, PROJECTILE))
+		if(boss>=0 && FF2_HasAbility(boss, PLUGIN_NAME, PROJECTILE))
 		{
 			decl String:projectile[PLATFORM_MAX_PATH];
-			FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, "classname", projectile, sizeof(projectile));
+			FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, PROJECTILE, "classname", projectile, sizeof(projectile));
 
 			decl String:classname[PLATFORM_MAX_PATH];
 			GetEntityClassname(entity, classname, sizeof(classname));
 			if(StrEqual(classname, projectile, false))
 			{
 				decl String:model[PLATFORM_MAX_PATH];
-				FF2_GetAbilityArgumentString(boss, this_plugin_name, PROJECTILE, "model", model, sizeof(model));
+				FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, PROJECTILE, "model", model, sizeof(model));
 				if(IsModelPrecached(model))
 				{
 					SetEntityModel(entity, model);
@@ -161,9 +161,4 @@ SpawnManyObjects(String:classname[], client, String:model[], skin=0, amount=14, 
 		new offs=GetEntSendPropOffs(entity, "m_vecInitialVelocity", true);
 		SetEntData(entity, offs-4, 1, _, true);
 	}
-}
-
-public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
-{
-	//NOOP
 }

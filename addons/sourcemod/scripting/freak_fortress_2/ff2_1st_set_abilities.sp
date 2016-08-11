@@ -7,7 +7,6 @@
 #include <morecolors>
 #include <tf2items>
 #include <freak_fortress_2>
-#include <freak_fortress_2_subplugin>
 
 #define CBS_MAX_ARROWS 9
 
@@ -15,6 +14,7 @@
 #define SOUND_SLOW_MO_END "replay/exitperformancemode.wav"  //Used when Ninja Spy exits slow mo
 #define SOUND_DEMOPAN_RAGE "ui/notification_alert.wav"  //Used when Demopan rages
 
+#define PLUGIN_NAME "1st set abilities"
 #define PLUGIN_VERSION "2.0.0"
 
 public Plugin:myinfo=
@@ -25,7 +25,7 @@ public Plugin:myinfo=
 	version=PLUGIN_VERSION,
 };
 
-#define FLAG_ONSLOWMO			(1<<0)
+#define FLAG_ONSLOWMO (1<<0)
 
 new FF2Flags[MAXPLAYERS+1];
 new CloneOwnerIndex[MAXPLAYERS+1]=-1;
@@ -47,7 +47,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 }
 
 
-public OnPluginStart2()
+public OnPluginStart()
 {
 	new version[3];
 	FF2_GetFF2Version(version);
@@ -90,10 +90,10 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 
 /*public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])  //Re-enable in v2 or whenever the late-loading forward bug is fixed
 {
-	if(FF2_HasAbility(boss, this_plugin_name, "spawn model on kill"))
+	if(FF2_HasAbility(boss, PLUGIN_NAME, "spawn model on kill"))
 	{
 		decl String:model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, "spawn model on kill", "model", model, sizeof(model));
+		FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, "spawn model on kill", "model", model, sizeof(model));
 		PrecacheModel(model);
 	}
 	return Plugin_Continue;
@@ -145,7 +145,7 @@ public Action:Timer_GetBossTeam(Handle:timer)
 	return Plugin_Continue;
 }
 
-public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
+public FF2_OnAbility2(boss, const String:pluginName[], const String:abilityName[], slot, status)
 {
 	if(!slot)  //Rage
 	{
@@ -153,7 +153,7 @@ public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_nam
 		{
 			new Action:action;
 			Call_StartForward(OnRage);
-			new Float:distance=FF2_GetBossRageDistance(boss, this_plugin_name, ability_name);
+			new Float:distance=FF2_GetBossRageDistance(boss, PLUGIN_NAME, abilityName);
 			new Float:newDistance=distance;
 			Call_PushCell(boss);
 			Call_PushFloatRef(newDistance);
@@ -169,7 +169,7 @@ public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_nam
 		}
 	}
 
-	if(StrEqual(ability_name, "democharge", false))
+	if(StrEqual(abilityName, "democharge", false))
 	{
 		if(status)
 		{
@@ -183,51 +183,51 @@ public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_nam
 			}
 		}
 	}
-	else if(StrEqual(ability_name, "spawn clones", false))
+	else if(StrEqual(abilityName, "spawn clones", false))
 	{
-		Rage_Clone(ability_name, boss);
+		Rage_Clone(abilityName, boss);
 	}
-	else if(StrEqual(ability_name, "tradespam", false))
+	else if(StrEqual(abilityName, "tradespam", false))
 	{
 		CreateTimer(0.0, Timer_Demopan_Rage, 1, TIMER_FLAG_NO_MAPCHANGE);
 	}
-	else if(StrEqual(ability_name, "equip bow", false))
+	else if(StrEqual(abilityName, "equip bow", false))
 	{
 		Rage_Bow(boss);
 	}
-	else if(StrEqual(ability_name, "explosive dance", false))
+	else if(StrEqual(abilityName, "explosive dance", false))
 	{
 		SetEntityMoveType(GetClientOfUserId(FF2_GetBossUserId(boss)), MOVETYPE_NONE);
 		new Handle:data;
 		CreateDataTimer(0.15, Timer_Prepare_Explosion_Rage, data);
-		WritePackString(data, ability_name);
+		WritePackString(data, abilityName);
 		WritePackCell(data, boss);
 		ResetPack(data);
 	}
-	else if(StrEqual(ability_name, "slow mo", false))
+	else if(StrEqual(abilityName, "slow mo", false))
 	{
-		Rage_Slowmo(boss, ability_name);
+		Rage_Slowmo(boss, abilityName);
 	}
 }
 
-Rage_Clone(const String:ability_name[], boss)
+Rage_Clone(const String:abilityName[], boss)
 {
 	new Handle:bossKV[8];
 	decl String:bossName[32];
-	new bool:changeModel=bool:FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "custom model");
-	new weaponMode=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "allow weapons");
+	new bool:changeModel=bool:FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "custom model");
+	new weaponMode=FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "allow weapons");
 	decl String:model[PLATFORM_MAX_PATH];
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, "model", model, sizeof(model));
-	new class=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "class");
-	new Float:ratio=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "ratio", 0.0);
+	FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, abilityName, "model", model, sizeof(model));
+	new class=FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "class");
+	new Float:ratio=FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, abilityName, "ratio", 0.0);
 	new String:classname[64]="tf_weapon_bottle";
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, "classname", classname, sizeof(classname));
-	new index=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "index", 191);
+	FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, abilityName, "classname", classname, sizeof(classname));
+	new index=FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "index", 191);
 	new String:attributes[64]="68 ; -1";
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, "attributes", attributes, sizeof(attributes));
-	new ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "ammo", -1);
-	new clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "clip", -1);
-	new health=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, "health", 0);
+	FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, abilityName, "attributes", attributes, sizeof(attributes));
+	new ammo=FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "ammo", -1);
+	new clip=FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "clip", -1);
+	new health=FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "health", 0);
 
 	new Float:position[3], Float:velocity[3];
 	GetEntPropVector(GetClientOfUserId(FF2_GetBossUserId(boss)), Prop_Data, "m_vecOrigin", position);
@@ -514,8 +514,8 @@ public Action:Timer_Prepare_Explosion_Rage(Handle:timer, Handle:data)
 	new boss=ReadPackCell(data);
 	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 
-	decl String:ability_name[64];
-	ReadPackString(data, ability_name, sizeof(ability_name));
+	decl String:abilityName[64];
+	ReadPackString(data, abilityName, sizeof(abilityName));
 
 	CreateTimer(0.13, Timer_Rage_Explosive_Dance, boss, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
@@ -523,7 +523,7 @@ public Action:Timer_Prepare_Explosion_Rage(Handle:timer, Handle:data)
 	GetEntPropVector(client, Prop_Data, "m_vecOrigin", position);
 
 	new String:sound[PLATFORM_MAX_PATH];
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, "sound", sound, PLATFORM_MAX_PATH);
+	FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, abilityName, "sound", sound, PLATFORM_MAX_PATH);
 	if(strlen(sound))
 	{
 		EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
@@ -604,11 +604,11 @@ public Action:Timer_Rage_Explosive_Dance(Handle:timer, any:boss)
 	return Plugin_Continue;
 }
 
-Rage_Slowmo(boss, const String:ability_name[])
+Rage_Slowmo(boss, const String:abilityName[])
 {
 	FF2_SetFF2Flags(boss, FF2_GetFF2Flags(boss)|FF2FLAG_CHANGECVAR);
-	SetConVarFloat(cvarTimeScale, FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "timescale", 0.1));
-	new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "duration", 1.0)+1.0;
+	SetConVarFloat(cvarTimeScale, FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, abilityName, "timescale", 0.1));
+	new Float:duration=FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, abilityName, "duration", 1.0)+1.0;
 	SlowMoTimer=CreateTimer(duration, Timer_StopSlowMo, boss, TIMER_FLAG_NO_MAPCHANGE);
 	FF2Flags[boss]=FF2Flags[boss]|FLAG_ONSLOWMO;
 	UpdateClientCheatValue(1);
@@ -710,12 +710,12 @@ public bool:TraceRayDontHitSelf(entity, mask)
 }
 
 //Unused single rocket shoot charge
-/*Charge_RocketSpawn(const String:ability_name[],index,slot,action)
+/*Charge_RocketSpawn(const String:abilityName[],index,slot,action)
 {
 	if(FF2_GetBossCharge(index,0)<10)
 		return;
 	new boss=GetClientOfUserId(FF2_GetBossUserId(index));
-	new Float:see=FF2_GetAbilityArgumentFloat(index,this_plugin_name,ability_name,1,5.0);
+	new Float:see=FF2_GetAbilityArgumentFloat(index,PLUGIN_NAME,abilityName,1,5.0);
 	new Float:charge=FF2_GetBossCharge(index,slot);
 	switch(action)
 	{
@@ -744,19 +744,19 @@ public bool:TraceRayDontHitSelf(entity, mask)
 			SetVariantInt(BossTeam);
 			AcceptEntityInput(proj, "SetTeam", -1, -1, 0);
 			SetEntPropEnt(proj, Prop_Send, "m_hOwnerEntity",boss);
-			new Float:speed=FF2_GetAbilityArgumentFloat(index,this_plugin_name,ability_name,3,1000.0);
+			new Float:speed=FF2_GetAbilityArgumentFloat(index,PLUGIN_NAME,abilityName,3,1000.0);
 			velocity[0]=Cosine(DegToRad(rot[0]))*Cosine(DegToRad(rot[1]))*speed;
 			velocity[1]=Cosine(DegToRad(rot[0]))*Sine(DegToRad(rot[1]))*speed;
 			velocity[2]=Sine(DegToRad(rot[0]))*speed;
 			velocity[2]*=-1;
 			TeleportEntity(proj, position, rot,velocity);
-			SetEntDataFloat(proj, FindSendPropOffs("CTFProjectile_Rocket", "m_iDeflected") + 4, FF2_GetAbilityArgumentFloat(index,this_plugin_name,ability_name,5,150.0), true);
+			SetEntDataFloat(proj, FindSendPropOffs("CTFProjectile_Rocket", "m_iDeflected") + 4, FF2_GetAbilityArgumentFloat(index,PLUGIN_NAME,abilityName,5,150.0), true);
 			DispatchSpawn(proj);
 			new String:s[PLATFORM_MAX_PATH];
-			FF2_GetAbilityArgumentString(index,this_plugin_name,ability_name,4,s,PLATFORM_MAX_PATH);
+			FF2_GetAbilityArgumentString(index,PLUGIN_NAME,abilityName,4,s,PLATFORM_MAX_PATH);
 			if(strlen(s)>5)
 				SetEntityModel(proj,s);
-			FF2_SetBossCharge(index,slot,-5*FF2_GetAbilityArgumentFloat(index,this_plugin_name,ability_name,2,5.0));
+			FF2_SetBossCharge(index,slot,-5*FF2_GetAbilityArgumentFloat(index,PLUGIN_NAME,abilityName,2,5.0));
 			if(FF2_FindSound("ability", s, PLATFORM_MAX_PATH, index, true, slot))
 			{
 				EmitSoundToAll(s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
@@ -782,10 +782,10 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 
 	if(boss!=-1)
 	{
-		if(FF2_HasAbility(boss, this_plugin_name, "spawn model on kill"))
+		if(FF2_HasAbility(boss, PLUGIN_NAME, "spawn model on kill"))
 		{
 			decl String:model[PLATFORM_MAX_PATH];
-			FF2_GetAbilityArgumentString(boss, this_plugin_name, "spawn model on kill", "model", model, sizeof(model));
+			FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, "spawn model on kill", "model", model, sizeof(model));
 			if(model[0]!='\0')  //Because you never know when someone is careless and doesn't specify a model...
 			{
 				if(!IsModelPrecached(model))  //Make sure the boss author precached the model (similar to above)
@@ -802,7 +802,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 					PrecacheModel(model);
 				}
 
-				if(FF2_GetAbilityArgument(boss, this_plugin_name, "spawn model on kill", "remove ragdoll", 0))
+				if(FF2_GetAbilityArgument(boss, PLUGIN_NAME, "spawn model on kill", "remove ragdoll", 0))
 				{
 					CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"), TIMER_FLAG_NO_MAPCHANGE);
 				}
@@ -820,7 +820,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 					position[2]+=20;
 					TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
-					new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "drop prop", "duration", 0.0);
+					new Float:duration=FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, "drop prop", "duration", 0.0);
 					if(duration>0.5)
 					{
 						CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(prop), TIMER_FLAG_NO_MAPCHANGE);
@@ -829,7 +829,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 			}
 		}
 
-		if(FF2_HasAbility(boss, this_plugin_name, "switch kukris on kill"))
+		if(FF2_HasAbility(boss, PLUGIN_NAME, "switch kukris on kill"))
 		{
 			if(GetEntPropEnt(attacker, Prop_Send, "m_hActiveWeapon")==GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee))
 			{
@@ -856,7 +856,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	}
 
 	boss=FF2_GetBossIndex(client);
-	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "spawn clones") && FF2_GetAbilityArgument(boss, this_plugin_name, "spawn clones", "die on boss death", 1) && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+	if(boss!=-1 && FF2_HasAbility(boss, PLUGIN_NAME, "spawn clones") && FF2_GetAbilityArgument(boss, PLUGIN_NAME, "spawn clones", "die on boss death", 1) && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
 		for(new target=1; target<=MaxClients; target++)
 		{

@@ -208,7 +208,7 @@ native FF2_SetBossRageDamage(boss, damage);
  *
  * @param boss          Boss index
  * @param pluginName    Name of plugin with this ability
- * @param abilityName   Name of ability (use null string if you want get boss's global "ragedist" value)
+ * @param abilityName   Name of ability (use an empty string if you want get the boss's global "rage distance" value)
  * @return              Ability's rage distance
  */
 native FF2_GetBossRageDistance(boss=0, const String:pluginName[]="", const String:abilityName[]="");

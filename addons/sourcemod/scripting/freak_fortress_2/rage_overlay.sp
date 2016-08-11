@@ -9,10 +9,10 @@ rage_overlay:	slot - slot (def.0)
 #include <tf2items>
 #include <tf2_stocks>
 #include <freak_fortress_2>
-#include <freak_fortress_2_subplugin>
 
 new TFTeam:BossTeam=TFTeam_Blue;
 
+#define PLUGIN_NAME "rage overlay"
 #define PLUGIN_VERSION "2.0.0"
 
 public Plugin:myinfo=
@@ -23,7 +23,7 @@ public Plugin:myinfo=
 	version=PLUGIN_VERSION,
 };
 
-public OnPluginStart2()
+public OnPluginStart()
 {
 	HookEvent("teamplay_round_start", OnRoundStart);
 }
@@ -43,18 +43,18 @@ public Action:Timer_GetBossTeam(Handle:hTimer)
 	return Plugin_Continue;
 }
 
-public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
+public FF2_OnAbility2(boss, const String:pluginName[], const String:abilityName[], slot, status)
 {
-	if(StrEqual(ability_name, "create overlay", false))
+	if(StrEqual(abilityName, "create overlay", false))
 	{
-		Rage_Overlay(boss, ability_name);
+		Rage_Overlay(boss, abilityName);
 	}
 }
 
-Rage_Overlay(boss, const String:ability_name[])
+Rage_Overlay(boss, const String:abilityName[])
 {
 	decl String:overlay[PLATFORM_MAX_PATH];
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, "overlay", overlay, PLATFORM_MAX_PATH);
+	FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, abilityName, "overlay", overlay, sizeof(overlay));
 	Format(overlay, PLATFORM_MAX_PATH, "r_screenoverlay \"%s\"", overlay);
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(new target=1; target<=MaxClients; target++)
@@ -65,7 +65,7 @@ Rage_Overlay(boss, const String:ability_name[])
 		}
 	}
 
-	CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "duration", 6.0), Timer_Remove_Overlay, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, abilityName, "duration", 6.0), Timer_Remove_Overlay, TIMER_FLAG_NO_MAPCHANGE);
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
 }
 

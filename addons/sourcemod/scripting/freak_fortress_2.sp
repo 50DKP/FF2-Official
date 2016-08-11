@@ -7828,7 +7828,6 @@ bool:UseAbility(boss, const String:pluginName[], const String:abilityName[], slo
 
 	if(action==Plugin_Handled || action==Plugin_Stop)
 	{
-		Debug("UseAbility: Returning false");
 		return false;
 	}
 
