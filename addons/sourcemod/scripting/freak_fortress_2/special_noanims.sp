@@ -41,8 +41,13 @@ public OnPluginStart2()
 	HookEvent("teamplay_round_start", OnRoundStart);
 }
 
-public FF2_OnAbility2(boss, const String:pluginName[], const String:abilityName[], slot, status)
+public FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[], slot, status)
 {
+	if(!StrEqual(pluginName, PLUGIN_NAME, false))
+	{
+		return;
+	}
+
 	if(StrEqual(abilityName, "equip weapon", false))
 	{
 		Rage_New_Weapon(boss, abilityName);
