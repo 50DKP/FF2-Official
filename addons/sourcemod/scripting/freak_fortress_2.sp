@@ -295,6 +295,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	}
 
 	CreateNative("FF2_IsFF2Enabled", Native_IsFF2Enabled);
+	CreateNative("FF2_RegisterSubplugin", Native_RegisterSubplugin);
+	CreateNative("FF2_UnregisterSubplugin", Native_UnregisterSubplugin);
 	CreateNative("FF2_GetFF2Version", Native_GetFF2Version);
 	CreateNative("FF2_GetRoundState", Native_GetRoundState);
 	CreateNative("FF2_GetBossUserId", Native_GetBossUserId);
