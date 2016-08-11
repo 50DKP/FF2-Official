@@ -466,7 +466,7 @@ forward Action:FF2_OnTriggerHurt(boss, triggerHurt, &Float:damage);
  * @param time          Length of music
  * @return              Plugin_Stop will prevent music, Plugin_Changed will change it.
  */
-forward Action:FF2_OnMusic(String:path[], &Float:time);
+forward Action:FF2_OnMusic(String:path[], &time);
 
 /**
  * Called when FF2 picks a character for a Boss
