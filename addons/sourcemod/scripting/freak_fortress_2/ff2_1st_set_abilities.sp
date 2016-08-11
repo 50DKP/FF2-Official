@@ -151,12 +151,13 @@ public FF2_OnAbility2(boss, const String:pluginName[], const String:abilityName[
 	{
 		if(!boss)
 		{
+			new distance=FF2_GetBossRageDistance(boss, PLUGIN_NAME, abilityName);
+			new newDistance=distance;
+
 			new Action:action;
 			Call_StartForward(OnRage);
-			new Float:distance=FF2_GetBossRageDistance(boss, PLUGIN_NAME, abilityName);
-			new Float:newDistance=distance;
 			Call_PushCell(boss);
-			Call_PushFloatRef(newDistance);
+			Call_PushCellRef(newDistance);
 			Call_Finish(action);
 			if(action==Plugin_Handled || action==Plugin_Stop)
 			{
@@ -164,7 +165,7 @@ public FF2_OnAbility2(boss, const String:pluginName[], const String:abilityName[
 			}
 			else if(action==Plugin_Changed)
 			{
-				distance=newDistance;
+				distance=newDistance;  //FIXME: This is...useless.
 			}
 		}
 	}

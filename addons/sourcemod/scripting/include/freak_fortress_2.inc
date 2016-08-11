@@ -412,7 +412,7 @@ forward FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[
  * @param distance      Rage distance
  * @return              Plugin_Changed to change rage distance, Plugin_Handled or Plugin_Stop to prevent rage
  */
-forward Action:FF2_OnRage(boss, &Float:distance);
+forward Action:FF2_OnRage(boss, &distance);
 
 /**
  * Called when a boss super jumps (this includes teleports)

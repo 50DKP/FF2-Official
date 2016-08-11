@@ -120,13 +120,13 @@ public FF2_OnAbility2(boss, const String:pluginName[], const String:abilityName[
 	{
 		if(!boss)  //Boss indexes are just so amazing
 		{
-			new Float:distance=FF2_GetBossRageDistance(boss, PLUGIN_NAME, abilityName);
-			new Float:newDistance=distance;
+			new distance=FF2_GetBossRageDistance(boss, PLUGIN_NAME, abilityName);
+			new newDistance=distance;
 
 			new Action:action;
 			Call_StartForward(OnRage);
 			Call_PushCell(boss);
-			Call_PushFloatRef(newDistance);
+			Call_PushCellRef(newDistance);
 			Call_Finish(action);
 			if(action==Plugin_Handled || action==Plugin_Stop)
 			{
@@ -134,7 +134,7 @@ public FF2_OnAbility2(boss, const String:pluginName[], const String:abilityName[
 			}
 			else if(action==Plugin_Changed)
 			{
-				distance=newDistance;
+				distance=newDistance;  //FIXME: This is...useless.
 			}
 		}
 	}
@@ -209,7 +209,7 @@ Rage_Stun(const String:abilityName[], boss)
 	new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	new Float:bossPosition[3], Float:targetPosition[3];
 	new Float:duration=FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, abilityName, "duration", 5.0);
-	new Float:distance=FF2_GetBossRageDistance(boss, PLUGIN_NAME, abilityName);
+	new distance=FF2_GetBossRageDistance(boss, PLUGIN_NAME, abilityName);
 	GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition);
 
 	for(new target=1; target<=MaxClients; target++)
@@ -241,7 +241,7 @@ Rage_StunSentry(const String:abilityName[], boss)
 	new Float:bossPosition[3], Float:sentryPosition[3];
 	GetEntPropVector(GetClientOfUserId(FF2_GetBossUserId(boss)), Prop_Send, "m_vecOrigin", bossPosition);
 	new Float:duration=FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, abilityName, "duration", 7.0);
-	new Float:distance=FF2_GetBossRageDistance(boss, PLUGIN_NAME, abilityName);
+	new distance=FF2_GetBossRageDistance(boss, PLUGIN_NAME, abilityName);
 
 	new sentry;
 	while((sentry=FindEntityByClassname(sentry, "obj_sentrygun"))!=-1)
