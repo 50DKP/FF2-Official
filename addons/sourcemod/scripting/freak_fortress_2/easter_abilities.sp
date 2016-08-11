@@ -7,9 +7,9 @@
 #include <freak_fortress_2>
 #include <freak_fortress_2_subplugin>
 
-#define PROJECTILE		"model_projectile_replace"
-#define OBJECTS			"spawn_many_objects_on_kill"
-#define OBJECTS_DEATH	"spawn_many_objects_on_death"
+#define PROJECTILE		"replace projectile model"
+#define OBJECTS			"spawn many objects on kill"
+#define OBJECTS_DEATH	"spawn many objects on death"
 
 #define PLUGIN_VERSION "2.0.0"
 

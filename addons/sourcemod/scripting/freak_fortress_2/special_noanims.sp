@@ -43,7 +43,7 @@ public OnPluginStart2()
 
 public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
-	if(StrEqual(ability_name, "rage_new_weapon"))
+	if(StrEqual(ability_name, "equip weapon", false))
 	{
 		Rage_New_Weapon(boss, ability_name);
 	}
@@ -64,10 +64,10 @@ public Action:Timer_Disable_Anims(Handle:timer)
 	new client;
 	for(new boss; (client=GetClientOfUserId(FF2_GetBossUserId(boss)))>0; boss++)
 	{
-		if(FF2_HasAbility(boss, this_plugin_name, "special_noanims"))
+		if(FF2_HasAbility(boss, this_plugin_name, "no animations"))
 		{
 			SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 0);
-			SetEntProp(client, Prop_Send, "m_bCustomModelRotates", FF2_GetAbilityArgument(boss, this_plugin_name, "special_noanims", "rotate model", 0));
+			SetEntProp(client, Prop_Send, "m_bCustomModelRotates", FF2_GetAbilityArgument(boss, this_plugin_name, "no animations", "rotate model", 0));
 		}
 	}
 	return Plugin_Continue;

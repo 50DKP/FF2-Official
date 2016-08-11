@@ -101,9 +101,9 @@ public Action:StartBossTimer(Handle:timer)  //TODO: What.
 {
 	for(new boss; FF2_GetBossUserId(boss)!=-1; boss++)
 	{
-		if(FF2_HasAbility(boss, this_plugin_name, "charge_teleport"))
+		if(FF2_HasAbility(boss, this_plugin_name, "teleport"))
 		{
-			FF2_SetBossCharge(boss, FF2_GetAbilityArgument(boss, this_plugin_name, "charge_teleport", "slot", 1), -1.0*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "charge_teleport", "cooldown", 5.0));
+			FF2_SetBossCharge(boss, FF2_GetAbilityArgument(boss, this_plugin_name, "teleport", "slot", 1), -1.0*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "teleport", "cooldown", 5.0));
 		}
 	}
 }
@@ -139,34 +139,34 @@ public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_nam
 		}
 	}
 
-	if(StrEqual(ability_name, "charge_weightdown"))
+	if(StrEqual(ability_name, "weightdown", false))
 	{
 		Charge_WeighDown(boss, slot);
 	}
-	else if(StrEqual(ability_name, "charge_bravejump"))
+	else if(StrEqual(ability_name, "bravejump", false))
 	{
 		Charge_BraveJump(ability_name, boss, slot, status);
 	}
-	else if(StrEqual(ability_name, "charge_teleport"))
+	else if(StrEqual(ability_name, "teleport", false))
 	{
 		Charge_Teleport(ability_name, boss, slot, status);
 	}
-	else if(StrEqual(ability_name, "rage_uber"))
+	else if(StrEqual(ability_name, "uber", false))
 	{
 		new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 		TF2_AddCondition(client, TFCond_Ubercharged, FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "duration", 5.0));
 		SetEntProp(client, Prop_Data, "m_takedamage", 0);
 		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, "duration", 5.0), Timer_StopUber, boss, TIMER_FLAG_NO_MAPCHANGE);
 	}
-	else if(StrEqual(ability_name, "rage_stun"))
+	else if(StrEqual(ability_name, "stun", false))
 	{
 		Rage_Stun(ability_name, boss);
 	}
-	else if(StrEqual(ability_name, "rage_stunsg"))
+	else if(StrEqual(ability_name, "stun sentry gun", false))
 	{
 		Rage_StunSentry(ability_name, boss);
 	}
-	else if(StrEqual(ability_name, "rage_instant_teleport"))
+	else if(StrEqual(ability_name, "instant teleport", false))
 	{
 		new client=GetClientOfUserId(FF2_GetBossUserId(boss));
 		new Float:position[3];
@@ -349,7 +349,7 @@ Charge_BraveJump(const String:ability_name[], boss, slot, status)
 
 			TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, velocity);
 			decl String:sound[PLATFORM_MAX_PATH];
-			if(FF2_FindSound("sound_ability", sound, sizeof(sound), boss, true, slot))
+			if(FF2_FindSound("ability", sound, sizeof(sound), boss, true, slot))
 			{
 				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
 				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
@@ -469,7 +469,7 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 			}
 
 			decl String:sound[PLATFORM_MAX_PATH];
-			if(FF2_FindSound("sound_ability", sound, sizeof(sound), boss, true, slot))
+			if(FF2_FindSound("ability", sound, sizeof(sound), boss, true, slot))
 			{
 				EmitSoundToAll(sound, boss, _, _, _, _, _, boss, position);
 				EmitSoundToAll(sound, boss, _, _, _, _, _, boss, position);

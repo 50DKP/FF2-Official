@@ -90,10 +90,10 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 
 /*public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])  //Re-enable in v2 or whenever the late-loading forward bug is fixed
 {
-	if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
+	if(FF2_HasAbility(boss, this_plugin_name, "spawn model on kill"))
 	{
 		decl String:model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", "model", model, sizeof(model));
+		FF2_GetAbilityArgumentString(boss, this_plugin_name, "spawn model on kill", "model", model, sizeof(model));
 		PrecacheModel(model);
 	}
 	return Plugin_Continue;
@@ -169,7 +169,7 @@ public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_nam
 		}
 	}
 
-	if(StrEqual(ability_name, "special_democharge"))
+	if(StrEqual(ability_name, "democharge", false))
 	{
 		if(status)
 		{
@@ -183,19 +183,19 @@ public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_nam
 			}
 		}
 	}
-	else if(StrEqual(ability_name, "rage_cloneattack"))
+	else if(StrEqual(ability_name, "spawn clones", false))
 	{
 		Rage_Clone(ability_name, boss);
 	}
-	else if(StrEqual(ability_name, "rage_tradespam"))
+	else if(StrEqual(ability_name, "tradespam", false))
 	{
 		CreateTimer(0.0, Timer_Demopan_Rage, 1, TIMER_FLAG_NO_MAPCHANGE);
 	}
-	else if(StrEqual(ability_name, "rage_cbs_bowrage"))
+	else if(StrEqual(ability_name, "equip bow", false))
 	{
 		Rage_Bow(boss);
 	}
-	else if(StrEqual(ability_name, "rage_explosive_dance"))
+	else if(StrEqual(ability_name, "explosive dance", false))
 	{
 		SetEntityMoveType(GetClientOfUserId(FF2_GetBossUserId(boss)), MOVETYPE_NONE);
 		new Handle:data;
@@ -204,7 +204,7 @@ public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_nam
 		WritePackCell(data, boss);
 		ResetPack(data);
 	}
-	else if(StrEqual(ability_name, "rage_matrix_attack"))
+	else if(StrEqual(ability_name, "slow mo", false))
 	{
 		Rage_Slowmo(boss, ability_name);
 	}
@@ -757,7 +757,7 @@ public bool:TraceRayDontHitSelf(entity, mask)
 			if(strlen(s)>5)
 				SetEntityModel(proj,s);
 			FF2_SetBossCharge(index,slot,-5*FF2_GetAbilityArgumentFloat(index,this_plugin_name,ability_name,2,5.0));
-			if(FF2_FindSound("sound_ability", s, PLATFORM_MAX_PATH, index, true, slot))
+			if(FF2_FindSound("ability", s, PLATFORM_MAX_PATH, index, true, slot))
 			{
 				EmitSoundToAll(s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
 				EmitSoundToAll(s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
@@ -782,10 +782,10 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 
 	if(boss!=-1)
 	{
-		if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
+		if(FF2_HasAbility(boss, this_plugin_name, "spawn model on kill"))
 		{
 			decl String:model[PLATFORM_MAX_PATH];
-			FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", "model", model, sizeof(model));
+			FF2_GetAbilityArgumentString(boss, this_plugin_name, "spawn model on kill", "model", model, sizeof(model));
 			if(model[0]!='\0')  //Because you never know when someone is careless and doesn't specify a model...
 			{
 				if(!IsModelPrecached(model))  //Make sure the boss author precached the model (similar to above)
@@ -802,7 +802,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 					PrecacheModel(model);
 				}
 
-				if(FF2_GetAbilityArgument(boss, this_plugin_name, "special_dropprop", "remove ragdoll", 0))
+				if(FF2_GetAbilityArgument(boss, this_plugin_name, "spawn model on kill", "remove ragdoll", 0))
 				{
 					CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"), TIMER_FLAG_NO_MAPCHANGE);
 				}
@@ -820,7 +820,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 					position[2]+=20;
 					TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
-					new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "special_dropprop", "duration", 0.0);
+					new Float:duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "drop prop", "duration", 0.0);
 					if(duration>0.5)
 					{
 						CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(prop), TIMER_FLAG_NO_MAPCHANGE);
@@ -829,7 +829,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 			}
 		}
 
-		if(FF2_HasAbility(boss, this_plugin_name, "special_cbs_multimelee"))
+		if(FF2_HasAbility(boss, this_plugin_name, "switch kukris on kill"))
 		{
 			if(GetEntPropEnt(attacker, Prop_Send, "m_hActiveWeapon")==GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee))
 			{
@@ -856,7 +856,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	}
 
 	boss=FF2_GetBossIndex(client);
-	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack") && FF2_GetAbilityArgument(boss, this_plugin_name, "rage_cloneattack", "die on boss death", 1) && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "spawn clones") && FF2_GetAbilityArgument(boss, this_plugin_name, "spawn clones", "die on boss death", 1) && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
 		for(new target=1; target<=MaxClients; target++)
 		{

@@ -45,7 +45,7 @@ public Action:Timer_GetBossTeam(Handle:hTimer)
 
 public FF2_OnAbility2(boss, const String:plugin_name[], const String:ability_name[], slot, status)
 {
-	if(StrEqual(ability_name, "rage_overlay"))
+	if(StrEqual(ability_name, "create overlay", false))
 	{
 		Rage_Overlay(boss, ability_name);
 	}
