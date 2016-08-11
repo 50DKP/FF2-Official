@@ -348,6 +348,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 
 	RegPluginLibrary("freak_fortress_2");
 
+	subpluginArray=CreateArray(64); // Create this as soon as possible so that subplugins have access to it
+
 	#if defined _steamtools_included
 	MarkNativeAsOptional("Steam_SetGameDescription");
 	#endif
@@ -450,8 +452,6 @@ public OnPluginStart()
 	RegAdminCmd("ff2_reload_subplugins", Command_ReloadSubPlugins, ADMFLAG_RCON, "Reload FF2's subplugins.");
 
 	AutoExecConfig(true, "freak_fortress_2/freak_fortress_2");
-
-	subpluginArray=CreateArray(64);
 
 	FF2Cookie_QueuePoints=RegClientCookie("ff2_cookie_queuepoints", "Client's queue points", CookieAccess_Protected);
 	FF2Cookie_MuteSound=RegClientCookie("ff2_cookie_mutesound", "Client's sound preferences", CookieAccess_Public);
