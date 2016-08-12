@@ -5675,7 +5675,6 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 
 		if(IsValidClient(attacker))
 		{
-			Debug("Attacker is %N", attacker);
 			Damage[attacker]+=damage;
 		}
 
@@ -6175,6 +6174,7 @@ stock ParseFormula(boss, const String:key[], defaultValue)
 						return defaultValue;
 					}
 				}
+				Format(variable, sizeof(variable), ""); // Reset the variable holder
 			}
 			case '+', '-', '*', '/', '^':
 			{
