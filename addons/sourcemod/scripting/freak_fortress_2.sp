@@ -6134,19 +6134,19 @@ stock ParseFormula(boss, const String:key[], defaultValue)
 				}
 				escapeCharacter=false;
 
-				if(StrEqual(value, "players", false))
+				if(StrEqual(variable, "players", false))
 				{
 					Operate(sumArray, bracket, float(playing), _operator);
 				}
-				else if(StrEqual(value, "health", false))
+				else if(StrEqual(variable, "health", false))
 				{
 					Operate(sumArray, bracket, float(BossHealth[boss]), _operator);
 				}
-				else if(StrEqual(value, "lives", false))
+				else if(StrEqual(variable, "lives", false))
 				{
 					Operate(sumArray, bracket, float(BossLives[boss]), _operator);
 				}
-				else if(StrEqual(value, "speed", false))
+				else if(StrEqual(variable, "speed", false))
 				{
 					Operate(sumArray, bracket, BossSpeed[boss], _operator);
 				}
@@ -6164,7 +6164,7 @@ stock ParseFormula(boss, const String:key[], defaultValue)
 					}
 					else
 					{
-						LogError("[FF2 Bosses] %s's %s formula has an unknown variable %s", bossName, key, variable);
+						LogError("[FF2 Bosses] %s's %s formula has an unknown variable '%s'", bossName, key, variable);
 						CloseHandle(sumArray);
 						CloseHandle(_operator);
 						return defaultValue;
