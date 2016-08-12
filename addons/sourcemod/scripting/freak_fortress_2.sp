@@ -5565,7 +5565,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 	return Plugin_Continue;
 }
 
-public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, damagetype)
+public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, damagetype, weapon, const Float:damageForce[3], const Float:damagePosition[3], damagecustom)
 {
 	if(Enabled && IsBoss(client))
 	{
@@ -5672,7 +5672,12 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 
 		BossHealth[boss]-=damage;
 		BossCharge[boss][0]+=damage*100.0/BossRageDamage[boss];
-		Damage[attacker]+=damage;
+
+		if(IsValidClient(attacker))
+		{
+			Debug("Attacker is %N", attacker);
+			Damage[attacker]+=damage;
+		}
 
 		new healers[MaxClients+1];
 		new healerCount;
