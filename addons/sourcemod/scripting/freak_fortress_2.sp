@@ -2376,7 +2376,7 @@ EquipBoss(boss)
 				KvGetString(BossKV[character[boss]], "attributes", attributes, sizeof(attributes));
 				if(attributes[0]!='\0')
 				{
-					Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1 ; %s", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2 ,attributes);
+					Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1 ; %s", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2 , attributes);
 						//68: +2 cap rate
 						//2: x3.1 damage
 				}
@@ -2410,8 +2410,6 @@ EquipBoss(boss)
 					SetEntPropFloat(weapon, Prop_Send, "m_flModelScale", 0.001);
 				}
 				SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
-
-				KvGoBack(BossKV[character[boss]]);
 			}
 			else
 			{
