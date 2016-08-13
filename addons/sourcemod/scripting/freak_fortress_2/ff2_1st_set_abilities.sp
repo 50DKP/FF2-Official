@@ -240,7 +240,7 @@ Rage_Clone(const String:abilityName[], boss)
 	new Float:position[3], Float:velocity[3];
 	GetEntPropVector(GetClientOfUserId(FF2_GetBossUserId(boss)), Prop_Data, "m_vecOrigin", position);
 
-	FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
+	FF2_GetBossName(boss, bossName, sizeof(bossName));
 
 	new maxKV;
 	for(maxKV=0; maxKV<8; maxKV++)
@@ -799,7 +799,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 				if(!IsModelPrecached(model))  //Make sure the boss author precached the model (similar to above)
 				{
 					new String:bossName[64];
-					FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
+					FF2_GetBossName(boss, bossName, sizeof(bossName));
 					if(!FileExists(model, true))
 					{
 						LogError("[FF2 Bosses] Model '%s' doesn't exist!  Please check %s's \"mod_precache\"", bossName, model);

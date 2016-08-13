@@ -302,7 +302,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_GetBossUserId", Native_GetBossUserId);
 	CreateNative("FF2_GetBossIndex", Native_GetBossIndex);
 	CreateNative("FF2_GetBossTeam", Native_GetBossTeam);
-	CreateNative("FF2_GetBossSpecial", Native_GetBossSpecial);
+	CreateNative("FF2_GetBossName", Native_GetBossName);
 	CreateNative("FF2_GetSpecialKV", Native_GetSpecialKV);
 	CreateNative("FF2_GetBossHealth", Native_GetBossHealth);
 	CreateNative("FF2_SetBossHealth", Native_SetBossHealth);
@@ -7516,7 +7516,7 @@ public Native_GetBossTeam(Handle:plugin, numParams)
 	return _:GetBossTeam();
 }
 
-public bool:GetBossSpecial(boss, String:bossName[], length, clientMeaning)
+public bool:GetBossName(boss, String:bossName[], length, clientMeaning)
 {
 	if(clientMeaning)  //characters.cfg
 	{
@@ -7539,11 +7539,11 @@ public bool:GetBossSpecial(boss, String:bossName[], length, clientMeaning)
 	return true;
 }
 
-public Native_GetBossSpecial(Handle:plugin, numParams)
+public Native_GetBossName(Handle:plugin, numParams)
 {
 	new length=GetNativeCell(3);
 	decl String:bossName[length];
-	new bool:bossExists=GetBossSpecial(GetNativeCell(1), bossName, length, GetNativeCell(4));
+	new bool:bossExists=GetBossName(GetNativeCell(1), bossName, length, GetNativeCell(4));
 	SetNativeString(2, bossName, length);
 	return bossExists;
 }

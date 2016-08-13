@@ -114,7 +114,7 @@ public OnProjectileSpawned(entity)
 				else
 				{
 					decl String:bossName[64];
-					FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
+					FF2_GetBossName(boss, bossName, sizeof(bossName));
 					LogError("[FF2 Bosses] Model %s (used by boss %s for ability %s) isn't precached!", model, bossName, PROJECTILE);
 				}
 			}

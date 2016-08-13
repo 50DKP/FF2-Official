@@ -99,7 +99,7 @@ native TFTeam:FF2_GetBossTeam();
  *                          1 - "boss" parameter means number of Boss in characters.cfg-1
  * @return                  True if boss exists, false if not
  */
-native bool:FF2_GetBossSpecial(boss=0, String:bossName[], length, bossMeaning=0);
+native bool:FF2_GetBossName(boss=0, String:bossName[], length, bossMeaning=0);
 
 /**
  * Gets a Boss's KV handle
@@ -552,7 +552,7 @@ stock FF2_SetAmmo(client, weapon, ammo=-1, clip=-1)
 		{
 			decl String:classname[64], String:bossName[32];
 			GetEdictClassname(weapon, classname, sizeof(classname));
-			FF2_GetBossSpecial(FF2_GetBossIndex(client), bossName, sizeof(bossName));
+			FF2_GetBossName(FF2_GetBossIndex(client), bossName, sizeof(bossName));
 			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
 		}
 	}
@@ -630,7 +630,7 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetBossUserId");
 	MarkNativeAsOptional("FF2_GetBossIndex");
 	MarkNativeAsOptional("FF2_GetBossTeam");
-	MarkNativeAsOptional("FF2_GetBossSpecial");
+	MarkNativeAsOptional("FF2_GetBossName");
 	MarkNativeAsOptional("FF2_GetSpecialKV");
 	MarkNativeAsOptional("FF2_GetBossHealth");
 	MarkNativeAsOptional("FF2_SetBossHealth");
