@@ -1746,7 +1746,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			}
 		}
 
-		if(!bossWin && FindSound("lose", sound, sizeof(sound), boss))
+		if(!bossWin && FindSound("fail", sound, sizeof(sound), boss))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
