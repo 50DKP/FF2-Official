@@ -4322,12 +4322,14 @@ public Action:BossTimer(Handle:timer)
 		if(KvJumpToKey(BossKV[character[boss]], "abilities"))
 		{
 			decl String:ability[10], String:lives[MAXRANDOMS][3];
-			while(KvGotoNextKey(BossKV[character[boss]]))
+			KvGotoFirstSubKey(BossKV[character[boss]]);
+			do
 			{
 				decl String:pluginName[64];
 				KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
 				KvJumpToKey(BossKV[character[boss]], pluginName);
-				while(KvGotoNextKey(BossKV[character[boss]]))
+				KvGotoFirstSubKey(BossKV[character[boss]]);
+				do
 				{
 					decl String:abilityName[64];
 					KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
@@ -4357,10 +4359,11 @@ public Action:BossTimer(Handle:timer)
 							}
 						}
 					}
-					KvGoBack(BossKV[character[boss]]);
 				}
+				while(KvGotoNextKey(BossKV[character[boss]]))
 				KvGoBack(BossKV[character[boss]]);
 			}
+			while(KvGotoNextKey(BossKV[character[boss]]));
 		}
 
 		if(RedAlivePlayers==1)
@@ -5600,12 +5603,14 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 				decl String:ability[PLATFORM_MAX_PATH];  //FIXME: Create a new variable for the translation string later on
 				if(KvJumpToKey(BossKV[character[boss]], "abilities"))
 				{
-					while(KvGotoNextKey(BossKV[character[boss]]))
+					KvGotoFirstSubKey(BossKV[character[boss]]);
+					do
 					{
 						decl String:pluginName[64];
 						KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
 						KvJumpToKey(BossKV[character[boss]], pluginName);
-						while(KvGotoNextKey(BossKV[character[boss]]))
+						KvGotoFirstSubKey(BossKV[character[boss]]);
+						do
 						{
 							decl String:abilityName[64];
 							KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
@@ -5634,10 +5639,11 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 									}
 								}
 							}
-							KvGoBack(BossKV[character[boss]]);
 						}
+						while(KvGotoNextKey(BossKV[character[boss]]));
 						KvGoBack(BossKV[character[boss]]);
 					}
+					while(KvGotoNextKey(BossKV[character[boss]]))
 				}
 				BossLives[boss]=lives;
 
