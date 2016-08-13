@@ -2351,6 +2351,8 @@ EquipBoss(boss)
 	DoOverlay(client, "");
 	TF2_RemoveAllWeapons(client);
 	decl String:classname[64], String:attributes[256], String:bossName[64];
+
+	KvRewind(BossKV[character[boss]]);
 	KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed Name=");
 	if(KvJumpToKey(BossKV[character[boss]], "weapons"))
 	{
