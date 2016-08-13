@@ -2329,16 +2329,17 @@ public Action:MessageTimer(Handle:timer)
 	return Plugin_Continue;
 }
 
-public Action:MakeModelTimer(Handle:timer, any:client)
+public Action:MakeModelTimer(Handle:timer, any:boss)
 {
-	if(IsValidClient(Boss[client]) && IsPlayerAlive(Boss[client]) && CheckRoundState()!=FF2RoundState_RoundEnd)
+	new client=Boss[boss];
+	if(IsValidClient(client) && IsPlayerAlive(client) && CheckRoundState()!=FF2RoundState_RoundEnd)
 	{
 		decl String:model[PLATFORM_MAX_PATH];
-		KvRewind(BossKV[character[client]]);
-		KvGetString(BossKV[character[client]], "model", model, sizeof(model));
+		KvRewind(BossKV[character[boss]]);
+		KvGetString(BossKV[character[boss]], "model", model, sizeof(model));
 		SetVariantString(model);
-		AcceptEntityInput(Boss[client], "SetCustomModel");
-		SetEntProp(Boss[client], Prop_Send, "m_bUseClassAnimations", 1);
+		AcceptEntityInput(client, "SetCustomModel");
+		SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
 		return Plugin_Continue;
 	}
 	return Plugin_Stop;
