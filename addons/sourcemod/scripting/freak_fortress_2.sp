@@ -1746,7 +1746,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			}
 		}
 
-		if(!bossWin && FindSound("fail", sound, sizeof(sound), boss))
+		if(!bossWin && FindSound("lose", sound, sizeof(sound), boss))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
@@ -4291,7 +4291,7 @@ public Action:BossTimer(Handle:timer)
 				FF2_ShowSyncHudText(client, rageHUD, "%t", "Activate Rage");
 
 				decl String:sound[PLATFORM_MAX_PATH];
-				if(FindSound("full_rage", sound, sizeof(sound), boss) && emitRageSound[boss])
+				if(FindSound("full rage", sound, sizeof(sound), boss) && emitRageSound[boss])
 				{
 					new Float:position[3];
 					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
@@ -4705,7 +4705,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			new boss=GetBossIndex(attacker);
 			if(firstBlood)  //TF_DEATHFLAG_FIRSTBLOOD is broken
 			{
-				if(FindSound("first_blood", sound, sizeof(sound), boss))
+				if(FindSound("first blood", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAll(sound);
 					EmitSoundToAll(sound);
@@ -4715,7 +4715,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 			if(RedAlivePlayers!=1)  //Don't conflict with end-of-round sounds
 			{
-				if(GetRandomInt(0, 1) && FindSound("hit", sound, sizeof(sound), boss))
+				if(GetRandomInt(0, 1) && FindSound("kill", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAll(sound);
 					EmitSoundToAll(sound);
@@ -4765,7 +4765,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			return Plugin_Continue;
 		}
 
-		if(FindSound("death", sound, sizeof(sound), boss))
+		if(FindSound("lose", sound, sizeof(sound), boss))
 		{
 			EmitSoundToAll(sound);
 			EmitSoundToAll(sound);
