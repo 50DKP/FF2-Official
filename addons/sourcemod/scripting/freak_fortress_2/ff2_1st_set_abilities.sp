@@ -90,7 +90,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	return Plugin_Continue;
 }
 
-/*public Action:FF2_OnSpecialSelected(boss, &special, String:specialName[])  //Re-enable in v2 or whenever the late-loading forward bug is fixed
+/*public Action:FF2_OnBossSelected(boss, &special, String:specialName[])  //Re-enable in v2 or whenever the late-loading forward bug is fixed
 {
 	if(FF2_HasAbility(boss, PLUGIN_NAME, "spawn model on kill"))
 	{

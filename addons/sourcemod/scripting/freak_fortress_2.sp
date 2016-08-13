@@ -261,7 +261,7 @@ new Handle:PreAbility;
 new Handle:OnAbility;
 new Handle:OnMusic;
 new Handle:OnTriggerHurt;
-new Handle:OnSpecialSelected;
+new Handle:OnBossSelected;
 new Handle:OnAddQueuePoints;
 new Handle:OnLoadCharacterSet;
 new Handle:OnLoseLife;
@@ -339,7 +339,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	OnAbility=CreateGlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_Cell);  //Boss, plugin name, ability name, slot, status
 	OnMusic=CreateGlobalForward("FF2_OnMusic", ET_Hook, Param_String, Param_CellByRef);
 	OnTriggerHurt=CreateGlobalForward("FF2_OnTriggerHurt", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
-	OnSpecialSelected=CreateGlobalForward("FF2_OnSpecialSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String, Param_Cell);  //Boss, character index, character name, preset
+	OnBossSelected=CreateGlobalForward("FF2_OnBossSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String, Param_Cell);  //Boss, character index, character name, preset
 	OnAddQueuePoints=CreateGlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
 	OnLoadCharacterSet=CreateGlobalForward("FF2_OnLoadCharacterSet", ET_Hook, Param_CellByRef, Param_String);
 	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell);  //Boss, lives left, max lives
@@ -6329,7 +6329,7 @@ public bool:PickCharacter(boss, companion)
 		if(character[boss]!=-1)  //We've already picked a boss through Command_SetNextBoss
 		{
 			new Action:action;
-			Call_StartForward(OnSpecialSelected);
+			Call_StartForward(OnBossSelected);
 			Call_PushCell(boss);
 			new newCharacter=character[boss];
 			Call_PushCellRef(newCharacter);
@@ -6456,7 +6456,7 @@ public bool:PickCharacter(boss, companion)
 
 	//All of the following uses `companion` because it will always be the boss index we want
 	new Action:action;
-	Call_StartForward(OnSpecialSelected);
+	Call_StartForward(OnBossSelected);
 	Call_PushCell(companion);
 	new newCharacter=character[companion];
 	Call_PushCellRef(newCharacter);
