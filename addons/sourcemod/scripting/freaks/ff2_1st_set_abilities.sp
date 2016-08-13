@@ -801,11 +801,11 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 					FF2_GetBossSpecial(boss, bossName, sizeof(bossName));
 					if(!FileExists(model, true))
 					{
-						LogError("[FF2 Bosses] Model '%s' doesn't exist!  Please check %s's \"mod_precache\"", bossName, model);
+						LogError("[FF2 Bosses] Model '%s' doesn't exist!  Please check %s's config", model, bossName);
 						return Plugin_Continue;
 					}
 
-					LogError("[FF2 Bosses] Model '%s' isn't precached!  Please check %s's \"mod_precache\"", bossName, model);
+					LogError("[FF2 Bosses] Model '%s' isn't precached!  Please check %s's \"mod_precache\"", model, bossName);
 					PrecacheModel(model);
 				}
 
