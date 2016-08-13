@@ -2369,7 +2369,6 @@ EquipBoss(boss)
 				if(classname[0]=='\0')
 				{
 					LogError("[FF2 Bosses] No classname specified for weapon %i (character %s)!", index, bossName);
-					KvGoBack(BossKV[character[boss]]);
 					continue;
 				}
 
@@ -4525,12 +4524,14 @@ public Action:OnCallForMedic(client, const String:command[], args)
 		if(KvJumpToKey(BossKV[character[boss]], "abilities"))
 		{
 			decl String:ability[10], String:lives[MAXRANDOMS][3];
-			while(KvGotoNextKey(BossKV[character[boss]]))
+			KvGotoFirstSubKey(BossKV[character[boss]]);
+			do
 			{
 				decl String:pluginName[64];
 				KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
 				KvJumpToKey(BossKV[character[boss]], pluginName);
-				while(KvGotoNextKey(BossKV[character[boss]]))
+				KvGotoFirstSubKey(BossKV[character[boss]]);
+				do
 				{
 					decl String:abilityName[64];
 					KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
@@ -4557,10 +4558,11 @@ public Action:OnCallForMedic(client, const String:command[], args)
 							}
 						}
 					}
-					KvGoBack(BossKV[character[boss]]);
 				}
+				while(KvGotoNextKey(BossKV[character[boss]]));
 				KvGoBack(BossKV[character[boss]]);
 			}
+			while(KvGotoNextKey(BossKV[character[boss]]));
 		}
 
 		new Float:position[3];
@@ -6236,52 +6238,25 @@ stock ParseFormula(boss, const String:key[], defaultValue)
 
 stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityName[], const String:argument[], defaultValue=0)
 {
-	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
-	{
-		return 0;
-	}
-
-	KvRewind(BossKV[character[boss]]);
-	if(KvJumpToKey(BossKV[character[boss]], "abilities")
-	&& KvJumpToKey(BossKV[character[boss]], pluginName)
-	&& KvJumpToKey(BossKV[character[boss]], abilityName))
+	if(HasAbility(boss, pluginName, abilityName))
 	{
 		return KvGetNum(BossKV[character[boss]], argument, defaultValue);
 	}
-
 	return 0;
 }
 
 stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const String:abilityName[], const String:argument[], Float:defaultValue=0.0)
 {
-	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
-	{
-		return 0.0;
-	}
-
-	KvRewind(BossKV[character[boss]]);
-	if(KvJumpToKey(BossKV[character[boss]], "abilities")
-	&& KvJumpToKey(BossKV[character[boss]], pluginName)
-	&& KvJumpToKey(BossKV[character[boss]], abilityName))
+	if(HasAbility(boss, pluginName, abilityName))
 	{
 		return KvGetFloat(BossKV[character[boss]], argument, defaultValue);
 	}
-
 	return 0.0;
 }
 
 stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abilityName[], const String:argument[], String:abilityString[], length, const String:defaultValue[]="")
 {
-	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
-	{
-		strcopy(abilityString, length, "");
-		return;
-	}
-
-	KvRewind(BossKV[character[boss]]);
-	if(KvJumpToKey(BossKV[character[boss]], "abilities")
-	&& KvJumpToKey(BossKV[character[boss]], pluginName)
-	&& KvJumpToKey(BossKV[character[boss]], abilityName))
+	if(HasAbility(boss, pluginName, abilityName))
 	{
 		KvGetString(BossKV[character[boss]], argument, abilityString, length, defaultValue);
 	}
@@ -6303,7 +6278,8 @@ stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:a
 
 	new i;
 	decl String:sounds[MAXRANDOMS][PLATFORM_MAX_PATH];
-	while(KvGotoNextKey(BossKV[character[boss]]))  //Just keep looping until there's no keys left
+	KvGotoFirstSubKey(BossKV[character[boss]]);
+	do  //Just keep looping until there's no keys left
 	{
 		if(KvGetNum(BossKV[character[boss]], sound))
 		{
@@ -6314,6 +6290,7 @@ stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:a
 			}
 		}
 	}
+	while(KvGotoNextKey(BossKV[character[boss]]));
 
 	if(!i)
 	{
