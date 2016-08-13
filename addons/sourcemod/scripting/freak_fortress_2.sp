@@ -303,7 +303,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_GetBossIndex", Native_GetBossIndex);
 	CreateNative("FF2_GetBossTeam", Native_GetBossTeam);
 	CreateNative("FF2_GetBossName", Native_GetBossName);
-	CreateNative("FF2_GetSpecialKV", Native_GetSpecialKV);
+	CreateNative("FF2_GetBossKV", Native_GetBossKV);
 	CreateNative("FF2_GetBossHealth", Native_GetBossHealth);
 	CreateNative("FF2_SetBossHealth", Native_SetBossHealth);
 	CreateNative("FF2_GetBossMaxHealth", Native_GetBossMaxHealth);
@@ -7548,7 +7548,7 @@ public Native_GetBossName(Handle:plugin, numParams)
 	return bossExists;
 }
 
-public Handle:GetSpecialKV(boss, bool:bossMeaning)
+public Handle:GetBossKV(boss, bool:bossMeaning)
 {
 	if(bossMeaning)  //characters.cfg
 	{
@@ -7575,9 +7575,9 @@ public Handle:GetSpecialKV(boss, bool:bossMeaning)
 	return INVALID_HANDLE;
 }
 
-public Native_GetSpecialKV(Handle:plugin, numParams)
+public Native_GetBossKV(Handle:plugin, numParams)
 {
-	return _:GetSpecialKV(GetNativeCell(1), bool:GetNativeCell(2));
+	return _:GetBossKV(GetNativeCell(1), bool:GetNativeCell(2));
 }
 
 public GetBossHealth(boss)

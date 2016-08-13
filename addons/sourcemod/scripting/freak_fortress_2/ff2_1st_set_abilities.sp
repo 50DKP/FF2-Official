@@ -245,7 +245,7 @@ Rage_Clone(const String:abilityName[], boss)
 	new maxKV;
 	for(maxKV=0; maxKV<8; maxKV++)
 	{
-		if(!(bossKV[maxKV]=FF2_GetSpecialKV(maxKV)))
+		if(!(bossKV[maxKV]=FF2_GetBossKV(maxKV)))
 		{
 			break;
 		}

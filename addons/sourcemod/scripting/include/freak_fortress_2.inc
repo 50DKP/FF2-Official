@@ -109,7 +109,7 @@ native bool:FF2_GetBossName(boss=0, String:bossName[], length, bossMeaning=0);
  *                          1 - 'boss' parameter refers to the index of the boss in characters.cfg-1
  * @return                  Handle of Boss's keyvalues
  */
-native Handle:FF2_GetSpecialKV(boss, bossMeaning=0);
+native Handle:FF2_GetBossKV(boss, bossMeaning=0);
 
 /**
  * Gets the current health value of the Boss
@@ -631,7 +631,7 @@ public __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetBossIndex");
 	MarkNativeAsOptional("FF2_GetBossTeam");
 	MarkNativeAsOptional("FF2_GetBossName");
-	MarkNativeAsOptional("FF2_GetSpecialKV");
+	MarkNativeAsOptional("FF2_GetBossKV");
 	MarkNativeAsOptional("FF2_GetBossHealth");
 	MarkNativeAsOptional("FF2_SetBossHealth");
 	MarkNativeAsOptional("FF2_GetBossMaxHealth");
