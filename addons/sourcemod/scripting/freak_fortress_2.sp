@@ -4360,7 +4360,7 @@ public Action:BossTimer(Handle:timer)
 						}
 					}
 				}
-				while(KvGotoNextKey(BossKV[character[boss]]))
+				while(KvGotoNextKey(BossKV[character[boss]]));
 				KvGoBack(BossKV[character[boss]]);
 			}
 			while(KvGotoNextKey(BossKV[character[boss]]));
@@ -5643,7 +5643,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 						while(KvGotoNextKey(BossKV[character[boss]]));
 						KvGoBack(BossKV[character[boss]]);
 					}
-					while(KvGotoNextKey(BossKV[character[boss]]))
+					while(KvGotoNextKey(BossKV[character[boss]]));
 				}
 				BossLives[boss]=lives;
 
