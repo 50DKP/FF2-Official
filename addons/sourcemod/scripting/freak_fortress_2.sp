@@ -54,10 +54,10 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define HEALTHBAR_MAX 255
 #define MONOCULUS "eyeball_boss"
 
-#define FF2SOUND_MUTENONE 1<<0
-#define FF2SOUND_MUTEMUSIC 1<<1
-#define FF2SOUND_MUTEVOICE 1<<2
-#define FF2SOUND_MUTEALL 1<<3
+#define FF2SOUND_MUTENONE 0
+#define FF2SOUND_MUTEMUSIC 1<<0
+#define FF2SOUND_MUTEVOICE 1<<1
+#define FF2SOUND_MUTEALL FF2SOUND_MUTEMUSIC | FF2SOUND_MUTEVOICE
 
 #define FF2_CONFIGS "configs/freak_fortress_2"
 #define FF2_SETTINGS "data/freak_fortress_2"
@@ -2176,7 +2176,7 @@ StopMusic(client=0, bool:permanent=false)
 
 stock EmitSoundToAllExcept(soundFlags, const String:sample[], entity=SOUND_FROM_PLAYER, channel=SNDCHAN_AUTO, level=SNDLEVEL_NORMAL, flags=SND_NOFLAGS, Float:volume=SNDVOL_NORMAL, pitch=SNDPITCH_NORMAL, speakerentity=-1, const Float:origin[3]=NULL_VECTOR, const Float:dir[3]=NULL_VECTOR, bool:updatePos=true, Float:soundtime=0.0)
 {
-	new clients[MaxClients], total;
+	new clients[MaxClients+1], total;
 	for(new client=1; client<=MaxClients; client++)
 	{
 		if(IsValidClient(client) && IsClientInGame(client))
@@ -2210,9 +2210,9 @@ stock bool:CheckSoundFlags(client, soundFlags)
 
 	if(muteSound[client] & soundFlags)
 	{
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 SetSoundFlags(client, soundFlags)
