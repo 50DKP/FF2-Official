@@ -1043,6 +1043,7 @@ public PrecacheCharacter(characterIndex)
 			if(KvGetNum(BossKV[characterIndex], "precache") || KvGetNum(BossKV[characterIndex], "time"))
 			{
 				KvGetSectionName(BossKV[characterIndex], file, sizeof(file));
+				Format(file, sizeof(file), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
 				if(FileExists(file, true))
 				{
 					PrecacheSound(file);
@@ -1055,6 +1056,7 @@ public PrecacheCharacter(characterIndex)
 
 			if(KvGetNum(BossKV[characterIndex], "download"))
 			{
+				Format(file, sizeof(file), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
 				if(FileExists(file, true))
 				{
 					AddFileToDownloadsTable(file);
