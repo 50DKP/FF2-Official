@@ -6283,7 +6283,6 @@ stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:a
 	KvRewind(BossKV[character[boss]]);
 	if(!KvJumpToKey(BossKV[character[boss]], "sounds"))
 	{
-		KvRewind(BossKV[character[boss]]);
 		return false;  //Boss doesn't have any sounds
 	}
 
