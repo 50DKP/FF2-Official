@@ -1031,47 +1031,46 @@ public LoadCharacter(const String:characterName[])
 
 public PrecacheCharacter(characterIndex)
 {
-	decl String:file[PLATFORM_MAX_PATH], String:bossName[64];
+	decl String:file[PLATFORM_MAX_PATH], String:filePath[PLATFORM_MAX_PATH], String:bossName[64];
 	KvRewind(BossKV[characterIndex]);
 	KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
-	KvGotoFirstSubKey(BossKV[characterIndex]);
 
 	if(KvJumpToKey(BossKV[characterIndex], "sounds"))
 	{
-		while(KvGotoNextKey(BossKV[characterIndex]))
+		KvGotoFirstSubKey(BossKV[characterIndex]);
+		do
 		{
-			if(KvGetNum(BossKV[characterIndex], "precache") || KvGetNum(BossKV[characterIndex], "time"))
+			KvGetSectionName(BossKV[characterIndex], file, sizeof(file));
+			Format(filePath, sizeof(filePath), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
+			if(FileExists(filePath, true))
 			{
-				KvGetSectionName(BossKV[characterIndex], file, sizeof(file));
-				Format(file, sizeof(file), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
-				if(FileExists(file, true))
-				{
-					PrecacheSound(file);
-				}
-				else
-				{
-					LogError("[FF2 Bosses] Character %s is missing file '%s'!", bossName, file);
-				}
+				PrecacheSound(file); // PrecacheSound is relative to the sounds/ folder
+			}
+			else
+			{
+				LogError("[FF2 Bosses] Character %s is missing file '%s'!", bossName, filePath);
 			}
 
 			if(KvGetNum(BossKV[characterIndex], "download"))
 			{
-				Format(file, sizeof(file), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
-				if(FileExists(file, true))
+				if(FileExists(filePath, true))
 				{
-					AddFileToDownloadsTable(file);
+					AddFileToDownloadsTable(filePath); // ...but AddFileToDownloadsTable isn't
 				}
 				else
 				{
-					LogError("[FF2 Bosses] Character %s is missing file '%s'!", bossName, file);
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", bossName, filePath);
 				}
 			}
 		}
+		while(KvGotoNextKey(BossKV[characterIndex]));
 	}
 
+	KvRewind(BossKV[characterIndex]);
 	if(KvJumpToKey(BossKV[characterIndex], "downloads"))
 	{
-		while(KvGotoNextKey(BossKV[characterIndex]))
+		KvGotoFirstSubKey(BossKV[characterIndex]);
+		do
 		{
 			if(KvGetNum(BossKV[characterIndex], "precache"))
 			{
@@ -1086,6 +1085,7 @@ public PrecacheCharacter(characterIndex)
 				}
 			}
 		}
+		while(KvGotoNextKey(BossKV[characterIndex]));
 	}
 }
 
