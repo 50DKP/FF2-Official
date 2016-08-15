@@ -5090,7 +5090,7 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 			if(shield[client] && damage)
 			{
 				RemoveShield(client, attacker, position);
-				return Plugin_Changed;
+				return Plugin_Handled;
 			}
 
 			if(TF2_GetPlayerClass(client)==TFClass_Soldier
