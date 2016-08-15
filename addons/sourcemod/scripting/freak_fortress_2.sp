@@ -1075,13 +1075,14 @@ public PrecacheCharacter(characterIndex)
 			if(KvGetNum(BossKV[characterIndex], "precache"))
 			{
 				KvGetSectionName(BossKV[characterIndex], file, sizeof(file));
-				if(FileExists(file, true))
+				Format(filePath, sizeof(filePath), "%s.mdl", file);  //Models specified in the config don't include an extension
+				if(FileExists(filePath, true))
 				{
-					PrecacheModel(file);
+					PrecacheModel(filePath);
 				}
 				else
 				{
-					LogError("[FF2 Bosses] Character %s is missing file '%s'!", bossName, file);
+					LogError("[FF2 Bosses] Character %s is missing file '%s'!", bossName, filePath);
 				}
 			}
 		}
