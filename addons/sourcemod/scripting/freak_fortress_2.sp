@@ -2058,7 +2058,7 @@ PlayBGM(client)
 				PrintToServer("[FF2 Bosses] Character %s has an invalid time for sound '%s'!", bossName, temp);
 			}
 		}
-		while(KvGotoNextKey(BossKV[character[0]]));
+		while(KvGotoNextKey(BossKV[character[0]]) && index<=MAXRANDOMS);
 
 		index=GetRandomInt(0, index-1);
 
