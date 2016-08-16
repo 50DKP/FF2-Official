@@ -1677,8 +1677,8 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		bossWin=true;
 		if(FindSound("win", sound, sizeof(sound)))
 		{
-			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
-			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, _, _, _, _, _, _, Boss[0], _, _, false);
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
 		}
 	}
 
@@ -1751,8 +1751,8 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 		if(!bossWin && FindSound("lose", sound, sizeof(sound), boss))
 		{
-			EmitSoundToAll(sound);
-			EmitSoundToAll(sound);
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
 		}
 	}
 
@@ -1934,8 +1934,8 @@ public Action:StartResponseTimer(Handle:timer)
 	decl String:sound[PLATFORM_MAX_PATH];
 	if(FindSound("begin", sound, sizeof(sound)))
 	{
-		EmitSoundToAll(sound);
-		EmitSoundToAll(sound);
+		EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
+		EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
 	}
 	return Plugin_Continue;
 }
@@ -3479,8 +3479,8 @@ public Action:OnObjectDestroyed(Handle:event, const String:name[], bool:dontBroa
 			decl String:sound[PLATFORM_MAX_PATH];
 			if(FindSound("destroy building", sound, sizeof(sound)))
 			{
-				EmitSoundToAll(sound);
-				EmitSoundToAll(sound);
+				EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, attacker);
+				EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, attacker);
 			}
 		}
 	}
@@ -4021,7 +4021,7 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 		}
 	}
 
-	FF2Flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_BLAST_JUMPING);
+	FF2Flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_BLAST_JUMPING);
 	FF2Flags[client]|=FF2FLAG_USEBOSSTIMER;
 	return Plugin_Continue;
 }
@@ -4324,22 +4324,9 @@ public Action:BossTimer(Handle:timer)
 				decl String:sound[PLATFORM_MAX_PATH];
 				if(FindSound("full rage", sound, sizeof(sound), boss) && emitRageSound[boss])
 				{
-					new Float:position[3];
-					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
 
-					FF2Flags[client]|=FF2FLAG_TALKING;
-					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
-					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
-
-					for(new target=1; target<=MaxClients; target++)
-					{
-						if(IsClientInGame(target) && target!=client)
-						{
-							EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
-							EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
-						}
-					}
-					FF2Flags[client]&=~FF2FLAG_TALKING;
 					emitRageSound[boss]=false;
 				}
 			}
@@ -4608,19 +4595,8 @@ public Action:OnCallForMedic(client, const String:command[], args)
 		decl String:sound[PLATFORM_MAX_PATH];
 		if(FindSound("ability", sound, sizeof(sound), boss, true))
 		{
-			FF2Flags[Boss[boss]]|=FF2FLAG_TALKING;
-			EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
-			EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
-
-			for(new target=1; target<=MaxClients; target++)
-			{
-				if(IsClientInGame(target) && target!=Boss[boss])
-				{
-					EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
-					EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
-				}
-			}
-			FF2Flags[Boss[boss]]&=~FF2FLAG_TALKING;
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
 		}
 		emitRageSound[boss]=true;
 		return Plugin_Handled;
@@ -4738,8 +4714,8 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			{
 				if(FindSound("first blood", sound, sizeof(sound), boss))
 				{
-					EmitSoundToAll(sound);
-					EmitSoundToAll(sound);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, attacker);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, attacker);
 				}
 				firstBlood=false;
 			}
@@ -4748,8 +4724,8 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			{
 				if(GetRandomInt(0, 1) && FindSound("kill", sound, sizeof(sound), boss))
 				{
-					EmitSoundToAll(sound);
-					EmitSoundToAll(sound);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, attacker);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, attacker);
 				}
 				else if(!GetRandomInt(0, 2))  //1/3 chance for "sound_kill_<class>"
 				{
@@ -4758,8 +4734,8 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 					Format(class, sizeof(class), "kill %s", classnames[TF2_GetPlayerClass(client)]);
 					if(FindSound(class, sound, sizeof(sound), boss))
 					{
-						EmitSoundToAll(sound);
-						EmitSoundToAll(sound);
+						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, attacker);
+						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, attacker);
 					}
 				}
 			}
@@ -4777,8 +4753,8 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			{
 				if(FindSound("kspree", sound, sizeof(sound), boss))
 				{
-					EmitSoundToAll(sound);
-					EmitSoundToAll(sound);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, attacker);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, attacker);
 				}
 				KSpreeCount[boss]=0;
 			}
@@ -4798,8 +4774,8 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 		if(FindSound("lose", sound, sizeof(sound), boss))
 		{
-			EmitSoundToAll(sound);
-			EmitSoundToAll(sound);
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
 		}
 
 		BossHealth[boss]=0;
@@ -4935,8 +4911,8 @@ public Action:CheckAlivePlayers(Handle:timer)
 		decl String:sound[PLATFORM_MAX_PATH];
 		if(FindSound("lastman", sound, sizeof(sound)))
 		{
-			EmitSoundToAll(sound);
-			EmitSoundToAll(sound);
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
+			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
 		}
 	}
 	else if(!PointType && RedAlivePlayers<=AliveToEnable && !executed)
@@ -5485,8 +5461,8 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 					decl String:sound[PLATFORM_MAX_PATH];
 					if(FindSound("stabbed", sound, sizeof(sound), boss))
 					{
-						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
-						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
+						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
+						EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, client);
 					}
 
 					if(Stabbed[boss]<3)
@@ -5696,13 +5672,13 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 
 				if(BossLives[boss]==1 && FindSound("last life", ability, sizeof(ability), boss))
 				{
-					EmitSoundToAll(ability);
-					EmitSoundToAll(ability);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, ability, client);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, ability, client);
 				}
 				else if(FindSound("next life", ability, sizeof(ability), boss))
 				{
-					EmitSoundToAll(ability);
-					EmitSoundToAll(ability);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, ability, client);
+					EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, ability, client);
 				}
 
 				UpdateHealthBar();
@@ -7266,7 +7242,7 @@ public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH
 		return Plugin_Continue;
 	}
 
-	if(channel==SNDCHAN_VOICE && !(FF2Flags[Boss[boss]] & FF2FLAG_TALKING))
+	if(channel==SNDCHAN_VOICE)
 	{
 		decl String:newSound[PLATFORM_MAX_PATH];
 		if(FindSound("catch phrase", newSound, sizeof(newSound), boss))
