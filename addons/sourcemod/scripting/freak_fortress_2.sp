@@ -2836,7 +2836,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	{
 		case 38, 457:  //Axtinguisher, Postal Pummeler
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "", false);
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -2845,7 +2845,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 39, 351, 1081:  //Flaregun, Detonator, Festive Flaregun
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "25 ; 0.5 ; 58 ; 3.2 ; 144 ; 1.0 ; 207 ; 1.33", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "25 ; 0.5 ; 58 ; 3.2 ; 144 ; 1.0 ; 207 ; 1.33", false);
 				//25: -50% ammo
 				//58: 220% self damage force
 				//144: NOPE
@@ -2879,7 +2879,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 239, 1084, 1100:  //GRU, Festive GRU, Bread Bite
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5", false);
 				//1: -50% damage
 				//107: +50% move speed
 				//128: Only when weapon is active
@@ -2904,7 +2904,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		/*case 132, 266, 482:  //Eyelander, HHHH, Nessie's Nine Iron - commented out because
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "202 ; 0.5 ; 125 ; -15", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "202 ; 0.5 ; 125 ; -15", false);
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -2942,7 +2942,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 331:  //Fists of Steel
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "205 ; 0.8 ; 206 ; 2.0 ; 772 ; 2.0", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "205 ; 0.8 ; 206 ; 2.0 ; 772 ; 2.0", false);
 				//205: -80% damage from ranged while active
 				//206: +100% damage from melee while active
 				//772: Holsters 100% slower
@@ -2954,7 +2954,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 415:  //Reserve Shooter
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1 ; 3 ; 0.5 ; 114 ; 1 ; 179 ; 1 ; 547 ; 0.6", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1 ; 3 ; 0.5 ; 114 ; 1 ; 179 ; 1 ; 547 ; 0.6", false);
 				//2: +10% damage bonus
 				//3: -50% clip size
 				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
@@ -2982,7 +2982,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 656:  //Holiday Punch
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "199 ; 0 ; 547 ; 0 ; 358 ; 0 ; 362 ; 0 ; 363 ; 0 ; 369 ; 0", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "199 ; 0 ; 547 ; 0 ; 358 ; 0 ; 362 ; 0 ; 363 ; 0 ; 369 ; 0", false);
 				//199: Holsters 100% faster
 				//547: Deploys 100% faster
 				//Other attributes: Because TF2Items doesn't feel like stripping the Holiday Punch's attributes for some reason
@@ -2994,7 +2994,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 		}
 		case 772:  //Baby Face's Blaster
 		{
-			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.25 ; 109 ; 0.5 ; 125 ; -25 ; 394 ; 0.85 ; 418 ; 1 ; 419 ; 100 ; 532 ; 0.5 ; 651 ; 0.5 ; 709 ; 1", true);
+			new Handle:itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.25 ; 109 ; 0.5 ; 125 ; -25 ; 394 ; 0.85 ; 418 ; 1 ; 419 ; 100 ; 532 ; 0.5 ; 651 ; 0.5 ; 709 ; 1", false);
 				//2: +25% damage bonus
 				//109: -50% health from packs on wearer
 				//125: -25 max health
@@ -3046,7 +3046,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 
 	if(!StrContains(classname, "tf_weapon_syringegun_medic"))  //Syringe guns
 	{
-		new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1", true);
+		new Handle:itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1", false);
 			//17: 5% uber on hit
 			//144: Sets weapon mode - *possibly* the overdose speed effect
 		if(itemOverride!=INVALID_HANDLE)
@@ -3057,7 +3057,7 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	}
 	else if(!StrContains(classname, "tf_weapon_medigun"))  //Mediguns
 	{
-		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.75 ; 11 ; 1.5 ; 144 ; 2.0 ; 199 ; 0.75 ; 314 ; 4 ; 547 ; 0.75", true);
+		new Handle:itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.75 ; 11 ; 1.5 ; 144 ; 2.0 ; 199 ; 0.75 ; 314 ; 4 ; 547 ; 0.75", false);
 			//10: +75% faster charge rate
 			//11: +50% overheal bonus
 			//144: Quick-fix speed/jump effects
@@ -3097,24 +3097,56 @@ public Action:Timer_NoHonorBound(Handle:timer, any:userid)
 	}
 }
 
-stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const String:att[]="", bool:dontPreserve=false)
+/*
+ * Prepares a new item handle based on an existing one
+ *
+ * @param item			Existing item handle
+ * @param classname		Classname of the weapon
+ * @param index			Index of the weapon
+ * @param attributeList	String of attributes in a 'name ; value' pattern (optional)
+ * @param preserve		Whether to preserve existing attributes or to overwrite them
+ *
+ * @return				Item handle on success, INVALID_HANDLE on failure
+ */
+stock Handle:PrepareItemHandle(Handle:item, String:classname[]="", index=-1, const String:attributeList[]="", bool:preserve=true)
 {
+	// TODO: This duplicates a whole lot of logic in SpawnWeapon
 	static Handle:weapon;
 	new addattribs;
 
-	new String:weaponAttribsArray[32][32];
-	new attribCount=ExplodeString(att, ";", weaponAttribsArray, 32, 32);
+	new String:attributes[32][32];
+	new count=ExplodeString(attributeList, ";", attributes, 32, 32);
 
-	if(attribCount % 2)  //Unbalanced array, eg "2 ; 10 ; 3"
+	if(count==1) // ExplodeString returns the original string if no matching delimiter was found so we need to special-case this
 	{
-		LogError("[FF2 Weapons] Unbalanced attributes array %s", att);
-		CloseHandle(weapon);
-		weapon=INVALID_HANDLE;
+		if(attributeList[0]!='\0') // Ignore empty attribute list
+		{
+			LogError("[FF2 Weapons] Unbalanced attributes array '%s' for weapon %s", attributeList, classname);
+			if(weapon!=INVALID_HANDLE)
+			{
+				CloseHandle(weapon);
+				weapon=INVALID_HANDLE;
+			}
+			return weapon;
+		}
+		else
+		{
+			count=0;
+		}
+	}
+	else if(count % 2) // Unbalanced array, eg "2 ; 10 ; 3"
+	{
+		LogError("[FF2 Weapons] Unbalanced attributes array %s for weapon %s", attributeList, classname);
+		if(weapon!=INVALID_HANDLE)
+		{
+			CloseHandle(weapon);
+			weapon=INVALID_HANDLE;
+		}
 		return weapon;
 	}
 
 	new flags=OVERRIDE_ATTRIBUTES;
-	if(!dontPreserve)
+	if(preserve)
 	{
 		flags|=PRESERVE_ATTRIBUTES;
 	}
@@ -3127,7 +3159,6 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 	{
 		TF2Items_SetFlags(weapon, flags);
 	}
-	//new Handle:weapon=TF2Items_CreateItem(flags);  //INVALID_HANDLE;  Going to uncomment this since this is what Randomizer does
 
 	if(item!=INVALID_HANDLE)
 	{
@@ -3138,9 +3169,9 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 			{
 				new bool:dontAdd;
 				new attribIndex=TF2Items_GetAttributeId(item, i);
-				for(new z; z<attribCount+i; z+=2)
+				for(new z; z<count+i; z+=2)
 				{
-					if(StringToInt(weaponAttribsArray[z])==attribIndex)
+					if(StringToInt(attributes[z])==attribIndex)
 					{
 						dontAdd=true;
 						break;
@@ -3149,11 +3180,11 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 
 				if(!dontAdd)
 				{
-					IntToString(attribIndex, weaponAttribsArray[i+attribCount], 32);
-					FloatToString(TF2Items_GetAttributeValue(item, i), weaponAttribsArray[i+1+attribCount], 32);
+					IntToString(attribIndex, attributes[i+count], 32);
+					FloatToString(TF2Items_GetAttributeValue(item, i), attributes[i+1+count], 32);
 				}
 			}
-			attribCount+=2*addattribs;
+			count+=2*addattribs;
 		}
 
 		if(weapon!=item)  //FlaminSarge: Item might be equal to weapon, so closing item's handle would also close weapon's
@@ -3162,10 +3193,10 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 		}
 	}
 
-	if(name[0]!='\0')
+	if(classname[0]!='\0')
 	{
 		flags|=OVERRIDE_CLASSNAME;
-		TF2Items_SetClassname(weapon, name);
+		TF2Items_SetClassname(weapon, classname);
 	}
 
 	if(index!=-1)
@@ -3174,22 +3205,22 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 		TF2Items_SetItemIndex(weapon, index);
 	}
 
-	if(attribCount>0)
+	if(count>0)
 	{
-		TF2Items_SetNumAttributes(weapon, attribCount/2);
+		TF2Items_SetNumAttributes(weapon, count/2);
 		new i2;
-		for(new i; i<attribCount && i2<16; i+=2)
+		for(new i; i<count && i2<16; i+=2)
 		{
-			new attrib=StringToInt(weaponAttribsArray[i]);
+			new attrib=StringToInt(attributes[i]);
 			if(!attrib)
 			{
-				LogError("[FF2 Weapons] Bad weapon attribute passed: %s ; %s", weaponAttribsArray[i], weaponAttribsArray[i+1]);
+				LogError("[FF2 Weapons] Bad weapon attribute passed: %s ; %s", attributes[i], attributes[i+1]);
 				CloseHandle(weapon);
 				weapon=INVALID_HANDLE;
 				return weapon;
 			}
 
-			TF2Items_SetAttribute(weapon, i2, StringToInt(weaponAttribsArray[i]), StringToFloat(weaponAttribsArray[i+1]));
+			TF2Items_SetAttribute(weapon, i2, StringToInt(attributes[i]), StringToFloat(attributes[i+1]));
 			i2++;
 		}
 	}
@@ -3244,7 +3275,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 	if(IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
 	{
 		TF2_RemoveWeaponSlot(client, 4);
-		SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
+		SpawnWeapon(client, "tf_weapon_invis", 30);
 	}
 
 	if(bMedieval)
@@ -3261,7 +3292,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 			case 41:  //Natascha
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				SpawnWeapon(client, "tf_weapon_minigun", 15, 1, 0, "");
+				SpawnWeapon(client, "tf_weapon_minigun", 15);
 			}
 			case 237:  //Rocket Jumper
 			{
@@ -3273,7 +3304,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 			case 402:  //Bazaar Bargain
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				SpawnWeapon(client, "tf_weapon_sniperrifle", 14, 1, 0, "");
+				SpawnWeapon(client, "tf_weapon_sniperrifle", 14);
 			}
 		}
 	}
@@ -3291,7 +3322,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 			case 265:  //Stickybomb Jumper
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
+				SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20);
 				FF2_SetAmmo(client, weapon, 24);
 			}
 		}
@@ -3360,7 +3391,7 @@ public Action:CheckItems(Handle:timer, any:userid)
 				if(!GetConVarBool(cvarEnableEurekaEffect))
 				{
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-					SpawnWeapon(client, "tf_weapon_wrench", 7, 1, 0, "");
+					SpawnWeapon(client, "tf_weapon_wrench", 7);
 				}
 			}
 		}
@@ -6550,53 +6581,73 @@ FindCompanion(boss, players, bool:omit[])
 	playersNeeded=3;  //Reset the amount of players needed back to 3 after we're done
 }
 
-stock SpawnWeapon(client, String:name[], index, level, qual, String:att[])
+/*
+ * Equips a new weapon for a given client
+ *
+ * @param client		Client to equip new weapon for
+ * @param classname		Classname of the weapon
+ * @param index			Index of the weapon
+ * @param level			Level of the weapon
+ * @param quality		Quality of the weapon
+ * @param attributeList	String of attributes in a 'name ; value' pattern (optional)
+ *
+ * @return				Weapon entity index on success, -1 on failure
+ */
+stock SpawnWeapon(client, String:classname[], index, level=1, quality=0, String:attributeList[]="")
 {
-	new Handle:hWeapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
-	if(hWeapon==INVALID_HANDLE)
+	new Handle:weapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
+	if(weapon==INVALID_HANDLE)
 	{
 		return -1;
 	}
 
-	TF2Items_SetClassname(hWeapon, name);
-	TF2Items_SetItemIndex(hWeapon, index);
-	TF2Items_SetLevel(hWeapon, level);
-	TF2Items_SetQuality(hWeapon, qual);
-	new String:atts[32][32];
-	new count=ExplodeString(att, ";", atts, 32, 32);
+	TF2Items_SetClassname(weapon, classname);
+	TF2Items_SetItemIndex(weapon, index);
+	TF2Items_SetLevel(weapon, level);
+	TF2Items_SetQuality(weapon, quality);
+	new String:attributes[32][32];
+	new count=ExplodeString(attributeList, ";", attributes, 32, 32);
 
-	if(count % 2)  //Unbalanced array, eg "2 ; 10 ; 3"
+	if(count==1) // ExplodeString returns the original string if no matching delimiter was found so we need to special-case this
 	{
-		LogError("[FF2 Weapons] Unbalanced attributes array %s", att);
-		CloseHandle(hWeapon);
-		return -1;
-	}
-
-	if(count>0)
-	{
-		TF2Items_SetNumAttributes(hWeapon, count/2);
-		new i2;
-		for(new i; i<count; i+=2)
+		if(attributeList[0]!='\0') // Ignore empty attribute list
 		{
-			new attrib=StringToInt(atts[i]);
-			if(!attrib)
-			{
-				LogError("[FF2 Weapons] Bad weapon attribute passed: %s ; %s", atts[i], atts[i+1]);
-				CloseHandle(hWeapon);
-				return -1;
-			}
-
-			TF2Items_SetAttribute(hWeapon, i2, attrib, StringToFloat(atts[i+1]));
-			i2++;
+			LogError("[FF2 Weapons] Unbalanced attributes array '%s' for weapon %s", attributeList, classname);
+			CloseHandle(weapon);
+			return -1;
 		}
+		else
+		{
+			TF2Items_SetNumAttributes(weapon, 0);
+		}
+	}
+	else if(count % 2) // Unbalanced array, eg "2 ; 10 ; 3"
+	{
+		LogError("[FF2 Weapons] Unbalanced attributes array '%s' for weapon %s", attributeList, classname);
+		CloseHandle(weapon);
+		return -1;
 	}
 	else
 	{
-		TF2Items_SetNumAttributes(hWeapon, 0);
+		TF2Items_SetNumAttributes(weapon, count/2);
+		new i2;
+		for(new i; i<count; i+=2)
+		{
+			new attribute=StringToInt(attributes[i]);
+			if(!attribute)
+			{
+				LogError("[FF2 Weapons] Bad weapon attribute passed: %s ; %s", attributes[i], attributes[i+1]);
+				CloseHandle(weapon);
+				return -1;
+			}
+
+			TF2Items_SetAttribute(weapon, i2, attribute, StringToFloat(attributes[i+1]));
+			i2++;
+		}
 	}
 
-	new entity=TF2Items_GiveNamedItem(client, hWeapon);
-	CloseHandle(hWeapon);
+	new entity=TF2Items_GiveNamedItem(client, weapon);
+	CloseHandle(weapon);
 	EquipPlayerWeapon(client, entity);
 	return entity;
 }
