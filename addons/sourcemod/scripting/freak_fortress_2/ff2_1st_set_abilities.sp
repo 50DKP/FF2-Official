@@ -42,7 +42,7 @@ new TFTeam:BossTeam=TFTeam_Blue;
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
-	OnRage=CreateGlobalForward("FF2_OnRage", ET_Hook, Param_Cell, Param_FloatByRef);  //Boss, distance
+	OnRage=CreateGlobalForward("FF2_OnRage", ET_Hook, Param_Cell, Param_CellByRef);  //Boss, distance
 	return APLRes_Success;
 }
 

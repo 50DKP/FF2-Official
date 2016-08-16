@@ -39,7 +39,7 @@ new bool:removeBaseJumperOnStun;
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
 	OnSuperJump=CreateGlobalForward("FF2_OnSuperJump", ET_Hook, Param_Cell, Param_CellByRef);  //Boss, super duper jump
-	OnRage=CreateGlobalForward("FF2_OnRage", ET_Hook, Param_Cell, Param_FloatByRef);  //Boss, distance
+	OnRage=CreateGlobalForward("FF2_OnRage", ET_Hook, Param_Cell, Param_CellByRef);  //Boss, distance
 	OnWeighdown=CreateGlobalForward("FF2_OnWeighdown", ET_Hook, Param_Cell);  //Boss
 	return APLRes_Success;
 }

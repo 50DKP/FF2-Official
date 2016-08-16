@@ -4545,6 +4545,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 
 	if(RoundFloat(BossCharge[boss][0])==100)
 	{
+		KvRewind(BossKV[character[boss]]);
 		if(KvJumpToKey(BossKV[character[boss]], "abilities"))
 		{
 			decl String:ability[10], String:lives[MAXRANDOMS][3];
@@ -4560,24 +4561,30 @@ public Action:OnCallForMedic(client, const String:command[], args)
 					decl String:abilityName[64];
 					KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
 					KvJumpToKey(BossKV[character[boss]], abilityName);
-					if(KvGetNum(BossKV[character[boss]], "slot", 0))
+					if(KvGetNum(BossKV[character[boss]], "slot")) // Rage is slot 0
 					{
 						continue;
 					}
 
 					KvGetString(BossKV[character[boss]], "life", ability, sizeof(ability), "");
-					if(!ability[0])
+					if(!ability[0]) // Just a regular run-of-the-mill rage
 					{
-						return Plugin_Continue;
+						if(!UseAbility(boss, pluginName, abilityName, 0))
+						{
+							return Plugin_Continue;
+						}
 					}
-					else
+					else // This rage corresponds to a specific life
 					{
 						new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
 						for(new n; n<count; n++)
 						{
 							if(StringToInt(lives[n])==BossLives[boss])
 							{
-								KvGoBack(BossKV[character[boss]]);
+								if(!UseAbility(boss, pluginName, abilityName, 0))
+								{
+									return Plugin_Continue;
+								}
 								break;
 							}
 						}
