@@ -5618,6 +5618,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 				}
 
 				decl String:ability[PLATFORM_MAX_PATH];  //FIXME: Create a new variable for the translation string later on
+				KvRewind(BossKV[character[boss]]);
 				if(KvJumpToKey(BossKV[character[boss]], "abilities"))
 				{
 					KvGotoFirstSubKey(BossKV[character[boss]]);
@@ -5632,17 +5633,17 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 							decl String:abilityName[64];
 							KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
 							KvJumpToKey(BossKV[character[boss]], abilityName);
-							if(KvGetNum(BossKV[character[boss]], "slot", 0)!=-1)
+							if(KvGetNum(BossKV[character[boss]], "slot")!=-1) // Only activate for life-loss abilities
 							{
 								continue;
 							}
 
 							KvGetString(BossKV[character[boss]], "life", ability, 10, "");
-							if(!ability[0])
+							if(!ability[0]) // Just a regular ability that doesn't care what life the boss is on
 							{
 								UseAbility(boss, pluginName, abilityName, -1);
 							}
-							else
+							else // But these do
 							{
 								decl String:stringLives[MAXRANDOMS][3];
 								new count=ExplodeString(ability, " ", stringLives, MAXRANDOMS, 3);
@@ -5651,7 +5652,6 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 									if(StringToInt(stringLives[n])==BossLives[boss])
 									{
 										UseAbility(boss, pluginName, abilityName, -1);
-										KvGoBack(BossKV[character[boss]]);
 										break;
 									}
 								}
