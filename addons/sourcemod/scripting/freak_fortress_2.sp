@@ -5661,7 +5661,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 				KvRewind(BossKV[character[boss]]);
 				KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 
-				strcopy(ability, sizeof(ability), BossLives[boss]==1 ? "Boss with Multiple Lives Left" : "Boss with 1 Life Left");
+				strcopy(ability, sizeof(ability), BossLives[boss]==1 ? "Boss with 1 Life Left" : "Boss with Multiple Lives Left");
 				for(new target=1; target<=MaxClients; target++)
 				{
 					if(IsValidClient(target) && !(FF2Flags[target] & FF2FLAG_HUDDISABLED))
