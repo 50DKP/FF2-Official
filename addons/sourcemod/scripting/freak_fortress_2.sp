@@ -6305,7 +6305,7 @@ stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:a
 			}
 		}
 	}
-	while(KvGotoNextKey(BossKV[character[boss]]));
+	while(KvGotoNextKey(BossKV[character[boss]]) && i<=MAXRANDOMS);
 
 	if(!i)
 	{
