@@ -4340,6 +4340,7 @@ public Action:BossTimer(Handle:timer)
 
 		SetClientGlow(client, -0.2);
 
+		KvRewind(BossKV[character[boss]]);
 		if(KvJumpToKey(BossKV[character[boss]], "abilities"))
 		{
 			decl String:ability[10], String:lives[MAXRANDOMS][3];
@@ -4357,17 +4358,17 @@ public Action:BossTimer(Handle:timer)
 					KvJumpToKey(BossKV[character[boss]], abilityName);
 					new slot=KvGetNum(BossKV[character[boss]], "slot", 0);
 					new buttonmode=KvGetNum(BossKV[character[boss]], "buttonmode", 0);
-					if(slot<1)
+					if(slot<1) // We don't care about rage/life-loss abilities here
 					{
 						continue;
 					}
 
 					KvGetString(BossKV[character[boss]], "life", ability, sizeof(ability), "");
-					if(!ability[0])
+					if(!ability[0]) // Just a regular ability that doesn't care what life the boss is on
 					{
 						UseAbility(boss, pluginName, abilityName, slot, buttonmode);
 					}
-					else
+					else // But these do
 					{
 						new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
 						for(new n; n<count; n++)
@@ -4375,7 +4376,6 @@ public Action:BossTimer(Handle:timer)
 							if(StringToInt(lives[n])==BossLives[boss])
 							{
 								UseAbility(boss, pluginName, abilityName, slot, buttonmode);
-								KvGoBack(BossKV[character[boss]]);
 								break;
 							}
 						}
