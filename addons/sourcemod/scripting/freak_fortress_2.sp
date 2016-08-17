@@ -4349,13 +4349,11 @@ public Action:BossTimer(Handle:timer)
 			{
 				decl String:pluginName[64];
 				KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
-				KvJumpToKey(BossKV[character[boss]], pluginName);
 				KvGotoFirstSubKey(BossKV[character[boss]]);
 				do
 				{
 					decl String:abilityName[64];
 					KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
-					KvJumpToKey(BossKV[character[boss]], abilityName);
 					new slot=KvGetNum(BossKV[character[boss]], "slot", 0);
 					new buttonmode=KvGetNum(BossKV[character[boss]], "buttonmode", 0);
 					if(slot<1) // We don't care about rage/life-loss abilities here
@@ -4530,10 +4528,6 @@ public Action:OnCallForMedic(client, const String:command[], args)
 	}
 
 	new boss=GetBossIndex(client);
-	if(boss==-1 || !Boss[boss] || !IsValidEntity(Boss[boss]))
-	{
-		return Plugin_Continue;
-	}
 
 	decl String:arg1[4], String:arg2[4];
 	GetCmdArg(1, arg1, sizeof(arg1));
@@ -4554,13 +4548,11 @@ public Action:OnCallForMedic(client, const String:command[], args)
 			{
 				decl String:pluginName[64];
 				KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
-				KvJumpToKey(BossKV[character[boss]], pluginName);
 				KvGotoFirstSubKey(BossKV[character[boss]]);
 				do
 				{
 					decl String:abilityName[64];
 					KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
-					KvJumpToKey(BossKV[character[boss]], abilityName);
 					if(KvGetNum(BossKV[character[boss]], "slot")) // Rage is slot 0
 					{
 						continue;
@@ -4595,9 +4587,6 @@ public Action:OnCallForMedic(client, const String:command[], args)
 			}
 			while(KvGotoNextKey(BossKV[character[boss]]));
 		}
-
-		new Float:position[3];
-		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 
 		decl String:sound[PLATFORM_MAX_PATH];
 		if(FindSound("ability", sound, sizeof(sound), boss, true))
@@ -5626,13 +5615,11 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 					{
 						decl String:pluginName[64];
 						KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
-						KvJumpToKey(BossKV[character[boss]], pluginName);
 						KvGotoFirstSubKey(BossKV[character[boss]]);
 						do
 						{
 							decl String:abilityName[64];
 							KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
-							KvJumpToKey(BossKV[character[boss]], abilityName);
 							if(KvGetNum(BossKV[character[boss]], "slot")!=-1) // Only activate for life-loss abilities
 							{
 								continue;
