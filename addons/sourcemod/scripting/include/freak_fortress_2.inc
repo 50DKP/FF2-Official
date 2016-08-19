@@ -456,13 +456,14 @@ forward Action:FF2_OnWeighdown(boss);
 forward Action:FF2_OnTriggerHurt(boss, triggerHurt, &Float:damage);
 
 /**
- * Called when a Boss's music begins
+ * Called when a Boss's music begins for a client
  *
+ * @param client        Client the music is starting for
  * @param path          Path to music sound file
- * @param time          Length of music
+ * @param time          Music length
  * @return              Plugin_Stop will prevent music, Plugin_Changed will change it.
  */
-forward Action:FF2_OnMusic(String:path[], &time);
+forward Action:FF2_OnMusic(client, String:path[], &time);
 
 /**
  * Called when FF2 picks a boss
