@@ -490,11 +490,10 @@ forward Action:FF2_OnAddQueuePoints(add_points[MAXPLAYERS+1]);
 /**
  * Called when FF2 picks a character set for the map
  *
- * @param charSetNum	Number of character set
- * @param charSetName	Name of character set
- * @return				You can NOT use Plugin_Stop to prevent this, but you can change charSetName and use Plugin_Changed to change the character set.  If you want to change charSetNum, then make charSetName null.
+ * @param characterSet	Name of character set
+ * @return				You can NOT use Plugin_Stop to prevent this, but you can change characterSet and return Plugin_Changed to change the character set.
  */
-forward Action:FF2_OnLoadCharacterSet(&charSetNum, String:charSetName[]);
+forward Action:FF2_OnLoadCharacterSet(String:characterSet[]);
 
 /**
  * Called when a boss loses a life

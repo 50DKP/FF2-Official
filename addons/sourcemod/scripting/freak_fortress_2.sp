@@ -142,6 +142,7 @@ new Handle:cvarDebug;
 new Handle:cvarPreroundBossDisconnect;
 
 new Handle:subpluginArray;
+new Handle:chancesArray;
 
 new Handle:FF2Cookie_QueuePoints;
 new Handle:FF2Cookie_MuteSound;
@@ -272,10 +273,6 @@ new bool:bBlockVoice[MAXSPECIALS];
 //new Float:BossSpeed[MAXSPECIALS];
 //new Float:BossRageDamage[MAXSPECIALS];
 
-new String:ChancesString[512];
-new chances[MAXSPECIALS*2];  //This is multiplied by two because it has to hold both the boss indices and chances
-new chancesIndex;
-
 public Plugin:myinfo=
 {
 	name="Freak Fortress 2",
@@ -341,7 +338,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	OnTriggerHurt=CreateGlobalForward("FF2_OnTriggerHurt", ET_Hook, Param_Cell, Param_Cell, Param_FloatByRef);
 	OnBossSelected=CreateGlobalForward("FF2_OnBossSelected", ET_Hook, Param_Cell, Param_CellByRef, Param_String, Param_Cell);  //Boss, character index, character name, preset
 	OnAddQueuePoints=CreateGlobalForward("FF2_OnAddQueuePoints", ET_Hook, Param_Array);
-	OnLoadCharacterSet=CreateGlobalForward("FF2_OnLoadCharacterSet", ET_Hook, Param_CellByRef, Param_String);
+	OnLoadCharacterSet=CreateGlobalForward("FF2_OnLoadCharacterSet", ET_Hook, Param_String);
 	OnLoseLife=CreateGlobalForward("FF2_OnLoseLife", ET_Hook, Param_Cell, Param_CellByRef, Param_Cell);  //Boss, lives left, max lives
 	OnAlivePlayersChanged=CreateGlobalForward("FF2_OnAlivePlayersChanged", ET_Hook, Param_Cell, Param_Cell);  //Players, bosses
 	OnParseUnknownVariable=CreateGlobalForward("FF2_OnParseUnknownVariable", ET_Hook, Param_String, Param_FloatByRef);  //Variable, value
@@ -732,118 +729,87 @@ public DisableFF2()
 	changeGamemode=0;
 }
 
-public FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
+public FindCharacters()
 {
-	decl String:config[PLATFORM_MAX_PATH], String:key[4], String:charset[42];
+	chancesArray=CreateArray();
+
+	decl String:config[PLATFORM_MAX_PATH], String:charset[42];
 	Specials=0;
 	BuildPath(Path_SM, config, sizeof(config), "%s/%s", FF2_SETTINGS, BOSS_CONFIG);
 
 	if(!FileExists(config))
 	{
-		LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
+		LogError("[FF2 Bosses] Disabling Freak Fortress 2 - can not find %s!", config);
 		Enabled2=false;
 		return;
 	}
 
-	new Handle:Kv=CreateKeyValues("");
-	FileToKeyValues(Kv, config);
-	new NumOfCharSet=FF2CharSet;
+	new Handle:kv=CreateKeyValues("");
+	FileToKeyValues(kv, config);
 
 	new Action:action;
 	Call_StartForward(OnLoadCharacterSet);
-	Call_PushCellRef(NumOfCharSet);
 	strcopy(charset, sizeof(charset), FF2CharSetString);
 	Call_PushStringEx(charset, sizeof(charset), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_Finish(action);
 	if(action==Plugin_Changed)
 	{
-		new i=-1;
 		if(strlen(charset))
 		{
-			KvRewind(Kv);
-			for(i=0; ; i++)
+			new i;
+
+			KvRewind(kv);
+			while(KvGotoNextKey(kv))
 			{
-				KvGetSectionName(Kv, config, sizeof(config));
-				if(!StrEqual(config, charset, false))
+				KvGetSectionName(kv, config, sizeof(config));
+				if(StrEqual(config, charset))
 				{
 					FF2CharSet=i;
 					strcopy(FF2CharSetString, sizeof(FF2CharSetString), charset);
-					KvGotoFirstSubKey(Kv);
 					break;
 				}
-
-				if(!KvGotoNextKey(Kv))
-				{
-					i=-1;
-					break;
-				}
+				i++;
 			}
 		}
+	}
 
-		if(i==-1)
+	KvRewind(kv);
+	KvJumpToKey(kv, FF2CharSetString); // This *should* always return true
+
+	if(KvGotoFirstSubKey(kv, false))
+	{
+		new i;
+		do
 		{
-			FF2CharSet=NumOfCharSet;
-			for(i=0; i<FF2CharSet; i++)
+			KvGetSectionName(kv, config, sizeof(config));
+			int chance=KvGetNum(kv, NULL_STRING, -1);
+
+			if(chance<0)
 			{
-				KvGotoNextKey(Kv);
-			}
-			KvGotoFirstSubKey(Kv);
-			KvGetSectionName(Kv, FF2CharSetString, sizeof(FF2CharSetString));
-		}
-	}
-
-	KvRewind(Kv);
-	for(new i; i<FF2CharSet; i++)
-	{
-		KvGotoNextKey(Kv);
-	}
-
-	for(new i=1; i<MAXSPECIALS; i++)
-	{
-		IntToString(i, key, sizeof(key));
-		KvGetString(Kv, key, config, sizeof(config));
-		if(!config[0])  //TODO: Make this more user-friendly (don't immediately break-they might have missed a number)
-		{
-			break;
-		}
-		LoadCharacter(config);
-	}
-
-	KvGetString(Kv, "chances", ChancesString, sizeof(ChancesString));
-	CloseHandle(Kv);
-
-	if(ChancesString[0])
-	{
-		decl String:stringChances[MAXSPECIALS*2][8];
-
-		new amount=ExplodeString(ChancesString, ";", stringChances, MAXSPECIALS*2, 8);
-		if(amount % 2)
-		{
-			LogError("[FF2 Bosses] Invalid chances string, disregarding chances");
-			strcopy(ChancesString, sizeof(ChancesString), "");
-			amount=0;
-		}
-
-		chances[0]=StringToInt(stringChances[0]);
-		chances[1]=StringToInt(stringChances[1]);
-		for(chancesIndex=2; chancesIndex<amount; chancesIndex++)
-		{
-			if(chancesIndex % 2)
-			{
-				if(StringToInt(stringChances[chancesIndex])<=0)
-				{
-					LogError("[FF2 Bosses] Character %i cannot have a zero or negative chance, disregarding chances", chancesIndex-1);
-					strcopy(ChancesString, sizeof(ChancesString), "");
-					break;
-				}
-				chances[chancesIndex]=StringToInt(stringChances[chancesIndex])+chances[chancesIndex-2];
+				LogError("[FF2 Bosses] Character %s has an invalid chance - assuming 0", config);
+				PushArrayCell(chancesArray, GetArrayCell(chancesArray, i-1)); // Chances are cumulative to make it easier to compute
 			}
 			else
 			{
-				chances[chancesIndex]=StringToInt(stringChances[chancesIndex]);
+				PushArrayCell(chancesArray, chance+GetArrayCell(chancesArray, i-1)); // Chances are cumulative to make it easier to compute
 			}
+
+			if(i>0)
+			{
+				LoadCharacter(config);
+			}
+			i++;
 		}
+		while(KvGotoNextKey(kv, false));
 	}
+	else
+	{
+		LogError("[FF2 Bosses] Disabling Freak Fortress 2 - no bosses in character set %s!", FF2CharSetString);
+		Enabled2=false;
+		return;
+	}
+
+	CloseHandle(kv);
 
 	if(FileExists("sound/saxton_hale/9000.wav", true))
 	{
@@ -6400,22 +6366,19 @@ public bool:PickCharacter(boss, companion)
 
 		for(new tries; tries<100; tries++)
 		{
-			if(ChancesString[0])
-			{
-				new characterIndex=chancesIndex;  //Don't touch chancesIndex since it doesn't get reset
-				new i=GetRandomInt(0, chances[characterIndex-1]);
+			new chance=GetRandomInt(0, GetArrayCell(chancesArray, GetArraySize(chancesArray)-1));
 
-				while(characterIndex>=2 && i<chances[characterIndex-1])
-				{
-					character[boss]=chances[characterIndex-2]-1;
-					characterIndex-=2;
-				}
-			}
-			else
+			new index;
+			while(GetArrayCell(chancesArray, index)<chance)
 			{
-				character[boss]=GetRandomInt(0, Specials-1);
+				index++;
 			}
+			character[boss]=index;
 
+			// TODO: It would be awesome if we didn't have to check for this.
+			// Then we wouldn't need to wrap all of this in a for loop.
+			// FindCharacters() doesn't deal with the individual boss KVs though...
+			// And supplying 0 as the boss's chance won't load the character.
 			KvRewind(BossKV[character[boss]]);
 			if(KvGetNum(BossKV[character[boss]], "hidden"))
 			{
