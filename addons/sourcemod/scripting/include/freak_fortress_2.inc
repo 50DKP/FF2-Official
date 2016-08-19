@@ -24,7 +24,7 @@
 #define _FF2_included
 
 /**
- * Is Freak Fortress enabled?
+ * Is Freak Fortress 2 enabled?
  *
  * @return False if FF2 is disabled
  *         True if FF2 is enabled
@@ -60,14 +60,15 @@ native FF2_GetFF2Version(version[]=0);
 /**
  * Gets current round state
  *
- * @return 0 - in setup
- *         1 - round is in progress (due to a bug in arena mode, stalemate will also return 1)
- *         2 - someone wins
+ * @return -1 - game is still loading
+ *          0 - in setup
+ *          1 - round is in progress (due to a bug in arena mode, stalemate will also return 1)
+ *          2 - someone wins
  */
 native FF2_GetRoundState();
 
 /**
- * Gets UserID of current Boss
+ * Gets the userid of the boss
  *
  * @param boss      Boss's index
  * @return          Userid of boss (-1 if Boss does not exist)
@@ -89,26 +90,22 @@ native FF2_GetBossIndex(client);
 native TFTeam:FF2_GetBossTeam();
 
 /**
- * Gets the character name of the Boss
+ * Gets the character name of the boss
  *
  * @param boss              Boss's index
- * @param bossName          Buffer for boss' character name
+ * @param bossName          Buffer for boss's character name
  * @param length            Length of buffer string
- * @param bossMeaning       0 - "boss" parameter means index of current Boss
- *                          1 - "boss" parameter means number of Boss in characters.cfg-1
  * @return                  True if boss exists, false if not
  */
-native bool:FF2_GetBossName(boss=0, String:bossName[], length, bossMeaning=0);
+native bool:FF2_GetBossName(boss=0, String:bossName[], length);
 
 /**
  * Gets a Boss's KV handle
  *
  * @param boss              Boss's index
- * @param bossMeaning       0 - 'boss' parameter refers to the index of the boss
- *                          1 - 'boss' parameter refers to the index of the boss in characters.cfg-1
- * @return                  Handle of Boss's keyvalues
+ * @return                  Boss's KV handle or INVALID_HANDLE if boss index is invalid
  */
-native Handle:FF2_GetBossKV(boss, bossMeaning=0);
+native Handle:FF2_GetBossKV(boss=0);
 
 /**
  * Gets the current health value of the Boss
@@ -150,7 +147,7 @@ native FF2_SetBossMaxHealth(boss, health);
  * @param boss      Boss's index
  * @return          Number of lives the boss has remaining
  */
-native FF2_GetBossLives(boss);
+native FF2_GetBossLives(boss=0);
 
 /**
  * Sets the current number of lives of the Boss
@@ -167,7 +164,7 @@ native FF2_SetBossLives(boss, lives);
  * @param boss      Boss's index
  * @return          Max number of lives of the Boss
  */
-native FF2_GetBossMaxLives(boss);
+native FF2_GetBossMaxLives(boss=0);
 
 /**
  * Sets the max number of lives of the Boss
@@ -306,7 +303,7 @@ native FF2_GetAbilityArgumentString(boss, const String:pluginName[], const Strin
  *                          1 - as usual, used for brave jump or teleport
  *                          2 - other charged abilities
  * @param buttonMode    How to activate the ability
- *                          0 - by taunt
+ *                          0 - by calling for medic
  *                          1 - by right mouse button or duck
  *                          2 - by reload button
  * @noreturn
@@ -314,7 +311,7 @@ native FF2_GetAbilityArgumentString(boss, const String:pluginName[], const Strin
 native FF2_UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, buttonMode=0);
 
 /**
- * Gets a client's flags for FF2
+ * Gets a client's FF2 flags
  *
  * @param client    Client's index
  * @return          Client's FF2 flags
@@ -322,7 +319,7 @@ native FF2_UseAbility(boss, const String:pluginName[], const String:abilityName[
 native FF2_GetFF2Flags(client);
 
 /**
- * Sets a client's flags for FF2
+ * Sets a client's FF2 flags
  *
  * @param client    Client's index
  * @param flags     New flag values
@@ -412,7 +409,7 @@ native bool:FF2_Debug();
  *                          0 - Rage
  *                          1 - Jump or teleport
  *                          2 - Other
- * @param status        Status of ability
+ * @param status        Status of ability (FF2_OnAbility only)
  *                          0 - Not in use
  *                          1 - Recharging
  *                          2 - Ready
@@ -454,7 +451,7 @@ forward Action:FF2_OnWeighdown(boss);
  * @param boss          Boss's index
  * @param triggerHurt   Entity index of "trigger_hurt"
  * @param damage        Damage by "trigger_hurt".  Cutomizable.
- * @return              Plugin_Stop will prevent forward, Plugin_Changed will change damage.
+ * @return              Plugin_Stop will prevent damage, Plugin_Changed will change damage.
  */
 forward Action:FF2_OnTriggerHurt(boss, triggerHurt, &Float:damage);
 

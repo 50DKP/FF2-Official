@@ -7502,61 +7502,32 @@ public Native_GetBossTeam(Handle:plugin, numParams)
 	return _:GetBossTeam();
 }
 
-public bool:GetBossName(boss, String:bossName[], length, clientMeaning)
+public bool:GetBossName(boss, String:bossName[], length)
 {
-	if(clientMeaning)  //characters.cfg
+	if(boss>=0 && boss<=MaxClients && character[boss]>=0 && character[boss]<MAXSPECIALS && BossKV[character[boss]]!=INVALID_HANDLE)
 	{
-		if(boss<0 || !BossKV[boss])
-		{
-			return false;
-		}
-		KvRewind(BossKV[boss]);
-		KvGetString(BossKV[boss], "name", bossName, length);
-	}
-	else  //character[] array
-	{
-		if(boss<0 || character[boss]<0 || !BossKV[character[boss]])
-		{
-			return false;
-		}
 		KvRewind(BossKV[character[boss]]);
 		KvGetString(BossKV[character[boss]], "name", bossName, length);
+		return true;
 	}
-	return true;
+	return false;
 }
 
 public Native_GetBossName(Handle:plugin, numParams)
 {
 	new length=GetNativeCell(3);
 	decl String:bossName[length];
-	new bool:bossExists=GetBossName(GetNativeCell(1), bossName, length, GetNativeCell(4));
+	new bool:bossExists=GetBossName(GetNativeCell(1), bossName, length);
 	SetNativeString(2, bossName, length);
 	return bossExists;
 }
 
-public Handle:GetBossKV(boss, bool:bossMeaning)
+public Handle:GetBossKV(boss)
 {
-	if(bossMeaning)  //characters.cfg
+	if(boss>=0 && boss<=MaxClients && character[boss]>=0 && character[boss]<MAXSPECIALS && BossKV[character[boss]]!=INVALID_HANDLE)
 	{
-		if(boss!=-1 && boss<Specials)
-		{
-			if(BossKV[boss]!=INVALID_HANDLE)
-			{
-				KvRewind(BossKV[boss]);
-			}
-			return BossKV[boss];
-		}
-	}
-	else  //character[] array
-	{
-		if(boss!=-1 && boss<=MaxClients && character[boss]!=-1 && character[boss]<MAXSPECIALS)
-		{
-			if(BossKV[character[boss]]!=INVALID_HANDLE)
-			{
-				KvRewind(BossKV[character[boss]]);
-			}
-			return BossKV[character[boss]];
-		}
+		KvRewind(BossKV[character[boss]]);
+		return BossKV[character[boss]];
 	}
 	return INVALID_HANDLE;
 }
