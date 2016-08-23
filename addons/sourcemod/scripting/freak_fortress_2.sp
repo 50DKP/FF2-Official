@@ -201,6 +201,7 @@ new FF2CharSet;
 new validCharsets[64];
 new String:FF2CharSetString[42];
 new bool:isCharSetSelected;
+new bool:soundlastman=true;
 
 new healthBar=-1;
 new g_Monoculus=-1;
@@ -1313,6 +1314,7 @@ stock bool:CheckToChangeMapDoors()
 
 public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 {
+	soundlastman=true;
 	if(changeGamemode==1)
 	{
 		EnableFF2();
@@ -4869,13 +4871,14 @@ public Action:CheckAlivePlayers(Handle:timer)
 	{
 		ForceTeamWin(BossTeam);
 	}
-	else if(RedAlivePlayers==1 && BlueAlivePlayers && Boss[0] && !DrawGameTimer)
+	else if(RedAlivePlayers==1 && BlueAlivePlayers && Boss[0] && !DrawGameTimer && soundlastman)
 	{
 		decl String:sound[PLATFORM_MAX_PATH];
-		if(FindSound("lastman", sound, sizeof(sound)))
+		if(RandomSound("sound_lastman", sound, sizeof(sound)))
 		{
-			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
-			EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
+			EmitSoundToAll(sound);
+			EmitSoundToAll(sound);
+			soundlastman=false;
 		}
 	}
 	else if(!PointType && RedAlivePlayers<=AliveToEnable && !executed)
