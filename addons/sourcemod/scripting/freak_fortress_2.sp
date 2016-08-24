@@ -7535,7 +7535,7 @@ public Handle:GetBossKV(boss)
 
 public Native_GetBossKV(Handle:plugin, numParams)
 {
-	return _:GetBossKV(GetNativeCell(1), bool:GetNativeCell(2));
+	return _:GetBossKV(GetNativeCell(1));
 }
 
 public GetBossHealth(boss)
