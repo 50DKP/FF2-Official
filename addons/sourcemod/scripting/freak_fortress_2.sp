@@ -5251,7 +5251,7 @@ public Action:OnJoinTeam(client, const String:command[], args)
 	// autoteam doesn't come with arguments
 	if(StrEqual(command, "autoteam", false))
 	{
-		new oldTeam=GetClientTeam(client);
+		new team=_:TFTeam_Unassigned, oldTeam=GetClientTeam(client);
 		if(IsBoss(client))
 		{
 			team=BossTeam;
