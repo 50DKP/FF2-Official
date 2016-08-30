@@ -120,7 +120,7 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			if(IsClientInGame(client) && CloneOwnerIndex[client]!=-1 && TF2_GetClientTeam(client)==BossTeam)  //FIXME: IsClientInGame() shouldn't be needed
 			{
 				CloneOwnerIndex[client]=-1;
-				FF2_SetFF2Flags(client, FF2_GetFF2Flags(client) & ~FF2FLAG_CLASSTIMERDISABLED);
+				FF2_SetFF2Flags(client, FF2_GetFF2Flags(client) & ~(FF2FLAG_CLASSTIMERDISABLED|FF2FLAG_ALLOWSPAWNINBOSSTEAM));
 			}
 		}
 	}
@@ -133,7 +133,7 @@ public OnClientDisconnect(client)
 	if(CloneOwnerIndex[client]!=-1)
 	{
 		CloneOwnerIndex[client]=-1;
-		FF2_SetFF2Flags(client, FF2_GetFF2Flags(client) & ~FF2FLAG_CLASSTIMERDISABLED);
+		FF2_SetFF2Flags(client, FF2_GetFF2Flags(client) & ~(FF2FLAG_CLASSTIMERDISABLED|FF2FLAG_ALLOWSPAWNINBOSSTEAM));
 	}
 }
 
@@ -871,7 +871,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 			if(CloneOwnerIndex[target]==boss)
 			{
 				CloneOwnerIndex[target]=-1;
-				FF2_SetFF2Flags(target, FF2_GetFF2Flags(target) & ~FF2FLAG_CLASSTIMERDISABLED);
+				FF2_SetFF2Flags(target, FF2_GetFF2Flags(target) & ~(FF2FLAG_CLASSTIMERDISABLED|FF2FLAG_ALLOWSPAWNINBOSSTEAM));
 				if(IsClientInGame(target) && TF2_GetClientTeam(target)==BossTeam)
 				{
 					TF2_ChangeClientTeam(target, (BossTeam==TFTeam_Blue) ? (TFTeam_Red) : (TFTeam_Blue));
@@ -883,7 +883,7 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 	if(CloneOwnerIndex[client]!=-1 && TF2_GetClientTeam(client)==BossTeam)  //Switch clones back to the other team after they die
 	{
 		CloneOwnerIndex[client]=-1;
-		FF2_SetFF2Flags(client, FF2_GetFF2Flags(client) & ~FF2FLAG_CLASSTIMERDISABLED);
+		FF2_SetFF2Flags(client, FF2_GetFF2Flags(client) & ~(FF2FLAG_CLASSTIMERDISABLED|FF2FLAG_ALLOWSPAWNINBOSSTEAM));
 		TF2_ChangeClientTeam(client, BossTeam==TFTeam_Blue ? TFTeam_Red : TFTeam_Blue);
 	}
 	return Plugin_Continue;
