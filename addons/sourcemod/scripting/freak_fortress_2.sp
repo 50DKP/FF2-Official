@@ -4597,7 +4597,7 @@ public Action:OnJoinTeam(client, const String:command[], args)
 	// autoteam doesn't come with arguments
 	if(StrEqual(command, "autoteam", false))
 	{
-		new TFTeam:oldTeam=TF2_GetClientTeam(client);
+		new TFTeam:team=TFTeam_Unassigned, TFTeam:oldTeam=TF2_GetClientTeam(client);
 		if(IsBoss(client))
 		{
 			team=BossTeam;
