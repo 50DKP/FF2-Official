@@ -5243,7 +5243,7 @@ public Action:OnChangeClass(client, const String:command[], args)
 
 public Action:OnJoinTeam(client, const String:command[], args)
 {
-	if(!Enabled || !args || RoundCount<arenaRounds)
+	if(!Enabled || RoundCount<arenaRounds)
 	{
 		return Plugin_Continue;
 	}
@@ -5266,6 +5266,11 @@ public Action:OnJoinTeam(client, const String:command[], args)
 			ChangeClientTeam(client, team);
 		}
 		return Plugin_Handled;
+	}
+
+	if(!args)
+	{
+		return Plugin_Continue;
 	}
 
 	new team=_:TFTeam_Unassigned, oldTeam=GetClientTeam(client), String:teamString[10];
