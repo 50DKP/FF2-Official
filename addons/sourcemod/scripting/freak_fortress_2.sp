@@ -4597,23 +4597,16 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 
 	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
-		if(CheckRoundState()!=1)
+		if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
 		{
-			if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
-			{
-				FF2flags[client]|=FF2FLAG_HASONGIVED;
-				RemovePlayerBack(client, {57, 133, 405, 444, 608, 642}, 7);
-				RemovePlayerTarge(client);
-				TF2_RemoveAllWeapons(client);
-				TF2_RegeneratePlayer(client);
-				CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			}
-			CreateTimer(0.2, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			FF2flags[client]|=FF2FLAG_HASONGIVED;
+			RemovePlayerBack(client, {57, 133, 405, 444, 608, 642}, 7);
+			RemovePlayerTarge(client);
+			TF2_RemoveAllWeapons(client);
+			TF2_RegeneratePlayer(client);
+			CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
-		else
-		{
-			CreateTimer(0.1, CheckItems, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-		}
+		CreateTimer(0.2, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
