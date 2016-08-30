@@ -5248,6 +5248,26 @@ public Action:OnJoinTeam(client, const String:command[], args)
 		return Plugin_Continue;
 	}
 
+	// autoteam doesn't come with arguments
+	if(StrEqual(command, "autoteam", false))
+	{
+		new oldTeam=GetClientTeam(client);
+		if(IsBoss(client))
+		{
+			team=BossTeam;
+		}
+		else
+		{
+			team=OtherTeam;
+		}
+
+		if(team!=oldTeam)
+		{
+			ChangeClientTeam(client, team);
+		}
+		return Plugin_Handled;
+	}
+
 	new team=_:TFTeam_Unassigned, oldTeam=GetClientTeam(client), String:teamString[10];
 	GetCmdArg(1, teamString, sizeof(teamString));
 
