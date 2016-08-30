@@ -4589,7 +4589,32 @@ public Action:OnChangeClass(client, const String:command[], args)
 
 public Action:OnJoinTeam(client, const String:command[], args)
 {
-	if(!Enabled || !args || RoundCount<arenaRounds)
+	if(!Enabled || RoundCount<arenaRounds)
+	{
+		return Plugin_Continue;
+	}
+
+	// autoteam doesn't come with arguments
+	if(StrEqual(command, "autoteam", false))
+	{
+		new TFTeam:oldTeam=TF2_GetClientTeam(client);
+		if(IsBoss(client))
+		{
+			team=BossTeam;
+		}
+		else
+		{
+			team=OtherTeam;
+		}
+
+		if(team!=oldTeam)
+		{
+			TF2_ChangeClientTeam(client, team);
+		}
+		return Plugin_Handled;
+	}
+
+	if(!args)
 	{
 		return Plugin_Continue;
 	}
