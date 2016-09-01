@@ -4499,26 +4499,27 @@ stock SetArenaCapEnableTime(Float:time)
 
 public OnClientPostAdminCheck(client)
 {
+	// TODO: Hook these inside of EnableFF2() or somewhere instead
+	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+
+	FF2flags[client]=0;
+	Damage[client]=0;
+	uberTarget[client]=-1;
+
+	if(AreClientCookiesCached(client))
+	{
+		new String:buffer[24];
+		GetClientCookie(client, FF2Cookies, buffer, sizeof(buffer));
+		if(!buffer[0])
+		{
+			SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
+			//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
+		}
+	}
+
 	if(Enabled)
 	{
-		SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
-		SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
-
-		FF2flags[client]=0;
-		Damage[client]=0;
-		uberTarget[client]=-1;
-
-		if(AreClientCookiesCached(client))
-		{
-			new String:buffer[24];
-			GetClientCookie(client, FF2Cookies, buffer, sizeof(buffer));
-			if(!buffer[0])
-			{
-				SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
-				//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
-			}
-		}
-
 		//We use the 0th index here because client indices can change.
 		//If this is false that means music is disabled for all clients, so don't play it for new clients either.
 		if(playBGM[0])
