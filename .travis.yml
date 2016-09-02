@@ -6,6 +6,7 @@ addons:
     artifacts:
         paths:
             - $(git ls-files -o | grep "\.smx" | tr "\n" ":")
+        debug: true
     apt:
         packages:
             - lib32stdc++6
