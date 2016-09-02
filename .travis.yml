@@ -3,7 +3,15 @@ sudo: false
 
 # Install some apt packages needed for spcomp
 addons:
-    artifacts: true
+    artifacts:
+        paths:
+            - addons/sourcemod/scripting/compiled/freak_fortress_2.smx
+            - addons/sourcemod/scripting/compiled/freak_fortress_2/default_abilities.smx
+            - addons/sourcemod/scripting/compiled/freak_fortress_2/easter_abilities.smx
+            - addons/sourcemod/scripting/compiled/freak_fortress_2/ff2_1st_set_abilities.smx
+            - addons/sourcemod/scripting/compiled/freak_fortress_2/ff2_external_integration.smx
+            - addons/sourcemod/scripting/compiled/freak_fortress_2/rage_overlay.smx
+            - addons/sourcemod/scripting/compiled/freak_fortress_2/special_noanims.smx
     apt:
         packages:
             - lib32stdc++6
