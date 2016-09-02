@@ -36,10 +36,10 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "12"
+#define STABLE_REVISION "13"
 #define DEV_REVISION "Beta"
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.12
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.13
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
@@ -297,7 +297,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.9",
 	"1.10.10",
 	"1.10.11",
-	"1.10.12"
+	"1.10.12",
+	"1.10.13"
 };
 
 static const String:ff2versiondates[][]=
@@ -377,13 +378,20 @@ static const String:ff2versiondates[][]=
 	"May 7, 2016",			//1.10.9
 	"August 1, 2016",		//1.10.10
 	"August 1, 2016",		//1.10.11
-	"August 4, 2016"		//1.10.12
+	"August 4, 2016",		//1.10.12
+	"September 1, 2016"		//1.10.13
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 76:  //1.10.13
+		{
+			DrawPanelText(panel, "1) Fixed insta-backstab issues (Wliu from tom0034)");
+			DrawPanelText(panel, "2) Fixed team-changing exploit (Wliu from Edge_)");
+			DrawPanelText(panel, "3) [Server] Fixed an error message logging the wrong values (Wliu)");
+		}
 		case 75:  //1.10.12
 		{
 			DrawPanelText(panel, "1) Actually fixed BGMs not looping (Wliu from WakaFlocka, again)");
