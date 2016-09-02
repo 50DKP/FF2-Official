@@ -36,10 +36,10 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "12"
+#define STABLE_REVISION "13"
 //#define DEV_REVISION "Beta"
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.12
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.13
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
@@ -297,7 +297,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.9",
 	"1.10.10",
 	"1.10.11",
-	"1.10.12"
+	"1.10.12",
+	"1.10.13"
 };
 
 static const String:ff2versiondates[][]=
@@ -377,13 +378,20 @@ static const String:ff2versiondates[][]=
 	"May 7, 2016",			//1.10.9
 	"August 1, 2016",		//1.10.10
 	"August 1, 2016",		//1.10.11
-	"August 4, 2016"		//1.10.12
+	"August 4, 2016",		//1.10.12
+	"September 1, 2016"		//1.10.13
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 76:  //1.10.13
+		{
+			DrawPanelText(panel, "1) Fixed insta-backstab issues (Wliu from tom0034)");
+			DrawPanelText(panel, "2) Fixed team-changing exploit (Wliu from Edge_)");
+			DrawPanelText(panel, "3) [Server] Fixed an error message logging the wrong values (Wliu)");
+		}
 		case 75:  //1.10.12
 		{
 			DrawPanelText(panel, "1) Actually fixed BGMs not looping (Wliu from WakaFlocka, again)");
@@ -4499,26 +4507,27 @@ stock SetArenaCapEnableTime(Float:time)
 
 public OnClientPostAdminCheck(client)
 {
+	// TODO: Hook these inside of EnableFF2() or somewhere instead
+	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
+	SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
+
+	FF2flags[client]=0;
+	Damage[client]=0;
+	uberTarget[client]=-1;
+
+	if(AreClientCookiesCached(client))
+	{
+		new String:buffer[24];
+		GetClientCookie(client, FF2Cookies, buffer, sizeof(buffer));
+		if(!buffer[0])
+		{
+			SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
+			//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
+		}
+	}
+
 	if(Enabled)
 	{
-		SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage);
-		SDKHook(client, SDKHook_OnTakeDamagePost, OnTakeDamagePost);
-
-		FF2flags[client]=0;
-		Damage[client]=0;
-		uberTarget[client]=-1;
-
-		if(AreClientCookiesCached(client))
-		{
-			new String:buffer[24];
-			GetClientCookie(client, FF2Cookies, buffer, sizeof(buffer));
-			if(!buffer[0])
-			{
-				SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
-				//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
-			}
-		}
-
 		//We use the 0th index here because client indices can change.
 		//If this is false that means music is disabled for all clients, so don't play it for new clients either.
 		if(playBGM[0])
@@ -4597,23 +4606,16 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 
 	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
 	{
-		if(CheckRoundState()!=1)
+		if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
 		{
-			if(!(FF2flags[client] & FF2FLAG_HASONGIVED))
-			{
-				FF2flags[client]|=FF2FLAG_HASONGIVED;
-				RemovePlayerBack(client, {57, 133, 405, 444, 608, 642}, 7);
-				RemovePlayerTarge(client);
-				TF2_RemoveAllWeapons(client);
-				TF2_RegeneratePlayer(client);
-				CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-			}
-			CreateTimer(0.2, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			FF2flags[client]|=FF2FLAG_HASONGIVED;
+			RemovePlayerBack(client, {57, 133, 405, 444, 608, 642}, 7);
+			RemovePlayerTarge(client);
+			TF2_RemoveAllWeapons(client);
+			TF2_RegeneratePlayer(client);
+			CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
-		else
-		{
-			CreateTimer(0.1, CheckItems, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-		}
+		CreateTimer(0.2, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
@@ -5250,7 +5252,32 @@ public Action:OnChangeClass(client, const String:command[], args)
 
 public Action:OnJoinTeam(client, const String:command[], args)
 {
-	if(!Enabled || !args || RoundCount<arenaRounds)
+	if(!Enabled || RoundCount<arenaRounds)
+	{
+		return Plugin_Continue;
+	}
+
+	// autoteam doesn't come with arguments
+	if(StrEqual(command, "autoteam", false))
+	{
+		new team=_:TFTeam_Unassigned, oldTeam=GetClientTeam(client);
+		if(IsBoss(client))
+		{
+			team=BossTeam;
+		}
+		else
+		{
+			team=OtherTeam;
+		}
+
+		if(team!=oldTeam)
+		{
+			ChangeClientTeam(client, team);
+		}
+		return Plugin_Handled;
+	}
+
+	if(!args)
 	{
 		return Plugin_Continue;
 	}
