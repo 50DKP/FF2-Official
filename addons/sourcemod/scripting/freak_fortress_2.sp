@@ -258,6 +258,7 @@ enum Operators
 
 new Specials;
 new Handle:BossKV[MAXSPECIALS];
+new Handle:AbilityKV[MAXSPECIALS];
 new Handle:PreAbility;
 new Handle:OnAbility;
 new Handle:OnMusic;
@@ -899,18 +900,21 @@ public LoadCharacter(const String:characterName[])
 
 	if(KvJumpToKey(BossKV[Specials], "abilities"))
 	{
-		KvGotoFirstSubKey(BossKV[Specials]);
-		do
+		KvCopySubkeys(BossKV[Specials], AbilityKV[Specials]);
+		if(KvGotoFirstSubKey(BossKV[Specials]))
 		{
 			decl String:pluginName[64];
-			KvGetSectionName(BossKV[Specials], pluginName, sizeof(pluginName));
-			if(FindStringInArray(subpluginArray, pluginName)<0)
+			do
 			{
-				LogError("[FF2 Bosses] Character %s needs plugin %s!", characterName, pluginName);
-				return;
+				KvGetSectionName(BossKV[Specials], pluginName, sizeof(pluginName));
+				if(FindStringInArray(subpluginArray, pluginName)<0)
+				{
+					LogError("[FF2 Bosses] Character %s needs plugin %s!", characterName, pluginName);
+					return;
+				}
 			}
+			while(KvGotoNextKey(BossKV[Specials]));
 		}
-		while(KvGotoNextKey(BossKV[Specials]));
 	}
 	KvRewind(BossKV[Specials]);
 
@@ -7741,10 +7745,9 @@ public bool:HasAbility(boss, const String:pluginName[], const String:abilityName
 		return false;
 	}
 
-	KvRewind(BossKV[character[boss]]);
-	if(KvJumpToKey(BossKV[character[boss]], "abilities")
-	&& KvJumpToKey(BossKV[character[boss]], pluginName)
-	&& KvJumpToKey(BossKV[character[boss]], abilityName))
+	KvRewind(AbilityKV[character[boss]]);
+	if(KvJumpToKey(AbilityKV[character[boss]], pluginName)
+	&& KvJumpToKey(AbilityKV[character[boss]], abilityName))
 	{
 		return true;
 	}
