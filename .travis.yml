@@ -3,10 +3,7 @@ sudo: false
 
 # Install some apt packages needed for spcomp
 addons:
-    artifacts:
-        paths:
-            - $(git ls-files -o | grep "\.smx" | tr "\n" ":")
-        debug: true
+    artifacts: true
     apt:
         packages:
             - lib32stdc++6
