@@ -3865,6 +3865,7 @@ stock SetArenaCapEnableTime(Float:time)
 
 public OnClientPostAdminCheck(client)
 {
+	// TODO: Hook these inside of EnableFF2() or somewhere instead
 	SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamageAlive);
 	SDKHook(client, SDKHook_OnTakeDamageAlivePost, OnTakeDamageAlivePost);
 

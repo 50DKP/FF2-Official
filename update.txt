@@ -4,12 +4,13 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.10.12"
-			"Previous"	"1.10.11"
+			"Latest"	"1.10.13"
+			"Previous"	"1.10.12"
 		}
 
-		"Notes"			"Actually fixed BGMs not looping (Wliu from WakaFlocka, again)"
-		"Notes"			"Fixed new clients not respecting the current music state (Wliu from shadow93)"
+		"Notes"			"Fixed insta-backstab issues"
+		"Notes"			"Fixed team-changing exploit"
+		"Notes"			"[Server] Fixed an error message logging the wrong values"
 	}
 
 	"Files"
