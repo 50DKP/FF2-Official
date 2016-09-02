@@ -3,8 +3,11 @@ sudo: false
 
 # Install some apt packages needed for spcomp
 addons:
-    apt_packages:
-        - lib32stdc++6
+    artifacts:
+        - true
+    apt:
+        packages:
+            - lib32stdc++6
 
 # Set the build environment
 env:
