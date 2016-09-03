@@ -6241,7 +6241,7 @@ stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityNa
 {
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		return KvGetNum(BossKV[character[boss]], argument, defaultValue);
+		return KvGetNum(AbilityKV[character[boss]], argument, defaultValue);
 	}
 	return 0;
 }
@@ -6250,7 +6250,7 @@ stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const Strin
 {
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		return KvGetFloat(BossKV[character[boss]], argument, defaultValue);
+		return KvGetFloat(AbilityKV[character[boss]], argument, defaultValue);
 	}
 	return 0.0;
 }
@@ -6259,7 +6259,7 @@ stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abi
 {
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		KvGetString(BossKV[character[boss]], argument, abilityString, length, defaultValue);
+		KvGetString(AbilityKV[character[boss]], argument, abilityString, length, defaultValue);
 	}
 }
 
