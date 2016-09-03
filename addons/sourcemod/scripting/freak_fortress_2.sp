@@ -258,7 +258,6 @@ enum Operators
 
 new Specials;
 new Handle:BossKV[MAXSPECIALS];
-new Handle:AbilityKV[MAXSPECIALS];
 new Handle:PreAbility;
 new Handle:OnAbility;
 new Handle:OnMusic;
@@ -900,8 +899,6 @@ public LoadCharacter(const String:characterName[])
 
 	if(KvJumpToKey(BossKV[Specials], "abilities"))
 	{
-		AbilityKV[Specials]=CreateKeyValues("abilities");
-		KvCopySubkeys(BossKV[Specials], AbilityKV[Specials]);
 		if(KvGotoFirstSubKey(BossKV[Specials]))
 		{
 			decl String:pluginName[64];
@@ -6241,7 +6238,7 @@ stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityNa
 {
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		return KvGetNum(AbilityKV[character[boss]], argument, defaultValue);
+		return KvGetNum(BossKV[character[boss]], argument, defaultValue);
 	}
 	return 0;
 }
@@ -6250,7 +6247,7 @@ stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const Strin
 {
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		return KvGetFloat(AbilityKV[character[boss]], argument, defaultValue);
+		return KvGetFloat(BossKV[character[boss]], argument, defaultValue);
 	}
 	return 0.0;
 }
@@ -6259,7 +6256,7 @@ stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abi
 {
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		KvGetString(AbilityKV[character[boss]], argument, abilityString, length, defaultValue);
+		KvGetString(BossKV[character[boss]], argument, abilityString, length, defaultValue);
 	}
 }
 
@@ -7739,9 +7736,9 @@ public bool:HasAbility(boss, const String:pluginName[], const String:abilityName
 		return false;
 	}
 
-	KvRewind(AbilityKV[character[boss]]);
-	if(KvJumpToKey(AbilityKV[character[boss]], pluginName)
-	&& KvJumpToKey(AbilityKV[character[boss]], abilityName))
+	KvRewind(BossKV[character[boss]]);
+	if(KvJumpToKey(BossKV[character[boss]], pluginName)
+	&& KvJumpToKey(BossKV[character[boss]], abilityName))
 	{
 		return true;
 	}
