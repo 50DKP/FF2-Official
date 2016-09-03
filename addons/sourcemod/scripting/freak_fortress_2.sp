@@ -779,7 +779,7 @@ public FindCharacters()
 
 	if(KvGotoFirstSubKey(kv, false))
 	{
-		new i;
+		new index;
 		do
 		{
 			KvGetSectionName(kv, config, sizeof(config));
@@ -788,18 +788,18 @@ public FindCharacters()
 			if(chance<0)
 			{
 				LogError("[FF2 Bosses] Character %s has an invalid chance - assuming 0", config);
-				PushArrayCell(chancesArray, GetArrayCell(chancesArray, i-1)); // Chances are cumulative to make it easier to compute
-			}
-			else
-			{
-				PushArrayCell(chancesArray, chance+GetArrayCell(chancesArray, i-1)); // Chances are cumulative to make it easier to compute
 			}
 
-			if(i>0)
+			for(new j; j<chance; j++)
+			{
+				PushArrayCell(chancesArray, index);
+			}
+
+			if(chance>0)
 			{
 				LoadCharacter(config);
 			}
-			i++;
+			index++;
 		}
 		while(KvGotoNextKey(kv, false));
 	}
@@ -6390,14 +6390,7 @@ public bool:PickCharacter(boss, companion)
 
 		for(new tries; tries<100; tries++)
 		{
-			new chance=GetRandomInt(0, GetArrayCell(chancesArray, GetArraySize(chancesArray)-1));
-
-			new index;
-			while(GetArrayCell(chancesArray, index)<chance)
-			{
-				index++;
-			}
-			character[boss]=index;
+			character[boss]=GetRandomInt(0, GetArraySize(chancesArray)-1);
 
 			// TODO: It would be awesome if we didn't have to check for this.
 			// Then we wouldn't need to wrap all of this in a for loop.
