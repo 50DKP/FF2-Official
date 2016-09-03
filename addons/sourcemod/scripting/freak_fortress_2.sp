@@ -900,6 +900,7 @@ public LoadCharacter(const String:characterName[])
 
 	if(KvJumpToKey(BossKV[Specials], "abilities"))
 	{
+		AbilityKV[Specials]=CreateKeyValues("abilities");
 		KvCopySubkeys(BossKV[Specials], AbilityKV[Specials]);
 		if(KvGotoFirstSubKey(BossKV[Specials]))
 		{
