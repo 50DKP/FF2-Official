@@ -6231,7 +6231,7 @@ stock ParseFormula(boss, const String:key[], defaultValue)
 	CloseHandle(_operator);
 	if(result<=0)
 	{
-		LogError("[FF2] %s has an invalid %s formula, using default!", bossName, key);
+		LogError("[FF2 Bosses] %s has an invalid %s formula, using default!", bossName, key);
 		return defaultValue;
 	}
 
