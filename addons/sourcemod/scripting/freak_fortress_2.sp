@@ -6248,7 +6248,7 @@ stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityNa
 	{
 		return KvGetNum(GetArrayCell(bossesArray, character[boss]), argument, defaultValue);
 	}
-	return 0;
+	return defaultValue;
 }
 
 stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const String:abilityName[], const String:argument[], Float:defaultValue=0.0)
@@ -6257,11 +6257,12 @@ stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const Strin
 	{
 		return KvGetFloat(GetArrayCell(bossesArray, character[boss]), argument, defaultValue);
 	}
-	return 0.0;
+	return defaultValue;
 }
 
 stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abilityName[], const String:argument[], String:abilityString[], length, const String:defaultValue[]="")
 {
+	strcopy(abilityString, length, defaultValue);
 	if(HasAbility(boss, pluginName, abilityName))
 	{
 		KvGetString(GetArrayCell(bossesArray, character[boss]), argument, abilityString, length, defaultValue);
