@@ -6292,6 +6292,14 @@ stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:a
 			if(!ability || KvGetNum(kv, "slot")==slot)
 			{
 				KvGetSectionName(kv, temp, sizeof(temp));
+				if(FindStringInArray(soundsArray, temp)>=0)
+				{
+					decl String:bossName[64];
+					KvRewind(kv);
+					KvGetString(kv, "name", bossName, sizeof(bossName));
+					PrintToServer("[FF2 Bosses] Character %s has a duplicate sound '%s'!", bossName, music);
+					continue; // We ignore all duplicates
+				}
 				PushArrayString(soundsArray, temp);
 			}
 		}
