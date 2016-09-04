@@ -2001,38 +2001,44 @@ PlayBGM(client)
 	KvRewind(kv);
 	if(KvJumpToKey(kv, "sounds"))
 	{
-		decl String:music[MAXRANDOMS][PLATFORM_MAX_PATH];
-		new time[MAXRANDOMS];
-		new index;
+		new Handle:musicArray=CreateArray(PLATFORM_MAX_PATH);
+		new Handle:timeArray=CreateArray();
+		decl String:music[PLATFORM_MAX_PATH];
 		KvGotoFirstSubKey(kv);
 		do
 		{
-			if(KvGetNum(kv, "time")>0)
+			KvGetSectionName(kv, music, sizeof(music));
+			new time=KvGetNum(kv, "time");
+			if(time>0)
 			{
-				KvGetSectionName(kv, music[index], PLATFORM_MAX_PATH);
-				time[index]=KvGetNum(kv, "time");
-				index++;
+				if(FindStringInArray(musicArray, music)>=0)
+				{
+					decl String:bossName[64];
+					KvRewind(kv);
+					KvGetString(kv, "name", bossName, sizeof(bossName));
+					PrintToServer("[FF2 Bosses] Character %s has a duplicate sound '%s'!", bossName, music);
+					continue; // We ignore all duplicates
+				}
+				PushArrayString(musicArray, music);
+				PushArrayCell(timeArray, time);
 			}
-			else if(KvGetNum(kv, "time")<0)
+			else if(time<0)
 			{
-				decl String:temp[PLATFORM_MAX_PATH];
-				KvGetSectionName(kv, temp, sizeof(temp));
-
 				decl String:bossName[64];
 				KvRewind(kv);
 				KvGetString(kv, "name", bossName, sizeof(bossName));
-				PrintToServer("[FF2 Bosses] Character %s has an invalid time for sound '%s'!", bossName, temp);
+				PrintToServer("[FF2 Bosses] Character %s has an invalid time for sound '%s'!", bossName, music);
 			}
 		}
-		while(KvGotoNextKey(kv) && index<=MAXRANDOMS);
+		while(KvGotoNextKey(kv));
 
-		index=GetRandomInt(0, index-1);
+		new index=GetRandomInt(0, GetArraySize(musicArray)-1);
 
 		new Action:action;
 		Call_StartForward(OnMusic);
 		decl String:temp[PLATFORM_MAX_PATH];
-		new time2=time[index];
-		strcopy(temp, sizeof(temp), music[index]);
+		new time2=GetArrayCell(timeArray, index);
+		GetArrayString(musicArray, index, temp, sizeof(temp));
 		Call_PushCell(client);
 		Call_PushStringEx(temp, sizeof(temp), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		Call_PushCellRef(time2);
@@ -2045,22 +2051,19 @@ PlayBGM(client)
 			}
 			case Plugin_Changed:
 			{
-				strcopy(music[index], PLATFORM_MAX_PATH, temp);
-				time[index]=time2;
+				SetArrayString(musicArray, index, temp);
+				SetArrayCell(timeArray, index, time2);
 			}
 		}
 
-		Format(temp, sizeof(temp), "sound/%s", music[index]);
+		Format(temp, sizeof(temp), "sound/%s", GetArrayCell(musicArray, index));
 		if(FileExists(temp, true))
 		{
 			if(CheckSoundFlags(client, FF2SOUND_MUTEMUSIC))
 			{
-				strcopy(currentBGM[client], PLATFORM_MAX_PATH, music[index]);
-				EmitSoundToClient(client, music[index]);
-				if(time[index])
-				{
-					MusicTimer[client]=CreateTimer(float(time[index]), Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
-				}
+				GetArrayString(musicArray, index, currentBGM[client], sizeof(music));
+				EmitSoundToClient(client, currentBGM[client]);
+				MusicTimer[client]=CreateTimer(float(GetArrayCell(timeArray, index)), Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 		else
@@ -6279,8 +6282,8 @@ stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:a
 		return false;  //Boss doesn't have any sounds
 	}
 
-	new i;
-	decl String:sounds[MAXRANDOMS][PLATFORM_MAX_PATH];
+	new Handle:soundsArray=CreateArray(PLATFORM_MAX_PATH);
+	decl String:temp[PLATFORM_MAX_PATH];
 	KvGotoFirstSubKey(kv);
 	do  //Just keep looping until there's no keys left
 	{
@@ -6288,19 +6291,19 @@ stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:a
 		{
 			if(!ability || KvGetNum(kv, "slot")==slot)
 			{
-				KvGetSectionName(kv, sounds[i], PLATFORM_MAX_PATH);
-				i++;
+				KvGetSectionName(kv, temp, sizeof(temp));
+				PushArrayString(soundsArray, temp);
 			}
 		}
 	}
-	while(KvGotoNextKey(kv) && i<=MAXRANDOMS);
+	while(KvGotoNextKey(kv));
 
-	if(!i)
+	if(!GetArraySize(soundsArray))
 	{
 		return false;  //No sounds matching what we want
 	}
 
-	strcopy(file, length, sounds[GetRandomInt(0, i-1)]);
+	GetArrayString(soundsArray, GetRandomInt(0, GetArraySize(soundsArray)-1), file, length);
 	return true;
 }
 
