@@ -46,7 +46,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define UPDATE_URL "http://50dkp.github.io/FF2-Official/update.txt"
 
 #define MAXENTITIES 2048
-#define MAXSPECIALS 64
 #define MAXRANDOMS 16
 
 #define HEALTHBAR_CLASS "monster_resource"
@@ -141,6 +140,8 @@ new Handle:cvarUpdater;
 new Handle:cvarDebug;
 new Handle:cvarPreroundBossDisconnect;
 
+new Handle:bossesArray;
+new Handle:voicesArray; // TODO: Rename this or remove it in favor of something else
 new Handle:subpluginArray;
 new Handle:chancesArray;
 
@@ -256,8 +257,6 @@ enum Operators
 	Operator_Exponent,
 };
 
-new Specials;
-new Handle:BossKV[MAXSPECIALS];
 new Handle:PreAbility;
 new Handle:OnAbility;
 new Handle:OnMusic;
@@ -268,10 +267,6 @@ new Handle:OnLoadCharacterSet;
 new Handle:OnLoseLife;
 new Handle:OnAlivePlayersChanged;
 new Handle:OnParseUnknownVariable;
-
-new bool:bBlockVoice[MAXSPECIALS];
-//new Float:BossSpeed[MAXSPECIALS];
-//new Float:BossRageDamage[MAXSPECIALS];
 
 public Plugin:myinfo=
 {
@@ -461,6 +456,9 @@ public OnPluginStart()
 	timeleftHUD=CreateHudSynchronizer();
 	infoHUD=CreateHudSynchronizer();
 
+	bossesArray=CreateArray();
+	voicesArray=CreateArray();
+
 	decl String:oldVersion[64];
 	GetConVarString(cvarVersion, oldVersion, sizeof(oldVersion));
 	if(!StrEqual(oldVersion, PLUGIN_VERSION, false))
@@ -580,12 +578,12 @@ public OnMapStart()
 		MusicTimer[client]=INVALID_HANDLE;
 	}
 
-	for(new specials; specials<MAXSPECIALS; specials++)
+	for(new index; index<GetArraySize(bossesArray); index++)
 	{
-		if(BossKV[specials]!=INVALID_HANDLE)
+		if(GetArrayCell(bossesArray, index)!=INVALID_HANDLE)
 		{
-			CloseHandle(BossKV[specials]);
-			BossKV[specials]=INVALID_HANDLE;
+			CloseHandle(GetArrayCell(bossesArray, index));
+			SetArrayCell(bossesArray, index, INVALID_HANDLE);
 		}
 	}
 }
@@ -734,7 +732,6 @@ public FindCharacters()
 	chancesArray=CreateArray();
 
 	decl String:config[PLATFORM_MAX_PATH], String:charset[42];
-	Specials=0;
 	BuildPath(Path_SM, config, sizeof(config), "%s/%s", FF2_SETTINGS, BOSS_CONFIG);
 
 	if(!FileExists(config))
@@ -887,53 +884,53 @@ public LoadCharacter(const String:characterName[])
 		LogError("[FF2 Bosses] Character %s does not exist!", characterName);
 		return;
 	}
-	BossKV[Specials]=CreateKeyValues("character");
-	FileToKeyValues(BossKV[Specials], config);
 
-	new version=KvGetNum(BossKV[Specials], "version", 1);
+	new Handle:kv=CreateKeyValues("character");
+	PushArrayCell(bossesArray, kv);
+	FileToKeyValues(kv, config);
+
+	new version=KvGetNum(kv, "version", 1);
 	if(version!=StringToInt(MAJOR_REVISION))
 	{
 		LogError("[FF2 Bosses] Character %s is only compatible with FF2 v%i!", characterName, version);
 		return;
 	}
 
-	if(KvJumpToKey(BossKV[Specials], "abilities"))
+	if(KvJumpToKey(kv, "abilities"))
 	{
-		if(KvGotoFirstSubKey(BossKV[Specials]))
+		if(KvGotoFirstSubKey(kv))
 		{
 			decl String:pluginName[64];
 			do
 			{
-				KvGetSectionName(BossKV[Specials], pluginName, sizeof(pluginName));
+				KvGetSectionName(kv, pluginName, sizeof(pluginName));
 				if(FindStringInArray(subpluginArray, pluginName)<0)
 				{
 					LogError("[FF2 Bosses] Character %s needs plugin %s!", characterName, pluginName);
 					return;
 				}
 			}
-			while(KvGotoNextKey(BossKV[Specials]));
+			while(KvGotoNextKey(kv));
 		}
 	}
-	KvRewind(BossKV[Specials]);
+	KvRewind(kv);
 
 	decl String:file[PLATFORM_MAX_PATH], String:section[64];
 	new String:extensions[][]={".mdl", ".dx80.vtx", ".dx90.vtx", ".sw.vtx", ".vvd"};
-	KvSetString(BossKV[Specials], "filename", characterName);
-	KvGetString(BossKV[Specials], "name", config, sizeof(config));
-	bBlockVoice[Specials]=bool:KvGetNum(BossKV[Specials], "block voice", 0);
-	//BossSpeed[Specials]=KvGetFloat(BossKV[Specials], "maxspeed", 340.0);
-	//BossRageDamage[Specials]=KvGetFloat(BossKV[Specials], "ragedamage", 1900.0);
-	KvGotoFirstSubKey(BossKV[Specials]);
+	KvSetString(kv, "filename", characterName);
+	KvGetString(kv, "name", config, sizeof(config));
+	PushArrayCell(voicesArray, KvGetNum(kv, "block voice", 0));
+	KvGotoFirstSubKey(kv);
 
-	while(KvGotoNextKey(BossKV[Specials]))
+	while(KvGotoNextKey(kv))
 	{
-		KvGetSectionName(BossKV[Specials], section, sizeof(section));
+		KvGetSectionName(kv, section, sizeof(section));
 		if(StrEqual(section, "downloads"))
 		{
-			while(KvGotoNextKey(BossKV[Specials]))
+			while(KvGotoNextKey(kv))
 			{
-				KvGetSectionName(BossKV[Specials], file, sizeof(file));
-				if(KvGetNum(BossKV[Specials], "model"))
+				KvGetSectionName(kv, file, sizeof(file));
+				if(KvGetNum(kv, "model"))
 				{
 					for(new extension; extension<sizeof(extensions); extension++)
 					{
@@ -948,7 +945,7 @@ public LoadCharacter(const String:characterName[])
 						}
 					}
 
-					if(KvGetNum(BossKV[Specials], "phy"))
+					if(KvGetNum(kv, "phy"))
 					{
 						Format(file, sizeof(file), "%s.phy", file);
 						if(FileExists(file, true))
@@ -961,7 +958,7 @@ public LoadCharacter(const String:characterName[])
 						}
 					}
 				}
-				else if(KvGetNum(BossKV[Specials], "material"))
+				else if(KvGetNum(kv, "material"))
 				{
 					Format(file, sizeof(file), "%s.vmt", file);
 					if(FileExists(file, true))
@@ -994,21 +991,21 @@ public LoadCharacter(const String:characterName[])
 			}
 		}
 	}
-	Specials++;
 }
 
 public PrecacheCharacter(characterIndex)
 {
 	decl String:file[PLATFORM_MAX_PATH], String:filePath[PLATFORM_MAX_PATH], String:bossName[64];
-	KvRewind(BossKV[characterIndex]);
-	KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName));
+	new Handle:kv=GetArrayCell(bossesArray, characterIndex);
+	KvRewind(kv);
+	KvGetString(kv, "filename", bossName, sizeof(bossName));
 
-	if(KvJumpToKey(BossKV[characterIndex], "sounds"))
+	if(KvJumpToKey(kv, "sounds"))
 	{
-		KvGotoFirstSubKey(BossKV[characterIndex]);
+		KvGotoFirstSubKey(kv);
 		do
 		{
-			KvGetSectionName(BossKV[characterIndex], file, sizeof(file));
+			KvGetSectionName(kv, file, sizeof(file));
 			Format(filePath, sizeof(filePath), "sound/%s", file);  //Sounds doesn't include the sound/ prefix, so add that
 			if(FileExists(filePath, true))
 			{
@@ -1019,7 +1016,7 @@ public PrecacheCharacter(characterIndex)
 				LogError("[FF2 Bosses] Character %s is missing file '%s'!", bossName, filePath);
 			}
 
-			if(KvGetNum(BossKV[characterIndex], "download"))
+			if(KvGetNum(kv, "download"))
 			{
 				if(FileExists(filePath, true))
 				{
@@ -1031,18 +1028,18 @@ public PrecacheCharacter(characterIndex)
 				}
 			}
 		}
-		while(KvGotoNextKey(BossKV[characterIndex]));
+		while(KvGotoNextKey(kv));
 	}
 
-	KvRewind(BossKV[characterIndex]);
-	if(KvJumpToKey(BossKV[characterIndex], "downloads"))
+	KvRewind(kv);
+	if(KvJumpToKey(kv, "downloads"))
 	{
-		KvGotoFirstSubKey(BossKV[characterIndex]);
+		KvGotoFirstSubKey(kv);
 		do
 		{
-			if(KvGetNum(BossKV[characterIndex], "precache"))
+			if(KvGetNum(kv, "precache"))
 			{
-				KvGetSectionName(BossKV[characterIndex], file, sizeof(file));
+				KvGetSectionName(kv, file, sizeof(file));
 				Format(filePath, sizeof(filePath), "%s.mdl", file);  //Models specified in the config don't include an extension
 				if(FileExists(filePath, true))
 				{
@@ -1054,7 +1051,7 @@ public PrecacheCharacter(characterIndex)
 				}
 			}
 		}
-		while(KvGotoNextKey(BossKV[characterIndex]));
+		while(KvGotoNextKey(kv));
 	}
 }
 
@@ -1481,7 +1478,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	}
 
 	PickCharacter(0, 0);
-	if((character[0]<0) || !BossKV[character[0]])
+	if((character[0]<0) || !GetArrayCell(bossesArray, character[0]))
 	{
 		LogError("[FF2 Bosses] Couldn't find a boss!");
 		return Plugin_Continue;
@@ -1700,8 +1697,8 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 			if(IsBoss(target))
 			{
 				boss=Boss[target];
-				KvRewind(BossKV[character[boss]]);
-				KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
+				KvRewind(GetArrayCell(bossesArray, character[boss]));
+				KvGetString(GetArrayCell(bossesArray, character[boss]), "name", bossName, sizeof(bossName), "=Failed name=");
 				BossLives[boss]>1 ? Format(lives, sizeof(lives), "x%i", BossLives[boss]) : strcopy(lives, 2, "");
 				Format(text, sizeof(text), "%s\n%t", text, "Boss Win Final Health", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
 				CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Win Final Health", bossName, target, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), BossHealthMax[boss], lives);
@@ -2000,33 +1997,34 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 
 PlayBGM(client)
 {
-	KvRewind(BossKV[character[0]]);
-	if(KvJumpToKey(BossKV[character[0]], "sounds"))
+	new Handle:kv=GetArrayCell(bossesArray, character[0]);
+	KvRewind(kv);
+	if(KvJumpToKey(kv, "sounds"))
 	{
 		decl String:music[MAXRANDOMS][PLATFORM_MAX_PATH];
 		new time[MAXRANDOMS];
 		new index;
-		KvGotoFirstSubKey(BossKV[character[0]]);
+		KvGotoFirstSubKey(kv);
 		do
 		{
-			if(KvGetNum(BossKV[character[0]], "time")>0)
+			if(KvGetNum(kv, "time")>0)
 			{
-				KvGetSectionName(BossKV[character[0]], music[index], PLATFORM_MAX_PATH);
-				time[index]=KvGetNum(BossKV[character[0]], "time");
+				KvGetSectionName(kv, music[index], PLATFORM_MAX_PATH);
+				time[index]=KvGetNum(kv, "time");
 				index++;
 			}
-			else if(KvGetNum(BossKV[character[0]], "time")<0)
+			else if(KvGetNum(kv, "time")<0)
 			{
 				decl String:temp[PLATFORM_MAX_PATH];
-				KvGetSectionName(BossKV[character[0]], temp, sizeof(temp));
+				KvGetSectionName(kv, temp, sizeof(temp));
 
 				decl String:bossName[64];
-				KvRewind(BossKV[character[0]]);
-				KvGetString(BossKV[character[0]], "name", bossName, sizeof(bossName));
+				KvRewind(kv);
+				KvGetString(kv, "name", bossName, sizeof(bossName));
 				PrintToServer("[FF2 Bosses] Character %s has an invalid time for sound '%s'!", bossName, temp);
 			}
 		}
-		while(KvGotoNextKey(BossKV[character[0]]) && index<=MAXRANDOMS);
+		while(KvGotoNextKey(kv) && index<=MAXRANDOMS);
 
 		index=GetRandomInt(0, index-1);
 
@@ -2068,8 +2066,8 @@ PlayBGM(client)
 		else
 		{
 			decl String:bossName[64];
-			KvRewind(BossKV[character[0]]);
-			KvGetString(BossKV[character[0]], "name", bossName, sizeof(bossName));
+			KvRewind(kv);
+			KvGetString(kv, "name", bossName, sizeof(bossName));
 			PrintToServer("[FF2 Bosses] Character %s is missing BGM file '%s'!", bossName, music);
 		}
 	}
@@ -2269,8 +2267,8 @@ public Action:MessageTimer(Handle:timer)
 		if(IsBoss(client))
 		{
 			new boss=Boss[client];
-			KvRewind(BossKV[character[boss]]);
-			KvGetString(BossKV[character[boss]], "name", name, sizeof(name), "=Failed name=");
+			KvRewind(GetArrayCell(bossesArray, character[boss]));
+			KvGetString(GetArrayCell(bossesArray, character[boss]), "name", name, sizeof(name), "=Failed name=");
 			if(BossLives[boss]>1)
 			{
 				Format(lives, sizeof(lives), "x%i", BossLives[boss]);
@@ -2304,8 +2302,8 @@ public Action:MakeModelTimer(Handle:timer, any:boss)
 	if(IsValidClient(client) && IsPlayerAlive(client) && CheckRoundState()!=FF2RoundState_RoundEnd)
 	{
 		decl String:model[PLATFORM_MAX_PATH];
-		KvRewind(BossKV[character[boss]]);
-		KvGetString(BossKV[character[boss]], "model", model, sizeof(model));
+		KvRewind(GetArrayCell(bossesArray, character[boss]));
+		KvGetString(GetArrayCell(bossesArray, character[boss]), "model", model, sizeof(model));
 		SetVariantString(model);
 		AcceptEntityInput(client, "SetCustomModel");
 		SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
@@ -2321,30 +2319,31 @@ EquipBoss(boss)
 	TF2_RemoveAllWeapons(client);
 	decl String:classname[64], String:attributes[256], String:bossName[64];
 
-	KvRewind(BossKV[character[boss]]);
-	KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed Name=");
-	if(KvJumpToKey(BossKV[character[boss]], "weapons"))
+	new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+	KvRewind(kv);
+	KvGetString(kv, "name", bossName, sizeof(bossName), "=Failed Name=");
+	if(KvJumpToKey(kv, "weapons"))
 	{
-		KvGotoFirstSubKey(BossKV[character[boss]]);
+		KvGotoFirstSubKey(kv);
 		do
 		{
 			decl String:sectionName[32];
-			KvGetSectionName(BossKV[character[boss]], sectionName, sizeof(sectionName));
+			KvGetSectionName(kv, sectionName, sizeof(sectionName));
 			new index=StringToInt(sectionName);
 			//NOTE: StringToInt returns 0 on failure which corresponds to tf_weapon_bat,
 			//so there's no way to distinguish between an invalid string and 0.
 			//Blocked on bug 6438: https://bugs.alliedmods.net/show_bug.cgi?id=6438
 			if(index>=0)
 			{
-				KvJumpToKey(BossKV[character[boss]], sectionName);
-				KvGetString(BossKV[character[boss]], "classname", classname, sizeof(classname));
+				KvJumpToKey(kv, sectionName);
+				KvGetString(kv, "classname", classname, sizeof(classname));
 				if(classname[0]=='\0')
 				{
 					LogError("[FF2 Bosses] No classname specified for weapon %i (character %s)!", index, bossName);
 					continue;
 				}
 
-				KvGetString(BossKV[character[boss]], "attributes", attributes, sizeof(attributes));
+				KvGetString(kv, "attributes", attributes, sizeof(attributes));
 				if(attributes[0]!='\0')
 				{
 					Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1 ; %s", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2 , attributes);
@@ -2376,7 +2375,7 @@ EquipBoss(boss)
 					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
 				}
 
-				if(!KvGetNum(BossKV[character[boss]], "show", 0))
+				if(!KvGetNum(kv, "show", 0))
 				{
 					SetEntPropFloat(weapon, Prop_Send, "m_flModelScale", 0.001);
 				}
@@ -2387,11 +2386,11 @@ EquipBoss(boss)
 				LogError("[FF2 Bosses] Invalid weapon index %s specified for character %s!", sectionName, bossName);
 			}
 		}
-		while(KvGotoNextKey(BossKV[character[boss]]));
+		while(KvGotoNextKey(kv));
 	}
 
-	KvRewind(BossKV[character[boss]]);
-	new TFClassType:class=TFClassType:KvGetNum(BossKV[character[boss]], "class", 1);
+	KvRewind(kv);
+	new TFClassType:class=TFClassType:KvGetNum(kv, "class", 1);
 	if(TF2_GetPlayerClass(client)!=class)
 	{
 		TF2_SetPlayerClass(client, class, _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
@@ -2418,7 +2417,8 @@ public Action:MakeBoss(Handle:timer, any:boss)
 		}
 	}
 
-	KvRewind(BossKV[character[boss]]);
+	new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+	KvRewind(kv);
 	if(TF2_GetClientTeam(client)!=BossTeam)
 	{
 		AssignTeam(client, BossTeam);
@@ -2432,10 +2432,10 @@ public Action:MakeBoss(Handle:timer, any:boss)
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 	TF2_RemovePlayerDisguise(client);
-	TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[character[boss]], "class", 1), _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
+	TF2_SetPlayerClass(client, TFClassType:KvGetNum(kv, "class", 1), _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
 	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
-	switch(KvGetNum(BossKV[character[boss]], "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
+	switch(KvGetNum(kv, "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
 	{
 		case 1:
 		{
@@ -3544,8 +3544,8 @@ public Action:Command_GetHP(client)  //TODO: This can rarely show a very large n
 			if(IsBoss(target))
 			{
 				new boss=Boss[target];
-				KvRewind(BossKV[character[boss]]);
-				KvGetString(BossKV[character[boss]], "name", name, sizeof(name), "=Failed name=");
+				KvRewind(GetArrayCell(bossesArray, character[boss]));
+				KvGetString(GetArrayCell(bossesArray, character[boss]), "name", name, sizeof(name), "=Failed name=");
 				if(BossLives[boss]>1)
 				{
 					Format(lives, sizeof(lives), "x%i", BossLives[boss]);
@@ -3603,10 +3603,11 @@ public Action:Command_SetNextBoss(client, args)
 	}
 	GetCmdArgString(name, sizeof(name));
 
-	for(new config; config<Specials; config++)
+	for(new config; config<GetArraySize(bossesArray); config++)
 	{
-		KvRewind(BossKV[config]);
-		KvGetString(BossKV[config], "name", boss, sizeof(boss));
+		new Handle:kv=GetArrayCell(bossesArray, config);
+		KvRewind(kv);
+		KvGetString(kv, "name", boss, sizeof(boss));
 		if(StrContains(boss, name, false)!=-1)
 		{
 			Incoming[0]=config;
@@ -3614,11 +3615,11 @@ public Action:Command_SetNextBoss(client, args)
 			return Plugin_Handled;
 		}
 
-		KvGetString(BossKV[config], "filename", boss, sizeof(boss));
+		KvGetString(kv, "filename", boss, sizeof(boss));
 		if(StrContains(boss, name, false)!=-1)
 		{
 			Incoming[0]=config;
-			KvGetString(BossKV[config], "name", boss, sizeof(boss));
+			KvGetString(kv, "name", boss, sizeof(boss));
 			CReplyToCommand(client, "{olive}[FF2]{default} Set the next boss to %s", boss);
 			return Plugin_Handled;
 		}
@@ -4303,28 +4304,29 @@ public Action:BossTimer(Handle:timer)
 
 		SetClientGlow(client, -0.2);
 
-		KvRewind(BossKV[character[boss]]);
-		if(KvJumpToKey(BossKV[character[boss]], "abilities"))
+		new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+		KvRewind(kv);
+		if(KvJumpToKey(kv, "abilities"))
 		{
 			decl String:ability[10], String:lives[MAXRANDOMS][3];
-			KvGotoFirstSubKey(BossKV[character[boss]]);
+			KvGotoFirstSubKey(kv);
 			do
 			{
 				decl String:pluginName[64];
-				KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
-				KvGotoFirstSubKey(BossKV[character[boss]]);
+				KvGetSectionName(kv, pluginName, sizeof(pluginName));
+				KvGotoFirstSubKey(kv);
 				do
 				{
 					decl String:abilityName[64];
-					KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
-					new slot=KvGetNum(BossKV[character[boss]], "slot", 0);
-					new buttonmode=KvGetNum(BossKV[character[boss]], "buttonmode", 0);
+					KvGetSectionName(kv, abilityName, sizeof(abilityName));
+					new slot=KvGetNum(kv, "slot", 0);
+					new buttonmode=KvGetNum(kv, "buttonmode", 0);
 					if(slot<1) // We don't care about rage/life-loss abilities here
 					{
 						continue;
 					}
 
-					KvGetString(BossKV[character[boss]], "life", ability, sizeof(ability), "");
+					KvGetString(kv, "life", ability, sizeof(ability), "");
 					if(!ability[0]) // Just a regular ability that doesn't care what life the boss is on
 					{
 						UseAbility(boss, pluginName, abilityName, slot, buttonmode);
@@ -4342,10 +4344,10 @@ public Action:BossTimer(Handle:timer)
 						}
 					}
 				}
-				while(KvGotoNextKey(BossKV[character[boss]]));
-				KvGoBack(BossKV[character[boss]]);
+				while(KvGotoNextKey(kv));
+				KvGoBack(kv);
 			}
-			while(KvGotoNextKey(BossKV[character[boss]]));
+			while(KvGotoNextKey(kv));
 		}
 
 		if(RedAlivePlayers==1)
@@ -4357,8 +4359,8 @@ public Action:BossTimer(Handle:timer)
 				if(IsBoss(target))
 				{
 					new boss2=GetBossIndex(target);
-					KvRewind(BossKV[character[boss2]]);
-					KvGetString(BossKV[character[boss2]], "name", name, sizeof(name), "=Failed name=");
+					KvRewind(GetArrayCell(bossesArray, character[boss2]));
+					KvGetString(GetArrayCell(bossesArray, character[boss2]), "name", name, sizeof(name), "=Failed name=");
 					//Format(bossLives, sizeof(bossLives), ((BossLives[boss2]>1) ? ("x%i", BossLives[boss2]) : ("")));
 					decl String:bossLives[10];
 					if(BossLives[boss2]>1)
@@ -4502,26 +4504,27 @@ public Action:OnCallForMedic(client, const String:command[], args)
 
 	if(RoundFloat(BossCharge[boss][0])==100)
 	{
-		KvRewind(BossKV[character[boss]]);
-		if(KvJumpToKey(BossKV[character[boss]], "abilities"))
+		new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+		KvRewind(kv);
+		if(KvJumpToKey(kv, "abilities"))
 		{
 			decl String:ability[10], String:lives[MAXRANDOMS][3];
-			KvGotoFirstSubKey(BossKV[character[boss]]);
+			KvGotoFirstSubKey(kv);
 			do
 			{
 				decl String:pluginName[64];
-				KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
-				KvGotoFirstSubKey(BossKV[character[boss]]);
+				KvGetSectionName(kv, pluginName, sizeof(pluginName));
+				KvGotoFirstSubKey(kv);
 				do
 				{
 					decl String:abilityName[64];
-					KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
-					if(KvGetNum(BossKV[character[boss]], "slot")) // Rage is slot 0
+					KvGetSectionName(kv, abilityName, sizeof(abilityName));
+					if(KvGetNum(kv, "slot")) // Rage is slot 0
 					{
 						continue;
 					}
 
-					KvGetString(BossKV[character[boss]], "life", ability, sizeof(ability), "");
+					KvGetString(kv, "life", ability, sizeof(ability), "");
 					if(!ability[0]) // Just a regular run-of-the-mill rage
 					{
 						if(!UseAbility(boss, pluginName, abilityName, 0))
@@ -4545,10 +4548,10 @@ public Action:OnCallForMedic(client, const String:command[], args)
 						}
 					}
 				}
-				while(KvGotoNextKey(BossKV[character[boss]]));
-				KvGoBack(BossKV[character[boss]]);
+				while(KvGotoNextKey(kv));
+				KvGoBack(kv);
 			}
-			while(KvGotoNextKey(BossKV[character[boss]]));
+			while(KvGotoNextKey(kv));
 		}
 
 		decl String:sound[PLATFORM_MAX_PATH];
@@ -5595,25 +5598,26 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 				}
 
 				decl String:ability[PLATFORM_MAX_PATH];  //FIXME: Create a new variable for the translation string later on
-				KvRewind(BossKV[character[boss]]);
-				if(KvJumpToKey(BossKV[character[boss]], "abilities"))
+				new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+				KvRewind(kv);
+				if(KvJumpToKey(kv, "abilities"))
 				{
-					KvGotoFirstSubKey(BossKV[character[boss]]);
+					KvGotoFirstSubKey(kv);
 					do
 					{
 						decl String:pluginName[64];
-						KvGetSectionName(BossKV[character[boss]], pluginName, sizeof(pluginName));
-						KvGotoFirstSubKey(BossKV[character[boss]]);
+						KvGetSectionName(kv, pluginName, sizeof(pluginName));
+						KvGotoFirstSubKey(kv);
 						do
 						{
 							decl String:abilityName[64];
-							KvGetSectionName(BossKV[character[boss]], abilityName, sizeof(abilityName));
-							if(KvGetNum(BossKV[character[boss]], "slot")!=-1) // Only activate for life-loss abilities
+							KvGetSectionName(kv, abilityName, sizeof(abilityName));
+							if(KvGetNum(kv, "slot")!=-1) // Only activate for life-loss abilities
 							{
 								continue;
 							}
 
-							KvGetString(BossKV[character[boss]], "life", ability, 10, "");
+							KvGetString(kv, "life", ability, 10, "");
 							if(!ability[0]) // Just a regular ability that doesn't care what life the boss is on
 							{
 								UseAbility(boss, pluginName, abilityName, -1);
@@ -5632,16 +5636,16 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 								}
 							}
 						}
-						while(KvGotoNextKey(BossKV[character[boss]]));
-						KvGoBack(BossKV[character[boss]]);
+						while(KvGotoNextKey(kv));
+						KvGoBack(kv);
 					}
-					while(KvGotoNextKey(BossKV[character[boss]]));
+					while(KvGotoNextKey(kv));
 				}
 				BossLives[boss]=lives;
 
 				decl String:bossName[64];
-				KvRewind(BossKV[character[boss]]);
-				KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
+				KvRewind(kv);
+				KvGetString(kv, "name", bossName, sizeof(bossName), "=Failed name=");
 
 				strcopy(ability, sizeof(ability), BossLives[boss]==1 ? "Boss with 1 Life Left" : "Boss with Multiple Lives Left");
 				for(new target=1; target<=MaxClients; target++)
@@ -5842,7 +5846,7 @@ stock AssignTeam(client, TFTeam:team)
 		Debug("%N does not have a desired class!", client);
 		if(IsBoss(client))
 		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", KvGetNum(BossKV[character[Boss[client]]], "class", 1));  //So we assign one to prevent living spectators
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", KvGetNum(GetArrayCell(bossesArray, character[Boss[client]]), "class", 1));  //So we assign one to prevent living spectators
 		}
 		else
 		{
@@ -5859,7 +5863,7 @@ stock AssignTeam(client, TFTeam:team)
 		Debug("%N is a living spectator!  Please report this to https://github.com/50DKP/FF2-Official", client);
 		if(IsBoss(client))
 		{
-			TF2_SetPlayerClass(client, TFClassType:KvGetNum(BossKV[character[Boss[client]]], "class", 1));
+			TF2_SetPlayerClass(client, TFClassType:KvGetNum(GetArrayCell(bossesArray, character[Boss[client]]), "class", 1));
 		}
 		else
 		{
@@ -6029,16 +6033,17 @@ stock OperateString(Handle:sumArray, &bracket, String:value[], size, Handle:_ope
 stock ParseFormula(boss, const String:key[], defaultValue)
 {
 	decl String:formula[1024], String:bossName[64];
-	KvRewind(BossKV[character[boss]]);
-	KvGetString(BossKV[character[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
+	new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+	KvRewind(kv);
+	KvGetString(kv, "name", bossName, sizeof(bossName), "=Failed name=");
 
 	decl String:keyPortions[5][128];
 	new portions=ExplodeString(key, ">", keyPortions, sizeof(keyPortions), 128);
 	for(new i=1; i<portions; i++)
 	{
-		KvJumpToKey(BossKV[character[boss]], keyPortions[i]);
+		KvJumpToKey(kv, keyPortions[i]);
 	}
-	KvGetString(BossKV[character[boss]], keyPortions[portions-1], formula, sizeof(formula));
+	KvGetString(kv, keyPortions[portions-1], formula, sizeof(formula));
 
 	if(!formula[0])
 	{
@@ -6238,7 +6243,7 @@ stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityNa
 {
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		return KvGetNum(BossKV[character[boss]], argument, defaultValue);
+		return KvGetNum(GetArrayCell(bossesArray, character[boss]), argument, defaultValue);
 	}
 	return 0;
 }
@@ -6247,7 +6252,7 @@ stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const Strin
 {
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		return KvGetFloat(BossKV[character[boss]], argument, defaultValue);
+		return KvGetFloat(GetArrayCell(bossesArray, character[boss]), argument, defaultValue);
 	}
 	return 0.0;
 }
@@ -6256,38 +6261,39 @@ stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abi
 {
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		KvGetString(BossKV[character[boss]], argument, abilityString, length, defaultValue);
+		KvGetString(GetArrayCell(bossesArray, character[boss]), argument, abilityString, length, defaultValue);
 	}
 }
 
 stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:ability=false, slot=0)
 {
-	if(boss<0 || character[boss]<0 || !BossKV[character[boss]])
+	new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+	if(boss<0 || character[boss]<0 || !kv)
 	{
 		return false;
 	}
 
-	KvRewind(BossKV[character[boss]]);
-	if(!KvJumpToKey(BossKV[character[boss]], "sounds"))
+	KvRewind(kv);
+	if(!KvJumpToKey(kv, "sounds"))
 	{
 		return false;  //Boss doesn't have any sounds
 	}
 
 	new i;
 	decl String:sounds[MAXRANDOMS][PLATFORM_MAX_PATH];
-	KvGotoFirstSubKey(BossKV[character[boss]]);
+	KvGotoFirstSubKey(kv);
 	do  //Just keep looping until there's no keys left
 	{
-		if(KvGetNum(BossKV[character[boss]], sound))
+		if(KvGetNum(kv, sound))
 		{
-			if(!ability || KvGetNum(BossKV[character[boss]], "slot")==slot)
+			if(!ability || KvGetNum(kv, "slot")==slot)
 			{
-				KvGetSectionName(BossKV[character[boss]], sounds[i], PLATFORM_MAX_PATH);
+				KvGetSectionName(kv, sounds[i], PLATFORM_MAX_PATH);
 				i++;
 			}
 		}
 	}
-	while(KvGotoNextKey(BossKV[character[boss]]) && i<=MAXRANDOMS);
+	while(KvGotoNextKey(kv) && i<=MAXRANDOMS);
 
 	if(!i)
 	{
@@ -6325,8 +6331,8 @@ public bool:PickCharacter(boss, companion)
 			new newCharacter=character[boss];
 			Call_PushCellRef(newCharacter);
 			decl String:newName[64];
-			KvRewind(BossKV[character[boss]]);
-			KvGetString(BossKV[character[boss]], "name", newName, sizeof(newName));
+			KvRewind(GetArrayCell(bossesArray, character[boss]));
+			KvGetString(GetArrayCell(bossesArray, character[boss]), "name", newName, sizeof(newName));
 			Call_PushStringEx(newName, sizeof(newName), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 			Call_PushCell(true);  //Preset
 			Call_Finish(action);
@@ -6336,10 +6342,10 @@ public bool:PickCharacter(boss, companion)
 				{
 					decl String:characterName[64];
 					new foundExactMatch=-1, foundPartialMatch=-1;
-					for(new characterIndex; BossKV[characterIndex] && characterIndex<MAXSPECIALS; characterIndex++)
+					for(new characterIndex; characterIndex<GetArraySize(bossesArray) && GetArrayCell(bossesArray, characterIndex); characterIndex++)
 					{
-						KvRewind(BossKV[characterIndex]);
-						KvGetString(BossKV[characterIndex], "name", characterName, sizeof(characterName));
+						KvRewind(GetArrayCell(bossesArray, characterIndex));
+						KvGetString(GetArrayCell(bossesArray, characterIndex), "name", characterName, sizeof(characterName));
 						if(StrEqual(newName, characterName, false))
 						{
 							foundExactMatch=characterIndex;
@@ -6351,7 +6357,7 @@ public bool:PickCharacter(boss, companion)
 						}
 
 						//Do the same thing as above here, but look at the filename instead of the boss name
-						KvGetString(BossKV[characterIndex], "filename", characterName, sizeof(characterName));
+						KvGetString(GetArrayCell(bossesArray, characterIndex), "filename", characterName, sizeof(characterName));
 						if(StrEqual(newName, characterName, false))
 						{
 							foundExactMatch=characterIndex;
@@ -6394,8 +6400,8 @@ public bool:PickCharacter(boss, companion)
 			// Then we wouldn't need to wrap all of this in a for loop.
 			// FindCharacters() doesn't deal with the individual boss KVs though...
 			// And supplying 0 as the boss's chance won't load the character.
-			KvRewind(BossKV[character[boss]]);
-			if(KvGetNum(BossKV[character[boss]], "hidden"))
+			KvRewind(GetArrayCell(bossesArray, character[boss]));
+			if(KvGetNum(GetArrayCell(bossesArray, character[boss]), "hidden"))
 			{
 				character[boss]=-1;
 				continue;
@@ -6406,21 +6412,21 @@ public bool:PickCharacter(boss, companion)
 	else
 	{
 		decl String:bossName[64], String:companionName[64];
-		KvRewind(BossKV[character[boss]]);
-		KvGetString(BossKV[character[boss]], "companion", companionName, sizeof(companionName), "=Failed companion name=");
+		KvRewind(GetArrayCell(bossesArray, character[boss]));
+		KvGetString(GetArrayCell(bossesArray, character[boss]), "companion", companionName, sizeof(companionName), "=Failed companion name=");
 
 		new characterIndex;
-		while(characterIndex<Specials)  //Loop through all the bosses to find the companion we're looking for
+		while(characterIndex<GetArraySize(bossesArray))  //Loop through all the bosses to find the companion we're looking for
 		{
-			KvRewind(BossKV[characterIndex]);
-			KvGetString(BossKV[characterIndex], "name", bossName, sizeof(bossName), "=Failed name=");
+			KvRewind(GetArrayCell(bossesArray, characterIndex));
+			KvGetString(GetArrayCell(bossesArray, characterIndex), "name", bossName, sizeof(bossName), "=Failed name=");
 			if(StrEqual(bossName, companionName, false))
 			{
 				character[companion]=characterIndex;
 				break;
 			}
 
-			KvGetString(BossKV[characterIndex], "filename", bossName, sizeof(bossName), "=Failed name=");
+			KvGetString(GetArrayCell(bossesArray, characterIndex), "filename", bossName, sizeof(bossName), "=Failed name=");
 			if(StrEqual(bossName, companionName, false))
 			{
 				character[companion]=characterIndex;
@@ -6429,7 +6435,7 @@ public bool:PickCharacter(boss, companion)
 			characterIndex++;
 		}
 
-		if(characterIndex==Specials)  //Companion not found
+		if(characterIndex==GetArraySize(bossesArray))  //Companion not found
 		{
 			return false;
 		}
@@ -6442,8 +6448,8 @@ public bool:PickCharacter(boss, companion)
 	new newCharacter=character[companion];
 	Call_PushCellRef(newCharacter);
 	decl String:newName[64];
-	KvRewind(BossKV[character[companion]]);
-	KvGetString(BossKV[character[companion]], "name", newName, sizeof(newName));
+	KvRewind(GetArrayCell(bossesArray, character[companion]));
+	KvGetString(GetArrayCell(bossesArray, character[companion]), "name", newName, sizeof(newName));
 	Call_PushStringEx(newName, sizeof(newName), SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	Call_PushCell(false);  //Not preset
 	Call_Finish(action);
@@ -6453,10 +6459,10 @@ public bool:PickCharacter(boss, companion)
 		{
 			decl String:characterName[64];
 			new foundExactMatch=-1, foundPartialMatch=-1;
-			for(new characterIndex; BossKV[characterIndex] && characterIndex<MAXSPECIALS; characterIndex++)
+			for(new characterIndex; characterIndex<GetArraySize(bossesArray) && GetArrayCell(bossesArray, characterIndex); characterIndex++)
 			{
-				KvRewind(BossKV[characterIndex]);
-				KvGetString(BossKV[characterIndex], "name", characterName, sizeof(characterName));
+				KvRewind(GetArrayCell(bossesArray, characterIndex));
+				KvGetString(GetArrayCell(bossesArray, characterIndex), "name", characterName, sizeof(characterName));
 				if(StrEqual(newName, characterName, false))
 				{
 					foundExactMatch=characterIndex;
@@ -6468,7 +6474,7 @@ public bool:PickCharacter(boss, companion)
 				}
 
 				//Do the same thing as above here, but look at the filename instead of the boss name
-				KvGetString(BossKV[characterIndex], "filename", characterName, sizeof(characterName));
+				KvGetString(GetArrayCell(bossesArray, characterIndex), "filename", characterName, sizeof(characterName));
 				if(StrEqual(newName, characterName, false))
 				{
 					foundExactMatch=characterIndex;
@@ -6507,8 +6513,8 @@ FindCompanion(boss, players, bool:omit[])
 {
 	static playersNeeded=3;
 	decl String:companionName[64];
-	KvRewind(BossKV[character[boss]]);
-	KvGetString(BossKV[character[boss]], "companion", companionName, sizeof(companionName));
+	KvRewind(GetArrayCell(bossesArray, character[boss]));
+	KvGetString(GetArrayCell(bossesArray, character[boss]), "companion", companionName, sizeof(companionName));
 	if(playersNeeded<players && strlen(companionName))  //Only continue if we have enough players and if the boss has a companion
 	{
 		new companion=GetClientWithMostQueuePoints(omit);
@@ -7075,23 +7081,24 @@ HelpPanelBoss(boss)
 		return;
 	}
 
-	KvRewind(BossKV[character[boss]]);
-	if(KvJumpToKey(BossKV[character[boss]], "description"))
+	new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+	KvRewind(kv);
+	if(KvJumpToKey(kv, "description"))
 	{
 		decl String:text[512], String:language[8];
 		GetLanguageInfo(GetClientLanguage(Boss[boss]), language, sizeof(language));
-		//KvSetEscapeSequences(BossKV[character[boss]], true);  //Not working
-		KvGetString(BossKV[character[boss]], language, text, sizeof(text));
+		//KvSetEscapeSequences(kv, true);  //Not working
+		KvGetString(kv, language, text, sizeof(text));
 		if(!text[0])
 		{
-			KvGetString(BossKV[character[boss]], "en", text, sizeof(text));  //Default to English if their language isn't available
+			KvGetString(kv, "en", text, sizeof(text));  //Default to English if their language isn't available
 			if(!text[0])
 			{
 				return;
 			}
 		}
 		ReplaceString(text, sizeof(text), "\\n", "\n");
-		//KvSetEscapeSequences(BossKV[character[boss]], false);  //We don't want to interfere with the download paths
+		//KvSetEscapeSequences(kv, false);  //We don't want to interfere with the download paths
 
 		new Handle:panel=CreatePanel();
 		SetPanelTitle(panel, text);
@@ -7223,7 +7230,7 @@ public Action:HookSound(clients[64], &numClients, String:sound[PLATFORM_MAX_PATH
 			return Plugin_Changed;
 		}
 
-		if(bBlockVoice[character[boss]])
+		if(GetArrayCell(voicesArray, character[boss]))
 		{
 			return Plugin_Stop;
 		}
@@ -7519,10 +7526,10 @@ public Native_GetBossTeam(Handle:plugin, numParams)
 
 public bool:GetBossName(boss, String:bossName[], length)
 {
-	if(boss>=0 && boss<=MaxClients && character[boss]>=0 && character[boss]<MAXSPECIALS && BossKV[character[boss]]!=INVALID_HANDLE)
+	if(boss>=0 && boss<=MaxClients && character[boss]>=0 && character[boss]<GetArraySize(bossesArray) && GetArrayCell(bossesArray, character[boss])!=INVALID_HANDLE)
 	{
-		KvRewind(BossKV[character[boss]]);
-		KvGetString(BossKV[character[boss]], "name", bossName, length);
+		KvRewind(GetArrayCell(bossesArray, character[boss]));
+		KvGetString(GetArrayCell(bossesArray, character[boss]), "name", bossName, length);
 		return true;
 	}
 	return false;
@@ -7539,10 +7546,10 @@ public Native_GetBossName(Handle:plugin, numParams)
 
 public Handle:GetBossKV(boss)
 {
-	if(boss>=0 && boss<=MaxClients && character[boss]>=0 && character[boss]<MAXSPECIALS && BossKV[character[boss]]!=INVALID_HANDLE)
+	if(boss>=0 && boss<=MaxClients && character[boss]>=0 && character[boss]<GetArraySize(bossesArray) && GetArrayCell(bossesArray, character[boss])!=INVALID_HANDLE)
 	{
-		KvRewind(BossKV[character[boss]]);
-		return BossKV[character[boss]];
+		KvRewind(GetArrayCell(bossesArray, character[boss]));
+		return GetArrayCell(bossesArray, character[boss]);
 	}
 	return INVALID_HANDLE;
 }
@@ -7674,12 +7681,12 @@ public Native_SetBossRageDamage(Handle:plugin, numParams)
 
 public GetBossRageDistance(boss, const String:pluginName[], const String:abilityName[])
 {
-	if(!BossKV[character[boss]])  //Invalid boss
+	if(!GetArrayCell(bossesArray, character[boss]))  //Invalid boss
 	{
 		return 0;
 	}
 
-	KvRewind(BossKV[character[boss]]);
+	KvRewind(GetArrayCell(bossesArray, character[boss]));
 	if(!abilityName[0])  //Return the global rage distance if there's no ability specified
 	{
 		return ParseFormula(boss, "rage distance", 400);
@@ -7693,7 +7700,7 @@ public GetBossRageDistance(boss, const String:pluginName[], const String:ability
 		new distance;
 		if((distance=ParseFormula(boss, key, -1))<0)  //Distance doesn't exist, return the global rage distance instead
 		{
-			KvRewind(BossKV[character[boss]]);
+			KvRewind(GetArrayCell(bossesArray, character[boss]));
 			distance=ParseFormula(boss, "rage distance", 400);
 		}
 		return distance;
@@ -7731,14 +7738,14 @@ public Native_SetClientDamage(Handle:plugin, numParams)
 
 public bool:HasAbility(boss, const String:pluginName[], const String:abilityName[])
 {
-	if(boss==-1 || character[boss]==-1 || !BossKV[character[boss]])  //Invalid boss
+	if(boss==-1 || character[boss]==-1 || !GetArrayCell(bossesArray, character[boss]))  //Invalid boss
 	{
 		return false;
 	}
 
-	KvRewind(BossKV[character[boss]]);
-	if(KvJumpToKey(BossKV[character[boss]], pluginName)
-	&& KvJumpToKey(BossKV[character[boss]], abilityName))
+	new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+	KvRewind(kv);
+	if(KvJumpToKey(kv, "abilities") && KvJumpToKey(kv, pluginName) && KvJumpToKey(kv, abilityName))
 	{
 		return true;
 	}
