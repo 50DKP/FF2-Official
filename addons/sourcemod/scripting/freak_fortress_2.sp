@@ -2920,6 +2920,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 			{
 				if(playBGM[client])
 				{
+					StopMusic(client);
 					PlayBGM(client);
 				}
 				else if(MusicTimer[client]!=INVALID_HANDLE)
@@ -2941,6 +2942,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 	{
 		if(playBGM[client])
 		{
+			StopMusic();
 			PlayBGM(client);
 		}
 		else if(MusicTimer[client]!=INVALID_HANDLE)
@@ -4526,11 +4528,12 @@ public OnClientPostAdminCheck(client)
 		}
 	}
 
-	if(Enabled)
+	//We use the 0th index here because client indices can change.
+	//If this is false that means music is disabled for all clients, so don't play it for new clients either.
+	if(playBGM[0])
 	{
-		//We use the 0th index here because client indices can change.
-		//If this is false that means music is disabled for all clients, so don't play it for new clients either.
-		if(playBGM[0])
+		playBGM[client]=true;
+		if(Enabled)
 		{
 			CreateTimer(0.0, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
