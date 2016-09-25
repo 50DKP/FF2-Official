@@ -2942,7 +2942,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 	{
 		if(playBGM[client])
 		{
-			StopMusic();
+			StopMusic(client);
 			PlayBGM(client);
 		}
 		else if(MusicTimer[client]!=INVALID_HANDLE)
