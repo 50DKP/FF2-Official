@@ -4568,7 +4568,7 @@ public OnClientDisconnect(client)
 	FF2flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
-	playBGM[client]=false; // Better set it false
+	playBGM[client]=false; // This is reset accordingly in OnClientPostAdminCheck
 
 	if(MusicTimer[client]!=INVALID_HANDLE)
 	{
