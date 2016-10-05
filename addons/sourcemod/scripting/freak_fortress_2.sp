@@ -6284,7 +6284,7 @@ stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:a
 	}
 
 	new Handle:soundsArray=CreateArray(PLATFORM_MAX_PATH);
-	decl String:temp[PLATFORM_MAX_PATH];
+	decl String:match[PLATFORM_MAX_PATH];
 	KvGotoFirstSubKey(kv);
 	do  //Just keep looping until there's no keys left
 	{
@@ -6292,16 +6292,16 @@ stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:a
 		{
 			if(!ability || KvGetNum(kv, "slot")==slot)
 			{
-				KvGetSectionName(kv, temp, sizeof(temp));
-				if(FindStringInArray(soundsArray, temp)>=0)
+				KvGetSectionName(kv, match, sizeof(match));
+				if(FindStringInArray(soundsArray, match)>=0)
 				{
 					decl String:bossName[64];
 					KvRewind(kv);
 					KvGetString(kv, "name", bossName, sizeof(bossName));
-					PrintToServer("[FF2 Bosses] Character %s has a duplicate sound '%s'!", bossName, music);
+					PrintToServer("[FF2 Bosses] Character %s has a duplicate sound '%s'!", bossName, match);
 					continue; // We ignore all duplicates
 				}
-				PushArrayString(soundsArray, temp);
+				PushArrayString(soundsArray, match);
 			}
 		}
 	}
