@@ -27,9 +27,9 @@ install:
     - tar -xzf $(cat sourcemod-latest-linux)
 before_script:
     - cd addons/sourcemod/scripting/
-    - wget "http://hg.limetech.org/projects/tf2items/tf2items_source/raw-file/tip/pawn/tf2items.inc" -O include/tf2items.inc
+    - wget "https://raw.githubusercontent.com/asherkin/TF2Items/master/pawn/tf2items.inc" -O include/tf2items.inc
     - wget "http://www.doctormckay.com/download/scripting/include/morecolors.inc" -O include/morecolors.inc
-    - wget "https://raw.githubusercontent.com/asherkin/TF2Items/master/pawn/tf2items.inc" -O include/steamtools.inc
+    - wget "http://hg.limetech.org/projects/steamtools/raw-file/tip/plugin/steamtools.inc" -O include/steamtools.inc
     - wget "https://bitbucket.org/GoD_Tony/updater/raw/default/include/updater.inc" -O include/updater.inc
     - wget "https://raw.githubusercontent.com/Flyflo/SM-Goomba-Stomp/master/addons/sourcemod/scripting/include/goomba.inc" -O include/goomba.inc
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=115795&d=1360508618" -O include/rtd.inc
