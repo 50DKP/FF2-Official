@@ -24,7 +24,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #include <tf2_stocks>
 #include <tf2items>
 #include <tf2attributes>
-#include <clientprefs>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
 #define REQUIRE_EXTENSIONS
