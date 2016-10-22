@@ -20,6 +20,7 @@
 			"Plugin"	"Path_SM/plugins/freak_fortress_2.smx"
 			"Plugin"	"Path_SM/plugins/freaks/ff2_1st_set_abilities.ff2"
 			"Source"	"Path_SM/scripting/freak_fortress_2.sp"
+			"Source"	"Path_SM/scripting/freaks/ff2_1st_set_abilities.sp"
 		}
 
 		"Plugin"		"Path_SM/plugins/freak_fortress_2.smx"
