@@ -4,13 +4,13 @@
 	{
 		"Version"
 		{
-			"Latest"	"1.10.13"
-			"Previous"	"1.10.12"
+			"Latest"	"1.10.14"
+			"Previous"	"1.10.13"
 		}
 
-		"Notes"			"Fixed insta-backstab issues"
-		"Notes"			"Fixed team-changing exploit"
-		"Notes"			"[Server] Fixed an error message logging the wrong values"
+		"Notes"			"Fixed minions occasionally spawning on the wrong team"
+		"Notes"			"Fixed ff2_start_music at the start of the round causing music to overlap"
+		"Notes"			"Fixed new clients not hearing music in certain circumstances"
 	}
 
 	"Files"
