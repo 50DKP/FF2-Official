@@ -45,7 +45,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define UPDATE_URL "http://50dkp.github.io/FF2-Official/update.txt"
 
 #define MAXENTITIES 2048
-#define MAXRANDOMS 16
 
 #define HEALTHBAR_CLASS "monster_resource"
 #define HEALTHBAR_PROPERTY "m_iBossHealthPercentageByte"
@@ -4319,7 +4318,7 @@ public Action:BossTimer(Handle:timer)
 		KvRewind(kv);
 		if(KvJumpToKey(kv, "abilities"))
 		{
-			decl String:ability[10], String:lives[MAXRANDOMS][3];
+			decl String:ability[10];
 			KvGotoFirstSubKey(kv);
 			do
 			{
@@ -4344,10 +4343,13 @@ public Action:BossTimer(Handle:timer)
 					}
 					else // But these do
 					{
-						new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+						decl String:temp[3];
+						new Handle:livesArray=CreateArray(sizeof(temp));
+						new count=ExplodeStringIntoArrayList(ability, " ", livesArray, sizeof(temp));
 						for(new n; n<count; n++)
 						{
-							if(StringToInt(lives[n])==BossLives[boss])
+							GetArrayString(livesArray, n, temp, sizeof(temp));
+							if(StringToInt(temp)==BossLives[boss])
 							{
 								UseAbility(boss, pluginName, abilityName, slot, buttonmode);
 								break;
@@ -4519,7 +4521,7 @@ public Action:OnCallForMedic(client, const String:command[], args)
 		KvRewind(kv);
 		if(KvJumpToKey(kv, "abilities"))
 		{
-			decl String:ability[10], String:lives[MAXRANDOMS][3];
+			decl String:ability[10];
 			KvGotoFirstSubKey(kv);
 			do
 			{
@@ -4536,19 +4538,22 @@ public Action:OnCallForMedic(client, const String:command[], args)
 					}
 
 					KvGetString(kv, "life", ability, sizeof(ability), "");
-					if(!ability[0]) // Just a regular run-of-the-mill rage
+					if(!ability[0]) // Just a regular ability that doesn't care what life the boss is on
 					{
 						if(!UseAbility(boss, pluginName, abilityName, 0))
 						{
 							return Plugin_Continue;
 						}
 					}
-					else // This rage corresponds to a specific life
+					else // But these do
 					{
-						new count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+						decl String:temp[3];
+						new Handle:livesArray=CreateArray(sizeof(temp));
+						new count=ExplodeStringIntoArrayList(ability, " ", livesArray, sizeof(temp));
 						for(new n; n<count; n++)
 						{
-							if(StringToInt(lives[n])==BossLives[boss])
+							GetArrayString(livesArray, n, temp, sizeof(temp));
+							if(StringToInt(temp)==BossLives[boss])
 							{
 								if(!UseAbility(boss, pluginName, abilityName, 0))
 								{
@@ -5635,11 +5640,13 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 							}
 							else // But these do
 							{
-								decl String:stringLives[MAXRANDOMS][3];
-								new count=ExplodeString(ability, " ", stringLives, MAXRANDOMS, 3);
+								decl String:temp[3];
+								new Handle:livesArray=CreateArray(sizeof(temp));
+								new count=ExplodeStringIntoArrayList(ability, " ", livesArray, sizeof(temp));
 								for(new n; n<count; n++)
 								{
-									if(StringToInt(stringLives[n])==BossLives[boss])
+									GetArrayString(livesArray, n, temp, sizeof(temp));
+									if(StringToInt(temp)==BossLives[boss])
 									{
 										UseAbility(boss, pluginName, abilityName, -1);
 										break;

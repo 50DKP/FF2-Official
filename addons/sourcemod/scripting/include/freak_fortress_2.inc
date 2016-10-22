@@ -587,6 +587,39 @@ stock FF2_ShowHudText(client, channel, const String:buffer[], any:...)
 }
 
 /**
+ * Breaks a string into pieces and stores each piece into an ArrayList.
+ * Based off of string.inc's ExplodeString
+ *
+ * @param text				The string to split.
+ * @param split				The string to use as a split delimiter.
+ * @param list			    An ArrayList to store the split strings.
+ * @param maxStringLength   Maximum length of each string buffer.
+ * @return					Number of strings retrieved.
+ */
+stock int ExplodeStringIntoArrayList(const String:text[], const String:split[], Handle:list, maxStringLength)
+{
+	new reloc_idx, index, total;
+	new String:temp[maxStringLength];
+
+	if(!split[0])
+	{
+		return 0;
+	}
+
+	while((index=SplitString(text[reloc_idx], split, temp, maxStringLength))!=-1)
+	{
+		reloc_idx+=index;
+		PushArrayString(list, temp);
+		total++;
+	}
+
+	PushArrayString(list, text[reloc_idx]);
+	total++;
+
+	return total;
+}
+
+/**
  * Used to consolidate debug messages
  *
  * @param buffer    Debug string to display
