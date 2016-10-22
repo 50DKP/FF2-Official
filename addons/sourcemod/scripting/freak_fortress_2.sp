@@ -4649,15 +4649,15 @@ public Action:ClientTimer(Handle:timer)
 				new observer=GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
 				if(IsValidClient(observer) && !IsBoss(observer) && observer!=client)
 				{
-					FF2_ShowSyncHudText(client, rageHUD, "%t-%t", "Damage Self", Damage[client], "Damage Other", observer, Damage[observer]);
+					FF2_ShowSyncHudText(client, rageHUD, "%t-%t", "Your Damage Dealt", Damage[client], "Spectator Damage Dealt", observer, Damage[observer]);
 				}
 				else
 				{
-					FF2_ShowSyncHudText(client, rageHUD, "%t", "Damage Self", Damage[client]);
+					FF2_ShowSyncHudText(client, rageHUD, "%t", "Your Damage Dealt", Damage[client]);
 				}
 				continue;
 			}
-			FF2_ShowSyncHudText(client, rageHUD, "%t", "Damage Self", Damage[client]);
+			FF2_ShowSyncHudText(client, rageHUD, "%t", "Your Damage Dealt", Damage[client]);
 
 			new TFClassType:class=TF2_GetPlayerClass(client);
 			new weapon=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
