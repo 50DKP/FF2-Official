@@ -36,10 +36,10 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAJOR_REVISION "1"
 #define MINOR_REVISION "10"
-#define STABLE_REVISION "13"
+#define STABLE_REVISION "14"
 #define DEV_REVISION "Beta"
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.13
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.14
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
@@ -298,7 +298,8 @@ static const String:ff2versiontitles[][]=
 	"1.10.10",
 	"1.10.11",
 	"1.10.12",
-	"1.10.13"
+	"1.10.13",
+	"1.10.14"
 };
 
 static const String:ff2versiondates[][]=
@@ -379,13 +380,20 @@ static const String:ff2versiondates[][]=
 	"August 1, 2016",		//1.10.10
 	"August 1, 2016",		//1.10.11
 	"August 4, 2016",		//1.10.12
-	"September 1, 2016"		//1.10.13
+	"September 1, 2016",	//1.10.13
+	"October 21, 2016"		//1.10.14
 };
 
 stock FindVersionData(Handle:panel, versionIndex)
 {
 	switch(versionIndex)
 	{
+		case 77:  //1.10.14
+		{
+			DrawPanelText(panel, "1) Fixed minions occasionally spawning on the wrong team (Wliu from various)");
+			DrawPanelText(panel, "2) Fixed ff2_start_music at the start of the round causing music to overlap (naydef)");
+			DrawPanelText(panel, "3) Fixed new clients not hearing music in certain circumstances (naydef)");
+		}
 		case 76:  //1.10.13
 		{
 			DrawPanelText(panel, "1) Fixed insta-backstab issues (Wliu from tom0034)");
