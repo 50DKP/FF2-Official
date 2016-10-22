@@ -1961,6 +1961,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 			{
 				if(playBGM[client])
 				{
+					StopMusic(client);
 					PlayBGM(client);
 				}
 				else if(MusicTimer[client]!=INVALID_HANDLE)
@@ -1982,6 +1983,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 	{
 		if(playBGM[client])
 		{
+			StopMusic(client);
 			PlayBGM(client);
 		}
 		else if(MusicTimer[client]!=INVALID_HANDLE)
@@ -3877,11 +3879,18 @@ public OnClientPostAdminCheck(client)
 	FF2Flags[client]=0;
 	Damage[client]=0;
 	uberTarget[client]=-1;
-	playBGM[client]=true;
 
 	if(playBGM[0])
 	{
-		CreateTimer(0.0, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		playBGM[client]=true;
+		if(Enabled)
+		{
+			CreateTimer(0.0, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		}
+	}
+	else
+	{
+		playBGM[client]=false;
 	}
 }
 
