@@ -345,4 +345,14 @@
 	{
 		"de"	"Du wurdest gegärtnert!"
 	}
+	"Spectator Damage Dealt"
+	{
+		"#format"	"{1:N},{2:i}"
+		"de"		"{1}'s Schaden: {2}"
+	}
+	"Your Damage Dealt"
+	{
+		"#format"	"{1:i}"
+		"de"		"Schaden: {1}"
+	}
 }

@@ -360,4 +360,14 @@
 		"#format"	"{1:i}"
 		"en"		"You have {1} detonations left!"
 	}
+	"Spectator Damage Dealt"
+	{
+		"#format"	"{1:N},{2:i}"
+		"en"		"{1}'s Damage: {2}"
+	}
+	"Your Damage Dealt"
+	{
+		"#format"	"{1:i}"
+		"en"		"Damage: {1}"
+	}
 }
