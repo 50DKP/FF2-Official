@@ -5267,7 +5267,7 @@ public Action:OnChangeClass(client, const String:command[], args)
 public Action:OnJoinTeam(client, const String:command[], args)
 {
 	// Only block the commands when FF2 is actively running
-	if(!Enabled || RoundCount<arenaRounds || CheckRoundState()!=1)
+	if(!Enabled || RoundCount<arenaRounds || CheckRoundState()==-1)
 	{
 		return Plugin_Continue;
 	}
