@@ -2940,10 +2940,8 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 					KillTimer(MusicTimer[client]);
 					MusicTimer[client]=INVALID_HANDLE;
 				}
-				continue;
 			}
-
-			if(MusicTimer[client]!=INVALID_HANDLE)
+			else if(MusicTimer[client]!=INVALID_HANDLE)
 			{
 				KillTimer(MusicTimer[client]);
 				MusicTimer[client]=INVALID_HANDLE;
@@ -3068,7 +3066,7 @@ StopMusic(client=0, bool:permanent=false)
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 
-				if(MusicTimer[client])
+				if(MusicTimer[client]!=INVALID_HANDLE)
 				{
 					KillTimer(MusicTimer[client]);
 					MusicTimer[client]=INVALID_HANDLE;
