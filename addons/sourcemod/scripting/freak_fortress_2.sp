@@ -2965,27 +2965,25 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 	return Plugin_Continue;
 }
 
-PlayBGM(client, String:music[PLATFORM_MAX_PATH]="", Float:time=0.0)
+PlayBGM(client)
 {
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 	{
-		if(!music[0])
+		decl String:music[PLATFORM_MAX_PATH];
+		new index;
+		do
 		{
-			new index;
-			do
-			{
-				index++;
-				Format(music, 10, "time%i", index);
-			}
-			while(KvGetFloat(BossKV[Special[0]], music)>1);
-
-			index=GetRandomInt(1, index-1);
+			index++;
 			Format(music, 10, "time%i", index);
-			time=KvGetFloat(BossKV[Special[0]], music);
-			Format(music, 10, "path%i", index);
-			KvGetString(BossKV[Special[0]], music, music, sizeof(music));
 		}
+		while(KvGetFloat(BossKV[Special[0]], music)>1);
+
+		index=GetRandomInt(1, index-1);
+		Format(music, 10, "time%i", index);
+		new Float:time=KvGetFloat(BossKV[Special[0]], music);
+		Format(music, 10, "path%i", index);
+		KvGetString(BossKV[Special[0]], music, music, sizeof(music));
 
 		new Action:action;
 		Call_StartForward(OnMusic);
@@ -5796,35 +5794,6 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 						}
 					}
 				}
-
-				Format(ability, 10, "sound_bgm");
-				KvRewind(BossKV[Special[boss]]);
-				if(KvJumpToKey(BossKV[Special[boss]], ability))
-				{
-					Format(ability, 10, "life%i", n);
-					KvGetString(BossKV[Special[boss]], ability, ability, 10);
-					if(ability[0])
-					{
-						decl String:stringLives[MAXRANDOMS][3];
-						new count=ExplodeString(ability, " ", stringLives, MAXRANDOMS, 3);
-						for(new j; j<count; j++)
-						{
-							if(StringToInt(stringLives[j])==BossLives[boss])
-							{
-								decl String:music[PLATFORM_MAX_PATH];
-								Format(ability, 10, "path%i", n);
-								KvGetString(BossKV[Special[boss]], ability, music, sizeof(music));
-								Format(ability, 10, "time%i", n);
-								new Float:time=KvGetFloat(BossKV[Special[boss]], ability);
-								for(new target=1; target<=MaxClients; target++)
-								{
-									PlayBGM(target, music, time);
-								}
-							}
-						}
-					}
-				}
-
 			}
 			BossLives[boss]=lives;
 
