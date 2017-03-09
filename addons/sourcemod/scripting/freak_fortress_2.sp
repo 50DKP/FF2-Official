@@ -2933,7 +2933,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 				if(playBGM[client])
 				{
 					StopMusic(client);
-					PlayBGM(client);
+					RequestFrame(PlayBGM, client); // Naydef: We might start playing the music before it gets stopped
 				}
 				else if(MusicTimer[client]!=INVALID_HANDLE)
 				{
@@ -2953,7 +2953,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 		if(playBGM[client])
 		{
 			StopMusic(client);
-			PlayBGM(client);
+			RequestFrame(PlayBGM, client); // Naydef: We might start playing the music before it gets stopped
 		}
 		else if(MusicTimer[client]!=INVALID_HANDLE)
 		{
