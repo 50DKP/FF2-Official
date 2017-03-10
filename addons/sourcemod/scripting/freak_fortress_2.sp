@@ -2934,7 +2934,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 				if(playBGM[client])
 				{
 					StopMusic(client);
-					RequestFrame(PlayBGM, client); // Naydef: We might start playing the music before it gets stopped
+					RequestFrame(PlayBGM, GetClientUserId(client)); // Naydef: We might start playing the music before it gets stopped
 				}
 				else if(MusicTimer[client]!=INVALID_HANDLE)
 				{
@@ -2954,7 +2954,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 		if(playBGM[client])
 		{
 			StopMusic(client);
-			RequestFrame(PlayBGM, client); // Naydef: We might start playing the music before it gets stopped
+			RequestFrame(PlayBGM, GetClientUserId(client)); // Naydef: We might start playing the music before it gets stopped
 		}
 		else if(MusicTimer[client]!=INVALID_HANDLE)
 		{
@@ -2966,8 +2966,14 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 	return Plugin_Continue;
 }
 
-PlayBGM(client)
+PlayBGM(userid)
 {
+	new client = GetClientOfUserId(userid);
+	if(!IsValidClient(client))
+	{
+		return;
+	}
+
 	KvRewind(BossKV[Special[0]]);
 	if(KvJumpToKey(BossKV[Special[0]], "sound_bgm"))
 	{
