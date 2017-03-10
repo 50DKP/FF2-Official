@@ -193,6 +193,7 @@ new mp_forcecamera;
 new tf_dropped_weapon_lifetime;
 new Float:tf_feign_death_activate_damage_scale;
 new Float:tf_feign_death_damage_scale;
+new String:mp_humans_must_join_team[16];
 
 new Handle:cvarNextmap;
 
@@ -393,6 +394,7 @@ public OnPluginStart()
 	AddCommandListener(OnCallForMedic, "voicemenu");    //Used to activate rages
 	AddCommandListener(OnSuicide, "explode");           //Used to stop boss from suiciding
 	AddCommandListener(OnSuicide, "kill");              //Used to stop boss from suiciding
+	AddCommandListener(OnSuicide, "spectate");			//Used to stop boss from suiciding
 	AddCommandListener(OnJoinTeam, "jointeam");         //Used to make sure players join the right team
 	AddCommandListener(OnJoinTeam, "autoteam");         //Used to make sure players don't kill themselves and change team
 	AddCommandListener(OnChangeClass, "joinclass");     //Used to make sure bosses don't change class
@@ -545,6 +547,7 @@ public OnConfigsExecuted()
 	tf_dropped_weapon_lifetime=bool:GetConVarInt(FindConVar("tf_dropped_weapon_lifetime"));
 	tf_feign_death_activate_damage_scale=GetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"));
 	tf_feign_death_damage_scale=GetConVarFloat(FindConVar("tf_feign_death_damage_scale"));
+	GetConVarString(FindConVar("mp_humans_must_join_team"), mp_humans_must_join_team, sizeof(mp_humans_must_join_team));
 
 	if(IsFF2Map() && GetConVarBool(cvarEnabled))
 	{
@@ -648,6 +651,7 @@ public EnableFF2()
 	SetConVarInt(FindConVar("tf_dropped_weapon_lifetime"), 0);
 	SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), 0.3);
 	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), 0.0);
+	SetConVarString(FindConVar("mp_humans_must_join_team"), "any");
 
 	new Float:time=Announce;
 	if(time>1.0)
@@ -687,6 +691,7 @@ public DisableFF2()
 	SetConVarInt(FindConVar("tf_dropped_weapon_lifetime"), tf_dropped_weapon_lifetime);
 	SetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"), tf_feign_death_activate_damage_scale);
 	SetConVarFloat(FindConVar("tf_feign_death_damage_scale"), tf_feign_death_damage_scale);
+	SetConVarString(FindConVar("mp_humans_must_join_team"), mp_humans_must_join_team);
 
 	if(doorCheckTimer!=INVALID_HANDLE)
 	{
@@ -1961,17 +1966,15 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 				if(playBGM[client])
 				{
 					StopMusic(client);
-					PlayBGM(client);
+					RequestFrame(PlayBGM, client); // Naydef: We might start playing the music before it gets stopped
 				}
 				else if(MusicTimer[client]!=INVALID_HANDLE)
 				{
 					KillTimer(MusicTimer[client]);
 					MusicTimer[client]=INVALID_HANDLE;
 				}
-				continue;
 			}
-
-			if(MusicTimer[client]!=INVALID_HANDLE)
+			else if(MusicTimer[client]!=INVALID_HANDLE)
 			{
 				KillTimer(MusicTimer[client]);
 				MusicTimer[client]=INVALID_HANDLE;
@@ -1983,7 +1986,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 		if(playBGM[client])
 		{
 			StopMusic(client);
-			PlayBGM(client);
+			RequestFrame(PlayBGM, client); // Naydef: We might start playing the music before it gets stopped
 		}
 		else if(MusicTimer[client]!=INVALID_HANDLE)
 		{
@@ -2085,13 +2088,13 @@ StartMusic(client=0)
 		{
 			playBGM[target]=true;  //This includes the 0th index
 		}
-		CreateTimer(0.0, Timer_PrepareBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(0.1, Timer_PrepareBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
 	{
 		StopMusic(client);
 		playBGM[client]=true;
-		CreateTimer(0.0, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(0.1, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
@@ -2111,7 +2114,7 @@ StopMusic(client=0, bool:permanent=false)
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 
-				if(MusicTimer[client])
+				if(MusicTimer[client]!=INVALID_HANDLE)
 				{
 					KillTimer(MusicTimer[client]);
 					MusicTimer[client]=INVALID_HANDLE;
@@ -3884,7 +3887,7 @@ public OnClientPostAdminCheck(client)
 		playBGM[client]=true;
 		if(Enabled)
 		{
-			CreateTimer(0.0, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(0.1, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 	else
@@ -4028,15 +4031,15 @@ public Action:ClientTimer(Handle:timer)
 				new observer=GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
 				if(IsValidClient(observer) && !IsBoss(observer) && observer!=client)
 				{
-					FF2_ShowSyncHudText(client, rageHUD, "Damage: %d-%N's Damage: %d", Damage[client], observer, Damage[observer]);
+					FF2_ShowSyncHudText(client, rageHUD, "%t-%t", "Your Damage Dealt", Damage[client], "Spectator Damage Dealt", observer, Damage[observer]);
 				}
 				else
 				{
-					FF2_ShowSyncHudText(client, rageHUD, "Damage: %d", Damage[client]);
+					FF2_ShowSyncHudText(client, rageHUD, "%t", "Your Damage Dealt", Damage[client]);
 				}
 				continue;
 			}
-			FF2_ShowSyncHudText(client, rageHUD, "Damage: %d", Damage[client]);
+			FF2_ShowSyncHudText(client, rageHUD, "%t", "Your Damage Dealt", Damage[client]);
 
 			new TFClassType:class=TF2_GetPlayerClass(client);
 			new weapon=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
@@ -4611,7 +4614,8 @@ public Action:OnChangeClass(client, const String:command[], args)
 
 public Action:OnJoinTeam(client, const String:command[], args)
 {
-	if(!Enabled || RoundCount<arenaRounds)
+	// Only block the commands when FF2 is actively running
+	if(!Enabled || RoundCount<arenaRounds || CheckRoundState()==-1)
 	{
 		return Plugin_Continue;
 	}
