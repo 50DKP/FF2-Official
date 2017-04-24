@@ -7,6 +7,8 @@ addons/sourcemod/configs/**
 addons/sourcemod/translations/**
 !addons/sourcemod/translations/de/
 !addons/sourcemod/translations/de/freak_fortress_2.phrases.txt
+!addons/sourcemod/translations/fr/
+!addons/sourcemod/translations/fr/freak_fortress_2.phrases.txt
 !addons/sourcemod/translations/ru/
 !addons/sourcemod/translations/ru/freak_fortress_2.phrases.txt
 !addons/sourcemod/translations/ff2_1st_set.phrases.txt

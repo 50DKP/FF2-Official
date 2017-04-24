@@ -1,0 +1,337 @@
+"Phrases"
+{
+	"More Players Needed"
+	{
+		"fr"		"Freak Fortress 2 est actuellement désactivé. D'autres joueurs sont nécessaires."
+	}
+	"Type ff2 to Open Menu"
+	{
+		"fr"		"Écrivez {olive}/ff2{default} dans le tchat pour ouvrir le menu"
+	}
+	"Wait for Health Value"
+	{
+		"#format"	"{1:i},{2:s}"
+		"fr"		"Vous ne pouvez pas verifier la vie du boss pour le moment. Attendez encore {1} seconde(s).  La dernière valeur vitale connue était {2}."
+	}
+	"Damage Dealt"
+	{
+		"#format"	"{1:i}"
+		"fr"		"Dommage provoqué par vous - {1}"
+	}
+	"Point Unlocked"
+	{
+		"#format"	"{1:i}"
+		"fr"		"Seul {1} joueur(s) reste(nt) en vie, le point de contrôle a été débloqué !"
+	}
+	"Top 3"
+	{
+		"fr"		"Le plus de dommage a été causé par"
+	}
+	"Ubercharge"
+	{
+		"fr"		"Pourcentage d'Ubercharge"
+	}
+	"Boss Lives Left"
+	{
+		"#format" "{1:i},{2:i}"
+		"fr"	"{1} sur {2} vies restantes"
+	}
+	"Activate Rage"
+	{
+		"fr"		"Appelez un medic pour activer votre \"RAGE\" compétence !"
+	}
+	"Rage Meter"
+	{
+		"#format"	"{1:i}"
+		"fr"		"La rage est à {1} pourcent de prêt"
+	}
+	"Super Duper Jump"
+	{
+		"fr"		"Le Super Duper Jump est prêt !"
+	}
+	"Teleportation Charge"
+	{
+		"#format"	"{1:i}"
+		"fr"		"La téléportation est à {1} pourcent de prêt. Lorsqu'il atteint les 100 pourcents, regardez en hauteur et levez-vous"
+	}
+	"Super Jump Charge"
+	{
+		"#format"	"{1:i}"
+		"fr"		"Le Super Jump charge est à {1} pourcent. Regardez vers le haut et sautez pour faire le saut"
+	}
+	"Teleportation Cooldown"
+	{
+		"#format"	"{1:i}"
+		"fr"		"La téléportation est disponible dans {1} seconde(s)"
+	}
+	"Super Jump Cooldown"
+	{
+		"#format"	"{1:i}"
+		"fr"		"Le Super Jump est disponible dans {1} seconde(s)"
+	}
+	"Scout Advice"
+	{
+	}
+	"Soldier Advice"
+	{
+	}
+	"Pyro Advice"
+	{
+	}
+	"Demo Advice"
+	{
+	}
+	"Heavy Advice"
+	{
+	}
+	"Engineer Advice"
+	{
+	}
+	"Medic Advice"
+	{
+	}
+	"Sniper Advice"
+	{
+	}
+	"Spy Advice"
+	{
+	}
+	"Melee Advice"
+	{
+		"fr"		"Toutes les attaques de mélées (à l'exception des couteaux du Spy) font des critiques.\nUtilisez le menu /ff2 pour désactiver ces notifications."
+	}
+	"Boss Queue"
+	{
+		"fr"		"File d'attente pour devenir le Boss"
+	}
+	"What's Up"
+	{
+		"fr"		"Quoi de nouveau ?" (Don't know where it is applied, difficult to translate in a single phrase, i need more info about it)
+	}
+	"Observe Health Value"
+	{
+		"fr"		"Examiner la vie du boss (/ff2_hp)"
+	}
+	"FF2 Help"
+	{
+		"fr"		"FF2 aide (/ff2_help)."
+	}
+	"What's New in FF2"
+	{
+		"fr"		"Quoi de nouveau ? (/ff2_new)."
+	}
+	"View Queue Points"
+	{
+		"fr"		"Points de file d'attente"
+	}
+	"Exit Menu"
+	{
+		"fr"		"Sortir"
+	}
+	"FF2 Objective"
+	{
+		"fr"		"===Freak Fortress 2===\nUn (ou plusieurs) joueur(s) devien(nent) le(s) Boss.\nLes autres joueurs doivent le battre."
+	}
+	"Changelog"
+	{
+		"fr"		"Changement de Freak Fortress 2"
+	}
+	"Class Changes"
+	{
+	}
+	"Total Damage Dealt"
+	{
+		"#format"	"{1:i}"
+		"fr"		"Vous avez causé {1} de dommage dans cette manche"
+	}
+	"Points Earned"
+	{
+		"#format"	"{1:i}"
+		"fr"		"Vous avez reçu {1} points dans cette manche"
+	}
+	"Boss Victory"
+	{
+		"fr"		"Bravo !  Vous avez gagné !"
+	}
+	"Boss Defeat"
+	{
+		"fr"		"Oh non, vous avez perdu!  Ne vous inquiétez pas, vous aurez une autre chance la prochaine fois"
+	}
+	"Boss Info"
+	{
+		"#format"	"{1:N},{2:s},{3:i},{4:s}"
+		"fr"		"{1} est devenu\n {2}\n avec {3}{4} de vie"
+	}
+	"Boss Current Health"
+	{
+		"#format"	"{1:s},{2:i},{3:i},{4:s}"
+		"fr"		"{1} a actuellement {2} de vie sur {3}{4}"
+	}
+	"Boss Win Final Health"
+	{
+		"#format" "{1:s},{2:N},{3:i},{4:i},{5:s}"
+		"fr"	"{1} ({2}) a gagné avec {3} de vie sur {4}{5} restants"
+	}
+	"Vote for Character Set"
+	{
+		"fr"		"Votez pour ??character?? set pour la prochaine map." (can't know the character word, and where it is used)
+	}
+	"Your Queue Points"
+	{
+		"#format"	"{1:i}"
+		"fr"		"Vous avez {1} point(s) de file d'attente."
+	}
+	"Reset Queue Points"
+	{
+		"fr"		"Définit à 0"
+	}
+	"Reset Queue Points Confirmation"
+	{
+		"fr"		"Voulez-vous réellement remettre à 0 vos points ?"
+	}
+	"Reset Player's Queue Points"
+	{
+		"#format"	"{1:N}"
+		"fr"		"Voulez-vous réellement mettre les points de {1} à 0?"
+	}
+	"Reset Queue Points Done"
+	{
+		"fr"		"Vous avez désormais {olive}0{default} points de file d'attente"
+	}
+	"Reset Player's Points Done"
+	{
+		"#format"	"{1:N}"
+		"fr"		"Désormais {olive}{1}{default} a {olive}0{default} de points de file d'attente"
+	}
+	"Queue Points Reset by Admin"
+	{
+		"#format"	"{1:N}"
+		"fr"		"{olive}{1}{default} reset your queue points to {olive}0{default}"
+	}
+	"Next Boss"
+	{
+		"fr"		"Vous allez devenir le Boss. Écrivez {olive}/ff2_next{default} pour en être sur."
+	}
+	"Arena Rounds Left"
+	{
+		"#format"	"{1:i}"
+		"fr"		"En attendant que les joueurs terminent de charger.  FF2 va se lancer dans {1} manche(s)"
+	}
+	"FF2 Music"
+	{
+		"#format"	"{1:s}"
+	}
+	"FF2 Voice"
+	{
+		"#format"	"{1:s}"
+		"fr"		"Les monologues de FF2 sont maintenant {1}"
+	}
+	"FF2 Voice 2"
+	{
+		"fr"		"Les autres sons vont être joué, mais très silencieusement"
+	}
+	"Toggle Music"
+	{
+	}
+	"Toggle Monologue"
+	{
+	}
+	"Toggle Class Changes"
+	{
+	}
+	"FF2 Class Info"
+	{
+		"#format"	"{1:s}"
+	}
+	"Last FF2 Update"
+	{
+		"#format"	"{1:s}"
+		"fr"		"Écrivez {olive}/ff2_changelog{default} pour voir les changements de la version {olive}{1}{default}."
+	}
+	"Charge Status"
+	{
+		"#format"	"{1:i}"
+		"fr"		"Votre charge est à {1} pourcent de prêt. Lorsqu'elle atteint les 100 pourcents, relâchez le bouton."
+	}
+	"Character Set Next Map"
+	{
+		"#format"	"{1:s},{2:s}"
+	}
+	"Ability uses Reload"
+	{
+		"fr"		"Appuyez sur la touche recharger pour utiliser votre compétence !"
+	}
+	"Ability uses Right Mouse"
+	{
+		"fr"		"Appuyez sur votre clique droit pour utiliser votre compétence !"
+	}
+	"Boss with Multiple Lives Left"
+	{
+		"#format"	"{1:s},{2:i}"
+		"fr"		"{1} a perdu une vie! Il lui en manque plus que {2} !"
+	}
+	"Boss with 1 Life Left"
+	{
+		"#format"	"{1:s}"
+		"fr"		"{1} a perdu une vie! Il lui en reste plus qu'une !"
+	}
+	"Seeldier Rage Message"
+	{
+		"#format"	"{1:s}"
+		"fr"		"Vous êtes désormais un serviteur de {1} ! Attaquez l'équipe adverse !"
+	}
+	"VSH and FF2 Group"
+	{
+	}
+	"FF2 Contributors"
+	{
+		"#format"	"{1:s}"
+		"fr"		"=== Freak Fortress 2 v{1} (basé sur le VS Saxton Hale Mode par {olive}RainBolt Dash{default} et {olive}FlaminSarge{default}) ==="
+	}
+	"Boss Suicide Denied"
+	{
+		"fr"	"Vous n'êtes pas autorisé à vous suicider en tant que boss!"
+	}
+	"Boss Suicide Pre-round"
+	{
+		"fr"	"Vous n'êtes pas autorisé à vous suicider avant le début de la manche !"
+	}
+	"Boss Disconnected"
+	{
+		"#format" "{1:N},{2:N}"
+		"fr"	"{1} s'est déconnecté, {2} est désormais le nouveau boss !"
+	}
+	"Replace Disconnected Boss"
+	{
+		"fr"	"Surprise! Vous êtes désormais le boss !"
+	}
+	"Backstab"
+	{
+		"fr"	"Vous avez poignardé le boss !"
+	}
+	"Backstabbed"
+	{
+		"fr"	"Vous avez été poignardé !"
+	}
+	"Market Gardener"
+	{
+	}
+	"Market Gardened"
+	{
+	}
+	"Detonations Left"
+	{
+		"#format"	"{1:i}"
+		"fr"		"Vous n'avez plus que {1} detonations restant(es) !"
+	}
+	"Spectator Damage Dealt"
+	{
+		"#format"	"{1:N},{2:i}"
+		"fr"		"Les dommages causés par {1} sont de: {2}"
+	}
+	"Your Damage Dealt"
+	{
+		"#format"	"{1:i}"
+		"fr"		"Dommage causé: {1}"
+	}
+}
