@@ -2330,20 +2330,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 		}
 	}
 
-	if(blueBoss)
-	{
-		SetTeamScore(_:TFTeam_Red, GetTeamScore(OtherTeam));
-		SetTeamScore(_:TFTeam_Blue, GetTeamScore(BossTeam));
-		OtherTeam=_:TFTeam_Red;
-		BossTeam=_:TFTeam_Blue;
-	}
-	else
-	{
-		SetTeamScore(_:TFTeam_Red, GetTeamScore(BossTeam));
-		SetTeamScore(_:TFTeam_Blue, GetTeamScore(OtherTeam));
-		OtherTeam=_:TFTeam_Blue;
-		BossTeam=_:TFTeam_Red;
-	}
+	SetBossTeam(blueBoss ? TFTeam_Blue : TFTeam_Red);
 
 	playing=0;
 	for(new client=1; client<=MaxClients; client++)
@@ -2493,6 +2480,14 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 	healthcheckused=0;
 	firstBlood=true;
 	return Plugin_Continue;
+}
+
+public SetBossTeam(TFTeam:bossTeam)
+{
+	SetTeamScore(_:(bossTeam==TFTeam_Blue ? TFTeam_Red : TFTeam_Blue), GetTeamScore(OtherTeam));
+	SetTeamScore(_:bossTeam, GetTeamScore(BossTeam));
+	OtherTeam=_:(bossTeam==TFTeam_Blue ? TFTeam_Red : TFTeam_Blue);
+	BossTeam=_:bossTeam;
 }
 
 public Action:Timer_EnableCap(Handle:timer)
