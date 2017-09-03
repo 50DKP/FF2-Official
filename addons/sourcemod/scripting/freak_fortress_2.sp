@@ -2903,6 +2903,16 @@ public Action:StartBossTimer(Handle:timer)
 			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);  //TODO:  Is this needed?
 		}
 	}
+	
+	for(new boss; boss<=MaxClients; boss++)
+	{
+		if(IsValidClient(Boss[boss]) && IsPlayerAlive(Boss[boss]))
+		{
+			BossHealthMax[boss]=ParseFormula(boss, "health_formula", "(((760.8+n)*(n-1))^1.0341)+2046", RoundFloat(Pow((760.8+float(playing))*(float(playing)-1.0), 1.0341)+2046.0));
+			BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
+			BossHealthLast[boss]=BossHealth[boss];
+		}
+	}
 
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
