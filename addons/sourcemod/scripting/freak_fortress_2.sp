@@ -7942,7 +7942,7 @@ public Action:HelpPanelClass(client)
 		}
 		case TFClass_Engineer:
 		{
-			Format(text, sizeof(text), "%t", "help_eggineer");
+			Format(text, sizeof(text), "%t", "help_engineer");
 		}
 		case TFClass_Medic:
 		{
@@ -7954,7 +7954,7 @@ public Action:HelpPanelClass(client)
 		}
 		case TFClass_Spy:
 		{
-			Format(text, sizeof(text), "%t", "help_spie");
+			Format(text, sizeof(text), "%t", "help_spy");
 		}
 		default:
 		{

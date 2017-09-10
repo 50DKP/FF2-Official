@@ -94,7 +94,7 @@
 	{
 		"en"	"Natascha and the KGB are replaced with the\nMinigun and Fists, respectively.\nThe Gloves of Running are quite quick but cause you to lose more health.\nThe Holiday Punch gives you instant weapon switch."
 	}
-	"help_eggineer"
+	"help_engineer"
 	{
 		"en"	"All maps have only small ammo packs.\nThe Frontier Justice gains crits only while your sentry is targetting Boss."
 	}
@@ -106,7 +106,7 @@
 	{
 		"en"	"All your weapons have critical hits.\nJarate removes 8%% rage.\nDarwin's Danger Shield gives you +50HP.  Razorback blocks a hit from the boss.\nCozy Camper gives you a modified SMG.\nDefault Sniper Rifle causes Boss to glow. Glow time scales with charge."
 	}
-	"help_spie"
+	"help_spy"
 	{
 		"en"	"Backstab does about 10 percent of Boss's max health.\nCloak and Dagger replaced with normal watch.\nAll revolvers minicrit.\nYour Eternal Reward/Wanga Prick backstabs disguise you instantly.\nKunai backstabs will give you a health bonus.\nBig Earner gives you full cloak on backstab."
 	}
