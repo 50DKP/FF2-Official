@@ -4,6 +4,14 @@
 	{
 		"en"	"Freak Fortress 2 is currently disabled. More players are required."
 	}
+	"ff2_group"
+	{
+		"en"	"VS Saxton Hale/Freak Fortress 2 group: {olive}http://steamcommunity.com/groups/vssaxtonhale{default}"
+	}
+	"ff2_devs"
+	{
+		"en"	"{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default}, {olive}FlaminSarge{default}, and {blue}Chdata{default}) === "
+	}
 	"type_ff2_to_open_menu"
 	{
 		"en"	"Type {olive}/ff2{default} in chat to open the menu"
