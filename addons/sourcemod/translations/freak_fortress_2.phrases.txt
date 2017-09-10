@@ -8,9 +8,10 @@
 	{
 		"en"	"VS Saxton Hale/Freak Fortress 2 group: {olive}http://steamcommunity.com/groups/vssaxtonhale{default}"
 	}
-	"ff2_devs"
+	"ff2_info"
 	{
-		"en"	"{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default}, {olive}FlaminSarge{default}, and {blue}Chdata{default}) === "
+		"#format" "{1:s}"
+		"en"	"{default} === Freak Fortress 2 v{1} (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default}, {olive}FlaminSarge{default}, and {blue}Chdata{default}) === "
 	}
 	"type_ff2_to_open_menu"
 	{

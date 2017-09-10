@@ -2137,7 +2137,7 @@ public Action:Timer_Announce(Handle:timer)
 			}
 			case 3:
 			{
-				CPrintToChatAll("%t", "ff2_devs", PLUGIN_VERSION);
+				CPrintToChatAll("%t", "ff2_info", PLUGIN_VERSION);
 			}
 			case 4:
 			{
