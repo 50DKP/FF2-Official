@@ -1166,11 +1166,11 @@ public Action:Timer_Announce(Handle:timer)
 		{
 			case 1:
 			{
-				CPrintToChatAll("{olive}[FF2]{default} VS Saxton Hale/Freak Fortress 2 group: {olive}http://steamcommunity.com/groups/vssaxtonhale{default}");
+				CPrintToChatAll("%t", "VSH and FF2 Group");
 			}
 			case 3:
 			{
-				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default}, {olive}FlaminSarge{default}, and {blue}Chdata{default}) === ", PLUGIN_VERSION);
+				CPrintToChatAll("%t", "FF2 Contributors", PLUGIN_VERSION);
 			}
 			case 4:
 			{
@@ -7184,7 +7184,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 				StartMusic(client);
 			}
 		}
-		CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_music", selection==2 ? "off" : "on");
+		CPrintToChat(client, "{olive}[FF2]{default} %t", "FF2 Music", selection==2 ? "off" : "on");
 	}
 }
 
