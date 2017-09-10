@@ -355,6 +355,34 @@
 	{
 		"en"	"You just got market-gardened!"
 	}
+	"Telefrag Assist"
+	{
+		"en"	"TELEFRAG ASSIST! Nice job setting it up!"
+	}
+	"Telefragger"
+	{
+		"en"	"TELEFRAG! You're a pro!"
+	}
+	"Telefragged"
+	{
+		"en"	"TELEFRAG! Be careful around quantum tunneling devices!"
+	}
+	"Boss Goomba Stomped"
+	{
+		"en"	"Ouch! Watch your head!"
+	}
+	"Boss Goomba Stomper"
+	{
+		"en"	"You just goomba stomped somebody!"
+	}
+	"Player Goomba Stomped"
+	{
+		"en"	"You were just goomba stomped!"
+	}
+	"Player Goomba Stomper"
+	{
+		"en"	"You just goomba stomped the boss!"
+	}
 	"Detonations Left"
 	{
 		"#format"	"{1:i}"
