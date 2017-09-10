@@ -94,7 +94,7 @@
 	{
 		"de"	"Die Natascha, die KilligGloves of Boxing , und die Stahlfäuste werden durch die\nMinigun, die Handschuhe der Schneller Flucht, und die Fäuste ersezt.\nDie Handschuhe der Schnellen Flucht sind sehr sehr schnell haben aber einen höheren Lebensverlust.\nDer Weihnachtsgruß entfernt jede Betäubung von dir when du den Boss triffst."
 	}
-	"help_eggineer"
+	"help_engineer"
 	{
 		"de"	"Jeder Map besitzt nur ein kleine Munitionspackete.\nDie Selbstjustiz verursacht nur Crits wenn deine Sentry den Boss anvisiert."
 	}
@@ -106,7 +106,7 @@
 	{
 		"de"	"Alle Waffen verursachen Krits.\nJarate entfernt 8%% Rage.\nRucksäcke werden durch das SMG ersetzt.\nDas Snipergewehr markiert den Boss. Markierungszeit hängt von der Aufladung ab.\nSchlage mit dem Buschwaka gegen eine Wand um an ihr hochzuklettern. Verursacht aber Eigenschaden."
 	}
-	"help_spie"
+	"help_spy"
 	{
 		"de"	"Backstabs rauben dem Boss ca 10% von seinem Leben.\nStanduhr wird durch normale Uhr ersetzt.\nAlle Revolver verursachen Minicrits.\nDie Lezte Belohnung/Wanga Nadel verkleidet dich sofort.\nDer Kunai gibt dir zusätzliches Leben."
 	}
