@@ -6369,18 +6369,18 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						Damage[teleowner]+=9001*3/5;
 						if(!(FF2flags[teleowner] & FF2FLAG_HUDDISABLED))
 						{
-							PrintHintText(teleowner, "TELEFRAG ASSIST!  Nice job setting it up!");
+							PrintHintText(teleowner, "%t", "TeleFrag Setup"); //TeleFrag Assist
 						}
 					}
 
 					if(!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
 					{
-						PrintHintText(attacker, "TELEFRAG! You are a pro!");
+						PrintHintText(attacker, "%t", "TeleFragger");
 					}
 
 					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
 					{
-						PrintHintText(client, "TELEFRAG! Be careful around quantum tunneling devices!");
+						PrintHintText(client, "%t", "TeleFragged");
 					}
 					return Plugin_Changed;
 				}
@@ -6510,16 +6510,16 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 		}
 		damageMultiplier=900.0;
 		JumpPower=0.0;
-		PrintHintText(victim, "Ouch!  Watch your head!");
-		PrintHintText(attacker, "You just goomba stomped somebody!");
+		PrintHintText(victim, "%t", "Boss Goomba Stomped");
+		PrintHintText(attacker, "%t", "Boss Goomba Stomper");
 		return Plugin_Changed;
 	}
 	else if(IsBoss(victim))
 	{
 		damageMultiplier=GoombaDamage;
 		JumpPower=reboundPower;
-		PrintHintText(victim, "You were just goomba stomped!");
-		PrintHintText(attacker, "You just goomba stomped the boss!");
+		PrintHintText(victim, "%t", "Player Goomba Stomped");
+		PrintHintText(attacker, "%t", "Player Goomba Stomper");
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
