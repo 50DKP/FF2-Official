@@ -355,15 +355,15 @@
 	{
 		"en"	"You just got market-gardened!"
 	}
-	"TeleFrag Setup"
+	"TeleFrag Assist"
 	{
 		"en"	"TELEFRAG ASSIST! Nice job setting it up!"
 	}
-	"TeleFragger"
+	"Telefragger"
 	{
 		"en"	"TELEFRAG! You're a pro!"
 	}
-	"TeleFragged"
+	"Telefragged"
 	{
 		"en"	"TELEFRAG! Be careful around quantum tunneling devices!"
 	}

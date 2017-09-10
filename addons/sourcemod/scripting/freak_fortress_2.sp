@@ -6369,18 +6369,18 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 						Damage[teleowner]+=9001*3/5;
 						if(!(FF2flags[teleowner] & FF2FLAG_HUDDISABLED))
 						{
-							PrintHintText(teleowner, "%t", "TeleFrag Setup"); //TeleFrag Assist
+							PrintHintText(teleowner, "%t", "Telefrag Assist");
 						}
 					}
 
 					if(!(FF2flags[attacker] & FF2FLAG_HUDDISABLED))
 					{
-						PrintHintText(attacker, "%t", "TeleFragger");
+						PrintHintText(attacker, "%t", "Telefragger");
 					}
 
 					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
 					{
-						PrintHintText(client, "%t", "TeleFragged");
+						PrintHintText(client, "%t", "Telefragged");
 					}
 					return Plugin_Changed;
 				}
