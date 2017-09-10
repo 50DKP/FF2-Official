@@ -4,6 +4,15 @@
 	{
 		"en"	"Freak Fortress 2 is currently disabled. More players are required."
 	}
+	"ff2_group"
+	{
+		"en"	"VS Saxton Hale/Freak Fortress 2 group: {olive}http://steamcommunity.com/groups/vssaxtonhale{default}"
+	}
+	"ff2_info"
+	{
+		"#format" "{1:s}"
+		"en"	"{default} === Freak Fortress 2 v{1} (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default}, {olive}FlaminSarge{default}, and {blue}Chdata{default}) === "
+	}
 	"type_ff2_to_open_menu"
 	{
 		"en"	"Type {olive}/ff2{default} in chat to open the menu"
@@ -16,7 +25,7 @@
 	"wait_hp"
 	{
 		"#format" "{1:i},{2:s}"
-		"en"  "You cannot check the boss' hp right now. Wait {1} more second(s). Last known hp value was {2}"
+		"en"  "You cannot check the boss' HP right now. Wait {1} more second(s). Last known HP value was {2}"
 	}
 	"damage"
 	{
@@ -192,7 +201,7 @@
 	"ff2_start"
 	{
 		"#format" "{1:N},{2:s},{3:i},{4:s}"
-		"en"	"{1} became\n {2}\n with {3}{4} hp"
+		"en"	"{1} became\n {2}\n with {3}{4} HP"
 	}
 	"ff2_hp"
 	{
@@ -202,7 +211,7 @@
 	"ff2_alive"
 	{
 		"#format" "{1:s},{2:N},{3:i},{4:i},{5:s}"
-		"en"	"{1} ({2}) won with {3} out of {4}{5} hp left."
+		"en"	"{1} ({2}) won with {3} out of {4}{5} HP left."
 	}
 	"select_charset"
 	{

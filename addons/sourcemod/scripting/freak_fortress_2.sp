@@ -2133,11 +2133,11 @@ public Action:Timer_Announce(Handle:timer)
 		{
 			case 1:
 			{
-				CPrintToChatAll("{olive}[FF2]{default} VS Saxton Hale/Freak Fortress 2 group: {olive}http://steamcommunity.com/groups/vssaxtonhale{default}");
+				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_group");
 			}
 			case 3:
 			{
-				CPrintToChatAll("{default} === Freak Fortress 2 v%s (based on VS Saxton Hale Mode by {olive}RainBolt Dash{default}, {olive}FlaminSarge{default}, and {blue}Chdata{default}) === ", PLUGIN_VERSION);
+				CPrintToChatAll("%t", "ff2_info", PLUGIN_VERSION);
 			}
 			case 4:
 			{
