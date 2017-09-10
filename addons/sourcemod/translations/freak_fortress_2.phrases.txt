@@ -355,7 +355,7 @@
 	{
 		"en"	"You just got market-gardened!"
 	}
-	"TeleFrag Assist"
+	"Telefrag Assist"
 	{
 		"en"	"TELEFRAG ASSIST! Nice job setting it up!"
 	}
