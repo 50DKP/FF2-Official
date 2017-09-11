@@ -2168,7 +2168,7 @@ stock EmitSoundToAllExcept(soundFlags, const String:sample[], entity=SOUND_FROM_
 	{
 		return;
 	}
-	
+
 	EmitSound(clients, total, sample, entity, channel, level, flags, volume, pitch, speakerentity, origin, dir, updatePos, soundtime);
 }
 
