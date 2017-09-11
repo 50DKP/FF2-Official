@@ -2216,7 +2216,7 @@ public ClearSoundFlags(client, soundFlags)
 	GetClientCookie(client, FF2Cookie_MuteSound, buffer, sizeof(buffer));
 	IntToString((StringToInt(buffer) & ~soundFlags), buffer, sizeof(buffer));
 	SetClientCookie(client, FF2Cookie_MuteSound, buffer);
-	muteSound[client] &=~ soundFlags;
+	muteSound[client]&=~soundFlags;
 }
 
 public Action:Timer_Move(Handle:timer)
