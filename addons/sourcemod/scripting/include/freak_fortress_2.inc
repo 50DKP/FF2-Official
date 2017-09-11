@@ -425,7 +425,7 @@ native FF2_ClearSoundFlags(client, flags);
  *
  * @param client    Client's index
  * @param flags     Flags which to check
- * @noreturn
+ * @return          True if the client does _not_ have the given flags, false otherwise
  */
 native bool:FF2_CheckSoundFlags(client, flags);
 
