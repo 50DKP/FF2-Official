@@ -2098,7 +2098,7 @@ StartMusic(client=0)
 	{
 		StopMusic(client);
 		playBGM[client]=true;
-		CreateTimer(0.2, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(0.1, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
@@ -2115,7 +2115,6 @@ StopMusic(client=0, bool:permanent=false)
 		{
 			if(IsValidClient(client))
 			{
-				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 
 				if(MusicTimer[client]!=INVALID_HANDLE)
