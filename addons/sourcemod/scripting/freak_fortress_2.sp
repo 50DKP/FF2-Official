@@ -1954,7 +1954,7 @@ public Action:Timer_PrepareBGM(Handle:timer, any:userid)
 	{
 		return Plugin_Stop;
 	}
-	
+
 	if(!client)
 	{
 		for(client=1; client<=MaxClients; client++)
