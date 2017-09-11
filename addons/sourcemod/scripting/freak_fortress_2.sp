@@ -2061,12 +2061,12 @@ PlayBGM(client)
 				SetArrayCell(timeArray, index, time2);
 			}
 		}
-		
+
 		GetArrayString(musicArray, index, buffer, sizeof(buffer));
 		Format(temp, sizeof(temp), "sound/%s", buffer);
 		if(FileExists(temp, true))
 		{
-			if(!CheckSoundFlags(client, FF2SOUND_MUTEMUSIC))
+			if(CheckSoundFlags(client, FF2SOUND_MUTEMUSIC))
 			{
 				GetArrayString(musicArray, index, currentBGM[client], sizeof(music));
 				EmitSoundToClient(client, currentBGM[client]);
@@ -2158,7 +2158,7 @@ stock EmitSoundToAllExcept(soundFlags, const String:sample[], entity=SOUND_FROM_
 	{
 		if(IsValidClient(client) && IsClientInGame(client))
 		{
-			if(!CheckSoundFlags(client, soundFlags))
+			if(CheckSoundFlags(client, soundFlags))
 			{
 				clients[total++]=client;
 			}
@@ -2170,10 +2170,7 @@ stock EmitSoundToAllExcept(soundFlags, const String:sample[], entity=SOUND_FROM_
 		return;
 	}
 	
-	for(int i=0; i<total; i++)
-	{
-		EmitSoundToClient(clients[i], sample, entity, channel, level, flags, volume, pitch, speakerentity, origin, dir, updatePos, soundtime);
-	}
+	EmitSound(clients, total, sample, entity, channel, level, flags, volume, pitch, speakerentity, origin, dir, updatePos, soundtime);
 }
 
 public bool:CheckSoundFlags(client, soundFlags)
@@ -2190,9 +2187,9 @@ public bool:CheckSoundFlags(client, soundFlags)
 
 	if(muteSound[client] & soundFlags)
 	{
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 public SetSoundFlags(client, soundFlags)
@@ -7200,7 +7197,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 		else  //On
 		{
 			//If they already have music enabled don't do anything
-			if(CheckSoundFlags(client, FF2SOUND_MUTEMUSIC))
+			if(!CheckSoundFlags(client, FF2SOUND_MUTEMUSIC))
 			{
 				ClearSoundFlags(client, FF2SOUND_MUTEMUSIC);
 				StartMusic(client);
