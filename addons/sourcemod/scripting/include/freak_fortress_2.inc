@@ -18,6 +18,11 @@
 #define FF2FLAG_BLAST_JUMPING           (1<<14)     //Used when a soldier is rocket jumping
 #define FF2FLAGS_SPAWN                  ~FF2FLAG_UBERREADY & ~FF2FLAG_ISBUFFED & ~FF2FLAG_ALLOWSPAWNINBOSSTEAM & ~FF2FLAG_CHANGECVAR & ~FF2FLAG_BLAST_JUMPING & FF2FLAG_USEBOSSTIMER & FF2FLAG_USINGABILITY
 
+#define FF2SOUND_MUTENONE 0
+#define FF2SOUND_MUTEMUSIC 1<<0
+#define FF2SOUND_MUTEVOICE 1<<1
+#define FF2SOUND_MUTEALL FF2SOUND_MUTEMUSIC | FF2SOUND_MUTEVOICE
+
 #if defined _FF2_included
  #endinput
 #endif
@@ -396,6 +401,33 @@ native FF2_SetClientGlow(client, Float:time1, Float:time2=-1.0);
  * @return          True if enabled, false otherwise
  */
 native bool:FF2_Debug();
+
+/**
+ * Set sound flags for specified client
+ *
+ * @param client    Client's index
+ * @param flags     Flags which to set
+ * @noreturn
+ */
+native FF2_SetSoundFlags(client, flags);
+
+/**
+ * Clear sound flags for specified client
+ *
+ * @param client    Client's index
+ * @param flags     Flags which to clear
+ * @noreturn
+ */
+native FF2_ClearSoundFlags(client, flags);
+
+/**
+ * Check sound flags for specified client
+ *
+ * @param client    Client's index
+ * @param flags     Flags which to check
+ * @return          True if the client does _not_ have the given flags, false otherwise
+ */
+native bool:FF2_CheckSoundFlags(client, flags);
 
 /**
  * Called whenever a boss uses an ability (Rage, jump, teleport, etc)

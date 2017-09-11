@@ -51,11 +51,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define HEALTHBAR_MAX 255
 #define MONOCULUS "eyeball_boss"
 
-#define FF2SOUND_MUTENONE 0
-#define FF2SOUND_MUTEMUSIC 1<<0
-#define FF2SOUND_MUTEVOICE 1<<1
-#define FF2SOUND_MUTEALL FF2SOUND_MUTEMUSIC | FF2SOUND_MUTEVOICE
-
 #define FF2_CONFIGS "configs/freak_fortress_2"
 #define FF2_SETTINGS "data/freak_fortress_2"
 #define BOSS_CONFIG "characters.cfg"
@@ -325,6 +320,9 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("FF2_GetClientGlow", Native_GetClientGlow);
 	CreateNative("FF2_SetClientGlow", Native_SetClientGlow);
 	CreateNative("FF2_Debug", Native_Debug);
+	CreateNative("FF2_SetSoundFlags", Native_SetSoundFlags);
+	CreateNative("FF2_ClearSoundFlags", Native_ClearSoundFlags);
+	CreateNative("FF2_CheckSoundFlags", Native_CheckSoundFlags);
 
 	PreAbility=CreateGlobalForward("FF2_PreAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_CellByRef);  //Boss, plugin name, ability name, slot, enabled
 	OnAbility=CreateGlobalForward("FF2_OnAbility", ET_Hook, Param_Cell, Param_String, Param_String, Param_Cell, Param_Cell);  //Boss, plugin name, ability name, slot, status
@@ -1902,8 +1900,8 @@ public Action:StartResponseTimer(Handle:timer)
 	decl String:sound[PLATFORM_MAX_PATH];
 	if(FindSound("begin", sound, sizeof(sound)))
 	{
-		EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
-		EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound, Boss[0]);
+		EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
+		EmitSoundToAllExcept(FF2SOUND_MUTEVOICE, sound);
 	}
 	return Plugin_Continue;
 }
@@ -2035,11 +2033,16 @@ PlayBGM(client)
 		}
 		while(KvGotoNextKey(kv));
 
+		if(!GetArraySize(musicArray)) // No music found, exiting!
+		{
+			return;
+		}
 		new index=GetRandomInt(0, GetArraySize(musicArray)-1);
 
 		new Action:action;
 		Call_StartForward(OnMusic);
 		decl String:temp[PLATFORM_MAX_PATH];
+		new String:buffer[PLATFORM_MAX_PATH];
 		new time2=GetArrayCell(timeArray, index);
 		GetArrayString(musicArray, index, temp, sizeof(temp));
 		Call_PushCell(client);
@@ -2059,7 +2062,8 @@ PlayBGM(client)
 			}
 		}
 
-		Format(temp, sizeof(temp), "sound/%s", GetArrayCell(musicArray, index));
+		GetArrayString(musicArray, index, buffer, sizeof(buffer));
+		Format(temp, sizeof(temp), "sound/%s", buffer);
 		if(FileExists(temp, true))
 		{
 			if(CheckSoundFlags(client, FF2SOUND_MUTEMUSIC))
@@ -2111,7 +2115,6 @@ StopMusic(client=0, bool:permanent=false)
 		{
 			if(IsValidClient(client))
 			{
-				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 
 				if(MusicTimer[client]!=INVALID_HANDLE)
@@ -2169,7 +2172,7 @@ stock EmitSoundToAllExcept(soundFlags, const String:sample[], entity=SOUND_FROM_
 	EmitSound(clients, total, sample, entity, channel, level, flags, volume, pitch, speakerentity, origin, dir, updatePos, soundtime);
 }
 
-stock bool:CheckSoundFlags(client, soundFlags)
+public bool:CheckSoundFlags(client, soundFlags)
 {
 	if(!IsValidClient(client))
 	{
@@ -2178,7 +2181,7 @@ stock bool:CheckSoundFlags(client, soundFlags)
 
 	if(IsFakeClient(client))
 	{
-		return true;
+		return false;
 	}
 
 	if(muteSound[client] & soundFlags)
@@ -2188,18 +2191,32 @@ stock bool:CheckSoundFlags(client, soundFlags)
 	return true;
 }
 
-SetSoundFlags(client, soundFlags)
+public SetSoundFlags(client, soundFlags)
 {
 	if(!IsValidClient(client) || IsFakeClient(client))
 	{
 		return;
 	}
 
-	decl String:buffer[4];
+	decl String:buffer[5];
 	GetClientCookie(client, FF2Cookie_MuteSound, buffer, sizeof(buffer));
 	IntToString((StringToInt(buffer) | soundFlags), buffer, sizeof(buffer));
 	SetClientCookie(client, FF2Cookie_MuteSound, buffer);
 	muteSound[client] |= soundFlags;
+}
+
+public ClearSoundFlags(client, soundFlags)
+{
+	if(!IsValidClient(client) || IsFakeClient(client))
+	{
+		return;
+	}
+
+	decl String:buffer[5];
+	GetClientCookie(client, FF2Cookie_MuteSound, buffer, sizeof(buffer));
+	IntToString((StringToInt(buffer) & ~soundFlags), buffer, sizeof(buffer));
+	SetClientCookie(client, FF2Cookie_MuteSound, buffer);
+	muteSound[client]&=~soundFlags;
 }
 
 public Action:Timer_Move(Handle:timer)
@@ -5061,7 +5078,8 @@ public Action:OnTakeDamageAlive(client, &attacker, &inflictor, &Float:damage, &d
 
 	if((attacker<=0 || client==attacker) && IsBoss(client))
 	{
-		return Plugin_Handled;
+		damage=0.0;
+		return Plugin_Changed;
 	}
 
 	if(TF2_IsPlayerInCondition(client, TFCond_Ubercharged))
@@ -7172,7 +7190,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 	{
 		if(selection==2)  //Off
 		{
-			SetSoundFlags(client, ~FF2SOUND_MUTEMUSIC);
+			SetSoundFlags(client, FF2SOUND_MUTEMUSIC);
 			StopMusic(client, true);
 		}
 		else  //On
@@ -7180,7 +7198,7 @@ public MusicTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 			//If they already have music enabled don't do anything
 			if(!CheckSoundFlags(client, FF2SOUND_MUTEMUSIC))
 			{
-				SetSoundFlags(client, FF2SOUND_MUTEMUSIC);
+				ClearSoundFlags(client, FF2SOUND_MUTEMUSIC);
 				StartMusic(client);
 			}
 		}
@@ -7223,11 +7241,11 @@ public VoiceTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 		{
 			if(selection==2)
 			{
-				SetSoundFlags(client, ~FF2SOUND_MUTEVOICE);
+				SetSoundFlags(client, FF2SOUND_MUTEVOICE);
 			}
 			else
 			{
-				SetSoundFlags(client, FF2SOUND_MUTEVOICE);
+				ClearSoundFlags(client, FF2SOUND_MUTEVOICE);
 			}
 
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "FF2 Voice", selection==2 ? "off" : "on");
@@ -7708,6 +7726,21 @@ public SetBossRageDamage(boss, damage)
 public Native_SetBossRageDamage(Handle:plugin, numParams)
 {
 	SetBossRageDamage(GetNativeCell(1), GetNativeCell(2));
+}
+
+public Native_SetSoundFlags(Handle:plugin, numParams)
+{
+	SetSoundFlags(GetNativeCell(1), GetNativeCell(2));
+}
+
+public Native_ClearSoundFlags(Handle:plugin, numParams)
+{
+	ClearSoundFlags(GetNativeCell(1), GetNativeCell(2));
+}
+
+public Native_CheckSoundFlags(Handle:plugin, numParams)
+{
+	return CheckSoundFlags(GetNativeCell(1), GetNativeCell(2));
 }
 
 public GetBossRageDistance(boss, const String:pluginName[], const String:abilityName[])

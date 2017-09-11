@@ -358,12 +358,15 @@ Charge_BraveJump(const String:abilityName[], boss, slot, status)
 			decl String:sound[PLATFORM_MAX_PATH];
 			if(FF2_FindSound("ability", sound, sizeof(sound), boss, true, slot))
 			{
-				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
-				EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+				if(FF2_CheckSoundFlags(client, FF2SOUND_MUTEVOICE))
+				{
+					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+				}
 
 				for(new target=1; target<=MaxClients; target++)
 				{
-					if(IsClientInGame(target) && target!=client)
+					if(IsClientInGame(target) && target!=client && FF2_CheckSoundFlags(target, FF2SOUND_MUTEVOICE))
 					{
 						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
 						EmitSoundToClient(target, sound, client, _, _, _, _, _, client, position);
@@ -478,15 +481,18 @@ Charge_Teleport(const String:abilityName[], boss, slot, status)
 			decl String:sound[PLATFORM_MAX_PATH];
 			if(FF2_FindSound("ability", sound, sizeof(sound), boss, true, slot))
 			{
-				EmitSoundToAll(sound, boss, _, _, _, _, _, boss, position);
-				EmitSoundToAll(sound, boss, _, _, _, _, _, boss, position);
+				if(FF2_CheckSoundFlags(client, FF2SOUND_MUTEVOICE))
+				{
+					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+					EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
+				}
 
 				for(new enemy=1; enemy<=MaxClients; enemy++)
 				{
-					if(IsClientInGame(enemy) && enemy!=boss)
+					if(IsClientInGame(enemy) && enemy!=client && FF2_CheckSoundFlags(enemy, FF2SOUND_MUTEVOICE))
 					{
-						EmitSoundToClient(enemy, sound, boss, _, _, _, _, _, boss, position);
-						EmitSoundToClient(enemy, sound, client, _, _, _, _, _, boss, position);
+						EmitSoundToClient(enemy, sound, client, _, _, _, _, _, client, position);
+						EmitSoundToClient(enemy, sound, client, _, _, _, _, _, client, position);
 					}
 				}
 			}
