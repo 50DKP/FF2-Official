@@ -134,6 +134,7 @@ new Handle:cvarDebug;
 new Handle:cvarPreroundBossDisconnect;
 
 new Handle:bossesArray;
+new Handle:bossesArrayShadow;
 new Handle:voicesArray; // TODO: Rename this or remove it in favor of something else
 new Handle:subpluginArray;
 new Handle:chancesArray;
@@ -455,6 +456,7 @@ public OnPluginStart()
 	infoHUD=CreateHudSynchronizer();
 
 	bossesArray=CreateArray();
+	bossesArrayShadow=CreateArray();
 	voicesArray=CreateArray();
 
 	decl String:oldVersion[64];
@@ -583,6 +585,15 @@ public OnMapStart()
 		{
 			CloseHandle(GetArrayCell(bossesArray, index));
 			SetArrayCell(bossesArray, index, INVALID_HANDLE);
+		}
+	}
+
+	for(new index; index<GetArraySize(bossesArrayShadow); index++)
+	{
+		if(GetArrayCell(bossesArrayShadow, index)!=INVALID_HANDLE)
+		{
+			CloseHandle(GetArrayCell(bossesArrayShadow, index));
+			SetArrayCell(bossesArrayShadow, index, INVALID_HANDLE);
 		}
 	}
 }
@@ -888,6 +899,10 @@ public LoadCharacter(const String:characterName[])
 
 	new Handle:kv=CreateKeyValues("character");
 	PushArrayCell(bossesArray, kv);
+	FileToKeyValues(kv, config);
+
+	kv=CreateKeyValues("character");
+	PushArrayCell(bossesArrayShadow, kv);
 	FileToKeyValues(kv, config);
 
 	new version=KvGetNum(kv, "version", 1);
@@ -6073,7 +6088,7 @@ stock OperateString(Handle:sumArray, &bracket, String:value[], size, Handle:_ope
 stock ParseFormula(boss, const String:key[], defaultValue)
 {
 	decl String:formula[1024], String:bossName[64];
-	new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+	new Handle:kv=GetArrayCell(bossesArrayShadow, character[boss]);
 	KvRewind(kv);
 	KvGetString(kv, "name", bossName, sizeof(bossName), "=Failed name=");
 
@@ -6283,7 +6298,7 @@ stock GetAbilityArgument(boss, const String:pluginName[], const String:abilityNa
 {
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		return KvGetNum(GetArrayCell(bossesArray, character[boss]), argument, defaultValue);
+		return KvGetNum(GetArrayCell(bossesArrayShadow, character[boss]), argument, defaultValue);
 	}
 	return defaultValue;
 }
@@ -6292,7 +6307,7 @@ stock Float:GetAbilityArgumentFloat(boss, const String:pluginName[], const Strin
 {
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		return KvGetFloat(GetArrayCell(bossesArray, character[boss]), argument, defaultValue);
+		return KvGetFloat(GetArrayCell(bossesArrayShadow, character[boss]), argument, defaultValue);
 	}
 	return defaultValue;
 }
@@ -6302,13 +6317,13 @@ stock GetAbilityArgumentString(boss, const String:pluginName[], const String:abi
 	strcopy(abilityString, length, defaultValue);
 	if(HasAbility(boss, pluginName, abilityName))
 	{
-		KvGetString(GetArrayCell(bossesArray, character[boss]), argument, abilityString, length, defaultValue);
+		KvGetString(GetArrayCell(bossesArrayShadow, character[boss]), argument, abilityString, length, defaultValue);
 	}
 }
 
 stock bool:FindSound(const String:sound[], String:file[], length, boss=0, bool:ability=false, slot=0)
 {
-	new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+	new Handle:kv=GetArrayCell(bossesArrayShadow, character[boss]);
 	if(boss<0 || character[boss]<0 || !kv)
 	{
 		return false;
@@ -7577,7 +7592,7 @@ public bool:GetBossName(boss, String:bossName[], length)
 {
 	if(boss>=0 && boss<=MaxClients && character[boss]>=0 && character[boss]<GetArraySize(bossesArray) && GetArrayCell(bossesArray, character[boss])!=INVALID_HANDLE)
 	{
-		KvRewind(GetArrayCell(bossesArray, character[boss]));
+		KvRewind(GetArrayCell(bossesArrayShadow, character[boss]));
 		KvGetString(GetArrayCell(bossesArray, character[boss]), "name", bossName, length);
 		return true;
 	}
@@ -7597,7 +7612,7 @@ public Handle:GetBossKV(boss)
 {
 	if(boss>=0 && boss<=MaxClients && character[boss]>=0 && character[boss]<GetArraySize(bossesArray) && GetArrayCell(bossesArray, character[boss])!=INVALID_HANDLE)
 	{
-		KvRewind(GetArrayCell(bossesArray, character[boss]));
+		KvRewind(GetArrayCell(bossesArrayShadow, character[boss]));
 		return GetArrayCell(bossesArray, character[boss]);
 	}
 	return INVALID_HANDLE;
@@ -7745,12 +7760,12 @@ public Native_CheckSoundFlags(Handle:plugin, numParams)
 
 public GetBossRageDistance(boss, const String:pluginName[], const String:abilityName[])
 {
-	if(!GetArrayCell(bossesArray, character[boss]))  //Invalid boss
+	if(!GetArrayCell(bossesArrayShadow, character[boss]))  //Invalid boss
 	{
 		return 0;
 	}
 
-	KvRewind(GetArrayCell(bossesArray, character[boss]));
+	KvRewind(GetArrayCell(bossesArrayShadow, character[boss]));
 	if(!abilityName[0])  //Return the global rage distance if there's no ability specified
 	{
 		return ParseFormula(boss, "rage distance", 400);
@@ -7764,7 +7779,7 @@ public GetBossRageDistance(boss, const String:pluginName[], const String:ability
 		new distance;
 		if((distance=ParseFormula(boss, key, -1))<0)  //Distance doesn't exist, return the global rage distance instead
 		{
-			KvRewind(GetArrayCell(bossesArray, character[boss]));
+			KvRewind(GetArrayCell(bossesArrayShadow, character[boss]));
 			distance=ParseFormula(boss, "rage distance", 400);
 		}
 		return distance;
@@ -7802,12 +7817,12 @@ public Native_SetClientDamage(Handle:plugin, numParams)
 
 public bool:HasAbility(boss, const String:pluginName[], const String:abilityName[])
 {
-	if(boss==-1 || character[boss]==-1 || !GetArrayCell(bossesArray, character[boss]))  //Invalid boss
+	if(boss==-1 || character[boss]==-1 || !GetArrayCell(bossesArrayShadow, character[boss]))  //Invalid boss
 	{
 		return false;
 	}
 
-	new Handle:kv=GetArrayCell(bossesArray, character[boss]);
+	new Handle:kv=GetArrayCell(bossesArrayShadow, character[boss]);
 	KvRewind(kv);
 	if(KvJumpToKey(kv, "abilities") && KvJumpToKey(kv, pluginName) && KvJumpToKey(kv, abilityName))
 	{
