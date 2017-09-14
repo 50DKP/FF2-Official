@@ -586,10 +586,6 @@ public OnMapStart()
 			CloseHandle(GetArrayCell(bossesArray, index));
 			SetArrayCell(bossesArray, index, INVALID_HANDLE);
 		}
-	}
-
-	for(new index; index<GetArraySize(bossesArrayShadow); index++)
-	{
 		if(GetArrayCell(bossesArrayShadow, index)!=INVALID_HANDLE)
 		{
 			CloseHandle(GetArrayCell(bossesArrayShadow, index));
