@@ -134,7 +134,7 @@ new Handle:cvarDebug;
 new Handle:cvarPreroundBossDisconnect;
 
 new Handle:bossesArray;
-new Handle:bossesArrayShadow;
+new Handle:bossesArrayShadow; // FIXME: ULTRA HACKY HACK
 new Handle:voicesArray; // TODO: Rename this or remove it in favor of something else
 new Handle:subpluginArray;
 new Handle:chancesArray;
