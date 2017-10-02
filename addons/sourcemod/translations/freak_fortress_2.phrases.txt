@@ -127,7 +127,7 @@
 	}
 	"What's New in FF2"
 	{
-		"en"		"What's new? (/ff2_new)."
+		"en"		"What's new? (/ff2_changelog)."
 	}
 	"View Queue Points"
 	{
