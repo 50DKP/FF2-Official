@@ -7723,7 +7723,7 @@ public int SetBossCharge(int boss, int slot, float charge)  //FIXME: This duplic
 
 public int Native_SetBossCharge(Handle plugin, int numParams)
 {
-	SetBossCharge(GetNativeCell(1), GetNativeCell(2), float(GetNativeCell(3)));
+	SetBossCharge(GetNativeCell(1), GetNativeCell(2), view_as<float>(GetNativeCell(3)));
 }
 
 public int GetBossRageDamage(int boss)
