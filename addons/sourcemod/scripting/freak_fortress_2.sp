@@ -677,7 +677,7 @@ public void EnableFF2()
 	#if defined _steamtools_included
 	if(steamtools)
 	{
-		decl String:gameDesc[64];
+		char gameDesc[64];
 		Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
 		Steam_SetGameDescription(gameDesc);
 	}
