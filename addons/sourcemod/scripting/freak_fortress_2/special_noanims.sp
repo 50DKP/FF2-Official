@@ -40,7 +40,7 @@ public void OnPluginStart()
 		SetFailState("This subplugin depends on at least FF2 v1.10.3");
 	}
 
-	HookEvent("teamplay_round_start", OnRoundStart);
+	HookEvent("teamplay_round_start", OnRoundStart, EventHookMode_PostNoCopy);
 
 	FF2_RegisterSubplugin(PLUGIN_NAME);
 }
@@ -164,13 +164,13 @@ stock int SpawnWeapon(int client, char[] name, int index, int level, int quality
 		TF2Items_SetNumAttributes(weapon, 0);
 	}
 
-	if(weapon==INVALID_HANDLE)
+	if(weapon==null)
 	{
 		return -1;
 	}
 
 	int entity=TF2Items_GiveNamedItem(client, weapon);
-	CloseHandle(weapon);
+	delete weapon;
 	EquipPlayerWeapon(client, entity);
 	return entity;
 }

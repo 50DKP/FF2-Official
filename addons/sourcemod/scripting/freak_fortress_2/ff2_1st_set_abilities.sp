@@ -37,9 +37,9 @@ int oldTarget;
 
 Handle OnRage;
 
-Handle cvarTimeScale;
-Handle cvarCheats;
-Handle cvarKAC;
+ConVar cvarTimeScale;
+ConVar cvarCheats;
+ConVar cvarKAC;
 TFTeam BossTeam=TFTeam_Blue;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -47,7 +47,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	OnRage=CreateGlobalForward("FF2_OnRage", ET_Hook, Param_Cell, Param_CellByRef);  //Boss, distance
 	return APLRes_Success;
 }
-
 
 public void OnPluginStart()
 {
@@ -78,7 +77,7 @@ public void OnMapStart()
 	PrecacheSound(SOUND_DEMOPAN_RAGE, true);
 }
 
-public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
+public Action OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	if(FF2_IsFF2Enabled())
 	{
@@ -92,18 +91,18 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 	return Plugin_Continue;
 }
 
-/*public Action:FF2_OnBossSelected(boss, &special, String:specialName[])  //Re-enable in v2 or whenever the late-loading forward bug is fixed
+/*public Action FF2_OnBossSelected(int boss, int &special, char[] specialName)  //Re-enable in v2 or whenever the late-loading forward bug is fixed
 {
 	if(FF2_HasAbility(boss, PLUGIN_NAME, "spawn model on kill"))
 	{
-		decl String:model[PLATFORM_MAX_PATH];
+		char model[PLATFORM_MAX_PATH];
 		FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, "spawn model on kill", "model", model, sizeof(model));
 		PrecacheModel(model);
 	}
 	return Plugin_Continue;
 }*/
 
-public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
+public Action OnRoundEnd(Event event, const char[] name, bool dontBroadcast)
 {
 	if(FF2_IsFF2Enabled())
 	{
@@ -115,7 +114,7 @@ public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 				{
 					KillTimer(SlowMoTimer);
 				}
-				Timer_StopSlowMo(INVALID_HANDLE, -1);
+				Timer_StopSlowMo(null, -1);
 				return Plugin_Continue;
 			}
 
@@ -141,9 +140,9 @@ public void OnClientDisconnect(int client)
 
 public Action Timer_GetBossTeam(Handle timer)
 {
-	if(cvarKAC && GetConVarBool(cvarKAC))
+	if(cvarKAC && cvarKAC.BoolValue)
 	{
-		SetConVarBool(cvarKAC, false);
+		cvarKAC.BoolValue=false;
 	}
 	BossTeam=FF2_GetBossTeam();
 	return Plugin_Continue;
@@ -208,11 +207,11 @@ public void FF2_OnAbility(int boss, const char[] pluginName, const char[] abilit
 	else if(StrEqual(abilityName, "explosive dance", false))
 	{
 		SetEntityMoveType(GetClientOfUserId(FF2_GetBossUserId(boss)), MOVETYPE_NONE);
-		Handle data;
+		DataPack data;
 		CreateDataTimer(0.15, Timer_Prepare_Explosion_Rage, data);
-		WritePackString(data, abilityName);
-		WritePackCell(data, boss);
-		ResetPack(data);
+		data.WriteString(abilityName);
+		data.WriteCell(boss);
+		data.Reset();
 	}
 	else if(StrEqual(abilityName, "slow mo", false))
 	{
@@ -222,7 +221,7 @@ public void FF2_OnAbility(int boss, const char[] pluginName, const char[] abilit
 
 void Rage_Clone(const char[] abilityName, int boss)
 {
-	Handle bossKV[8];
+	KeyValues bossKV[8];
 	char bossName[32];
 	bool changeModel=view_as<bool>(FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "custom model"));
 	int weaponMode=FF2_GetAbilityArgument(boss, PLUGIN_NAME, abilityName, "allow weapons");
@@ -254,7 +253,7 @@ void Rage_Clone(const char[] abilityName, int boss)
 	}
 
 	int alive, dead;
-	Handle players=CreateArray();
+	ArrayList players=CreateArray();
 	for(int target=1; target<=MaxClients; target++)
 	{
 		if(IsClientInGame(target))
@@ -268,7 +267,7 @@ void Rage_Clone(const char[] abilityName, int boss)
 				}
 				else if(FF2_GetBossIndex(target)==-1)  //Don't let dead bosses become clones
 				{
-					PushArrayCell(players, target);
+					players.Push(target);
 					dead++;
 				}
 			}
@@ -280,21 +279,21 @@ void Rage_Clone(const char[] abilityName, int boss)
 	int clone, temp;
 	for(int i=1; i<=dead && i<=totalMinions; i++)
 	{
-		temp=GetRandomInt(0, GetArraySize(players)-1);
-		clone=GetArrayCell(players, temp);
-		RemoveFromArray(players, temp);
+		temp=GetRandomInt(0, players.Length-1);
+		clone=players.Get(temp);
+		players.Erase(temp);
 
 		FF2_SetFF2Flags(clone, FF2_GetFF2Flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_CLASSTIMERDISABLED);
 		TF2_ChangeClientTeam(clone, BossTeam);
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=boss;
-		TF2_SetPlayerClass(clone, (playerclass ? (view_as<TFClassType>(playerclass)) : (view_as<TFClassType>(KvGetNum(bossKV[config], "class", 0)))), _, false);
+		TF2_SetPlayerClass(clone, (playerclass ? (view_as<TFClassType>(playerclass)) : (view_as<TFClassType>(bossKV[config].GetNum("class", 0)))), _, false);
 
 		if(changeModel)
 		{
 			if(model[0]=='\0')
 			{
-				KvGetString(bossKV[config], "model", model, sizeof(model));
+				bossKV[config].GetString("model", model, sizeof(model));
 			}
 			SetVariantString(model);
 			AcceptEntityInput(clone, "SetCustomModel");
@@ -367,12 +366,12 @@ void Rage_Clone(const char[] abilityName, int boss)
 		SDKHook(clone, SDKHook_OnTakeDamage, SaveMinion);
 		CreateTimer(4.0, Timer_Enable_Damage, GetClientUserId(clone), TIMER_FLAG_NO_MAPCHANGE);
 
-		Handle data;
+		DataPack data;
 		CreateDataTimer(0.1, Timer_EquipModel, data, TIMER_FLAG_NO_MAPCHANGE);
-		WritePackCell(data, GetClientUserId(clone));
-		WritePackString(data, model);
+		data.WriteCell(GetClientUserId(clone));
+		data.WriteString(model);
 	}
-	CloseHandle(players);
+	delete players;
 
 	int entity, owner;
 	while((entity=FindEntityByClassname(entity, "tf_wearable"))!=-1)
@@ -400,14 +399,14 @@ void Rage_Clone(const char[] abilityName, int boss)
 	}
 }
 
-public Action Timer_EquipModel(Handle timer, Handle pack)
+public Action Timer_EquipModel(Handle timer, DataPack pack)
 {
-	ResetPack(pack);
-	int client=GetClientOfUserId(ReadPackCell(pack));
+	pack.Reset();
+	int client=GetClientOfUserId(pack.ReadCell());
 	if(client && IsClientInGame(client) && IsPlayerAlive(client))
 	{
 		char model[PLATFORM_MAX_PATH];
-		ReadPackString(pack, model, PLATFORM_MAX_PATH);
+		pack.ReadString(model, PLATFORM_MAX_PATH);
 		SetVariantString(model);
 		AcceptEntityInput(client, "SetCustomModel");
 		SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 1);
@@ -520,13 +519,13 @@ void Rage_Bow(int boss)
 	FF2_SetAmmo(client, weapon, ((otherTeamAlivePlayers>=CBS_MAX_ARROWS) ? CBS_MAX_ARROWS : otherTeamAlivePlayers)-1, 1);  //Put one arrow in the clip
 }
 
-public Action Timer_Prepare_Explosion_Rage(Handle timer, Handle data)
+public Action Timer_Prepare_Explosion_Rage(Handle timer, DataPack data)
 {
-	int boss=ReadPackCell(data);
+	int boss=data.ReadCell();
 	int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 
 	char abilityName[64];
-	ReadPackString(data, abilityName, sizeof(abilityName));
+	data.ReadString(abilityName, sizeof(abilityName));
 
 	CreateTimer(0.13, Timer_Rage_Explosive_Dance, boss, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
@@ -618,7 +617,7 @@ public Action Timer_Rage_Explosive_Dance(Handle timer, int boss)
 void Rage_Slowmo(int boss, const char[] abilityName)
 {
 	FF2_SetFF2Flags(boss, FF2_GetFF2Flags(boss)|FF2FLAG_CHANGECVAR);
-	SetConVarFloat(cvarTimeScale, FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, abilityName, "timescale", 0.1));
+	cvarTimeScale.FloatValue=FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, abilityName, "timescale", 0.1);
 	float duration=FF2_GetAbilityArgumentFloat(boss, PLUGIN_NAME, abilityName, "duration", 1.0)+1.0;
 	SlowMoTimer=CreateTimer(duration, Timer_StopSlowMo, boss, TIMER_FLAG_NO_MAPCHANGE);
 	FF2Flags[boss]=FF2Flags[boss]|FLAG_ONSLOWMO;
@@ -636,9 +635,9 @@ void Rage_Slowmo(int boss, const char[] abilityName)
 
 public Action Timer_StopSlowMo(Handle timer, int boss)
 {
-	SlowMoTimer=INVALID_HANDLE;
+	SlowMoTimer=null;
 	oldTarget=0;
-	SetConVarFloat(cvarTimeScale, 1.0);
+	cvarTimeScale.FloatValue=1.0;
 	UpdateClientCheatValue(0);
 	if(boss!=-1)
 	{
@@ -675,21 +674,21 @@ public Action OnPlayerRunCmd(int client, int& buttons, int& impulse, float veloc
 		int target=TR_GetEntityIndex(trace);
 		if(target && target<=MaxClients)
 		{
-			Handle data;
+			DataPack data;
 			CreateDataTimer(0.15, Timer_Rage_SlowMo_Attack, data);
-			WritePackCell(data, GetClientUserId(client));
-			WritePackCell(data, GetClientUserId(target));
-			ResetPack(data);
+			data.WriteCell(GetClientUserId(client));
+			data.WriteCell(GetClientUserId(target));
+			data.Reset();
 		}
-		CloseHandle(trace);
+		delete trace;
 	}
 	return Plugin_Continue;
 }
 
-public Action Timer_Rage_SlowMo_Attack(Handle timer, Handle data)
+public Action Timer_Rage_SlowMo_Attack(Handle timer, DataPack data)
 {
-	int client=GetClientOfUserId(ReadPackCell(data));
-	int target=GetClientOfUserId(ReadPackCell(data));
+	int client=GetClientOfUserId(data.ReadCell());
+	int target=GetClientOfUserId(data.ReadCell());
 	if(client && target && IsClientInGame(client) && IsClientInGame(target))
 	{
 		float clientPosition[3], targetPosition[3];
@@ -721,13 +720,13 @@ public bool TraceRayDontHitSelf(int entity, int mask)
 }
 
 //Unused single rocket shoot charge
-/*Charge_RocketSpawn(const String:abilityName[],index,slot,action)
+/*Charge_RocketSpawn(const char[] abilityName, int index, int slot, int action)
 {
 	if(FF2_GetBossCharge(index,0)<10)
 		return;
-	new boss=GetClientOfUserId(FF2_GetBossUserId(index));
-	new Float:see=FF2_GetAbilityArgumentFloat(index,PLUGIN_NAME,abilityName,1,5.0);
-	new Float:charge=FF2_GetBossCharge(index,slot);
+	int boss=GetClientOfUserId(FF2_GetBossUserId(index));
+	float see=FF2_GetAbilityArgumentFloat(index,PLUGIN_NAME,abilityName,1,5.0);
+	float charge=FF2_GetBossCharge(index,slot);
 	switch(action)
 	{
 		case 2:
@@ -785,10 +784,10 @@ public bool TraceRayDontHitSelf(int entity, int mask)
 }
 */
 
-public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
+public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	int attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
-	int client=GetClientOfUserId(GetEventInt(event, "userid"));
+	int attacker=GetClientOfUserId(event.GetInt("attacker"));
+	int client=GetClientOfUserId(event.GetInt("userid"));
 	int boss=FF2_GetBossIndex(attacker);
 
 	if(boss!=-1)
@@ -815,7 +814,7 @@ public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 
 				if(FF2_GetAbilityArgument(boss, PLUGIN_NAME, "spawn model on kill", "remove ragdoll", 0))
 				{
-					CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"), TIMER_FLAG_NO_MAPCHANGE);
+					CreateTimer(0.01, Timer_RemoveRagdoll, event.GetInt("userid"), TIMER_FLAG_NO_MAPCHANGE);
 				}
 
 				int prop=CreateEntityByName("prop_physics_override");
@@ -867,7 +866,7 @@ public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	}
 
 	boss=FF2_GetBossIndex(client);
-	if(boss!=-1 && FF2_HasAbility(boss, PLUGIN_NAME, "spawn clones") && FF2_GetAbilityArgument(boss, PLUGIN_NAME, "spawn clones", "die on boss death", 1) && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+	if(boss!=-1 && FF2_HasAbility(boss, PLUGIN_NAME, "spawn clones") && FF2_GetAbilityArgument(boss, PLUGIN_NAME, "spawn clones", "die on boss death", 1) && !(event.GetInt("death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
 		for(int target=1; target<=MaxClients; target++)
 		{
@@ -937,7 +936,7 @@ stock int SpawnWeapon(int client, char[] name, int index, int level, int quality
 		TF2Items_SetNumAttributes(weapon, 0);
 	}
 
-	if(weapon==INVALID_HANDLE)
+	if(weapon==null)
 	{
 		return -1;
 	}
@@ -990,7 +989,7 @@ stock void UpdateClientCheatValue(int value)
 	{
 		if(IsClientInGame(client) && !IsFakeClient(client))
 		{
-			SendConVarValue(client, cvarCheats, value ? "1" : "0");
+			cvarCheats.ReplicateToClient(client, value ? "1" : "0");
 		}
 	}
 }

@@ -32,8 +32,8 @@ bool enableSuperDuperJump[MAXPLAYERS+1];
 float UberRageCount[MAXPLAYERS+1];
 TFTeam BossTeam=TFTeam_Blue;
 
-Handle cvarOldJump;
-Handle cvarBaseJumperStun;
+ConVar cvarOldJump;
+ConVar cvarBaseJumperStun;
 
 bool oldJump;
 bool removeBaseJumperOnStun;
@@ -51,8 +51,8 @@ public void OnPluginStart()
 	cvarOldJump=CreateConVar("ff2_oldjump", "0", "Use old VSH jump equations", _, true, 0.0, true, 1.0);
 	cvarBaseJumperStun=CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
 
-	HookConVarChange(cvarOldJump, CvarChange);
-	HookConVarChange(cvarBaseJumperStun, CvarChange);
+	cvarOldJump.AddChangeHook(CvarChange);
+	cvarBaseJumperStun.AddChangeHook(CvarChange);
 
 	jumpHUD=CreateHudSynchronizer();
 
@@ -69,11 +69,11 @@ public void OnPluginStart()
 
 public void OnConfigsExecuted()
 {
-	oldJump=GetConVarBool(cvarOldJump);
-	removeBaseJumperOnStun=GetConVarBool(cvarBaseJumperStun);
+	oldJump=cvarOldJump.BoolValue;
+	removeBaseJumperOnStun=cvarBaseJumperStun.BoolValue;
 }
 
-public void CvarChange(Handle convar, const char[] oldValue, const char[] newValue)
+public void CvarChange(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	if(convar==cvarOldJump)
 	{
@@ -85,7 +85,7 @@ public void CvarChange(Handle convar, const char[] oldValue, const char[] newVal
 	}
 }
 
-public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
+public Action OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	if(FF2_IsFF2Enabled())
 	{
@@ -545,14 +545,14 @@ void Charge_WeighDown(int boss, int slot)  //TODO: Create a HUD for this
 					return;
 				}
 
-				Handle data;
+				DataPack data;
 				float velocity[3];
-				if(gravityDatapack[client]==INVALID_HANDLE)
+				if(gravityDatapack[client]==null)
 				{
 					gravityDatapack[client]=CreateDataTimer(2.0, Timer_ResetGravity, data, TIMER_FLAG_NO_MAPCHANGE);
-					WritePackCell(data, GetClientUserId(client));
-					WritePackFloat(data, GetEntityGravity(client));
-					ResetPack(data);
+					data.WriteCell(GetClientUserId(client));
+					data.WriteFloat(GetEntityGravity(client));
+					data.Reset();
 				}
 
 				GetEntPropVector(client, Prop_Data, "m_vecVelocity", velocity);
@@ -574,23 +574,23 @@ void Charge_WeighDown(int boss, int slot)  //TODO: Create a HUD for this
 	}
 }
 
-public Action Timer_ResetGravity(Handle timer, Handle data)
+public Action Timer_ResetGravity(Handle timer, DataPack data)
 {
-	int client=GetClientOfUserId(ReadPackCell(data));
+	int client=GetClientOfUserId(data.ReadCell());
 	if(client && IsValidEntity(client) && IsClientInGame(client))
 	{
-		SetEntityGravity(client, ReadPackFloat(data));
+		SetEntityGravity(client, data.ReadFloat());
 	}
-	gravityDatapack[client]=INVALID_HANDLE;
+	gravityDatapack[client]=null;
 	return Plugin_Continue;
 }
 
-public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
+public Action OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	int boss=FF2_GetBossIndex(GetClientOfUserId(GetEventInt(event, "attacker")));
+	int boss=FF2_GetBossIndex(GetClientOfUserId(event.GetInt("attacker")));
 	if(boss!=-1 && FF2_HasAbility(boss, PLUGIN_NAME, "special_dissolve"))
 	{
-		CreateTimer(0.1, Timer_DissolveRagdoll, GetEventInt(event, "userid"), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(0.1, Timer_DissolveRagdoll, event.GetInt("userid"), TIMER_FLAG_NO_MAPCHANGE);
 	}
 	return Plugin_Continue;
 }
@@ -626,7 +626,7 @@ int DissolveRagdoll(int ragdoll)
 	AcceptEntityInput(dissolver, "Kill");
 }
 
-public Action RemoveEntity(Handle timer, any entid)
+public Action RemoveEntity(Handle timer, int entid)
 {
 	int entity=EntRefToEntIndex(entid);
 	if(IsValidEntity(entity) && entity>MaxClients)
@@ -663,9 +663,9 @@ stock int AttachParticle(int entity, char[] particleType, float offset=0.0, bool
 	return particle;
 }
 
-public Action OnDeflect(Handle event, const char[] name, bool dontBroadcast)
+public Action OnDeflect(Event event, const char[] name, bool dontBroadcast)
 {
-	int boss=FF2_GetBossIndex(GetClientOfUserId(GetEventInt(event, "userid")));
+	int boss=FF2_GetBossIndex(GetClientOfUserId(event.GetInt("userid")));
 	if(boss!=-1)
 	{
 		if(UberRageCount[boss]>11)

@@ -109,9 +109,9 @@ native bool FF2_GetBossName(int boss=0, char[] bossName, int length);
  * Gets a Boss's KV handle
  *
  * @param boss              Boss's index
- * @return                  Boss's KV handle or INVALID_HANDLE if boss index is invalid
+ * @return                  Boss's KV handle or null if boss index is invalid
  */
-native Handle FF2_GetBossKV(int boss=0);
+native KeyValues FF2_GetBossKV(int boss=0);
 
 /**
  * Gets the current health value of the Boss
@@ -629,7 +629,7 @@ stock void FF2_ShowHudText(int client, int channel, const char[] buffer, any...)
  * @param maxStringLength   Maximum length of each string buffer.
  * @return					Number of strings retrieved.
  */
-stock int ExplodeStringIntoArrayList(const char[] text, const char[] split, Handle list, int maxStringLength)
+stock int ExplodeStringIntoArrayList(const char[] text, const char[] split, ArrayList list, int maxStringLength)
 {
 	int reloc_idx, index, total;
 	char[] temp=new char[maxStringLength];
@@ -642,11 +642,11 @@ stock int ExplodeStringIntoArrayList(const char[] text, const char[] split, Hand
 	while((index=SplitString(text[reloc_idx], split, temp, maxStringLength))!=-1)
 	{
 		reloc_idx+=index;
-		PushArrayString(list, temp);
+		list.PushString(temp);
 		total++;
 	}
 
-	PushArrayString(list, text[reloc_idx]);
+	list.PushString(text[reloc_idx]);
 	total++;
 
 	return total;

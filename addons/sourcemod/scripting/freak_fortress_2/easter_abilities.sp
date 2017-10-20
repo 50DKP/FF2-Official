@@ -48,10 +48,10 @@ public void OnPluginStart()
 	return Plugin_Continue;
 }*/
 
-public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
+public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
-	int client=GetClientOfUserId(GetEventInt(event, "userid"));
-	int attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
+	int client=GetClientOfUserId(event.GetInt("userid"));
+	int attacker=GetClientOfUserId(event.GetInt("attacker"));
 	if(!client || !attacker || !IsClientInGame(client) || !IsClientInGame(attacker))
 	{
 		return;

@@ -27,12 +27,12 @@ public Plugin myinfo=
 
 public void OnPluginStart()
 {
-	HookEvent("teamplay_round_start", OnRoundStart);
+	HookEvent("teamplay_round_start", OnRoundStart, EventHookMode_PostNoCopy);
 
 	FF2_RegisterSubplugin(PLUGIN_NAME);
 }
 
-public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
+public Action OnRoundStart(Event event, const char[] name, bool dontBroadcast)
 {
 	if(FF2_IsFF2Enabled())
 	{
@@ -64,7 +64,7 @@ void Rage_Overlay(int boss, const char[] abilityName)
 {
 	char overlay[PLATFORM_MAX_PATH];
 	FF2_GetAbilityArgumentString(boss, PLUGIN_NAME, abilityName, "overlay", overlay, sizeof(overlay));
-	Format(overlay, PLATFORM_MAX_PATH, "r_screenoverlay \"%s\"", overlay);
+	Format(overlay, sizeof(overlay), "r_screenoverlay \"%s\"", overlay);
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(int target=1; target<=MaxClients; target++)
 	{
