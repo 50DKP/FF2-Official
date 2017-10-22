@@ -2020,10 +2020,6 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		PointType=StringToInt(newValue);
 	}
-	else if(convar==cvarPointDelay)
-	{
-		PointDelay=StringToInt(newValue);
-	}
 	else if(convar==cvarAliveToEnable)
 	{
 		AliveToEnable=StringToInt(newValue);
