@@ -586,12 +586,12 @@ public void OnMapStart()
 	{
 		if(view_as<Handle>(GetArrayCell(bossesArray, index))!=null)
 		{
-			CloseHandle(GetArrayCell(bossesArray, index)); // Use CloseHandle(), because GetArrayCell return any: type
+			CloseHandle(GetArrayCell(bossesArray, index));
 			SetArrayCell(bossesArray, index, INVALID_HANDLE);
 		}
 		if(view_as<Handle>(GetArrayCell(bossesArrayShadow, index))!=null)
 		{
-			CloseHandle(GetArrayCell(bossesArrayShadow, index)); // Use CloseHandle(), because GetArrayCell return any: type
+			CloseHandle(GetArrayCell(bossesArrayShadow, index));
 			SetArrayCell(bossesArrayShadow, index, INVALID_HANDLE);
 		}
 	}
@@ -1971,17 +1971,18 @@ public Action Timer_PrepareBGM(Handle timer, int userid)
 			{
 				if(playBGM[client])
 				{
+					MusicTimer[client]=null;
 					StopMusic(client);
 					RequestFrame(PlayBGM, client); // Naydef: We might start playing the music before it gets stopped
 				}
 				else if(MusicTimer[client]!=null)
 				{
-					delete MusicTimer[client];
+					MusicTimer[client]=null;
 				}
 			}
 			else if(MusicTimer[client]!=null)
 			{
-				delete MusicTimer[client];
+				MusicTimer[client]=null;
 			}
 		}
 	}
@@ -1989,12 +1990,13 @@ public Action Timer_PrepareBGM(Handle timer, int userid)
 	{
 		if(playBGM[client])
 		{
+			MusicTimer[client]=null;
 			StopMusic(client);
 			RequestFrame(PlayBGM, client); // Naydef: We might start playing the music before it gets stopped
 		}
 		else if(MusicTimer[client]!=null)
 		{
-			delete MusicTimer[client];
+			MusicTimer[client]=null;
 			return Plugin_Stop;
 		}
 	}
