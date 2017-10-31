@@ -4103,10 +4103,10 @@ stock RemovePlayerBack(client, indices[], length)
 stock FindPlayerBack(client, index)
 {
 	new entity=MaxClients+1;
-	while((entity=FindEntityByClassname2(entity, "tf_wearable"))!=-1)
+	while((entity=FindEntityByClassname2(entity, "tf_wearable*"))!=-1)
 	{
 		decl String:netclass[32];
-		if(GetEntityNetClass(entity, netclass, sizeof(netclass)) && StrEqual(netclass, "CTFWearable") && GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex")==index && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
+		if(GetEntityNetClass(entity, netclass, sizeof(netclass)) && StrContains(netclass, "CTFWearable")!=-1 && GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex")==index && GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
 		{
 			return entity;
 		}
