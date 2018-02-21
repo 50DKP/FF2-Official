@@ -248,7 +248,7 @@ native int FF2_GetClientDamage(int client);
  * @param damage	New damage dealt
  * @noreturn
  */
-native void FF2_SetClientDamage(int lient, int damage);
+native void FF2_SetClientDamage(int client, int damage);
 
 /**
  * Finds if a Boss has a certain ability
