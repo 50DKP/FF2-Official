@@ -106,7 +106,7 @@
 	}
 	"What's Up"
 	{
-		"fr"		"Quoi de nouveau ?" (Don't know where it is applied, difficult to translate in a single phrase, i need more info about it)
+		"fr"		"Quoi de nouveau ?"
 	}
 	"Observe Health Value"
 	{
@@ -174,7 +174,7 @@
 	}
 	"Vote for Character Set"
 	{
-		"fr"		"Votez pour ??character?? set pour la prochaine map." (can't know the character word, and where it is used)
+		"fr"		"Votez pour ??character?? set pour la prochaine map."
 	}
 	"Your Queue Points"
 	{
