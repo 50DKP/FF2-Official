@@ -4151,7 +4151,7 @@ public Action:OnUberDeployed(Handle:event, const String:name[], bool:dontBroadca
 public Action:Timer_Uber(Handle:timer, any:medigunid)
 {
 	new medigun=EntRefToEntIndex(medigunid);
-	if(medigun && IsValidEntity(medigun) && CheckRoundState()==1)
+	if(medigun && IsValidEntity(medigun) && CheckRoundState()==1 && GetEntProp(medigun, Prop_Send, "m_bChargeRelease")>0)
 	{
 		new client=GetEntPropEnt(medigun, Prop_Send, "m_hOwnerEntity");
 		new Float:charge=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
