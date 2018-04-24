@@ -218,6 +218,7 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 			}
 			TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
 		}
+	}
 	return Plugin_Continue;
 }
 
