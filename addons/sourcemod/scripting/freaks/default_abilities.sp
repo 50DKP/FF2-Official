@@ -199,7 +199,6 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 		}
 		while(!IsValidEntity(target) || target==client || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target));
 
-		new Float:position[3];
 		if(IsValidEntity(target))
 		{
 			GetEntPropVector(target, Prop_Send, "m_vecOrigin", position);
