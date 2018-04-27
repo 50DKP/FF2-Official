@@ -258,7 +258,7 @@ native void FF2_SetClientDamage(int client, int damage);
  * @param abilityName   Name of ability
  * @return              True if the boss has this ability, false if it doesn't
  */
-native bool FF2_HasAbility(int boss, const char[] pluginName, char[] abilityName);
+native bool FF2_HasAbility(int boss, const char[] pluginName, const char[] abilityName);
 
 /**
  * Gets the integer value of an ability argument
@@ -270,7 +270,7 @@ native bool FF2_HasAbility(int boss, const char[] pluginName, char[] abilityName
  * @param defaultValue  Value to return if argument does not exist
  * @return              Value of argument
  */
-native int FF2_GetAbilityArgument(int boss, const char[] pluginName, const char[] abilityName, char[] argument, int defaultValue=0);
+native int FF2_GetAbilityArgument(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, int defaultValue=0);
 
 /**
  * Gets the float value of an ability argument
