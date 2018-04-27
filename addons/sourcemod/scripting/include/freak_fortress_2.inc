@@ -1,6 +1,7 @@
 //Freak Fortress 2 include file.
 #include <morecolors>
 #include <sdktools>
+#include <tf2>
 
 #define FF2FLAG_UBERREADY               (1<<1)      //Used when medic says "I'm charged!"
 #define FF2FLAG_ISBUFFED                (1<<2)      //Used when soldier uses the Battalion's Backup
@@ -34,7 +35,7 @@
  * @return False if FF2 is disabled
  *         True if FF2 is enabled
  */
-native bool:FF2_IsFF2Enabled();
+native bool FF2_IsFF2Enabled();
 
 /**
  * Register a subplugin with FF2
@@ -43,7 +44,7 @@ native bool:FF2_IsFF2Enabled();
  *
  * @noreturn
  */
-native FF2_RegisterSubplugin(String:pluginName[]);
+native void FF2_RegisterSubplugin(char[] pluginName);
 
 /**
  * Unregister a subplugin with FF2
@@ -52,7 +53,7 @@ native FF2_RegisterSubplugin(String:pluginName[]);
  *
  * @noreturn
  */
-native FF2_UnregisterSubplugin(String:pluginName[]);
+native void FF2_UnregisterSubplugin(char[] pluginName);
 
 /**
  * Gets the version of FF2 running on the server
@@ -60,7 +61,7 @@ native FF2_UnregisterSubplugin(String:pluginName[]);
  * @param version   An array of size 3 that will contain the major, minor, and stable version numbers respectively
  * @return			True if the server is running a dev version of FF2, false otherwise
  */
-native FF2_GetFF2Version(version[]=0);
+native void FF2_GetFF2Version(int version[]=0);
 
 /**
  * Gets current round state
@@ -70,7 +71,7 @@ native FF2_GetFF2Version(version[]=0);
  *          1 - round is in progress (due to a bug in arena mode, stalemate will also return 1)
  *          2 - someone wins
  */
-native FF2_GetRoundState();
+native int FF2_GetRoundState();
 
 /**
  * Gets the userid of the boss
@@ -78,7 +79,7 @@ native FF2_GetRoundState();
  * @param boss      Boss's index
  * @return          Userid of boss (-1 if Boss does not exist)
  */
-native FF2_GetBossUserId(boss=0);
+native int FF2_GetBossUserId(int boss=0);
 
 /**
  * Gets the boss index of a client
@@ -86,13 +87,13 @@ native FF2_GetBossUserId(boss=0);
  * @param client    The client used to search for the boss index
  * @return          Boss index of that client.  If client is not boss, returns -1
  */
-native FF2_GetBossIndex(client);
+native int FF2_GetBossIndex(int client);
 
 /**
  * Gets the boss's team
  * @return          Boss's team
  */
-native TFTeam:FF2_GetBossTeam();
+native TFTeam FF2_GetBossTeam();
 
 /**
  * Gets the character name of the boss
@@ -102,15 +103,15 @@ native TFTeam:FF2_GetBossTeam();
  * @param length            Length of buffer string
  * @return                  True if boss exists, false if not
  */
-native bool:FF2_GetBossName(boss=0, String:bossName[], length);
+native bool FF2_GetBossName(int boss=0, char[] bossName, int length);
 
 /**
  * Gets a Boss's KV handle
  *
  * @param boss              Boss's index
- * @return                  Boss's KV handle or INVALID_HANDLE if boss index is invalid
+ * @return                  Boss's KV handle or null if boss index is invalid
  */
-native Handle:FF2_GetBossKV(boss=0);
+native KeyValues FF2_GetBossKV(int boss=0);
 
 /**
  * Gets the current health value of the Boss
@@ -118,7 +119,7 @@ native Handle:FF2_GetBossKV(boss=0);
  * @param boss      Boss's index
  * @return          Current health of the Boss
  */
-native FF2_GetBossHealth(boss=0);
+native int FF2_GetBossHealth(int boss=0);
 
 /**
  * Sets the health of the Boss
@@ -127,7 +128,7 @@ native FF2_GetBossHealth(boss=0);
  * @param health    New health value
  * @noreturn
  */
-native FF2_SetBossHealth(boss, health);
+native void FF2_SetBossHealth(int boss, int health);
 
 /**
  * Gets the max health of the Boss
@@ -135,7 +136,7 @@ native FF2_SetBossHealth(boss, health);
  * @param boss      Boss's index
  * @return          Max health of the Boss
  */
-native FF2_GetBossMaxHealth(boss=0);
+native int FF2_GetBossMaxHealth(int boss=0);
 
 /**
  * Sets the max health of the Boss
@@ -144,7 +145,7 @@ native FF2_GetBossMaxHealth(boss=0);
  * @param health    New max health value
  * @noreturn
  */
-native FF2_SetBossMaxHealth(boss, health);
+native void FF2_SetBossMaxHealth(int boss, int health);
 
 /**
  * Gets the current number of lives of the Boss
@@ -152,7 +153,7 @@ native FF2_SetBossMaxHealth(boss, health);
  * @param boss      Boss's index
  * @return          Number of lives the boss has remaining
  */
-native FF2_GetBossLives(boss=0);
+native int FF2_GetBossLives(int boss=0);
 
 /**
  * Sets the current number of lives of the Boss
@@ -161,7 +162,7 @@ native FF2_GetBossLives(boss=0);
  * @param lives     New number of lives
  * @noreturn
  */
-native FF2_SetBossLives(boss, lives);
+native void FF2_SetBossLives(int boss, int lives);
 
 /**
  * Gets the max number of lives of the Boss
@@ -169,7 +170,7 @@ native FF2_SetBossLives(boss, lives);
  * @param boss      Boss's index
  * @return          Max number of lives of the Boss
  */
-native FF2_GetBossMaxLives(boss=0);
+native int FF2_GetBossMaxLives(int boss=0);
 
 /**
  * Sets the max number of lives of the Boss
@@ -178,7 +179,7 @@ native FF2_GetBossMaxLives(boss=0);
  * @param lives     New max number of lives
  * @noreturn
  */
-native FF2_SetBossMaxLives(boss, lives);
+native void FF2_SetBossMaxLives(int boss, int lives);
 
 /**
  * Gets the charge meter value of the Boss
@@ -190,7 +191,7 @@ native FF2_SetBossMaxLives(boss, lives);
  *                      2 - other charged abilities
  * @return          Charge value of the Boss
  */
-native Float:FF2_GetBossCharge(boss, slot);
+native float FF2_GetBossCharge(int boss, int slot);
 
 /**
  * Sets the charge meter value of the Boss
@@ -203,7 +204,7 @@ native Float:FF2_GetBossCharge(boss, slot);
  * @param value     New value of charge
  * @noreturn
  */
-native FF2_SetBossCharge(boss, slot, Float:value);
+native void FF2_SetBossCharge(int boss, int slot, float value);
 
 /**
  * Gets how much damage is needed in order to activate the rage of the current boss
@@ -211,7 +212,7 @@ native FF2_SetBossCharge(boss, slot, Float:value);
  * @param boss	Boss index
  * @return		Total damage needed
  */
-native FF2_GetBossRageDamage(boss);
+native int FF2_GetBossRageDamage(int boss);
 
 /**
  * Sets how much damage is needed in order to activate the rage of the current boss
@@ -220,7 +221,7 @@ native FF2_GetBossRageDamage(boss);
  * @param damage	New damage value
  * @noreturn
  */
-native FF2_SetBossRageDamage(boss, damage);
+native void FF2_SetBossRageDamage(int boss, int damage);
 
 /**
  * Gets an ability's rage distance
@@ -230,7 +231,7 @@ native FF2_SetBossRageDamage(boss, damage);
  * @param abilityName   Name of ability (use an empty string if you want get the boss's global "rage distance" value)
  * @return              Ability's rage distance
  */
-native FF2_GetBossRageDistance(boss=0, const String:pluginName[]="", const String:abilityName[]="");
+native int FF2_GetBossRageDistance(int boss=0, const char[] pluginName="", const char[] abilityName="");
 
 /**
  * Gets damage dealt by this client
@@ -238,7 +239,7 @@ native FF2_GetBossRageDistance(boss=0, const String:pluginName[]="", const Strin
  * @param client    Client's index
  * @return          Damage dealt
  */
-native FF2_GetClientDamage(client);
+native int FF2_GetClientDamage(int client);
 
 /**
  * Sets damage dealt by this client
@@ -247,7 +248,7 @@ native FF2_GetClientDamage(client);
  * @param damage	New damage dealt
  * @noreturn
  */
-native FF2_SetClientDamage(client, damage);
+native void FF2_SetClientDamage(int client, int damage);
 
 /**
  * Finds if a Boss has a certain ability
@@ -257,7 +258,7 @@ native FF2_SetClientDamage(client, damage);
  * @param abilityName   Name of ability
  * @return              True if the boss has this ability, false if it doesn't
  */
-native bool:FF2_HasAbility(boss, const String:pluginName[], const String:abilityName[]);
+native bool FF2_HasAbility(int boss, const char[] pluginName, const char[] abilityName);
 
 /**
  * Gets the integer value of an ability argument
@@ -269,7 +270,7 @@ native bool:FF2_HasAbility(boss, const String:pluginName[], const String:ability
  * @param defaultValue  Value to return if argument does not exist
  * @return              Value of argument
  */
-native FF2_GetAbilityArgument(boss, const String:pluginName[], const String:abilityName[], const String:argument[], defaultValue=0);
+native int FF2_GetAbilityArgument(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, int defaultValue=0);
 
 /**
  * Gets the float value of an ability argument
@@ -281,7 +282,7 @@ native FF2_GetAbilityArgument(boss, const String:pluginName[], const String:abil
  * @param defaultValue  Value to return if argument does not exist
  * @return              Value of argument
  */
-native Float:FF2_GetAbilityArgumentFloat(boss, const String:pluginName[], const String:abilityName[], const String:argument[], Float:defaultValue=0.0);
+native float FF2_GetAbilityArgumentFloat(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, float defaultValue=0.0);
 
 /**
  * Gets the string value of an ability argument
@@ -295,7 +296,7 @@ native Float:FF2_GetAbilityArgumentFloat(boss, const String:pluginName[], const 
  * @param defaultValue  Value to return if argument does not exist
  * @noreturn
  */
-native FF2_GetAbilityArgumentString(boss, const String:pluginName[], const String:abilityName[], const String:argument[], String:buffer[], bufferLength, String:defaultValue[]="");
+native void FF2_GetAbilityArgumentString(int boss, const char[] pluginName, const char[] abilityName, const char[] argument , char[] buffer, int bufferLength, char[] defaultValue="");
 
 /**
  * Determines how the Boss should use a certain ability
@@ -313,7 +314,7 @@ native FF2_GetAbilityArgumentString(boss, const String:pluginName[], const Strin
  *                          2 - by reload button
  * @noreturn
  */
-native FF2_UseAbility(boss, const String:pluginName[], const String:abilityName[], slot, buttonMode=0);
+native void FF2_UseAbility(int boss, const char[] pluginName, const char[] abilityName, int slot, int buttonMode=0);
 
 /**
  * Gets a client's FF2 flags
@@ -321,7 +322,7 @@ native FF2_UseAbility(boss, const String:pluginName[], const String:abilityName[
  * @param client    Client's index
  * @return          Client's FF2 flags
  */
-native FF2_GetFF2Flags(client);
+native int FF2_GetFF2Flags(int client);
 
 /**
  * Sets a client's FF2 flags
@@ -330,7 +331,7 @@ native FF2_GetFF2Flags(client);
  * @param flags     New flag values
  * @noreturn
  */
-native FF2_SetFF2Flags(client, flags);
+native void FF2_SetFF2Flags(int client, int flags);
 
 /**
  * Gets a client's queue points
@@ -338,7 +339,7 @@ native FF2_SetFF2Flags(client, flags);
  * @param client    Client's index
  * @return          Client's queue points
  */
-native FF2_GetQueuePoints(client);
+native int FF2_GetQueuePoints(int client);
 
 /**
  * Sets a client's queue points
@@ -347,7 +348,7 @@ native FF2_GetQueuePoints(client);
  * @param value     New value of client's queue points
  * @noreturn
  */
-native FF2_SetQueuePoints(client, value);
+native void FF2_SetQueuePoints(int client, int value);
 
 /**
  * Starts the Boss's music for the specified clients
@@ -355,7 +356,7 @@ native FF2_SetQueuePoints(client, value);
  * @param client    Client's index (0 for all clients)
  * @noreturn
  */
-native FF2_StartMusic(client=0);
+native void FF2_StartMusic(int client=0);
 
 /**
  * Stops the Boss's music for the specified clients
@@ -363,7 +364,7 @@ native FF2_StartMusic(client=0);
  * @param client    Client's index (0 for all clients)
  * @noreturn
  */
-native FF2_StopMusic(client=0);
+native void FF2_StopMusic(int client=0);
 
 /**
  * Finds a random Boss sound from its config file
@@ -376,7 +377,7 @@ native FF2_StopMusic(client=0);
  * @param slot          Slot of ability - only checked if 'ability' is true
  * @return              True if a sound was found, false otherwise
  */
-native bool:FF2_FindSound(const String:sound[], String:file[], length, boss=0, bool:ability=false, slot=0);
+native bool FF2_FindSound(const char[] sound, char[] file, int length, int boss=0, bool ability=false, int slot=0);
 
 /**
  * Gets a client's glow timer
@@ -384,7 +385,7 @@ native bool:FF2_FindSound(const String:sound[], String:file[], length, boss=0, b
  * @param client    Client's index
  * @return          Number of seconds left until client glow disappears (-1 if invalid client)
  */
-native Float:FF2_GetClientGlow(client);
+native float FF2_GetClientGlow(int client);
 
 /**
  * Sets a client's glow timer
@@ -394,13 +395,13 @@ native Float:FF2_GetClientGlow(client);
  * @param time2     New value of glow timer
  * @noreturn
  */
-native FF2_SetClientGlow(client, Float:time1, Float:time2=-1.0);
+native float FF2_SetClientGlow(int client, float time1, float time2=-1.0);
 
 /**
  * Returns whether or not debug is enabled
  * @return          True if enabled, false otherwise
  */
-native bool:FF2_Debug();
+native bool FF2_Debug();
 
 /**
  * Set sound flags for specified client
@@ -409,7 +410,7 @@ native bool:FF2_Debug();
  * @param flags     Flags which to set
  * @noreturn
  */
-native FF2_SetSoundFlags(client, flags);
+native void FF2_SetSoundFlags(int client, int flags);
 
 /**
  * Clear sound flags for specified client
@@ -418,7 +419,7 @@ native FF2_SetSoundFlags(client, flags);
  * @param flags     Flags which to clear
  * @noreturn
  */
-native FF2_ClearSoundFlags(client, flags);
+native void FF2_ClearSoundFlags(int client, int flags);
 
 /**
  * Check sound flags for specified client
@@ -427,7 +428,7 @@ native FF2_ClearSoundFlags(client, flags);
  * @param flags     Flags which to check
  * @return          True if the client does _not_ have the given flags, false otherwise
  */
-native bool:FF2_CheckSoundFlags(client, flags);
+native bool FF2_CheckSoundFlags(int client, int flags);
 
 /**
  * Called whenever a boss uses an ability (Rage, jump, teleport, etc)
@@ -448,8 +449,8 @@ native bool:FF2_CheckSoundFlags(client, flags);
  *                          3 - In use
  * @return              Plugin_Handled or Plugin_Stop for FF2_PreAbility to prevent FF2_OnAbility
  */
-forward Action:FF2_PreAbility(boss, const String:pluginName[], const String:abilityName[], slot);
-forward FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[], slot, status);
+forward Action FF2_PreAbility(int boss, const char[] pluginName, const char[] abilityName, int slot);
+forward void FF2_OnAbility(int boss, const char[] pluginName, const char[] abilityName, int slot, int status);
 
 /**
  * Called when a boss rages
@@ -458,7 +459,7 @@ forward FF2_OnAbility(boss, const String:pluginName[], const String:abilityName[
  * @param distance      Rage distance
  * @return              Plugin_Changed to change rage distance, Plugin_Handled or Plugin_Stop to prevent rage
  */
-forward Action:FF2_OnRage(boss, &distance);
+forward Action FF2_OnRage(int boss, int& distance);
 
 /**
  * Called when a boss super jumps (this includes teleports)
@@ -467,7 +468,7 @@ forward Action:FF2_OnRage(boss, &distance);
  * @param superDuperJump    Whether or not super duper jump is enabled
  * @return                  Plugin_Changed to change super duper jump status, Plugin_Handled or Plugin_Stop to prevent super jump
  */
-forward Action:FF2_OnSuperJump(boss, &bool:superDuperJump);
+forward Action FF2_OnSuperJump(int boss, bool& superDuperJump);
 
 /**
  * Called when a boss uses weighdown
@@ -475,7 +476,7 @@ forward Action:FF2_OnSuperJump(boss, &bool:superDuperJump);
  * @param boss          Boss's index
  * @return              Plugin_Handled or Plugin_Stop to prevent weighdown
  */
-forward Action:FF2_OnWeighdown(boss);
+forward Action FF2_OnWeighdown(int boss);
 
 /**
  * Called when a Boss gets hurt by environmental damage
@@ -485,7 +486,7 @@ forward Action:FF2_OnWeighdown(boss);
  * @param damage        Damage by "trigger_hurt".  Cutomizable.
  * @return              Plugin_Stop will prevent damage, Plugin_Changed will change damage.
  */
-forward Action:FF2_OnTriggerHurt(boss, triggerHurt, &Float:damage);
+forward Action FF2_OnTriggerHurt(int boss, int triggerHurt, float& damage);
 
 /**
  * Called when a Boss's music begins for a client
@@ -495,7 +496,7 @@ forward Action:FF2_OnTriggerHurt(boss, triggerHurt, &Float:damage);
  * @param time          Music length
  * @return              Plugin_Stop will prevent music, Plugin_Changed will change it.
  */
-forward Action:FF2_OnMusic(client, String:path[], &time);
+forward Action FF2_OnMusic(int client, char[] path, int& time);
 
 /**
  * Called when FF2 picks a boss
@@ -506,7 +507,7 @@ forward Action:FF2_OnMusic(client, String:path[], &time);
  * @param preset		True if the boss was set using a command such as ff2_special
  * @return				You can NOT use Plugin_Stop to prevent this, but you can change characterName and use Plugin_Changed to change the boss.  If you want to change 'character', then make 'characterName' null.
  */
-forward Action:FF2_OnBossSelected(boss, &character, String:characterName[], bool:preset);
+forward Action FF2_OnBossSelected(int boss, int& character, char[] characterName, bool preset);
 
 /**
  * Called when FF2 adds queue points
@@ -515,7 +516,7 @@ forward Action:FF2_OnBossSelected(boss, &character, String:characterName[], bool
  *
  * @return	Plugin_Stop will prevent this, Plugin_Changed will change it.
  */
-forward Action:FF2_OnAddQueuePoints(add_points[MAXPLAYERS+1]);
+forward Action FF2_OnAddQueuePoints(int add_points[MAXPLAYERS+1]);
 
 /**
  * Called when FF2 picks a character set for the map
@@ -523,7 +524,7 @@ forward Action:FF2_OnAddQueuePoints(add_points[MAXPLAYERS+1]);
  * @param characterSet	Name of character set
  * @return				You can NOT use Plugin_Stop to prevent this, but you can change characterSet and return Plugin_Changed to change the character set.
  */
-forward Action:FF2_OnLoadCharacterSet(String:characterSet[]);
+forward Action FF2_OnLoadCharacterSet(char[] characterSet);
 
 /**
  * Called when a boss loses a life
@@ -533,7 +534,7 @@ forward Action:FF2_OnLoadCharacterSet(String:characterSet[]);
  * @param maxLives  Max number of lives
  * @return          Plugin_Stop or Plugin_Handled to prevent damage that would remove a life, Plugin_Changed if you want to change the number of lives left.  Setting lives to a value greater than maxLives will also set maxLives to that value.
  */
-forward Action:FF2_OnLoseLife(boss, &lives, maxLives);
+forward Action FF2_OnLoseLife(int boss, int& lives, int maxLives);
 
 /**
  * Called when the number of alive players changes.  Note that this will never be 0 as FF2 does not re-calculate the number of players once the round ends.
@@ -542,7 +543,7 @@ forward Action:FF2_OnLoseLife(boss, &lives, maxLives);
  * @param bosses	Number of alive players left on the boss team (this includes minions as well)
  * @noreturn
  */
-forward Action:FF2_OnAlivePlayersChanged(players, bosses);
+forward Action FF2_OnAlivePlayersChanged(int players, int bosses);
 
 /**
  * Called when an unknown variable is encountered while parsing a formula
@@ -551,7 +552,7 @@ forward Action:FF2_OnAlivePlayersChanged(players, bosses);
  * @param variableValue Value of the variable
  * @return              Plugin_Changed to allocate variableValue to the unknown variable
  */
-forward Action:FF2_OnParseUnknownVariable(String:variable[], &Float:variableValue);
+forward Action FF2_OnParseUnknownVariable(char[] variable, float& variableValue);
 
 /**
  * Gives ammo to a weapon
@@ -562,7 +563,7 @@ forward Action:FF2_OnParseUnknownVariable(String:variable[], &Float:variableValu
  * @param clip      Clip
  * @noreturn
  */
-stock FF2_SetAmmo(client, weapon, ammo=-1, clip=-1)
+stock void FF2_SetAmmo(int client, int weapon, int ammo=-1, int clip=-1)
 {
 	if(IsValidEntity(weapon))
 	{
@@ -571,14 +572,14 @@ stock FF2_SetAmmo(client, weapon, ammo=-1, clip=-1)
 			SetEntProp(weapon, Prop_Data, "m_iClip1", clip);
 		}
 
-		new ammoType=(ammo>-1 ? GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType") : -1);
+		int ammoType=(ammo>-1 ? GetEntProp(weapon, Prop_Send, "m_iPrimaryAmmoType") : -1);
 		if(ammoType!=-1)
 		{
 			SetEntProp(client, Prop_Data, "m_iAmmo", ammo, _, ammoType);
 		}
 		else if(ammo>-1)  //Only complain if we're trying to set ammo
 		{
-			decl String:classname[64], String:bossName[32];
+			char classname[64], bossName[32];
 			GetEdictClassname(weapon, classname, sizeof(classname));
 			FF2_GetBossName(FF2_GetBossIndex(client), bossName, sizeof(bossName));
 			LogError("[FF2] Cannot give ammo to weapon %s (boss %s)-check your config!", classname, bossName);
@@ -592,11 +593,11 @@ stock FF2_SetAmmo(client, weapon, ammo=-1, clip=-1)
  *
  * Uses the same params and return values as ShowSyncHudText
  */
-stock FF2_ShowSyncHudText(client, Handle:sync, const String:buffer[], any:...)
+stock void FF2_ShowSyncHudText(int client, Handle sync, const char[] buffer, any...)
 {
 	if(!(FF2_GetFF2Flags(client) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
 	{
-		decl String:message[256];
+		char message[256];
 		VFormat(message, sizeof(message), buffer, 4);
 		ShowSyncHudText(client, sync, message);
 	}
@@ -608,11 +609,11 @@ stock FF2_ShowSyncHudText(client, Handle:sync, const String:buffer[], any:...)
  *
  * Uses the same params and return values as ShowHudText
  */
-stock FF2_ShowHudText(client, channel, const String:buffer[], any:...)
+stock void FF2_ShowHudText(int client, int channel, const char[] buffer, any...)
 {
 	if(!(FF2_GetFF2Flags(client) & FF2FLAG_HUDDISABLED) && !(GetClientButtons(client) & IN_SCORE))
 	{
-		decl String:message[256];
+		char message[256];
 		VFormat(message, sizeof(message), buffer, 4);
 		ShowHudText(client, channel, message);
 	}
@@ -628,10 +629,10 @@ stock FF2_ShowHudText(client, channel, const String:buffer[], any:...)
  * @param maxStringLength   Maximum length of each string buffer.
  * @return					Number of strings retrieved.
  */
-stock int ExplodeStringIntoArrayList(const String:text[], const String:split[], Handle:list, maxStringLength)
+stock int ExplodeStringIntoArrayList(const char[] text, const char[] split, ArrayList list, int maxStringLength)
 {
-	new reloc_idx, index, total;
-	new String:temp[maxStringLength];
+	int reloc_idx, index, total;
+	char[] temp=new char[maxStringLength];
 
 	if(!split[0])
 	{
@@ -641,11 +642,11 @@ stock int ExplodeStringIntoArrayList(const String:text[], const String:split[], 
 	while((index=SplitString(text[reloc_idx], split, temp, maxStringLength))!=-1)
 	{
 		reloc_idx+=index;
-		PushArrayString(list, temp);
+		list.PushString(temp);
 		total++;
 	}
 
-	PushArrayString(list, text[reloc_idx]);
+	list.PushString(text[reloc_idx]);
 	total++;
 
 	return total;
@@ -658,18 +659,18 @@ stock int ExplodeStringIntoArrayList(const String:text[], const String:split[], 
  * @param any:...   Formatting rules
  * @noreturn
  */
-stock Debug(String:buffer[], any:...)
+stock void Debug(char[] buffer, any...)
 {
 	if(FF2_Debug())
 	{
-		decl String:message[192];
+		char message[192];
 		VFormat(message, sizeof(message), buffer, 2);
 		CPrintToChatAll("{olive}[FF2 {darkorange}DEBUG{olive}]{default} %s", message);
 		PrintToServer("[FF2 DEBUG] %s", message);
 	}
 }
 
-public SharedPlugin:__pl_FF2=
+public SharedPlugin __pl_FF2=
 {
 	name="freak_fortress_2",
 	file="freak_fortress_2.smx",

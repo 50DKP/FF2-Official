@@ -51,7 +51,7 @@ if(markdownIsStupid)
 	{
 		while(!someOtherBoolean)
 		{
-			for(new i=0; i<=someOtherNumber; i+=3)
+			for(int i=0; i<=someOtherNumber; i+=3)
 			{
 				if(i==someNumber && moreVariableNames!=42)
 				{
