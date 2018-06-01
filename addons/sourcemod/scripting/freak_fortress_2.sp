@@ -7675,7 +7675,14 @@ DoOverlay(client, const String:overlay[])
 {
 	new flags=GetCommandFlags("r_screenoverlay");
 	SetCommandFlags("r_screenoverlay", flags & ~FCVAR_CHEAT);
-	ClientCommand(client, "r_screenoverlay \"%s\"", overlay);
+	if(overlay[0]=='\0')
+	{
+		ClientCommand(client, "r_screenoverlay off");
+	}
+	else
+	{
+		ClientCommand(client, "r_screenoverlay \"%s\"", overlay);
+	}
 	SetCommandFlags("r_screenoverlay", flags);
 }
 
