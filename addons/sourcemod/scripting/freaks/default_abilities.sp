@@ -199,9 +199,24 @@ public Action:FF2_OnAbility2(boss, const String:plugin_name[], const String:abil
 		}
 		while(!IsValidEntity(target) || target==client || (FF2_GetFF2flags(target) & FF2FLAG_ALLOWSPAWNINBOSSTEAM) || !IsPlayerAlive(target));
 
-		GetEntPropVector(target, Prop_Data, "m_vecOrigin", position);
-		TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
-		TF2_StunPlayer(client, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, client);
+		if(IsValidEntity(target))
+		{
+			GetEntPropVector(target, Prop_Send, "m_vecOrigin", position);
+			SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime() + 2.0);
+			if(GetEntProp(target, Prop_Send, "m_bDucked"))
+			{
+				new Float:temp[3]={24.0, 24.0, 62.0};  //Compiler won't accept directly putting it into SEPV -.-
+				SetEntPropVector(client, Prop_Send, "m_vecMaxs", temp);
+				SetEntProp(client, Prop_Send, "m_bDucked", 1);
+				SetEntityFlags(client, GetEntityFlags(client)|FL_DUCKING);
+				CreateTimer(0.2, Timer_StunBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
+			}
+			else
+			{
+				TF2_StunPlayer(client, 2.0, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, target);
+			}
+			TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
+		}
 	}
 	return Plugin_Continue;
 }
