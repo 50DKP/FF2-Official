@@ -241,7 +241,7 @@ Rage_Stun(const String:ability_name[], boss)
 					TF2_RemoveCondition(target, TFCond_Parachute);
 				}
 				TF2_StunPlayer(target, duration, 0.0, TF_STUNFLAGS_GHOSTSCARE|TF_STUNFLAG_NOSOUNDOREFFECT, client);
-				CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(target, "yikes_fx", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(target, "yikes_fx", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 	}
@@ -267,7 +267,7 @@ Rage_StunSentry(const String:ability_name[], boss)
 		if(GetVectorDistance(bossPosition, sentryPosition)<=distance)
 		{
 			SetEntProp(sentry, Prop_Send, "m_bDisabled", 1);
-			CreateTimer(duration, RemoveEntity, EntIndexToEntRef(AttachParticle(sentry, "yikes_fx", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(sentry, "yikes_fx", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
 			CreateTimer(duration, Timer_EnableSentry, EntIndexToEntRef(sentry), TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
@@ -452,8 +452,8 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 			FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, particle, sizeof(particle));
 			if(strlen(particle)>0)
 			{
-				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle)), TIMER_FLAG_NO_MAPCHANGE);
-				CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle, _, false)), TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(3.0, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle)), TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(3.0, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle, _, false)), TIMER_FLAG_NO_MAPCHANGE);
 			}
 
 			new Float:position[3];
@@ -478,8 +478,8 @@ Charge_Teleport(const String:ability_name[], boss, slot, status)
 				TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
 				if(strlen(particle)>0)
 				{
-					CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle)), TIMER_FLAG_NO_MAPCHANGE);
-					CreateTimer(3.0, RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle, _, false)), TIMER_FLAG_NO_MAPCHANGE);
+					CreateTimer(3.0, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle)), TIMER_FLAG_NO_MAPCHANGE);
+					CreateTimer(3.0, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, particle, _, false)), TIMER_FLAG_NO_MAPCHANGE);
 				}
 			}
 
@@ -625,7 +625,7 @@ DissolveRagdoll(ragdoll)
 	AcceptEntityInput(dissolver, "Kill");
 }
 
-public Action:RemoveEntity(Handle:timer, any:entid)
+public Action:Timer_RemoveEntity(Handle:timer, any:entid)
 {
 	new entity=EntRefToEntIndex(entid);
 	if(IsValidEntity(entity) && entity>MaxClients)

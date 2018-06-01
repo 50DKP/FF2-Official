@@ -74,7 +74,7 @@ public Action:Timer_Remove_Overlay(Handle:timer)
 	{
 		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
 		{
-			ClientCommand(target, "r_screenoverlay \"\"");
+			ClientCommand(target, "r_screenoverlay off");
 		}
 	}
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
