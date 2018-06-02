@@ -846,15 +846,15 @@ public Action:OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcas
 				{
 					case 0:
 					{
-						weapon=SpawnWeapon(attacker, "tf_weapon_club", 171, 101, 5, "68 ; 2 ; 2 ; 3.0");
+						weapon=SpawnWeapon(attacker, "tf_weapon_club", 171, 101, 5, "68 ; 2 ; 2 ; 3.1");
 					}
 					case 1:
 					{
-						weapon=SpawnWeapon(attacker, "tf_weapon_club", 193, 101, 5, "68 ; 2 ; 2 ; 3.0");
+						weapon=SpawnWeapon(attacker, "tf_weapon_club", 193, 101, 5, "68 ; 2 ; 2 ; 3.1");
 					}
 					case 2:
 					{
-						weapon=SpawnWeapon(attacker, "tf_weapon_club", 232, 101, 5, "68 ; 2 ; 2 ; 3.0");
+						weapon=SpawnWeapon(attacker, "tf_weapon_club", 232, 101, 5, "68 ; 2 ; 2 ; 3.1");
 					}
 				}
 				SetEntPropEnt(attacker, Prop_Data, "m_hActiveWeapon", weapon);
