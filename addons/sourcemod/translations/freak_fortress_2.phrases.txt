@@ -407,4 +407,16 @@
 		"#format"	"{1:i}"
 		"en"		"Damage: {1}"
 	}
+	"Dead Ringer Ready"
+	{
+		"en"        "Status: Feign Death Ready"
+	}
+	"Dead Ringer Inactive"
+	{
+		"en"        "Status: Inactive"
+	}
+	"Dead Ringer Deadringed"
+	{
+		"en"        "Status: Deadringed"
+	}
 }
