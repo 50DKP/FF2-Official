@@ -415,7 +415,7 @@
 	{
 		"en"        "Status: Inactive"
 	}
-	"Dead Ringer Deadringed"
+	"Dead Ringer Active"
 	{
 		"en"        "Status: Deadringed"
 	}

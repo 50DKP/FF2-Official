@@ -140,7 +140,7 @@ new Handle:cvarCaberDetonations;
 new Handle:cvarGoombaDamage;
 new Handle:cvarGoombaRebound;
 new Handle:cvarBossRTD;
-new Handle:cvarDRHud;
+new Handle:cvarDeadRingerHud;
 new Handle:cvarUpdater;
 new Handle:cvarDebug;
 new Handle:cvarPreroundBossDisconnect;
@@ -174,7 +174,7 @@ new allowedDetonations;
 new Float:GoombaDamage=0.05;
 new Float:reboundPower=300.0;
 new bool:canBossRTD;
-new bool:DRHud;
+new bool:DeadRingerHud;
 
 new Handle:MusicTimer[MAXPLAYERS+1];
 new Handle:BossInfoTimer[MAXPLAYERS+1][2];
@@ -1168,7 +1168,7 @@ public OnPluginStart()
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", _, true, 0.01, true, 1.0);
 	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How high players should rebound after goomba stomping the boss (requires Goomba Stomp)", _, true, 0.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", _, true, 0.0, true, 1.0);
-	cvarDRHud=CreateConVar("ff2_deadringer_hud", "1", "Dead Ringer indicator? 0 to disable, 1 to enable", _, true, 0.0, true, 1.0);
+	cvarDeadRingerHud=CreateConVar("ff2_deadringer_hud", "1", "Dead Ringer indicator? 0 to disable, 1 to enable", _, true, 0.0, true, 1.0);
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", _, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", _, true, 0.0, true, 1.0);
 
@@ -1219,7 +1219,7 @@ public OnPluginStart()
 	HookConVarChange(cvarGoombaRebound, CvarChange);
 	HookConVarChange(cvarBossRTD, CvarChange);
 	HookConVarChange(cvarUpdater, CvarChange);
-	HookConVarChange(cvarDRHud, CvarChange);
+	HookConVarChange(cvarDeadRingerHud, CvarChange);
 	HookConVarChange(cvarNextmap=FindConVar("sm_nextmap"), CvarChangeNextmap);
 
 	RegConsoleCmd("ff2", FF2Panel);
@@ -1496,7 +1496,7 @@ public EnableFF2()
 	GoombaDamage=GetConVarFloat(cvarGoombaDamage);
 	reboundPower=GetConVarFloat(cvarGoombaRebound);
 	canBossRTD=GetConVarBool(cvarBossRTD);
-	DRHud=GetConVarBool(cvarDRHud);
+	DeadRingerHud=GetConVarBool(cvarDeadRingerHud);
 	AliveToEnable=GetConVarInt(cvarAliveToEnable);
 	BossCrits=GetConVarBool(cvarCrits);
 	if(GetConVarInt(cvarFirstRound)!=-1)
@@ -2092,9 +2092,9 @@ public CvarChange(Handle:convar, const String:oldValue[], const String:newValue[
 	{
 		canBossRTD=bool:StringToInt(newValue);
 	}
-	else if(convar==cvarDRHud)
+	else if(convar==cvarDeadRingerHud)
 	{
-		DRHud=bool:StringToInt(newValue);
+		DeadRingerHud=bool:StringToInt(newValue);
 	}
 	else if(convar==cvarUpdater)
 	{
@@ -4736,13 +4736,13 @@ public Action:ClientTimer(Handle:timer)
 				}
 			}
 			// Chdata's Deadringer Notifier
-			else if(DRHud && TF2_GetPlayerClass(client)==TFClass_Spy)
+			else if(DeadRingerHud && TF2_GetPlayerClass(client)==TFClass_Spy)
 			{
 				if(GetClientCloakIndex(client)==59)
 				{
 					new drstatus=TF2_IsPlayerInCondition(client, TFCond_Cloaked) ? 2 : GetEntProp(client, Prop_Send, "m_bFeignDeathReady") ? 1 : 0;
 
-					decl String:s[32];
+					decl String:s[64];
 
 					switch (drstatus)
 					{
@@ -4754,9 +4754,9 @@ public Action:ClientTimer(Handle:timer)
 					    case 2:
 						{
 							SetHudTextParams(-1.0, 0.83, 0.35, 255, 64, 64, 255, 0, 0.0, 0.0, 0.0);
-							Format(s, sizeof(s), "%T", "Dead Ringer Deadringed", client);
+							Format(s, sizeof(s), "%T", "Dead Ringer Active", client);
 						}
-					default:
+					    default:
 						{
 							SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.0, 0.0, 0.0);
 							Format(s, sizeof(s), "%T", "Dead Ringer Inactive", client);
