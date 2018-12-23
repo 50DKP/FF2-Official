@@ -2446,7 +2446,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 		{
 			if(IsValidClient(client) && !IsBoss(client) && GetClientTeam(client)!=OtherTeam)
 			{
-				CreateTimer(0.1, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(0.1, Timer_MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 		return Plugin_Continue;  //NOTE: This is needed because OnRoundStart gets fired a second time once both teams have players
@@ -2467,7 +2467,7 @@ public Action:OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast
 		BossInfoTimer[boss][1]=INVALID_HANDLE;
 		if(Boss[boss])
 		{
-			CreateTimer(0.3, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(0.3, Timer_MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
 			BossInfoTimer[boss][0]=CreateTimer(30.2, BossInfoTimer_Begin, boss, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
@@ -2905,7 +2905,7 @@ public Action:StartBossTimer(Handle:timer)
 		if(IsValidClient(client) && !IsBoss(client) && IsPlayerAlive(client))
 		{
 			playing++;
-			CreateTimer(0.15, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);  //TODO:  Is this needed?
+			CreateTimer(0.15, Timer_MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);  //TODO:  Is this needed?
 		}
 	}
 	
@@ -2920,8 +2920,8 @@ public Action:StartBossTimer(Handle:timer)
 	}
 
 	CreateTimer(0.2, BossTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(0.2, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
-	CreateTimer(0.2, StartRound, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.2, Timer_CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.2, Timer_StartRound, _, TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(0.2, ClientTimer, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 	CreateTimer(2.0, Timer_PrepareBGM, 0, TIMER_FLAG_NO_MAPCHANGE);
 
@@ -3211,7 +3211,7 @@ public Action:Timer_Move(Handle:timer)
 	}
 }
 
-public Action:StartRound(Handle:timer)
+public Action:Timer_StartRound(Handle:timer)
 {
 	CreateTimer(10.0, Timer_NextBossPanel, _, TIMER_FLAG_NO_MAPCHANGE);
 	UpdateHealthBar();
@@ -3381,7 +3381,7 @@ EquipBoss(boss)
 	}
 }
 
-public Action:MakeBoss(Handle:timer, any:boss)
+public Action:Timer_MakeBoss(Handle:timer, any:boss)
 {
 	new client=Boss[boss];
 	if(!IsValidClient(client) || CheckRoundState()==-1)
@@ -3881,7 +3881,7 @@ stock Handle:PrepareItemHandle(Handle:item, String:name[]="", index=-1, const St
 	return weapon;
 }
 
-public Action:MakeNotBoss(Handle:timer, any:userid)
+public Action:Timer_MakeNotBoss(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
@@ -3902,11 +3902,11 @@ public Action:MakeNotBoss(Handle:timer, any:userid)
 		AssignTeam(client, OtherTeam);
 	}
 
-	CreateTimer(0.1, CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.1, Timer_CheckItems, userid, TIMER_FLAG_NO_MAPCHANGE);
 	return Plugin_Continue;
 }
 
-public Action:CheckItems(Handle:timer, any:userid)
+public Action:Timer_CheckItems(Handle:timer, any:userid)
 {
 	new client=GetClientOfUserId(userid);
 	if(!IsValidClient(client) || !IsPlayerAlive(client) || CheckRoundState()==2 || IsBoss(client) || (FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
@@ -4588,7 +4588,7 @@ public OnClientDisconnect(client)
 
 			if(Boss[boss])
 			{
-				CreateTimer(0.1, MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(0.1, Timer_MakeBoss, boss, TIMER_FLAG_NO_MAPCHANGE);
 				CPrintToChat(Boss[boss], "{olive}[FF2]{default} %t", "Replace Disconnected Boss");
 				CPrintToChatAll("{olive}[FF2]{default} %t", "Boss Disconnected", client, Boss[boss]);
 			}
@@ -4596,7 +4596,7 @@ public OnClientDisconnect(client)
 
 		if(IsClientInGame(client) && IsPlayerAlive(client) && CheckRoundState()==1)
 		{
-			CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+			CreateTimer(0.1, Timer_CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 
@@ -4615,7 +4615,7 @@ public Action:OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcas
 {
 	if(Enabled && CheckRoundState()==1)
 	{
-		CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(0.1, Timer_CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	return Plugin_Continue;
 }
@@ -4638,7 +4638,7 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 
 	if(IsBoss(client))
 	{
-		CreateTimer(0.1, MakeBoss, GetBossIndex(client), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(0.1, Timer_MakeBoss, GetBossIndex(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	if(!(FF2flags[client] & FF2FLAG_ALLOWSPAWNINBOSSTEAM))
@@ -4652,7 +4652,7 @@ public Action:OnPostInventoryApplication(Handle:event, const String:name[], bool
 			TF2_RegeneratePlayer(client);
 			CreateTimer(0.1, Timer_RegenPlayer, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 		}
-		CreateTimer(0.2, MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(0.2, Timer_MakeNotBoss, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	FF2flags[client]&=~(FF2FLAG_UBERREADY|FF2FLAG_ISBUFFED|FF2FLAG_TALKING|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_USINGABILITY|FF2FLAG_CLASSHELPED|FF2FLAG_CHANGECVAR|FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS|FF2FLAG_ROCKET_JUMPING);
@@ -5414,7 +5414,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 	new client=GetClientOfUserId(GetEventInt(event, "userid")), attacker=GetClientOfUserId(GetEventInt(event, "attacker"));
 	decl String:sound[PLATFORM_MAX_PATH];
-	CreateTimer(0.1, CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(0.1, Timer_CheckAlivePlayers, _, TIMER_FLAG_NO_MAPCHANGE);
 	DoOverlay(client, "");
 	if(!IsBoss(client))
 	{
@@ -5589,7 +5589,7 @@ public Action:OnDeployBackup(Handle:event, const String:name[], bool:dontBroadca
 	return Plugin_Continue;
 }
 
-public Action:CheckAlivePlayers(Handle:timer)
+public Action:Timer_CheckAlivePlayers(Handle:timer)
 {
 	if(CheckRoundState()==2)
 	{
