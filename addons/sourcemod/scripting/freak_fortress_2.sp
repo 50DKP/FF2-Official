@@ -5440,12 +5440,12 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			if(RedAlivePlayers!=1 && KSpreeCount[boss]!=3)  //Don't conflict with end-of-round sounds or killing spree
 			{
 				ClassKill=GetRandomInt(0, 2);
-				if((ClassKill == 1) && RandomSound("sound_hit", sound, sizeof(sound), boss))
+				if((ClassKill==1) && RandomSound("sound_hit", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 					EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 				}
-				else if(ClassKill == 2)
+				else if(ClassKill==2)
 				{
 					new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
 					decl String:class[32];
