@@ -80,6 +80,7 @@ new healthcheckused;
 new RedAlivePlayers;
 new BlueAlivePlayers;
 new RoundCount;
+new ClassKill=0;
 new Special[MAXPLAYERS+1];
 new Incoming[MAXPLAYERS+1];
 
@@ -2691,8 +2692,8 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 		if(!bossWin && RandomSound("sound_fail", sound, sizeof(sound), boss))
 		{
-			EmitSoundToAll(sound);
-			EmitSoundToAll(sound);
+			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 		}
 	}
 
@@ -2875,8 +2876,8 @@ public Action:StartResponseTimer(Handle:timer)
 	decl String:sound[PLATFORM_MAX_PATH];
 	if(RandomSound("sound_begin", sound, sizeof(sound)))
 	{
-		EmitSoundToAll(sound);
-		EmitSoundToAll(sound);
+		EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+		EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 	}
 	return Plugin_Continue;
 }
@@ -3034,7 +3035,7 @@ PlayBGM(userid)
 			if(CheckSoundException(client, SOUNDEXCEPT_MUSIC))
 			{
 				strcopy(currentBGM[client], PLATFORM_MAX_PATH, music);
-				EmitSoundToClient(client, music);
+				ClientCommand(client, "playgamesound \"%s\"", music);
 				if(time>1)
 				{
 					MusicTimer[client]=CreateTimer(time, Timer_PrepareBGM, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
@@ -4133,8 +4134,8 @@ public Action:OnObjectDestroyed(Handle:event, const String:name[], bool:dontBroa
 			decl String:sound[PLATFORM_MAX_PATH];
 			if(RandomSound("sound_kill_buildable", sound, sizeof(sound)))
 			{
-				EmitSoundToAll(sound);
-				EmitSoundToAll(sound);
+				EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+				EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 			}
 		}
 	}
@@ -5430,30 +5431,32 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			{
 				if(RandomSound("sound_first_blood", sound, sizeof(sound), boss))
 				{
-					EmitSoundToAll(sound);
-					EmitSoundToAll(sound);
+					EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+					EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 				}
 				firstBlood=false;
 			}
 
-			if(RedAlivePlayers!=1)  //Don't conflict with end-of-round sounds
+			if(RedAlivePlayers!=1 && KSpreeCount[boss]!=3)  //Don't conflict with end-of-round sounds or killing spree
 			{
-				if(GetRandomInt(0, 1) && RandomSound("sound_hit", sound, sizeof(sound), boss))
+				ClassKill=GetRandomInt(0, 2);
+				if((ClassKill == 1) && RandomSound("sound_hit", sound, sizeof(sound), boss))
 				{
-					EmitSoundToAll(sound);
-					EmitSoundToAll(sound);
+					EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+					EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 				}
-				else if(!GetRandomInt(0, 2))  //1/3 chance for "sound_kill_<class>"
+				else if(ClassKill == 2)
 				{
 					new String:classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
 					decl String:class[32];
 					Format(class, sizeof(class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
 					if(RandomSound(class, sound, sizeof(sound), boss))
 					{
-						EmitSoundToAll(sound);
-						EmitSoundToAll(sound);
+						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 					}
 				}
+				ClassKill=0;
 			}
 
 			if(GetGameTime()<=KSpreeTimer[boss])
@@ -5469,8 +5472,8 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 			{
 				if(RandomSound("sound_kspree", sound, sizeof(sound), boss))
 				{
-					EmitSoundToAll(sound);
-					EmitSoundToAll(sound);
+					EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+					EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 				}
 				KSpreeCount[boss]=0;
 			}
@@ -5490,8 +5493,8 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 		if(RandomSound("sound_death", sound, sizeof(sound), boss))
 		{
-			EmitSoundToAll(sound);
-			EmitSoundToAll(sound);
+			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 		}
 
 		BossHealth[boss]=0;
@@ -5627,8 +5630,8 @@ public Action:Timer_CheckAlivePlayers(Handle:timer)
 		decl String:sound[PLATFORM_MAX_PATH];
 		if(RandomSound("sound_lastman", sound, sizeof(sound)))
 		{
-			EmitSoundToAll(sound);
-			EmitSoundToAll(sound);
+			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 		}
 	}
 	else if(!PointType && RedAlivePlayers<=AliveToEnable && !executed)
@@ -5867,13 +5870,13 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 
 			if(BossLives[boss]==1 && RandomSound("sound_last_life", ability, sizeof(ability), boss))
 			{
-				EmitSoundToAll(ability);
-				EmitSoundToAll(ability);
+				EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, ability, _, _, _, _, _, _, _, _, _, false);
+				EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, ability, _, _, _, _, _, _, _, _, _, false);
 			}
 			else if(RandomSound("sound_nextlife", ability, sizeof(ability), boss))
 			{
-				EmitSoundToAll(ability);
-				EmitSoundToAll(ability);
+				EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, ability, _, _, _, _, _, _, _, _, _, false);
+				EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, ability, _, _, _, _, _, _, _, _, _, false);
 			}
 
 			UpdateHealthBar();
@@ -6232,6 +6235,13 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 
 							EmitSoundToClient(attacker, "player/doubledonk.wav", _, _, _, _, 0.6, _, _, position, _, false);
 							EmitSoundToClient(client, "player/doubledonk.wav", _, _, _, _, 0.6, _, _, position, _, false);
+
+							decl String:sound[PLATFORM_MAX_PATH];
+							if(RandomSound("sound_marketed", sound, sizeof(sound)))
+							{
+								EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+								EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+							}
 							return Plugin_Changed;
 						}
 					}
@@ -6419,6 +6429,13 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					if(!(FF2flags[client] & FF2FLAG_HUDDISABLED))
 					{
 						PrintHintText(client, "%t", "Telefragged");
+					}
+
+					decl String:sound[PLATFORM_MAX_PATH];
+					if(RandomSound("sound_telefraged", sound, sizeof(sound)))
+					{
+						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
+						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 					}
 					return Plugin_Changed;
 				}
