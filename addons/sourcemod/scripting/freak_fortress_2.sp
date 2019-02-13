@@ -5859,6 +5859,7 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 			{
 				if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
 				{
+					SetGlobalTransTarget(target);
 					PrintCenterText(target, "%t", ability, bossName, BossLives[boss]);
 				}
 			}
