@@ -1786,7 +1786,6 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		if(IsValidClient(client))
 		{
-			SetGlobalTransTarget(client);
 			//TODO:  Clear HUD text here
 			if(IsBoss(client))
 			{
@@ -2323,7 +2322,6 @@ public Action:MessageTimer(Handle:timer)
 	{
 		if(IsValidClient(client))
 		{
-			SetGlobalTransTarget(client);
 			FF2_ShowSyncHudText(client, infoHUD, text);
 		}
 	}
@@ -5703,6 +5701,7 @@ public OnTakeDamageAlivePost(client, attacker, inflictor, Float:damageFloat, dam
 				{
 					if(IsValidClient(target) && !(FF2Flags[target] & FF2FLAG_HUDDISABLED))
 					{
+						SetGlobalTransTarget(target);
 						PrintCenterText(target, "%t", ability, bossName, BossLives[boss]);
 					}
 				}
@@ -6831,11 +6830,11 @@ public Action:TurnToZeroPanel(client, target)
 	SetGlobalTransTarget(client);
 	if(client==target)
 	{
-		Format(text, 512, "%t", "Reset Queue Points Confirmation");  //Do you really want to set your queue points to 0?
+		Format(text, sizeof(text), "%t", "Reset Queue Points Confirmation");  //Do you really want to set your queue points to 0?
 	}
 	else
 	{
-		Format(text, 512, "%t", "Reset Player's Queue Points", client);  //Do you really want to set {1}'s queue points to 0?
+		Format(text, sizeof(text), "%t", "Reset Player's Queue Points", client);  //Do you really want to set {1}'s queue points to 0?
 	}
 
 	PrintToChat(client, text);
