@@ -277,6 +277,11 @@
 		"#format" "{1:s}"
 		"en"	"FF2 monologues: {1}."
 	}
+	"ff2_companion"
+	{
+		"#format" "{1:s}"
+		"en"	"FF2 Companions: {1}"
+	}
 	"ff2_voice2"
 	{
 		"en"	"Other sounds will be playing, but very quietly."
@@ -292,6 +297,10 @@
 	"menu_9a"
 	{
 		"en"	"Toggle info about changes of classes in FF2"
+	}
+	"menu_10"
+	{
+		"en"	"Toggle companions (/ff2companion)"
 	}
 	"ff2_classinfo"
 	{
