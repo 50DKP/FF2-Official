@@ -30,6 +30,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 //#tryinclude <smac>
 #tryinclude <goomba>
 #tryinclude <rtd>
+#tryinclude <rtd2>
 #tryinclude <tf2attributes>
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
@@ -39,7 +40,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define STABLE_REVISION "15"
 #define DEV_REVISION "Beta"
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.14
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.15
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
@@ -137,6 +138,7 @@ new Handle:cvarLastPlayerGlow;
 new Handle:cvarBossTeleporter;
 new Handle:cvarBossSuicide;
 new Handle:cvarShieldCrits;
+new Handle:cvarDuoToggle;
 new Handle:cvarCaberDetonations;
 new Handle:cvarGoombaDamage;
 new Handle:cvarGoombaRebound;
@@ -1166,6 +1168,7 @@ public OnPluginStart()
 	cvarPreroundBossDisconnect=CreateConVar("ff2_replace_disconnected_boss", "1", "If a boss disconnects before the round starts, use the next player in line instead? 0 - No, 1 - Yes", _, true, 0.0, true, 1.0);
 	cvarCaberDetonations=CreateConVar("ff2_caber_detonations", "5", "Amount of times somebody can detonate the Ullapool Caber");
 	cvarShieldCrits=CreateConVar("ff2_shield_crits", "0", "0 to disable grenade launcher crits when equipping a shield, 1 for minicrits, 2 for crits", _, true, 0.0, true, 2.0);
+	cvarDuoToggle=CreateConVar("ff2_companion_toggle", "1", "0-Disable, 1-Players can toggle being a companion", _, true, 0.0, true, 1.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", _, true, 0.01, true, 1.0);
 	cvarGoombaRebound=CreateConVar("ff2_goomba_jump", "300.0", "How high players should rebound after goomba stomping the boss (requires Goomba Stomp)", _, true, 0.0);
 	cvarBossRTD=CreateConVar("ff2_boss_rtd", "0", "Can the boss use rtd? 0 to disallow boss, 1 to allow boss (requires RTD)", _, true, 0.0, true, 1.0);
@@ -1238,6 +1241,8 @@ public OnPluginStart()
 	RegConsoleCmd("ff2_voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("ff2_resetpoints", ResetQueuePointsCmd);
 	RegConsoleCmd("ff2resetpoints", ResetQueuePointsCmd);
+	RegConsoleCmd("ff2_companion", CompanionCmd);
+	RegConsoleCmd("ff2companion", CompanionCmd);
 
 	RegConsoleCmd("hale", FF2Panel);
 	RegConsoleCmd("hale_hp", Command_GetHPCmd);
@@ -1254,6 +1259,8 @@ public OnPluginStart()
 	RegConsoleCmd("hale_voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("hale_resetpoints", ResetQueuePointsCmd);
 	RegConsoleCmd("haleresetpoints", ResetQueuePointsCmd);
+	RegConsoleCmd("hale_companion", CompanionCmd);
+	RegConsoleCmd("halecompanion", CompanionCmd);
 
 	RegConsoleCmd("nextmap", Command_Nextmap);
 	RegConsoleCmd("say", Command_Say);
@@ -2768,13 +2775,13 @@ public Action:OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 public Action:OnBroadcast(Handle:event, const String:name[], bool:dontBroadcast)
 {
-    decl String:sound[PLATFORM_MAX_PATH];
-    GetEventString(event, "sound", sound, sizeof(sound));
-    if(!StrContains(sound, "Game.Your", false) || StrEqual(sound, "Game.Stalemate", false))
-    {
-        return Plugin_Handled;
-    }
-    return Plugin_Continue;
+	decl String:sound[PLATFORM_MAX_PATH];
+	GetEventString(event, "sound", sound, sizeof(sound));
+	if(!StrContains(sound, "Game.Your", false) || StrEqual(sound, "Game.Stalemate", false))
+	{
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
 }
 
 public Action:Timer_NineThousand(Handle:timer)
@@ -3193,6 +3200,32 @@ SetClientSoundOptions(client, soundException, bool:enable)
 		else
 		{
 			cookieValues[1][0]='0';
+		}
+	}
+	Format(cookies, sizeof(cookies), "%s %s %s %s %s %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[3], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
+	SetClientCookie(client, FF2Cookies, cookies);
+}
+
+SetClientPreferences(client, type, bool:enable)
+{
+	if(!IsValidClient(client) || IsFakeClient(client) || !AreClientCookiesCached(client))
+	{
+		return;
+	}
+
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+	ExplodeString(cookies, " ", cookieValues, 8, 5);
+	if(type==TOGGLE_COMPANION)
+	{
+		if(enable)
+		{
+			cookieValues[4][0]='1';
+		}
+		else
+		{
+			cookieValues[4][0]='0';
 		}
 	}
 	Format(cookies, sizeof(cookies), "%s %s %s %s %s %s %s %s", cookieValues[0], cookieValues[1], cookieValues[2], cookieValues[3], cookieValues[4], cookieValues[5], cookieValues[6], cookieValues[7]);
@@ -4206,6 +4239,39 @@ public Action:Timer_Uber(Handle:timer, any:medigunid)
 	return Plugin_Continue;
 }
 
+public Action:CompanionToggleCmd(client)
+{
+	if(!Enabled || !IsValidClient(client) || !GetConVarBool(cvarDuoToggle))
+	{
+		return Plugin_Continue;
+	}
+
+	new Handle:panel=CreatePanel();
+	SetPanelTitle(panel, "Toggle being a Freak Fortress 2 companion...");
+	DrawPanelItem(panel, "On");
+	DrawPanelItem(panel, "Off");
+	SendPanelToClient(panel, client, CompanionToggleCmdH, MENU_TIME_FOREVER);
+	CloseHandle(panel);
+	return Plugin_Continue;
+}
+
+public CompanionToogleCmdH(Handle:menu, MenuAction:action, client, selection)
+{
+	if(IsValidClient(client) && action==MenuAction_Select)
+	{
+		if(selection==2)
+		{
+			SetClientPreferences(client, TOGGLE_COMPANION, false);
+		}
+		else
+		{
+			SetClientPreferences(client, TOGGLE_COMPANION, true);
+		}
+
+		CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_companion", selection==2 ? "off" : "on");
+	}
+}
+
 public Action:Command_GetHPCmd(client, args)
 {
 	if(!IsValidClient(client) || !Enabled || CheckRoundState()!=1)
@@ -4553,8 +4619,8 @@ public OnClientPostAdminCheck(client)
 		GetClientCookie(client, FF2Cookies, buffer, sizeof(buffer));
 		if(!buffer[0])
 		{
-			SetClientCookie(client, FF2Cookies, "0 1 1 1 3 3 3");
-			//Queue points | music exception | voice exception | class info | UNUSED | UNUSED | UNUSED
+			SetClientCookie(client, FF2Cookies, "0 1 1 1 1 3 3");
+			//Queue points | music exception | voice exception | class info | companion toggle | UNUSED | UNUSED
 		}
 	}
 
@@ -6595,6 +6661,15 @@ public Action:RTD_CanRollDice(client)
 	return Plugin_Continue;
 }
 
+public Action:RTD2_CanRollDice(client)
+{
+	if(Enabled && IsBoss(client) && !canBossRTD)
+	{
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
+
 public Action:OnGetMaxHealth(client, &maxHealth)
 {
 	if(Enabled && IsBoss(client))
@@ -6807,6 +6882,48 @@ stock GetClientWithMostQueuePoints(bool:omit[])
 		}
 	}
 	return winner;
+}
+
+stock GetClientWithCompanionToggle(bool:omit[])
+{
+	new companion;
+	decl String:cookies[24];
+	decl String:cookieValues[8][5];
+	for(new client=1; client<=MaxClients; client++)
+	{
+		if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(winner) && !omit[client])
+		{
+			if(!IsFakeClient(client) && AreClientCookiesCached(client) && GetConVarBool(cvarDuoToggle)) // Skip clients who have disabled being able to be selected as a companion
+			{
+				GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
+				ExplodeString(cookies, " ", cookieValues, 8, 5);
+				if(StringToInt(cookieValues[4])==0)
+				{
+					continue;
+				}
+			}
+			
+			if(SpecForceBoss || GetClientTeam(client)>_:TFTeam_Spectator)
+			{
+				companion=client;
+			}
+		}
+	}
+	
+	if(!companion)
+	{
+		for(new client=1; client<MaxClients; client++)
+		{
+			if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(winner) && !omit[client])
+			{
+				if(SpecForceBoss || GetClientTeam(client)>_:TFTeam_Spectator) // Ignore the companion toggle pref if we can't find available clients
+				{
+					companion=client;
+				}
+			}		
+		}
+	}
+	return companion;
 }
 
 stock LastBossIndex()
@@ -7413,7 +7530,7 @@ FindCompanion(boss, players, bool:omit[])
 	KvGetString(BossKV[Special[boss]], "companion", companionName, sizeof(companionName));
 	if(playersNeeded<players && strlen(companionName))  //Only continue if we have enough players and if the boss has a companion
 	{
-		new companion=GetClientWithMostQueuePoints(omit);
+		new companion=GetClientWithCompanionToggle(omit);
 		Boss[companion]=companion;  //Woo boss indexes!
 		omit[companion]=true;
 		if(PickCharacter(boss, companion))  //TODO: This is a bit misleading
@@ -7776,6 +7893,10 @@ public FF2PanelH(Handle:menu, MenuAction:action, client, selection)
 			}
 			case 7:
 			{
+				CompanionToggleCmd(client);
+			}
+			case 8:
+			{
 				HelpPanel3(client);
 			}
 			default:
@@ -7808,6 +7929,8 @@ public Action:FF2Panel(client, args)  //._.
 		Format(text, sizeof(text), "%t", "menu_8");  //Toggle music (/ff2music)
 		DrawPanelItem(panel, text);
 		Format(text, sizeof(text), "%t", "menu_9");  //Toggle monologues (/ff2voice)
+		DrawPanelItem(panel, text);
+		Format(text, sizeof(text), "%t", "menu_10");  //Toggle companions (/ff2companion)
 		DrawPanelItem(panel, text);
 		Format(text, sizeof(text), "%t", "menu_9a");  //Toggle info about changes of classes in FF2
 		DrawPanelItem(panel, text);
