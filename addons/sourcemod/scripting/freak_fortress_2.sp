@@ -82,7 +82,6 @@ new healthcheckused;
 new RedAlivePlayers;
 new BlueAlivePlayers;
 new RoundCount;
-new ClassKill=0;
 new Special[MAXPLAYERS+1];
 new Incoming[MAXPLAYERS+1];
 
@@ -5515,7 +5514,7 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 
 			if(RedAlivePlayers!=1 && KSpreeCount[boss]!=3)  //Don't conflict with end-of-round sounds or killing spree
 			{
-				ClassKill=GetRandomInt(0, 2);
+				new ClassKill=GetRandomInt(0, 2);
 				if((ClassKill==1) && RandomSound("sound_hit", sound, sizeof(sound), boss))
 				{
 					EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
@@ -5532,7 +5531,6 @@ public Action:OnPlayerDeath(Handle:event, const String:eventName[], bool:dontBro
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 					}
 				}
-				ClassKill=0;
 			}
 
 			if(GetGameTime()<=KSpreeTimer[boss])
