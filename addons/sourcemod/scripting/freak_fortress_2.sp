@@ -5862,7 +5862,6 @@ public Action:OnPlayerHurt(Handle:event, const String:name[], bool:dontBroadcast
 			{
 				if(IsValidClient(target) && !(FF2flags[target] & FF2FLAG_HUDDISABLED))
 				{
-					SetGlobalTransTarget(target);
 					PrintCenterText(target, "%t", ability, bossName, BossLives[boss]);
 				}
 			}
@@ -9048,7 +9047,7 @@ public OnItemSpawned(entity)
 
 public Action:OnPickup(entity, client)  //Thanks friagram!
 {
-	if(IsBoss(client))
+	if(IsBoss(client) && Enabled)
 	{
 		decl String:classname[32];
 		GetEntityClassname(entity, classname, sizeof(classname));
