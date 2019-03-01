@@ -1242,8 +1242,8 @@ public OnPluginStart()
 	RegConsoleCmd("ff2_voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("ff2_resetpoints", ResetQueuePointsCmd);
 	RegConsoleCmd("ff2resetpoints", ResetQueuePointsCmd);
-	RegConsoleCmd("ff2_companion", CompanionToggleCmd);
-	RegConsoleCmd("ff2companion", CompanionToggleCmd);
+	RegConsoleCmd("ff2_companion", CompanionTogglePanelCmd);
+	RegConsoleCmd("ff2companion", CompanionTogglePanelCmd);
 
 	RegConsoleCmd("hale", FF2Panel);
 	RegConsoleCmd("hale_hp", Command_GetHPCmd);
@@ -1260,8 +1260,8 @@ public OnPluginStart()
 	RegConsoleCmd("hale_voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("hale_resetpoints", ResetQueuePointsCmd);
 	RegConsoleCmd("haleresetpoints", ResetQueuePointsCmd);
-	RegConsoleCmd("hale_companion", CompanionToggleCmd);
-	RegConsoleCmd("halecompanion", CompanionToggleCmd);
+	RegConsoleCmd("hale_companion", CompanionTogglePanelCmd);
+	RegConsoleCmd("halecompanion", CompanionTogglePanelCmd);
 
 	RegConsoleCmd("nextmap", Command_Nextmap);
 	RegConsoleCmd("say", Command_Say);
@@ -4240,7 +4240,18 @@ public Action:Timer_Uber(Handle:timer, any:medigunid)
 	return Plugin_Continue;
 }
 
-public Action:CompanionToggleCmd(client)
+public Action:CompanionTogglePanelCmd(client, args)
+{
+	if(!IsValidClient(client) || !GetConVarBool(cvarDuoToggle))
+	{
+		return Plugin_Continue;
+	}
+
+	CompanionTogglePanel(client);
+	return Plugin_Handled;
+}
+
+public Action:CompanionTogglePanel(client)
 {
 	if(!Enabled || !IsValidClient(client) || !GetConVarBool(cvarDuoToggle))
 	{
@@ -4251,12 +4262,12 @@ public Action:CompanionToggleCmd(client)
 	SetPanelTitle(panel, "Toggle being a Freak Fortress 2 companion...");
 	DrawPanelItem(panel, "On");
 	DrawPanelItem(panel, "Off");
-	SendPanelToClient(panel, client, CompanionToggleCmdH, MENU_TIME_FOREVER);
+	SendPanelToClient(panel, client, CompanionTogglePanelH, MENU_TIME_FOREVER);
 	CloseHandle(panel);
 	return Plugin_Continue;
 }
 
-public CompanionToogleCmdH(Handle:menu, MenuAction:action, client, selection)
+public CompanionTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 {
 	if(IsValidClient(client) && action==MenuAction_Select)
 	{
@@ -7894,7 +7905,7 @@ public FF2PanelH(Handle:menu, MenuAction:action, client, selection)
 			}
 			case 7:
 			{
-				CompanionToggleCmd(client);
+				CompanionTogglePanel(client);
 			}
 			case 8:
 			{
