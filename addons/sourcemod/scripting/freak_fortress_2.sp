@@ -53,6 +53,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define SOUNDEXCEPT_MUSIC 0
 #define SOUNDEXCEPT_VOICE 1
+#define TOGGLE_COMPANION 2
 
 #define HEALTHBAR_CLASS "monster_resource"
 #define HEALTHBAR_PROPERTY "m_iBossHealthPercentageByte"
@@ -1241,8 +1242,8 @@ public OnPluginStart()
 	RegConsoleCmd("ff2_voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("ff2_resetpoints", ResetQueuePointsCmd);
 	RegConsoleCmd("ff2resetpoints", ResetQueuePointsCmd);
-	RegConsoleCmd("ff2_companion", CompanionCmd);
-	RegConsoleCmd("ff2companion", CompanionCmd);
+	RegConsoleCmd("ff2_companion", CompanionToggleCmd);
+	RegConsoleCmd("ff2companion", CompanionToggleCmd);
 
 	RegConsoleCmd("hale", FF2Panel);
 	RegConsoleCmd("hale_hp", Command_GetHPCmd);
@@ -1259,8 +1260,8 @@ public OnPluginStart()
 	RegConsoleCmd("hale_voice", VoiceTogglePanelCmd);
 	RegConsoleCmd("hale_resetpoints", ResetQueuePointsCmd);
 	RegConsoleCmd("haleresetpoints", ResetQueuePointsCmd);
-	RegConsoleCmd("hale_companion", CompanionCmd);
-	RegConsoleCmd("halecompanion", CompanionCmd);
+	RegConsoleCmd("hale_companion", CompanionToggleCmd);
+	RegConsoleCmd("halecompanion", CompanionToggleCmd);
 
 	RegConsoleCmd("nextmap", Command_Nextmap);
 	RegConsoleCmd("say", Command_Say);
@@ -6891,7 +6892,7 @@ stock GetClientWithCompanionToggle(bool:omit[])
 	decl String:cookieValues[8][5];
 	for(new client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(winner) && !omit[client])
+		if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(companion) && !omit[client])
 		{
 			if(!IsFakeClient(client) && AreClientCookiesCached(client) && GetConVarBool(cvarDuoToggle)) // Skip clients who have disabled being able to be selected as a companion
 			{
@@ -6914,7 +6915,7 @@ stock GetClientWithCompanionToggle(bool:omit[])
 	{
 		for(new client=1; client<MaxClients; client++)
 		{
-			if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(winner) && !omit[client])
+			if(IsValidClient(client) && GetClientQueuePoints(client)>=GetClientQueuePoints(companion) && !omit[client])
 			{
 				if(SpecForceBoss || GetClientTeam(client)>_:TFTeam_Spectator) // Ignore the companion toggle pref if we can't find available clients
 				{
