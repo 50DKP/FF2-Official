@@ -7903,11 +7903,11 @@ public FF2PanelH(Handle:menu, MenuAction:action, client, selection)
 			}
 			case 7:
 			{
-				CompanionTogglePanel(client);
+				HelpPanel3(client);
 			}
 			case 8:
 			{
-				HelpPanel3(client);
+				CompanionTogglePanel(client);
 			}
 			default:
 			{
@@ -7940,10 +7940,13 @@ public Action:FF2Panel(client, args)  //._.
 		DrawPanelItem(panel, text);
 		Format(text, sizeof(text), "%t", "menu_9");  //Toggle monologues (/ff2voice)
 		DrawPanelItem(panel, text);
-		Format(text, sizeof(text), "%t", "menu_10");  //Toggle companions (/ff2companion)
-		DrawPanelItem(panel, text);
 		Format(text, sizeof(text), "%t", "menu_9a");  //Toggle info about changes of classes in FF2
 		DrawPanelItem(panel, text);
+		if(GetConVarBool(cvarDuoToggle))
+		{
+			Format(text, sizeof(text), "%t", "menu_10");  //Toggle companions (/ff2companion)
+			DrawPanelItem(panel, text);
+		}
 		Format(text, sizeof(text), "%t", "menu_6");  //Exit
 		DrawPanelItem(panel, text);
 		SendPanelToClient(panel, client, FF2PanelH, MENU_TIME_FOREVER);
