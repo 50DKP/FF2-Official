@@ -4273,13 +4273,13 @@ public CompanionTogglePanelH(Handle:menu, MenuAction:action, client, selection)
 		if(selection==2)
 		{
 			SetClientPreferences(client, TOGGLE_COMPANION, false);
+			CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_companion_off");
 		}
 		else
 		{
 			SetClientPreferences(client, TOGGLE_COMPANION, true);
+			CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_companion_on");
 		}
-
-		CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_companion", selection==2 ? "off" : "on");
 	}
 }
 
