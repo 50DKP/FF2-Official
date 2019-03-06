@@ -277,10 +277,13 @@
 		"#format" "{1:s}"
 		"en"	"FF2 monologues: {1}."
 	}
-	"ff2_companion"
+	"ff2_companion_on"
 	{
-		"#format" "{1:s}"
-		"en"	"FF2 Companions: {1}"
+		"en"	"You can be selected as companion"
+	}
+	"ff2_companion_off"
+	{
+		"en"	"You won't be selected as companion"
 	}
 	"ff2_voice2"
 	{
