@@ -23,6 +23,7 @@ before_script:
     - wget "https://bitbucket.org/GoD_Tony/updater/raw/default/include/updater.inc" -O include/updater.inc
     - wget "https://raw.githubusercontent.com/Flyflo/SM-Goomba-Stomp/master/addons/sourcemod/scripting/include/goomba.inc" -O include/goomba.inc
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=115795&d=1360508618" -O include/rtd.inc
+    - wget "https://raw.githubusercontent.com/Phil25/RTD/master/scripting/include/rtd2.inc" -O include/rtd2.inc
     - wget "https://forums.alliedmods.net/attachment.php?attachmentid=116849&d=1377667508" -O include/tf2attributes.inc
 
     # RTD is particularly annoying since it doesn't handle optional plugin dependencies correctly
