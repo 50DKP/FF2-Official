@@ -1,13 +1,13 @@
-new String:this_plugin_name[80];
+char this_plugin_name[80];
 
-GetThisPluginName()
+void GetThisPluginName()
 {
-	decl String:pluginName[80];
+	char pluginName[80];
 	GetPluginFilename(INVALID_HANDLE, pluginName, sizeof(pluginName));
 	ReplaceString(pluginName, sizeof(pluginName), ".ff2", "", false);
-	new forwardSlash=-1;
-	new backwardSlash=-1;
-	new finalPluginName=-1;
+	int forwardSlash=-1;
+	int backwardSlash=-1;
+	int finalPluginName=-1;
 	for(;;)
 	{
 		forwardSlash=StrContains(pluginName[finalPluginName+1], "/");
@@ -32,14 +32,14 @@ GetThisPluginName()
 	strcopy(this_plugin_name, sizeof(this_plugin_name), pluginName[finalPluginName+1]);
 }
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	OnPluginStart2();
 	GetThisPluginName();
 }
 
 //This is very broken-FF2_OnAbility's args are client, plugin_name, ability_name, SLOT, status
-public Action:FF2_OnAbility(client, const String:plugin_name[], const String:ability_name[], status)
+public Action FF2_OnAbility(int client, const char[] plugin_name, const char[] ability_name, int status)
 {
 	if(plugin_name[0])
 	{
