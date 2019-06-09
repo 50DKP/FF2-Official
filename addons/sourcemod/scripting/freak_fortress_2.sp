@@ -48,7 +48,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define UPDATE_URL "http://50dkp.github.io/FF2-Official/update.txt"
 
 #define MAXENTITIES 2048
-#define MAXSPECIALS 64
+#define MAXSPECIALS 128
 #define MAXRANDOMS 16
 
 #define SOUNDEXCEPT_MUSIC 0
