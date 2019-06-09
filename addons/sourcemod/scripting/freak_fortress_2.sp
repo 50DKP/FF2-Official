@@ -6375,16 +6375,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 					{
 						SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", 100.0);
 					}
-					/*case 1104:  //Air Strike-moved to OnPlayerHurt for now since OTD doesn't display the actual damage :/
-					{
-						static Float:airStrikeDamage;
-						airStrikeDamage+=damage;
-						if(airStrikeDamage>=200.0)
-						{
-							SetEntProp(attacker, Prop_Send, "m_iDecapitations", GetEntProp(attacker, Prop_Send, "m_iDecapitations")+1);
-							airStrikeDamage-=200.0;
-						}
-					}*/
 				}
 
 				if(bIsBackstab)
@@ -6631,16 +6621,12 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 		}
 		damageMultiplier=900.0;
 		JumpPower=0.0;
-		PrintHintText(victim, "%t", "Boss Goomba Stomped");
-		PrintHintText(attacker, "%t", "Boss Goomba Stomper");
 		return Plugin_Changed;
 	}
 	else if(IsBoss(victim))
 	{
 		damageMultiplier=GoombaDamage;
 		JumpPower=reboundPower;
-		PrintHintText(victim, "%t", "Player Goomba Stomped");
-		PrintHintText(attacker, "%t", "Player Goomba Stomper");
 		return Plugin_Changed;
 	}
 	return Plugin_Continue;
@@ -6648,9 +6634,19 @@ public Action:OnStomp(attacker, victim, &Float:damageMultiplier, &Float:damageBo
 
 public OnStompPost(attacker, victim, Float:damageMultiplier, Float:damageBonus, Float:jumpPower)
 {
-	if(Enabled && IsBoss(victim))
+	if(Enabled)
 	{
-		UpdateHealthBar();
+		if(IsBoss(victim))
+		{
+			PrintHintText(victim, "%t", "Player Goomba Stomped");
+			PrintHintText(attacker, "%t", "Player Goomba Stomper");
+			UpdateHealthBar();
+		}
+		else if(IsBoss(attacker))
+		{
+			PrintHintText(victim, "%t", "Boss Goomba Stomped");
+			PrintHintText(attacker, "%t", "Boss Goomba Stomper");
+		}
 	}
 }
 
