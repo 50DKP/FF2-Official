@@ -1826,10 +1826,24 @@ public LoadCharacter(const String:character[])
 	BossKV[Specials]=CreateKeyValues("character");
 	FileToKeyValues(BossKV[Specials], config);
 
-	new version=KvGetNum(BossKV[Specials], "version", 1);
+	new version=KvGetNum(BossKV[Specials], "version", StringToInt(MAJOR_REVISION));
 	if(version!=StringToInt(MAJOR_REVISION))
 	{
 		LogError("[FF2 Bosses] Character %s is only compatible with FF2 v%i!", character, version);
+		return;
+	}
+	
+	new minor_version=KvGetNum(BossKV[Specials], "version_minor", StringToInt(MINOR_REVISION));
+	if(minor_version>StringToInt(MINOR_REVISION))
+	{
+		LogError("[FF2 Bosses] Character %s requires newer version of FF2(at least %s.%i.x)!", character, MAJOR_REVISION, minor_version);
+		return;
+	}
+	
+	new stable_version=KvGetNum(BossKV[Specials], "version_stable", StringToInt(STABLE_REVISION));
+	if(stable_version>StringToInt(STABLE_REVISION))
+	{
+		LogError("[FF2 Bosses] Character %s requires newer version of FF2(at least %s.%s.%i)!", character, MAJOR_REVISION, MINOR_REVISION, stable_version);
 		return;
 	}
 
