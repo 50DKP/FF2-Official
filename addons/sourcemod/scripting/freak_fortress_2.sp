@@ -6031,13 +6031,6 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 		return Plugin_Continue;
 	}
 
-	static bool:foundDmgCustom, bool:dmgCustomInOTD;
-	if(!foundDmgCustom)
-	{
-		dmgCustomInOTD=(GetFeatureStatus(FeatureType_Capability, "SDKHook_DmgCustomInOTD")==FeatureStatus_Available);
-		foundDmgCustom=true;
-	}
-
 	if((attacker<=0 || client==attacker) && IsBoss(client))
 	{
 		return Plugin_Handled;
@@ -6107,26 +6100,11 @@ public Action:OnTakeDamage(client, &attacker, &inflictor, &Float:damage, &damage
 			if(attacker<=MaxClients)
 			{
 				new bool:bIsTelefrag, bool:bIsBackstab;
-				if(dmgCustomInOTD)
+				if(damagecustom==TF_CUSTOM_BACKSTAB)
 				{
-					if(damagecustom==TF_CUSTOM_BACKSTAB)
-					{
-						bIsBackstab=true;
-					}
-					else if(damagecustom==TF_CUSTOM_TELEFRAG)
-					{
-						bIsTelefrag=true;
-					}
+					bIsBackstab=true;
 				}
-				else if(weapon!=4095 && IsValidEntity(weapon) && weapon==GetPlayerWeaponSlot(attacker, TFWeaponSlot_Melee) && damage>1000.0)
-				{
-					decl String:classname[32];
-					if(GetEntityClassname(weapon, classname, sizeof(classname)) && !StrContains(classname, "tf_weapon_knife", false))
-					{
-						bIsBackstab=true;
-					}
-				}
-				else if(!IsValidEntity(weapon) && (damagetype & DMG_CRUSH)==DMG_CRUSH && damage==1000.0)
+				else if(damagecustom==TF_CUSTOM_TELEFRAG)
 				{
 					bIsTelefrag=true;
 				}
