@@ -144,6 +144,7 @@ new Handle:cvarDeadRingerHud;
 new Handle:cvarUpdater;
 new Handle:cvarDebug;
 new Handle:cvarPreroundBossDisconnect;
+new Handle:cvarFixSkin;
 
 new Handle:FF2Cookies;
 
@@ -1163,6 +1164,7 @@ public OnPluginStart()
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", _, true, -1.0, true, 1.0);
 	cvarBossSuicide=CreateConVar("ff2_boss_suicide", "0", "Allow the boss to suicide after the round starts?", _, true, 0.0, true, 1.0);
 	cvarPreroundBossDisconnect=CreateConVar("ff2_replace_disconnected_boss", "1", "If a boss disconnects before the round starts, use the next player in line instead? 0 - No, 1 - Yes", _, true, 0.0, true, 1.0);
+	cvarFixSkin=CreateConVar("ff2_fix_boss_skin", "1", "Make FF2 remove wearables in a new way(fixes certain buggy models having bad skin)? 0 - No, 1 - Yes", _, true, 0.0, true, 1.0);
 	cvarCaberDetonations=CreateConVar("ff2_caber_detonations", "5", "Amount of times somebody can detonate the Ullapool Caber");
 	cvarShieldCrits=CreateConVar("ff2_shield_crits", "0", "0 to disable grenade launcher crits when equipping a shield, 1 for minicrits, 2 for crits", _, true, 0.0, true, 2.0);
 	cvarGoombaDamage=CreateConVar("ff2_goomba_damage", "0.05", "How much the Goomba damage should be multipled by when goomba stomping the boss (requires Goomba Stomp)", _, true, 0.01, true, 1.0);
@@ -3386,10 +3388,10 @@ EquipBoss(boss)
 	}
 
 	KvGoBack(BossKV[Special[boss]]);
-	new TFClassType:class=TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1);
-	if(TF2_GetPlayerClass(client)!=class)
+	new TFClassType:player_class=TFClassType:KvGetNum(BossKV[Special[boss]], "class", 1);
+	if(TF2_GetPlayerClass(client)!=player_class)
 	{
-		TF2_SetPlayerClass(client, class, _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
+		TF2_SetPlayerClass(client, player_class, _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
 	}
 }
 
@@ -3514,6 +3516,14 @@ public Action:TF2Items_OnGiveNamedItem(client, String:classname[], iItemDefiniti
 	if(!Enabled /*|| item!=INVALID_HANDLE*/)
 	{
 		return Plugin_Continue;
+	}
+	
+	if(IsBoss(client) && StrEqual(classname, "tf_wearable", false) && GetConVarBool(cvarFixSkin))
+	{
+		if(!(FF2flags[client] & FF2FLAG_ALLOW_BOSS_WEARABLES))
+		{
+			return Plugin_Handled;
+		}
 	}
 
 	switch(iItemDefinitionIndex)
