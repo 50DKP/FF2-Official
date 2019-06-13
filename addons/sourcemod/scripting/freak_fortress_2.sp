@@ -3455,7 +3455,7 @@ public Action:Timer_MakeBoss(Handle:timer, any:boss)
 		AssignTeam(client, BossTeam);
 	}
 
-	BossRageDamage[boss]=KvGetNum(BossKV[Special[boss]], "ragedamage", 1900);
+	BossRageDamage[boss]=ParseFormula(boss, "ragedamage", "1900", 1900);
 	if(BossRageDamage[boss]<=0)
 	{
 		decl String:bossName[64];
@@ -7130,9 +7130,10 @@ stock ParseFormula(boss, const String:key[], const String:defaultFormula[], defa
 		return defaultValue;
 	}
 
-	if(bMedieval)
+	//To-do: Make this even more configurable
+	if(bMedieval && StrEqual(key, "health_formula", false))
 	{
-		return RoundFloat(result/3.6);  //TODO: Make this configurable
+		return RoundFloat(result/3.6);
 	}
 	return result;
 }
