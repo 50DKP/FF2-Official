@@ -29,8 +29,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #undef REQUIRE_PLUGIN
 //#tryinclude <smac>
 #tryinclude <goomba>
-#tryinclude <rtd>
-#tryinclude <rtd2>
 #tryinclude <tf2attributes>
 #tryinclude <updater>
 #define REQUIRE_PLUGIN
