@@ -1875,7 +1875,6 @@ public void LoadCharacter(const char[] character)
 	KvGetString(BossKV[Specials], "name", config, sizeof(config));
 	bBlockVoice[Specials]=view_as<bool>(KvGetNum(BossKV[Specials], "sound_block_vo", 0));
 	BossSpeed[Specials]=KvGetFloat(BossKV[Specials], "maxspeed", 340.0);
-	//BossRageDamage[Specials]=KvGetFloat(BossKV[Specials], "ragedamage", 1900.0);
 	KvGotoFirstSubKey(BossKV[Specials]);
 
 	while(KvGotoNextKey(BossKV[Specials]))
@@ -2131,28 +2130,6 @@ public void CvarChange(Handle convar, const char[] oldValue, const char[] newVal
 		StringToInt(newValue) ? (changeGamemode=Enabled ? 0 : 1) : (changeGamemode=!Enabled ? 0 : 2);
 	}
 }
-
-/* TODO: Re-enable in 2.0.0
-#if defined _smac_included
-public Action SMAC_OnCheatDetected(int client, const char[] module, DetectionType type, Handle info)
-{
-	Debug("SMAC: Cheat detected!");
-	if(type==Detection_CvarViolation)
-	{
-		Debug("SMAC: Cheat was a cvar violation!");
-		char cvar[PLATFORM_MAX_PATH];
-		KvGetString(info, "cvar", cvar, sizeof(cvar));
-		Debug("Cvar was %s", cvar);
-		if((StrEqual(cvar, "sv_cheats") || StrEqual(cvar, "host_timescale")) && !(FF2flags[Boss[client]] & FF2FLAG_CHANGECVAR))
-		{
-			Debug("SMAC: Ignoring violation");
-			return Plugin_Stop;
-		}
-	}
-	return Plugin_Continue;
-}
-#endif
-*/
 
 public Action Timer_Announce(Handle timer)
 {
@@ -3313,7 +3290,7 @@ public Action MessageTimer(Handle timer)
 	}
 
 	SetHudTextParams(-1.0, 0.2, 10.0, 255, 255, 255, 255);
-	char text[512];  //Do not decl this
+	char text[512];
 	char textChat[512];
 	char lives[8];
 	char name[64];
@@ -3633,15 +3610,6 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 				return Plugin_Changed;
 			}
 		}
-		/*case 132, 266, 482:  //Eyelander, HHHH, Nessie's Nine Iron - commented out because
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "202 ; 0.5 ; 125 ; -15", true);
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}*/
 		case 226:  //Battalion's Backup
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "140 ; 10.0");
@@ -3699,13 +3667,6 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		}
 		case 444:  //Mantreads
 		{
-			/*Handle itemOverride=PrepareItemHandle(item, _, _, "58 ; 1.5");
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}*/
-
 			#if defined _tf2attributes_included
 			if(tf2attributes)
 			{
@@ -3867,7 +3828,6 @@ stock Handle PrepareItemHandle(Handle item, char[] name="", int index=-1, const 
 	{
 		TF2Items_SetFlags(weapon, flags);
 	}
-	//Handle weapon=TF2Items_CreateItem(flags);  //INVALID_HANDLE;  Going to uncomment this since this is what Randomizer does
 
 	if(item!=INVALID_HANDLE)
 	{
@@ -6730,7 +6690,7 @@ stock void SpawnSmallHealthPackAt(int client, int team=0)
 		DispatchSpawn(healthpack);
 		SetEntProp(healthpack, Prop_Send, "m_iTeamNum", team, 4);
 		SetEntityMoveType(healthpack, MOVETYPE_VPHYSICS);
-		float velocity[3];//={float(GetRandomInt(-10, 10)), float(GetRandomInt(-10, 10)), 50.0};  //Q_Q
+		float velocity[3];
 		velocity[0]=float(GetRandomInt(-10, 10)), velocity[1]=float(GetRandomInt(-10, 10)), velocity[2]=50.0;  //I did this because setting it on the creation of the vel variable was creating a compiler error for me.
 		TeleportEntity(healthpack, position, NULL_VECTOR, velocity);
 	}
@@ -7929,8 +7889,6 @@ public Action FF2Panel(int client, int args)  //._.
 		SetPanelTitle(panel, text);
 		Format(text, sizeof(text), "%t", "menu_2");  //Investigate the boss's current health level (/ff2hp)
 		DrawPanelItem(panel, text);
-		//Format(text, sizeof(text), "%t", "menu_3");  //Help about FF2 (/ff2help).
-		//DrawPanelItem(panel, text);
 		Format(text, sizeof(text), "%t", "menu_7");  //Changes to my class in FF2 (/ff2classinfo)
 		DrawPanelItem(panel, text);
 		Format(text, sizeof(text), "%t", "menu_4");  //What's new? (/ff2new).
@@ -8184,7 +8142,6 @@ void HelpPanelBoss(int boss)
 	Format(language, sizeof(language), "description_%s", language);
 
 	KvRewind(BossKV[Special[boss]]);
-	//KvSetEscapeSequences(BossKV[Special[boss]], true);  //Not working
 	KvGetString(BossKV[Special[boss]], language, text, sizeof(text));
 	if(!text[0])
 	{
@@ -8195,7 +8152,6 @@ void HelpPanelBoss(int boss)
 		}
 	}
 	ReplaceString(text, sizeof(text), "\\n", "\n");
-	//KvSetEscapeSequences(BossKV[Special[boss]], false);  //We don't want to interfere with the download paths
 
 	Handle panel=CreatePanel();
 	SetPanelTitle(panel, text);
@@ -8304,12 +8260,7 @@ public int VoiceTogglePanelH(Handle menu, MenuAction action, int client, int sel
 	}
 }
 
-//Ugly compatability layer since HookSound's arguments changed in 1.8
-#if SOURCEMOD_V_MAJOR==1 && SOURCEMOD_V_MINOR<=7
-public Action HookSound(int clients[64], int &numClients, char sound[PLATFORM_MAX_PATH], int &client, int &channel, float &volume, int &level, int &pitch, int &flags)
-#else
 public Action HookSound(int clients[64], int &numClients, char sound[PLATFORM_MAX_PATH], int &client, int &channel, float &volume, int &level, int &pitch, int &flags, char soundEntry[PLATFORM_MAX_PATH], int &seed)
-#endif
 {
 	if(!Enabled || !IsValidClient(client) || channel<1)
 	{
@@ -8413,14 +8364,12 @@ public Action Timer_DisplayCharsetVote(Handle timer)
 
 	Handle menu=CreateMenu(Handler_VoteCharset, view_as<MenuAction>(MENU_ACTIONS_ALL));
 	SetMenuTitle(menu, "%t", "select_charset");  //"Please vote for the character set for the next map."
-	//SetVoteResultCallback(menu, Handler_VoteCharset);
 
 	char config[PLATFORM_MAX_PATH], charset[64];
 	BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
 
 	Handle Kv=CreateKeyValues("");
 	FileToKeyValues(Kv, config);
-	//AddMenuItem(menu, "0 Random", "Random");
 	AddMenuItem(menu, "Random", "Random");
 	int total, charsets;
 	do
@@ -8434,8 +8383,6 @@ public Action Timer_DisplayCharsetVote(Handle timer)
 		validCharsets[charsets]=total;
 
 		KvGetSectionName(Kv, charset, sizeof(charset));
-		//Format(charset, sizeof(charset), "%i %s", charsets, config);
-		//AddMenuItem(menu, charset, config);
 		AddMenuItem(menu, charset, charset);
 	}
 	while(KvGotoNextKey(Kv));
@@ -8451,16 +8398,7 @@ public Action Timer_DisplayCharsetVote(Handle timer)
 }
 public int Handler_VoteCharset(Handle menu, MenuAction action, int param1, int param2)
 {
-	/*if(action==MenuAction_Select && param2==1)
-	{
-		int clients[1];
-		clients[0]=param1;
-		if(!IsVoteInProgress())
-		{
-			VoteMenu(menu, clients, param1, 1, MENU_TIME_FOREVER);
-		}
-	}
-	else */if(action==MenuAction_VoteEnd)
+	if(action==MenuAction_VoteEnd)
 	{
 		FF2CharSet=param1 ? param1-1 : validCharsets[GetRandomInt(1, FF2CharSet)]-1;  //If param1 is 0 then we need to find a random charset
 
@@ -8475,26 +8413,6 @@ public int Handler_VoteCharset(Handle menu, MenuAction action, int param1, int p
 		CloseHandle(menu);
 	}
 }
-
-/*public int Handler_VoteCharset(Handle menu, int votes, int clients, const int[] clientInfo[2], int items, const int[] itemInfo[2])
-{
-	char item[42], display[42], nextmap[42];
-	GetMenuItem(menu, itemInfo[0][VOTEINFO_ITEM_INDEX], item, sizeof(item), _, display, sizeof(display));
-	if(item[0]=='0')  //!StringToInt(item)
-	{
-		FF2CharSet=GetRandomInt(0, FF2CharSet);
-	}
-	else
-	{
-		FF2CharSet=item[0]-'0'-1;  //Wat
-		//FF2CharSet=StringToInt(item)-1
-	}
-
-	GetConVarString(cvarNextmap, nextmap, sizeof(nextmap));
-	strcopy(FF2CharSetString, 42, item[StrContains(item, " ")+1]);
-	CPrintToChatAll("{olive}[FF2]{default} %t", "nextmap_charset", nextmap, FF2CharSetString);  //display
-	isCharSetSelected=true;
-}*/
 
 public Action Command_Nextmap(int client, int args)
 {

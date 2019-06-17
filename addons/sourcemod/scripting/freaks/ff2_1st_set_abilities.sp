@@ -87,17 +87,6 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 	return Plugin_Continue;
 }
 
-/*public Action FF2_OnSpecialSelected(boss, &special, String:specialName[])  //Re-enable in v2 or whenever the late-loading forward bug is fixed
-{
-	if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
-	{
-		char model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
-		PrecacheModel(model);
-	}
-	return Plugin_Continue;
-}*/
-
 public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 {
 	for(int client=1; client<=MaxClients; client++)
@@ -573,24 +562,6 @@ public Action Timer_Rage_Explosive_Dance(Handle timer, any boss)
 			TeleportEntity(explosion, explosionPosition, NULL_VECTOR, NULL_VECTOR);
 			AcceptEntityInput(explosion, "Explode");
 			AcceptEntityInput(explosion, "kill");
-
-			/*proj=CreateEntityByName("tf_projectile_rocket");
-			SetVariantInt(BossTeam);
-			AcceptEntityInput(proj, "TeamNum", -1, -1, 0);
-			SetVariantInt(BossTeam);
-			AcceptEntityInput(proj, "SetTeam", -1, -1, 0);
-			SetEntPropEnt(proj, Prop_Send, "m_hOwnerEntity",boss);
-			decl Float:position[3];
-			float rot[3]={0.0,90.0,0.0};
-			float see[3]={0.0,0.0,-1000.0};
-			GetEntPropVector(boss, Prop_Send, "m_vecOrigin", position);
-			position[0]+=GetRandomInt(-250,250);
-			position[1]+=GetRandomInt(-250,250);
-			position[2]+=40;
-			TeleportEntity(proj, position, rot,see);
-			SetEntDataFloat(proj, FindSendPropOffs("CTFProjectile_Rocket", "m_iDeflected") + 4, 300.0, true);
-			DispatchSpawn(proj);
-			CreateTimer(0.1,Timer_Rage_Explosive_Dance_Boom,EntIndextoEntRef(proj));*/
 		}
 	}
 	else
@@ -716,73 +687,6 @@ public Action Timer_SlowMoChange(Handle timer, any boss)
 	FF2Flags[boss]|=FLAG_SLOWMOREADYCHANGE;
 	return Plugin_Continue;
 }
-
-//Unused single rocket shoot charge
-/*void Charge_RocketSpawn(const char[] ability_name, int index, int slot, int action)
-{
-	if(FF2_GetBossCharge(index,0)<10)
-		return;
-	int boss=GetClientOfUserId(FF2_GetBossUserId(index));
-	float see=FF2_GetAbilityArgumentFloat(index,this_plugin_name,ability_name,1,5.0);
-	float charge=FF2_GetBossCharge(index,slot);
-	switch(action)
-	{
-		case 2:
-		{
-			SetHudTextParams(-1.0, 0.93, 0.15, 255, 255, 255, 255);
-			if(charge+1<see)
-				FF2_SetBossCharge(index, slot, charge+1);
-			else
-				FF2_SetBossCharge(index, slot, see);
-			ShowSyncHudText(boss, chargeHUD, "%t", "charge_status", RoundFloat(charge*100/see));
-		}
-		case 3:
-		{
-			FF2_SetBossCharge(index, 0, charge-10);
-			float position[3];
-			float rot[3];
-			float velocity[3];
-			GetEntPropVector(boss, Prop_Send, "m_vecOrigin", position);
-			GetClientEyeAngles(boss, rot);
-			position[2]+=63;
-
-			int proj=CreateEntityByName("tf_projectile_rocket");
-			SetVariantInt(BossTeam);
-			AcceptEntityInput(proj, "TeamNum", -1, -1, 0);
-			SetVariantInt(BossTeam);
-			AcceptEntityInput(proj, "SetTeam", -1, -1, 0);
-			SetEntPropEnt(proj, Prop_Send, "m_hOwnerEntity",boss);
-			float speed=FF2_GetAbilityArgumentFloat(index, this_plugin_name, ability_name, 3, 1000.0);
-			velocity[0]=Cosine(DegToRad(rot[0]))*Cosine(DegToRad(rot[1]))*speed;
-			velocity[1]=Cosine(DegToRad(rot[0]))*Sine(DegToRad(rot[1]))*speed;
-			velocity[2]=Sine(DegToRad(rot[0]))*speed;
-			velocity[2]*=-1;
-			TeleportEntity(proj, position, rot,velocity);
-			SetEntDataFloat(proj, FindSendPropOffs("CTFProjectile_Rocket", "m_iDeflected") + 4, FF2_GetAbilityArgumentFloat(index,this_plugin_name,ability_name,5,150.0), true);
-			DispatchSpawn(proj);
-			char s[PLATFORM_MAX_PATH];
-			FF2_GetAbilityArgumentString(index, this_plugin_name, ability_name, 4, s, PLATFORM_MAX_PATH);
-			if(strlen(s)>5)
-				SetEntityModel(proj, s);
-			FF2_SetBossCharge(index, slot, -5*FF2_GetAbilityArgumentFloat(index, this_plugin_name, ability_name, 2, 5.0));
-			if(FF2_RandomSound("sound_ability", s, PLATFORM_MAX_PATH, index, slot))
-			{
-				EmitSoundToAll(s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-				EmitSoundToAll(s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-
-				for(int i=1; i<=MaxClients; i++)
-				{
-					if(IsClientInGame(i) && i!=boss)
-					{
-						EmitSoundToClient(i,s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-						EmitSoundToClient(i,s, boss, _, SNDLEVEL_TRAFFIC, SND_NOFLAGS, SNDVOL_NORMAL, 100, boss, position, NULL_VECTOR, true, 0.0);
-					}
-				}
-			}
-		}
-	}
-}
-*/
 
 public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {

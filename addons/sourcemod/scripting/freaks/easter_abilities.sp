@@ -29,23 +29,6 @@ public void OnPluginStart2()
 	PrecacheSound("items/pumpkin_pickup.wav");
 }
 
-/*public Action FF2_OnSpecialSelected(int boss, int &special, char[] specialName)  //Re-enable in v2 or whenever the late-loading forward bug is fixed
-{
-	if(FF2_HasAbility(boss, this_plugin_name, OBJECTS))
-	{
-		char model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS, 2, model, sizeof(model));
-		PrecacheModel(model);
-	}
-	else if(FF2_HasAbility(boss, this_plugin_name, OBJECTS_DEATH))
-	{
-		char model[PLATFORM_MAX_PATH];
-		FF2_GetAbilityArgumentString(boss, this_plugin_name, OBJECTS_DEATH, 2, model, sizeof(model));
-		PrecacheModel(model);
-	}
-	return Plugin_Continue;
-}*/
-
 public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {
 	int client=GetClientOfUserId(GetEventInt(event, "userid"));
