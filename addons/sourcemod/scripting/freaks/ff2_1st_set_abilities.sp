@@ -185,8 +185,8 @@ public Action FF2_OnAbility2(int boss, const char[] plugin_name, const char[] ab
 		SetEntityMoveType(GetClientOfUserId(FF2_GetBossUserId(boss)), MOVETYPE_NONE);
 		Handle data;
 		CreateDataTimer(0.15, Timer_Prepare_Explosion_Rage, data);
-		WritePackString(data, ability_name);
 		WritePackCell(data, boss);
+		WritePackString(data, ability_name);
 		ResetPack(data);
 	}
 	else if(!strcmp(ability_name, "rage_matrix_attack"))
