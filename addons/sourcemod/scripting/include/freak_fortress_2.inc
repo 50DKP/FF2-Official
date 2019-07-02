@@ -551,8 +551,29 @@ stock void FF2_ShowHudText(int client, int channel, const char[] buffer, any ...
  * @param buffer	Debug string to display
  * @param any:...	Formatting rules
  * @noreturn
+ *
+ *	Note: Don't use, due to possible name conflicts
  */
+#pragma deprecated Use FF2Dbg instead
 stock void Debug(char[] buffer, any ...)
+{
+	if(FF2_Debug())
+	{
+		char message[192];
+		VFormat(message, sizeof(message), buffer, 2);
+		CPrintToChatAll("{olive}[FF2 {darkorange}DEBUG{olive}]{default} %s", message);
+		PrintToServer("[FF2 DEBUG] %s", message);
+	}
+}
+
+/**
+ * Used to consolidate debug messages
+ *
+ * @param buffer	Debug string to display
+ * @param any:...	Formatting rules
+ * @noreturn
+ */
+stock void FF2Dbg(char[] buffer, any ...)
 {
 	if(FF2_Debug())
 	{
