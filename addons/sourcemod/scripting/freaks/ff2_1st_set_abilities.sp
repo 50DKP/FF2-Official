@@ -41,6 +41,7 @@ Handle OnHaleRage=INVALID_HANDLE;
 ConVar cvarTimeScale;
 ConVar cvarCheats;
 ConVar cvarKAC;
+ConVar ftz_cheats_version;
 int BossTeam=view_as<int>(TFTeam_Blue);
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -65,6 +66,13 @@ public void OnPluginStart2()
 	cvarTimeScale=FindConVar("host_timescale");
 	cvarCheats=FindConVar("sv_cheats");
 	cvarKAC=FindConVar("kac_enable");
+	ftz_cheats_version=FindConVar("ftz_cheats_version");
+	if(ftz_cheats_version!=INVALID_HANDLE)
+	{
+		LogMessage("[FF2] rage_matrix_attack won't work correctly when Cheats plugin is installed!");
+	}
+	
+	AddCommandListener(Listener_PreventCheats, "");
 
 	LoadTranslations("ff2_1st_set.phrases");
 }
@@ -74,6 +82,31 @@ public void OnMapStart()
 	PrecacheSound(SOUND_SLOW_MO_START, true);
 	PrecacheSound(SOUND_SLOW_MO_END, true);
 	PrecacheSound(SOUND_DEMOPAN_RAGE, true);
+}
+
+public Action Listener_PreventCheats(int client, const char[] command, int argc)
+{
+	if(IsSlowMoActive())
+	{
+		if(GetCommandFlags(command) & FCVAR_CHEAT)
+		{
+			return Plugin_Handled;
+		}
+		return Plugin_Continue;
+	}
+	return Plugin_Continue;
+}
+
+bool IsSlowMoActive()
+{
+	for(int client=1; client<=MaxClients; client++)
+	{
+		if(FF2Flags[client] & FLAG_ONSLOWMO)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
@@ -89,18 +122,14 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 
 public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 {
+	if(SlowMoTimer)
+	{
+		TriggerTimer(SlowMoTimer);
+		KillTimer(SlowMoTimer);
+		SlowMoTimer=INVALID_HANDLE;
+	}
 	for(int client=1; client<=MaxClients; client++)
 	{
-		if(FF2Flags[client] & FLAG_ONSLOWMO)
-		{
-			if(SlowMoTimer)
-			{
-				KillTimer(SlowMoTimer);
-			}
-			Timer_StopSlowMo(INVALID_HANDLE, -1);
-			return Plugin_Continue;
-		}
-
 		if(IsClientInGame(client) && CloneOwnerIndex[client]!=-1)  //FIXME: IsClientInGame() shouldn't be needed
 		{
 			CloneOwnerIndex[client]=-1;
@@ -578,14 +607,15 @@ void Rage_Slowmo(int boss, const char[] ability_name)
 	FF2_SetFF2flags(boss, FF2_GetFF2flags(boss)|FF2FLAG_CHANGECVAR);
 	SetConVarFloat(cvarTimeScale, FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 2, 0.1));
 	float duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 1.0)+1.0;
-	SlowMoTimer=CreateTimer(duration, Timer_StopSlowMo, boss, TIMER_FLAG_NO_MAPCHANGE);
-	FF2Flags[boss]=FF2Flags[boss]|FLAG_SLOWMOREADYCHANGE|FLAG_ONSLOWMO;
+	SlowMoTimer=CreateTimer(duration*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 2, 0.1), Timer_StopSlowMo, boss, TIMER_FLAG_NO_MAPCHANGE);
+	int boss_idx=GetClientOfUserId(FF2_GetBossUserId(boss));
+	FF2Flags[boss_idx]=FF2Flags[boss_idx]|FLAG_SLOWMOREADYCHANGE|FLAG_ONSLOWMO;
 	UpdateClientCheatValue(1);
 
 	int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	if(client)
 	{
-		CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, BossTeam==view_as<int>(TFTeam_Blue) ? "scout_dodge_blue" : "scout_dodge_red", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(duration*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 2, 0.1), Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, BossTeam==view_as<int>(TFTeam_Blue) ? "scout_dodge_blue" : "scout_dodge_red", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	EmitSoundToAll(SOUND_SLOW_MO_START, _, _, _, _, _, _, _, _, _, false);
@@ -601,7 +631,8 @@ public Action Timer_StopSlowMo(Handle timer, any boss)
 	if(boss!=-1)
 	{
 		FF2_SetFF2flags(boss, FF2_GetFF2flags(boss) & ~FF2FLAG_CHANGECVAR);
-		FF2Flags[boss]&=~FLAG_ONSLOWMO;
+		int boss_idx=GetClientOfUserId(FF2_GetBossUserId(boss));
+		FF2Flags[boss_idx]&=~FLAG_ONSLOWMO;
 	}
 	EmitSoundToAll(SOUND_SLOW_MO_END, _, _, _, _, _, _, _, _, _, false);
 	EmitSoundToAll(SOUND_SLOW_MO_END, _, _, _, _, _, _, _, _, _, false);
@@ -611,14 +642,14 @@ public Action Timer_StopSlowMo(Handle timer, any boss)
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float velocity[3], float angles[3], int &weapon)
 {
 	int boss=FF2_GetBossIndex(client);
-	if(boss==-1 || !(FF2Flags[boss] & FLAG_ONSLOWMO))
+	if(!(FF2Flags[client] & FLAG_ONSLOWMO))
 	{
 		return Plugin_Continue;
 	}
 
 	if(buttons & IN_ATTACK)
 	{
-		FF2Flags[boss]&=~FLAG_SLOWMOREADYCHANGE;
+		FF2Flags[client]&=~FLAG_SLOWMOREADYCHANGE;
 		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "rage_matrix_attack", 3, 0.2), Timer_SlowMoChange, boss, TIMER_FLAG_NO_MAPCHANGE);
 
 		float bossPosition[3], endPosition[3], eyeAngles[3];
@@ -684,7 +715,8 @@ public bool TraceRayDontHitSelf(int entity, int mask)
 
 public Action Timer_SlowMoChange(Handle timer, any boss)
 {
-	FF2Flags[boss]|=FLAG_SLOWMOREADYCHANGE;
+	int boss_idx=GetClientOfUserId(FF2_GetBossUserId(boss));
+	FF2Flags[boss_idx]|=FLAG_SLOWMOREADYCHANGE;
 	return Plugin_Continue;
 }
 
@@ -889,6 +921,15 @@ stock int AttachParticle(int entity, char[] particleType, float offset=0.0, bool
 
 stock void UpdateClientCheatValue(int value)
 {
+	//Bugfix: Slowmotion rage not working most of the time as intended
+	if(ftz_cheats_version==INVALID_HANDLE)
+	{
+		int flags=GetConVarFlags(cvarCheats);
+		SetConVarFlags(cvarCheats, flags & ~FCVAR_NOTIFY);
+		SetConVarInt(cvarCheats, value);
+		SetConVarFlags(cvarCheats, flags);
+	}
+	
 	for(int client=1; client<=MaxClients; client++)
 	{
 		if(IsClientInGame(client) && !IsFakeClient(client))
