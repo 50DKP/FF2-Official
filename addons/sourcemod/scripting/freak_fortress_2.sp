@@ -3438,7 +3438,7 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 	BossRageDamage[boss]=ParseFormula(boss, "ragedamage", "1900", 1900);
 	if(BossRageDamage[boss]<0)	// -1 or below, disable RAGE
 	{
-		BossRageDamage[boss] = 99999;
+		BossRageDamage[boss]=99999;
 	}
 
 	BossLivesMax[boss]=KvGetNum(BossKV[Special[boss]], "lives", 1);
@@ -7315,7 +7315,9 @@ stock bool RandomSoundVo(const char[] sound, char[] file, int length, int boss=0
 		IntToString(sounds, key, 4);
 		KvGetString(BossKV[Special[boss]], key, file, length);
 		if(!file[0])
+		{
 			break;  //Assume that there's no more sounds
+		}
 
 		Format(key, sizeof(key), "vo%i", sounds);
 		KvGetString(BossKV[Special[boss]], key, replacement, sizeof(replacement));
