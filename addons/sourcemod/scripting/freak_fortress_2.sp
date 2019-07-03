@@ -3393,6 +3393,10 @@ void EquipBoss(int boss)
 			{
 				SetEntPropFloat(weapon, Prop_Send, "m_flModelScale", 0.001);
 			}
+			else
+			{
+				SetEntProp(weapon, Prop_Send, "m_bValidatedAttachedEntity", 1);
+			}
 			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 		}
 		else
