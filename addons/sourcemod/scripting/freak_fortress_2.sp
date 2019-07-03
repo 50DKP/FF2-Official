@@ -4080,7 +4080,7 @@ public Action Timer_CheckItems(Handle timer, any userid)
 	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
-		Debug("Respawning %N to avoid civilian bug", client);
+		FF2Dbg("Respawning %N to avoid civilian bug", client);
 		TF2_RespawnPlayer(client);
 	}
 	civilianCheck[client]=0;
@@ -6076,7 +6076,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 				SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 			}
 
-			if(damage<=160.0 && DmgTriple[boss])
+			if(damage<=160.0 && DmgTriple[GetBossIndex(client)])
 			{
 				damage*=3;
 				return Plugin_Changed;
@@ -6766,14 +6766,14 @@ stock void AssignTeam(int client, int team)
 {
 	if(!GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass"))  //Living spectator check: 0 means that no class is selected
 	{
-		Debug("%N does not have a desired class!", client);
+		FF2Dbg("%N does not have a desired class!", client);
 		if(IsBoss(client))
 		{
 			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", KvGetNum(BossKV[Special[Boss[client]]], "class", 1));  //So we assign one to prevent living spectators
 		}
 		else
 		{
-			Debug("%N was not a boss and did not have a desired class!  Please report this to https://github.com/50DKP/FF2-Official");
+			FF2Dbg("%N was not a boss and did not have a desired class!  Please report this to https://github.com/50DKP/FF2-Official");
 		}
 	}
 
@@ -6783,14 +6783,14 @@ stock void AssignTeam(int client, int team)
 
 	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))  //Welp
 	{
-		Debug("%N is a living spectator!  Please report this to https://github.com/50DKP/FF2-Official", client);
+		FF2Dbg("%N is a living spectator!  Please report this to https://github.com/50DKP/FF2-Official", client);
 		if(IsBoss(client))
 		{
 			TF2_SetPlayerClass(client, view_as<TFClassType>(KvGetNum(BossKV[Special[Boss[client]]], "class", 1)));
 		}
 		else
 		{
-			Debug("Additional information: %N was not a boss");
+			FF2Dbg("Additional information: %N was not a boss");
 			TF2_SetPlayerClass(client, TFClass_Scout);
 		}
 		TF2_RespawnPlayer(client);
