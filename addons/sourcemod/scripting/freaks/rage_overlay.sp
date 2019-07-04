@@ -13,8 +13,6 @@ rage_overlay:	arg0 - slot (def.0)
 
 #pragma newdecls required
 
-int BossTeam=view_as<int>(TFTeam_Blue);
-
 #define PLUGIN_VERSION "1.9.3"
 
 public Plugin myinfo=
@@ -32,13 +30,6 @@ public void OnPluginStart2()
 
 public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
-	CreateTimer(0.3, Timer_GetBossTeam, _, TIMER_FLAG_NO_MAPCHANGE);
-	return Plugin_Continue;
-}
-
-public Action Timer_GetBossTeam(Handle hTimer)
-{
-	BossTeam=FF2_GetBossTeam();
 	return Plugin_Continue;
 }
 
@@ -59,7 +50,7 @@ void Rage_Overlay(int boss, const char[] ability_name)
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(int target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=FF2_GetBossTeam())
 		{
 			ClientCommand(target, overlay);
 		}
@@ -74,7 +65,7 @@ public Action Timer_Remove_Overlay(Handle timer)
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(int target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=FF2_GetBossTeam())
 		{
 			ClientCommand(target, "r_screenoverlay off");
 		}
