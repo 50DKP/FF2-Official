@@ -877,6 +877,7 @@ stock int SpawnWeapon(int client, char[] name, int index, int level, int quality
 	int entity=TF2Items_GiveNamedItem(client, weapon);
 	CloseHandle(weapon);
 	EquipPlayerWeapon(client, entity);
+	SetEntProp(entity, Prop_Send, "m_bValidatedAttachedEntity", 1);
 	return entity;
 }
 
