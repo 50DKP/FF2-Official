@@ -1079,6 +1079,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 	CreateNative("FF2_IsFF2Enabled", Native_IsEnabled);
 	CreateNative("FF2_GetFF2Version", Native_FF2Version);
+	CreateNative("FF2_GetForkVersion", Native_ForkVersion);
 	CreateNative("FF2_GetBossUserId", Native_GetBoss);
 	CreateNative("FF2_GetBossIndex", Native_GetIndex);
 	CreateNative("FF2_GetBossTeam", Native_GetTeam);
@@ -8689,6 +8690,16 @@ public int Native_FF2Version(Handle plugin, int numParams)
 	#else
 		return true;
 	#endif
+}
+
+public int Native_ForkVersion(Handle plugin, int numParams)
+{
+	int fversion[3];
+	fversion[0]=0;
+	fversion[1]=0;
+	fversion[2]=0;
+	SetNativeArray(1, fversion, sizeof(fversion));
+	return false;
 }
 
 public int Native_GetBoss(Handle plugin, int numParams)
