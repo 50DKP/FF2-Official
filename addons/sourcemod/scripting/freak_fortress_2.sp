@@ -36,11 +36,11 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #pragma newdecls required
 
 #define MAJOR_REVISION "1"
-#define MINOR_REVISION "10"
-#define STABLE_REVISION "15"
+#define MINOR_REVISION "11"
+#define STABLE_REVISION "0"
 #define DEV_REVISION "Beta"
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.10.15
+	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.11.0
 #else
 	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
@@ -113,6 +113,7 @@ int shortname[MAXPLAYERS+1];
 bool emitRageSound[MAXPLAYERS+1];
 bool bossHasReloadAbility[MAXPLAYERS+1];
 bool bossHasRightMouseAbility[MAXPLAYERS+1];
+bool DmgTriple[MAXPLAYERS+1];
 
 int timeleft;
 
@@ -1053,7 +1054,6 @@ Handle OnAlivePlayersChanged;
 
 bool bBlockVoice[MAXSPECIALS];
 float BossSpeed[MAXSPECIALS];
-//float BossRageDamage[MAXSPECIALS];
 
 char ChancesString[512];
 int chances[MAXSPECIALS*2];  //This is multiplied by two because it has to hold both the boss indices and chances
@@ -1991,7 +1991,7 @@ public void PrecacheCharacter(int characterIndex)
 				}
 			}
 		}
-		else if(StrEqual(section, "mod_precache") || !StrContains(section, "sound_") || StrEqual(section, "catch_phrase"))
+		else if(StrEqual(section, "mod_precache") || !StrContains(section, "sound_") || !StrContains(section, "catch_"))
 		{
 			for(int i=1; ; i++)
 			{
@@ -3440,12 +3440,9 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 	}
 
 	BossRageDamage[boss]=ParseFormula(boss, "ragedamage", "1900", 1900);
-	if(BossRageDamage[boss]<=0)
+	if(BossRageDamage[boss]<0)	// -1 or below, disable RAGE
 	{
-		char bossName[64];
-		KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName));
-		PrintToServer("[FF2 Bosses] Warning: Boss %s's rage damage is 0 or below, setting to 1900", bossName);
-		BossRageDamage[boss]=1900;
+		BossRageDamage[boss]=99999;
 	}
 
 	BossLivesMax[boss]=KvGetNum(BossKV[Special[boss]], "lives", 1);
@@ -3461,6 +3458,12 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 	BossLives[boss]=BossLivesMax[boss];
 	BossHealth[boss]=BossHealthMax[boss]*BossLivesMax[boss];
 	BossHealthLast[boss]=BossHealth[boss];
+
+	DmgTriple[boss]=false;
+	if(KvGetNum(BossKV[Special[boss]], "triple", 1))
+	{
+		DmgTriple[boss]=true;
+	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 	TF2_RemovePlayerDisguise(client);
@@ -4081,7 +4084,7 @@ public Action Timer_CheckItems(Handle timer, any userid)
 	if(civilianCheck[client]==3)
 	{
 		civilianCheck[client]=0;
-		Debug("Respawning %N to avoid civilian bug", client);
+		FF2Dbg("Respawning %N to avoid civilian bug", client);
 		TF2_RespawnPlayer(client);
 	}
 	civilianCheck[client]=0;
@@ -4215,6 +4218,11 @@ public Action Timer_Uber(Handle timer, any medigunid)
 				else
 				{
 					uberTarget[client]=-1;
+				}
+
+				if(!TF2_IsPlayerInCondition(client, TFCond_Ubercharged))	// TF2 bug where extended Uber causes Medic to lose it after some time
+				{
+					TF2_AddCondition(client, TFCond_Ubercharged, 0.5);
 				}
 			}
 			else
@@ -5043,7 +5051,16 @@ public Action BossTimer(Handle timer)
 			FF2_ShowSyncHudText(client, livesHUD, "%t", "Boss Lives Left", BossLives[boss], BossLivesMax[boss]);
 		}
 
-		if(RoundFloat(BossCharge[boss][0])==100.0)
+		if(BossRageDamage[boss]<2)	// When RAGE is infinite
+		{
+			BossCharge[boss][0]=100.0;
+		}
+
+		if(BossRageDamage[boss]>99998)	// When RAGE is disabled
+		{
+			BossCharge[boss][0]=0.0;	// We don't want things like Sydney Sleeper acting up
+		}
+		else if(RoundFloat(BossCharge[boss][0])==100.0)
 		{
 			if(IsFakeClient(client) && !(FF2flags[client] & FF2FLAG_BOTRAGE))
 			{
@@ -5078,7 +5095,7 @@ public Action BossTimer(Handle timer)
 				}
 			}
 		}
-		else
+		else	// RAGE is not infinite, disabled, full
 		{
 			SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255);
 			FF2_ShowSyncHudText(client, rageHUD, "%t", "rage_meter", RoundFloat(BossCharge[boss][0]));
@@ -5288,7 +5305,7 @@ public Action OnCallForMedic(int client, const char[] command, int args)
 		return Plugin_Continue;
 	}
 
-	if(RoundFloat(BossCharge[boss][0])==100)
+	if(RoundFloat(BossCharge[boss][0])==100 && BossRageDamage[boss]<99999)
 	{
 		char ability[10], lives[MAXRANDOMS][3];
 		for(int i=1; i<MAXRANDOMS; i++)
@@ -6063,7 +6080,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 				SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 			}
 
-			if(damage<=160.0)  //TODO: Wat
+			if(damage<=160.0 && DmgTriple[GetBossIndex(client)])
 			{
 				damage*=3;
 				return Plugin_Changed;
@@ -6753,14 +6770,14 @@ stock void AssignTeam(int client, int team)
 {
 	if(!GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass"))  //Living spectator check: 0 means that no class is selected
 	{
-		Debug("%N does not have a desired class!", client);
+		FF2Dbg("%N does not have a desired class!", client);
 		if(IsBoss(client))
 		{
 			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", KvGetNum(BossKV[Special[Boss[client]]], "class", 1));  //So we assign one to prevent living spectators
 		}
 		else
 		{
-			Debug("%N was not a boss and did not have a desired class!  Please report this to https://github.com/50DKP/FF2-Official");
+			FF2Dbg("%N was not a boss and did not have a desired class!  Please report this to https://github.com/50DKP/FF2-Official");
 		}
 	}
 
@@ -6770,14 +6787,14 @@ stock void AssignTeam(int client, int team)
 
 	if(GetEntProp(client, Prop_Send, "m_iObserverMode") && IsPlayerAlive(client))  //Welp
 	{
-		Debug("%N is a living spectator!  Please report this to https://github.com/50DKP/FF2-Official", client);
+		FF2Dbg("%N is a living spectator!  Please report this to https://github.com/50DKP/FF2-Official", client);
 		if(IsBoss(client))
 		{
 			TF2_SetPlayerClass(client, view_as<TFClassType>(KvGetNum(BossKV[Special[Boss[client]]], "class", 1)));
 		}
 		else
 		{
-			Debug("Additional information: %N was not a boss");
+			FF2Dbg("Additional information: %N was not a boss");
 			TF2_SetPlayerClass(client, TFClass_Scout);
 		}
 		TF2_RespawnPlayer(client);
@@ -7282,6 +7299,49 @@ stock bool RandomSoundAbility(const char[] sound, char[] file, int length, int b
 	return true;
 }
 
+stock bool RandomSoundVo(const char[] sound, char[] file, int length, int boss=0, const char[] oldFile)
+{
+	if(boss<0 || Special[boss]<0 || !BossKV[Special[boss]])
+	{
+		return false;
+	}
+
+	KvRewind(BossKV[Special[boss]]);
+	if(!KvJumpToKey(BossKV[Special[boss]], sound))
+	{
+		return false;  //Sound doesn't exist
+	}
+
+	char key[10], replacement[PLATFORM_MAX_PATH];
+	int sounds, matches, match[MAXRANDOMS];
+	while(++sounds)
+	{
+		IntToString(sounds, key, 4);
+		KvGetString(BossKV[Special[boss]], key, file, length);
+		if(!file[0])
+		{
+			break;  //Assume that there's no more sounds
+		}
+
+		Format(key, sizeof(key), "vo%i", sounds);
+		KvGetString(BossKV[Special[boss]], key, replacement, sizeof(replacement));
+		if(StrEqual(replacement, oldFile, false))
+		{
+			match[matches] = sounds;  //Found a match: let's store it in the array
+			matches++;
+		}
+	}
+
+	if(!matches)
+	{
+		return false;  //Found sound, but no sounds inside of it
+	}
+
+	IntToString(match[GetRandomInt(0, matches-1)], key, 4);
+	KvGetString(BossKV[Special[boss]], key, file, length);  //Populate file
+	return true;
+}
+
 void ForceTeamWin(int team)
 {
 	int entity=FindEntityByClassname2(-1, "team_control_point_master");
@@ -7393,6 +7453,17 @@ public bool PickCharacter(int boss, int companion)
 			{
 				Special[boss]=-1;
 				continue;
+			}
+
+			if(playing<4)	// Block companion bosses if less than 4 players are playing
+			{
+				char companionName[64];
+				KvGetString(BossKV[Special[boss]], "companion", companionName, sizeof(companionName));
+				if(strlen(companionName))
+				{
+					Special[boss]=-1;
+					continue;
+				}
 			}
 			break;
 		}
@@ -8280,6 +8351,12 @@ public Action HookSound(int clients[64], int &numClients, char sound[PLATFORM_MA
 	if(channel==SNDCHAN_VOICE && !(FF2flags[Boss[boss]] & FF2FLAG_TALKING))
 	{
 		char newSound[PLATFORM_MAX_PATH];
+		if(RandomSoundVo("catch_replace", newSound, PLATFORM_MAX_PATH, boss, sound))
+		{
+			strcopy(sound, PLATFORM_MAX_PATH, newSound);
+			return Plugin_Changed;
+		}
+
 		if(RandomSound("catch_phrase", newSound, PLATFORM_MAX_PATH, boss))
 		{
 			strcopy(sound, PLATFORM_MAX_PATH, newSound);
@@ -8485,7 +8562,11 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 		FF2flags[Boss[boss]]&=~FF2FLAG_BOTRAGE;
 		Call_PushCell(3);  //Status - we're assuming here a rage ability will always be in use if it gets called
 		Call_Finish(action);
-		BossCharge[boss][slot]=0.0;
+	
+		if(BossRageDamage[boss]>1)	// No 0.2 second delay upon RAGE to refill meter
+		{
+			BossCharge[boss][slot]=0.0;
+		}
 	}
 	else
 	{
