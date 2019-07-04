@@ -42,6 +42,14 @@ native bool FF2_IsFF2Enabled();
 native int FF2_GetFF2Version(int[] version=0);
 
 /**
+ * Gets the version of the FF2 fork running on the server
+ *
+ * @param version	An array of size 3 that will contain the major, minor, and stable version numbers respectively
+ * @return		True if the server has a sub name defined, false otherwise
+ */
+native bool FF2_GetForkVersion(int[] fversion=0);
+
+/**
  * Gets current round state
  *
  * @return	0 - in setup
