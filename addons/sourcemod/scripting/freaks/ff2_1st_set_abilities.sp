@@ -42,7 +42,6 @@ ConVar cvarTimeScale;
 ConVar cvarCheats;
 ConVar cvarKAC;
 ConVar ftz_cheats_version;
-int BossTeam=view_as<int>(TFTeam_Blue);
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -155,7 +154,6 @@ public Action Timer_GetBossTeam(Handle timer)
 	{
 		SetConVarBool(cvarKAC, false);
 	}
-	BossTeam=FF2_GetBossTeam();
 	return Plugin_Continue;
 }
 
@@ -290,7 +288,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 		RemoveFromArray(players, temp);
 
 		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_CLASSTIMERDISABLED);
-		ChangeClientTeam(clone, BossTeam);
+		ChangeClientTeam(clone, FF2_GetBossTeam());
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=boss;
 		TF2_SetPlayerClass(clone, (class ? (view_as<TFClassType>(class)) : (view_as<TFClassType>(KvGetNum(bossKV[config], "class", 0)))), _, false);
@@ -382,7 +380,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 	int entity, owner;
 	while((entity=FindEntityByClassname(entity, "tf_wearable"))!=-1)
 	{
-		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
+		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==FF2_GetBossTeam())
 		{
 			TF2_RemoveWearable(owner, entity);
 		}
@@ -390,7 +388,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 
 	while((entity=FindEntityByClassname(entity, "tf_wearable_demoshield"))!=-1)
 	{
-		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
+		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==FF2_GetBossTeam())
 		{
 			TF2_RemoveWearable(owner, entity);
 		}
@@ -398,7 +396,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 
 	while((entity=FindEntityByClassname(entity, "tf_powerup_bottle"))!=-1)
 	{
-		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==BossTeam)
+		if((owner=GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))<=MaxClients && owner>0 && GetClientTeam(owner)==FF2_GetBossTeam())
 		{
 			TF2_RemoveWearable(owner, entity);
 		}
@@ -443,7 +441,7 @@ public Action SaveMinion(int client, int &attacker, int &inflictor, float &damag
 			bool otherTeamIsAlive;
 			for(int clone=1; clone<=MaxClients; clone++)
 			{
-				if(IsValidEntity(clone) && IsClientInGame(clone) && IsPlayerAlive(clone) && GetClientTeam(clone)!=BossTeam)
+				if(IsValidEntity(clone) && IsClientInGame(clone) && IsPlayerAlive(clone) && GetClientTeam(clone)!=FF2_GetBossTeam())
 				{
 					otherTeamIsAlive=true;
 					break;
@@ -460,7 +458,7 @@ public Action SaveMinion(int client, int &attacker, int &inflictor, float &damag
 					return Plugin_Continue;
 				}
 			}
-			while(otherTeamIsAlive && (!IsValidEntity(target) || GetClientTeam(target)==BossTeam || !IsPlayerAlive(target)));
+			while(otherTeamIsAlive && (!IsValidEntity(target) || GetClientTeam(target)==FF2_GetBossTeam() || !IsPlayerAlive(target)));
 
 			GetEntPropVector(target, Prop_Data, "m_vecOrigin", position);
 			TeleportEntity(client, position, NULL_VECTOR, NULL_VECTOR);
@@ -485,7 +483,7 @@ public Action Timer_Demopan_Rage(Handle timer, any count)  //TODO: Make this rag
 		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);  //Allow normal players to use r_screenoverlay
 		for(int client=1; client<=MaxClients; client++)
 		{
-			if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
+			if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=FF2_GetBossTeam())
 			{
 				ClientCommand(client, overlay);
 			}
@@ -615,7 +613,7 @@ void Rage_Slowmo(int boss, const char[] ability_name)
 	int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	if(client)
 	{
-		CreateTimer(duration*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 2, 0.1), Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, BossTeam==view_as<int>(TFTeam_Blue) ? "scout_dodge_blue" : "scout_dodge_red", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(duration*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 2, 0.1), Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, FF2_GetBossTeam()==view_as<int>(TFTeam_Blue) ? "scout_dodge_blue" : "scout_dodge_red", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	EmitSoundToAll(SOUND_SLOW_MO_START, _, _, _, _, _, _, _, _, _, false);
@@ -810,9 +808,9 @@ public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 			{
 				CloneOwnerIndex[target]=-1;
 				FF2_SetFF2flags(target, FF2_GetFF2flags(target) & ~FF2FLAG_CLASSTIMERDISABLED);
-				if(IsClientInGame(target) && GetClientTeam(target)==BossTeam)
+				if(IsClientInGame(target) && GetClientTeam(target)==FF2_GetBossTeam())
 				{
-					ChangeClientTeam(target, (BossTeam==view_as<int>(TFTeam_Blue)) ? (view_as<int>(TFTeam_Red)) : (view_as<int>(TFTeam_Blue)));
+					ChangeClientTeam(target, (FF2_GetBossTeam()==view_as<int>(TFTeam_Blue)) ? (view_as<int>(TFTeam_Red)) : (view_as<int>(TFTeam_Blue)));
 				}
 			}
 		}
@@ -822,7 +820,7 @@ public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	{
 		CloneOwnerIndex[client]=-1;
 		FF2_SetFF2flags(client, FF2_GetFF2flags(client) & ~FF2FLAG_CLASSTIMERDISABLED);
-		ChangeClientTeam(client, (BossTeam==view_as<int>(TFTeam_Blue)) ? (view_as<int>(TFTeam_Red)) : (view_as<int>(TFTeam_Blue)));
+		ChangeClientTeam(client, (FF2_GetBossTeam()==view_as<int>(TFTeam_Blue)) ? (view_as<int>(TFTeam_Red)) : (view_as<int>(TFTeam_Blue)));
 	}
 	return Plugin_Continue;
 }

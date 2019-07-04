@@ -30,7 +30,6 @@ Handle jumpHUD;
 
 bool enableSuperDuperJump[MAXPLAYERS+1];
 float UberRageCount[MAXPLAYERS+1];
-int BossTeam=view_as<int>(TFTeam_Blue);
 
 ConVar cvarOldJump;
 ConVar cvarBaseJumperStun;
@@ -88,8 +87,7 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 		enableSuperDuperJump[client]=false;
 		UberRageCount[client]=0.0;
 	}
-
-	CreateTimer(0.3, Timer_GetBossTeam, _, TIMER_FLAG_NO_MAPCHANGE);
+	
 	CreateTimer(9.11, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);  //TODO: Investigate.
 	return Plugin_Continue;
 }
@@ -103,12 +101,6 @@ public Action StartBossTimer(Handle timer)  //TODO: What.
 			FF2_SetBossCharge(boss, FF2_GetAbilityArgument(boss, this_plugin_name, "charge_teleport", 0, 1), -1.0*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "charge_teleport", 2, 5.0));
 		}
 	}
-}
-
-public Action Timer_GetBossTeam(Handle timer)
-{
-	BossTeam=FF2_GetBossTeam();
-	return Plugin_Continue;
 }
 
 public Action FF2_OnAbility2(int boss, const char[] plugin_name, const char[] ability_name, int status)
@@ -233,7 +225,7 @@ void Rage_Stun(const char[] ability_name, int boss)
 
 	for(int target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=BossTeam)
+		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=FF2_GetBossTeam())
 		{
 			GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPosition);
 			if(!TF2_IsPlayerInCondition(target, TFCond_Ubercharged) && (GetVectorDistance(bossPosition, targetPosition)<=distance))
