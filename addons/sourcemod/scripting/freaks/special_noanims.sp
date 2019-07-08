@@ -89,7 +89,7 @@ void Rage_New_Weapon(int boss, const char[] ability_name)
 	TF2_RemoveWeaponSlot(client, slot);
 
 	int index=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2);
-	int weapon=SpawnWeapon(client, classname, index, 101, 5, attributes);
+	int weapon=FF2_SpawnWeapon(client, classname, index, 101, 5, attributes);
 	if(StrEqual(classname, "tf_weapon_builder") && index!=735)  //PDA, normal sapper
 	{
 		SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
@@ -118,51 +118,4 @@ void Rage_New_Weapon(int boss, const char[] ability_name)
 	{
 		FF2_SetAmmo(client, weapon, ammo, clip);
 	}
-}
-
-stock int SpawnWeapon(int client, char[] name, int index, int level, int quality, char[] attribute)
-{
-	Handle weapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
-	TF2Items_SetClassname(weapon, name);
-	TF2Items_SetItemIndex(weapon, index);
-	TF2Items_SetLevel(weapon, level);
-	TF2Items_SetQuality(weapon, quality);
-	char attributes[32][32];
-	int count=ExplodeString(attribute, ";", attributes, 32, 32);
-	if(count%2!=0)
-	{
-		count--;
-	}
-
-	if(count>0)
-	{
-		TF2Items_SetNumAttributes(weapon, count/2);
-		int i2=0;
-		for(int i=0; i<count; i+=2)
-		{
-			int attrib=StringToInt(attributes[i]);
-			if(!attrib)
-			{
-				LogError("Bad weapon attribute passed: %s ; %s", attributes[i], attributes[i+1]);
-				return -1;
-			}
-			TF2Items_SetAttribute(weapon, i2, attrib, StringToFloat(attributes[i+1]));
-			i2++;
-		}
-	}
-	else
-	{
-		TF2Items_SetNumAttributes(weapon, 0);
-	}
-
-	if(weapon==INVALID_HANDLE)
-	{
-		return -1;
-	}
-
-	int entity=TF2Items_GiveNamedItem(client, weapon);
-	CloseHandle(weapon);
-	EquipPlayerWeapon(client, entity);
-	SetEntProp(entity, Prop_Send, "m_bValidatedAttachedEntity", 1);
-	return entity;
 }
