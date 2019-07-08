@@ -1,7 +1,7 @@
 //Freak Fortress 2 include file.
 #include <morecolors>
 #include <sdktools>
-#include <tf2items>
+#tryinclude <tf2items>
 
 #define FF2FLAG_UBERREADY				(1<<1)		//Used when medic says "I'm charged!"
 #define FF2FLAG_ISBUFFED				(1<<2)		//Used when soldier uses the Battalion's Backup
@@ -616,6 +616,7 @@ stock void TF2_RemoveAllWeapons2(int client)
  */
 stock int FF2_SpawnWeapon(int client, char[] name, int index, int level, int qual, char[] att, bool visible=1)
 {
+	#if defined _tf2items_included
 	Handle hWeapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
 	if(hWeapon==INVALID_HANDLE)
 	{
@@ -662,6 +663,9 @@ stock int FF2_SpawnWeapon(int client, char[] name, int index, int level, int qua
 	EquipPlayerWeapon(client, entity);
 	SetEntProp(entity, Prop_Send, "m_bValidatedAttachedEntity", visible);
 	return entity;
+	#else
+	return -1;
+	#endif
 }
 
 
