@@ -1,6 +1,7 @@
 //Freak Fortress 2 include file.
 #include <morecolors>
 #include <sdktools>
+#include <tf2items>
 
 #define FF2FLAG_UBERREADY				(1<<1)		//Used when medic says "I'm charged!"
 #define FF2FLAG_ISBUFFED				(1<<2)		//Used when soldier uses the Battalion's Backup
@@ -599,6 +600,71 @@ stock void TF2_RemoveAllWeapons2(int client)
 		TF2_RemoveWeaponSlot(int client, int slot);
 	}
 }
+
+/**
+ * Used to spawn a weapon
+ *
+ * @param client	Client index
+ * @param name	    Classname of the weapon
+ * @param index	    Definition index of the weapon
+ * @param level	    Level of the weapon
+ * @param qual	    Quality of the weapon
+ * @param qual	   	String, containing the attributes in the following format: attr ; val ; attr ; val ; ...
+ * @param visible	Weapon will be visible?
+ *
+ * @return          Entity index of the weapon
+ */
+stock int FF2_SpawnWeapon(int client, char[] name, int index, int level, int qual, char[] att, bool visible=1)
+{
+	Handle hWeapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
+	if(hWeapon==INVALID_HANDLE)
+	{
+		return -1;
+	}
+
+	TF2Items_SetClassname(hWeapon, name);
+	TF2Items_SetItemIndex(hWeapon, index);
+	TF2Items_SetLevel(hWeapon, level);
+	TF2Items_SetQuality(hWeapon, qual);
+	char atts[32][32];
+	int count=ExplodeString(att, ";", atts, 32, 32);
+
+	if(count % 2)
+	{
+		--count;
+	}
+
+	if(count>0)
+	{
+		TF2Items_SetNumAttributes(hWeapon, count/2);
+		int i2;
+		for(int i; i<count; i+=2)
+		{
+			int attrib=StringToInt(atts[i]);
+			if(!attrib)
+			{
+				LogError("Bad weapon attribute passed: %s ; %s", atts[i], atts[i+1]);
+				CloseHandle(hWeapon);
+				return -1;
+			}
+
+			TF2Items_SetAttribute(hWeapon, i2, attrib, StringToFloat(atts[i+1]));
+			i2++;
+		}
+	}
+	else
+	{
+		TF2Items_SetNumAttributes(hWeapon, 0);
+	}
+
+	int entity=TF2Items_GiveNamedItem(client, hWeapon);
+	CloseHandle(hWeapon);
+	EquipPlayerWeapon(client, entity);
+	SetEntProp(entity, Prop_Send, "m_bValidatedAttachedEntity", visible);
+	return entity;
+}
+
+
 
 public SharedPlugin __pl_FF2=
 {
