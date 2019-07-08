@@ -3372,7 +3372,7 @@ void EquipBoss(int boss)
 			}
 
 			int index=KvGetNum(BossKV[Special[boss]], "index");
-			int weapon=SpawnWeapon(client, classname, index, 101, 5, attributes);
+			int weapon=FF2_SpawnWeapon(client, classname, index, 101, 5, attributes);
 			if(StrEqual(classname, "tf_weapon_builder", false) && index!=735)  //PDA, normal sapper
 			{
 				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
@@ -3951,7 +3951,7 @@ public Action Timer_CheckItems(Handle timer, any userid)
 	if(IsValidEntity(weapon) && GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==60)  //Cloak and Dagger
 	{
 		TF2_RemoveWeaponSlot(client, 4);
-		SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
+		FF2_SpawnWeapon(client, "tf_weapon_invis", 30, 1, 0, "");
 	}
 
 	if(bMedieval)
@@ -3968,19 +3968,19 @@ public Action Timer_CheckItems(Handle timer, any userid)
 			case 41:  //Natascha
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				SpawnWeapon(client, "tf_weapon_minigun", 15, 1, 0, "");
+				FF2_SpawnWeapon(client, "tf_weapon_minigun", 15, 1, 0, "");
 			}
 			case 237:  //Rocket Jumper
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "114 ; 1");
+				FF2_SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "114 ; 1");
 					//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
 				FF2_SetAmmo(client, weapon, 20);
 			}
 			case 402:  //Bazaar Bargain
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-				SpawnWeapon(client, "tf_weapon_sniperrifle", 14, 1, 0, "");
+				FF2_SpawnWeapon(client, "tf_weapon_sniperrifle", 14, 1, 0, "");
 			}
 		}
 	}
@@ -3998,7 +3998,7 @@ public Action Timer_CheckItems(Handle timer, any userid)
 			case 265:  //Stickybomb Jumper
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
-				SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
+				FF2_SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
 				FF2_SetAmmo(client, weapon, 24);
 			}
 		}
@@ -4021,7 +4021,7 @@ public Action Timer_CheckItems(Handle timer, any userid)
 	shield[client]=IsValidEntity(playerBack) ? playerBack : 0;
 	if(IsValidEntity(FindPlayerBack(client, 642)))  //Cozy Camper
 	{
-		SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
+		FF2_SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
 	}
 
 	#if defined _tf2attributes_included
@@ -4056,7 +4056,7 @@ public Action Timer_CheckItems(Handle timer, any userid)
 			case 43:  //KGB
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-				SpawnWeapon(client, "tf_weapon_fists", 239, 1, 6, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5");  //GRU
+				FF2_SpawnWeapon(client, "tf_weapon_fists", 239, 1, 6, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5");  //GRU
 					//1: -50% damage
 					//107: +50% move speed
 					//128: Only when weapon is active
@@ -4072,7 +4072,7 @@ public Action Timer_CheckItems(Handle timer, any userid)
 				if(!GetConVarBool(cvarEnableEurekaEffect))
 				{
 					TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
-					SpawnWeapon(client, "tf_weapon_wrench", 7, 1, 0, "");
+					FF2_SpawnWeapon(client, "tf_weapon_wrench", 7, 1, 0, "");
 				}
 			}
 		}
@@ -7593,55 +7593,6 @@ void FindCompanion(int boss, int players, bool[] omit)
 		}
 	}
 	playersNeeded=3;  //Reset the amount of players needed back to 3 after we're done
-}
-
-stock int SpawnWeapon(int client, char[] name, int index, int level, int qual, char[] att)
-{
-	Handle hWeapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
-	if(hWeapon==INVALID_HANDLE)
-	{
-		return -1;
-	}
-
-	TF2Items_SetClassname(hWeapon, name);
-	TF2Items_SetItemIndex(hWeapon, index);
-	TF2Items_SetLevel(hWeapon, level);
-	TF2Items_SetQuality(hWeapon, qual);
-	char atts[32][32];
-	int count=ExplodeString(att, ";", atts, 32, 32);
-
-	if(count % 2)
-	{
-		--count;
-	}
-
-	if(count>0)
-	{
-		TF2Items_SetNumAttributes(hWeapon, count/2);
-		int i2;
-		for(int i; i<count; i+=2)
-		{
-			int attrib=StringToInt(atts[i]);
-			if(!attrib)
-			{
-				LogError("Bad weapon attribute passed: %s ; %s", atts[i], atts[i+1]);
-				CloseHandle(hWeapon);
-				return -1;
-			}
-
-			TF2Items_SetAttribute(hWeapon, i2, attrib, StringToFloat(atts[i+1]));
-			i2++;
-		}
-	}
-	else
-	{
-		TF2Items_SetNumAttributes(hWeapon, 0);
-	}
-
-	int entity=TF2Items_GiveNamedItem(client, hWeapon);
-	CloseHandle(hWeapon);
-	EquipPlayerWeapon(client, entity);
-	return entity;
 }
 
 public int HintPanelH(Handle menu, MenuAction action, int client, int selection)

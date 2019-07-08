@@ -324,7 +324,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 					attributes="68 ; -1";
 				}
 
-				weapon=SpawnWeapon(clone, classname, index, 101, 0, attributes);
+				weapon=FF2_SpawnWeapon(clone, classname, index, 101, 0, attributes);
 				if(StrEqual(classname, "tf_weapon_builder") && index!=735)  //PDA, normal sapper
 				{
 					SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
@@ -507,7 +507,7 @@ void Rage_Bow(int boss)
 {
 	int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
-	int weapon=SpawnWeapon(client, "tf_weapon_compound_bow", 1005, 100, 5, "6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19");
+	int weapon=FF2_SpawnWeapon(client, "tf_weapon_compound_bow", 1005, 100, 5, "6 ; 0.5 ; 37 ; 0.0 ; 280 ; 19");
 	SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 	TFTeam team=(FF2_GetBossTeam()==view_as<int>(TFTeam_Blue) ? TFTeam_Red:TFTeam_Blue);
 
@@ -783,15 +783,15 @@ public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 				{
 					case 0:
 					{
-						weapon=SpawnWeapon(attacker, "tf_weapon_club", 171, 101, 5, "68 ; 2 ; 2 ; 3.1");
+						weapon=FF2_SpawnWeapon(attacker, "tf_weapon_club", 171, 101, 5, "68 ; 2 ; 2 ; 3.1");
 					}
 					case 1:
 					{
-						weapon=SpawnWeapon(attacker, "tf_weapon_club", 193, 101, 5, "68 ; 2 ; 2 ; 3.1");
+						weapon=FF2_SpawnWeapon(attacker, "tf_weapon_club", 193, 101, 5, "68 ; 2 ; 2 ; 3.1");
 					}
 					case 2:
 					{
-						weapon=SpawnWeapon(attacker, "tf_weapon_club", 232, 101, 5, "68 ; 2 ; 2 ; 3.1");
+						weapon=FF2_SpawnWeapon(attacker, "tf_weapon_club", 232, 101, 5, "68 ; 2 ; 2 ; 3.1");
 					}
 				}
 				SetEntPropEnt(attacker, Prop_Data, "m_hActiveWeapon", weapon);
@@ -833,52 +833,6 @@ public Action Timer_RemoveRagdoll(Handle timer, any userid)
 	{
 		AcceptEntityInput(ragdoll, "Kill");
 	}
-}
-
-stock int SpawnWeapon(int client, char[] name, int index, int level, int quality, char[] attribute)
-{
-	Handle weapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
-	TF2Items_SetClassname(weapon, name);
-	TF2Items_SetItemIndex(weapon, index);
-	TF2Items_SetLevel(weapon, level);
-	TF2Items_SetQuality(weapon, quality);
-	char attributes[32][32];
-	int count = ExplodeString(attribute, ";", attributes, 32, 32);
-	if(count%2!=0)
-	{
-		count--;
-	}
-
-	if(count>0)
-	{
-		TF2Items_SetNumAttributes(weapon, count/2);
-		int i2=0;
-		for(int i=0; i<count; i+=2)
-		{
-			int attrib=StringToInt(attributes[i]);
-			if(attrib==0)
-			{
-				LogError("Bad weapon attribute passed: %s ; %s", attributes[i], attributes[i+1]);
-				return -1;
-			}
-			TF2Items_SetAttribute(weapon, i2, attrib, StringToFloat(attributes[i+1]));
-			i2++;
-		}
-	}
-	else
-	{
-		TF2Items_SetNumAttributes(weapon, 0);
-	}
-
-	if(weapon==INVALID_HANDLE)
-	{
-		return -1;
-	}
-	int entity=TF2Items_GiveNamedItem(client, weapon);
-	CloseHandle(weapon);
-	EquipPlayerWeapon(client, entity);
-	SetEntProp(entity, Prop_Send, "m_bValidatedAttachedEntity", 1);
-	return entity;
 }
 
 public Action Timer_RemoveEntity(Handle timer, any entid)
