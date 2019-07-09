@@ -288,6 +288,44 @@ native float FF2_GetAbilityArgumentFloat(int boss, const char[] plugin_name, con
 native void FF2_GetAbilityArgumentString(int boss, const char[] pluginName, const char[] abilityName, int argument, char[] buffer, int bufferLength);
 
 /**
+ * Gets the integer value of a named ability argument
+ *
+ * @param boss			Boss's index
+ * @param pluginName	Name of plugin with this ability
+ * @param abilityName 	Name of ability
+ * @param argument 		Argument name
+ * @param defValue 		Returns if argument is not defined
+ * @return				Value of argument
+ */
+native int FF2_GetArgNamedI(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, int defValue=0);
+
+/**
+ * Gets the float value of a named ability argument
+ *
+ * @param boss			Boss's index
+ * @param pluginName	Name of plugin with this ability
+ * @param abilityName 	Name of ability
+ * @param argument 		Argument name
+ * @param defValue 		Returns if argument is not defined
+ * @return				Value of argument
+ */
+native float FF2_GetArgNamedF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, float defValue=0.0);
+
+/**
+ * Gets the string value of a named ability argument
+ *
+ * @param boss			Boss's index
+ * @param pluginName	Name of plugin with this ability
+ * @param abilityName 	Name of ability
+ * @param argument 		Argument name
+ * @param buffer 		Buffer for value of argument
+ * @param bufferLength	Length of buffer string
+ * @noreturn
+ */
+native void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, char[] buffer, int bufferLength);
+
+
+/**
  * Starts a random Boss sound from its config file
  *
  * @param keyvalue		Name of sound container
@@ -623,7 +661,7 @@ stock void TF2_RemoveAllWeapons2(int client)
  *
  * @return          Entity index of the weapon
  */
-stock int FF2_SpawnWeapon(int client, char[] name, int index, int level, int qual, char[] att, bool visible=1)
+stock int FF2_SpawnWeapon(int client, char[] name, int index, int level, int qual, char[] att, bool visible=true)
 {
 	#if defined _tf2items_included
 	Handle hWeapon=TF2Items_CreateItem(OVERRIDE_ALL|FORCE_GENERATION);
@@ -732,5 +770,8 @@ public void __pl_FF2_SetNTVOptional()
 	MarkNativeAsOptional("FF2_GetAlivePlayers");
 	MarkNativeAsOptional("FF2_GetBossPlayers");
 	MarkNativeAsOptional("FF2_Debug");
+	MarkNativeAsOptional("FF2_GetArgNamedI");
+	MarkNativeAsOptional("FF2_GetArgNamedF");
+	MarkNativeAsOptional("FF2_GetArgNamedS");
 }
 #endif

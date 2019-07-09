@@ -1107,6 +1107,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("FF2_GetAbilityArgument", Native_GetAbilityArgument);
 	CreateNative("FF2_GetAbilityArgumentFloat", Native_GetAbilityArgumentFloat);
 	CreateNative("FF2_GetAbilityArgumentString", Native_GetAbilityArgumentString);
+	CreateNative("FF2_GetArgNamedI", Native_GetArgNamedI);
+	CreateNative("FF2_GetArgNamedF", Native_GetArgNamedF);
+	CreateNative("FF2_GetArgNamedS", Native_GetArgNamedS);
 	CreateNative("FF2_RandomSound", Native_RandomSound);
 	CreateNative("FF2_GetFF2flags", Native_GetFF2flags);
 	CreateNative("FF2_SetFF2flags", Native_SetFF2flags);
@@ -7124,99 +7127,121 @@ stock int ParseFormula(int boss, const char[] key, const char[] defaultFormula, 
 
 stock int GetAbilityArgument(int index, const char[] plugin_name, const char[] ability_name, int arg, int defvalue=0)
 {
+	char str[10];
+	Format(str, sizeof(str), "arg%i", arg);
+	return GetArgumentI(index, plugin_name, ability_name, str, defvalue);
+}
+
+stock float GetAbilityArgumentFloat(int index, const char[] plugin_name, const char[] ability_name, int arg, float defvalue=0.0)
+{
+	char str[10];
+	Format(str, sizeof(str), "arg%i", arg);
+	return GetArgumentF(index, plugin_name, ability_name, str, defvalue);
+}
+
+stock void GetAbilityArgumentString(int index, const char[] plugin_name, const char[] ability_name, int arg, char[] buffer, int buflen, const char[] defvalue="")
+{
+	char str[10];
+	Format(str, sizeof(str), "arg%i", arg);
+	GetArgumentS(index, plugin_name, ability_name, str, buffer, buflen, defvalue);
+}
+
+stock int GetArgumentI(int index, const char[] plugin_name, const char[] ability_name, const char[] arg, int defvalue=0)
+{
 	if(index==-1 || Special[index]==-1 || !BossKV[Special[index]])
+	{
 		return 0;
+	}
 	KvRewind(BossKV[Special[index]]);
 	char s[10];
 	for(int i=1; i<MAXRANDOMS; i++)
 	{
-		Format(s,10,"ability%i",i);
-		if(KvJumpToKey(BossKV[Special[index]],s))
+		Format(s, sizeof(s), "ability%i", i);
+		if(KvJumpToKey(BossKV[Special[index]], s))
 		{
 			char ability_name2[64];
-			KvGetString(BossKV[Special[index]], "name",ability_name2,64);
-			if(strcmp(ability_name,ability_name2))
+			KvGetString(BossKV[Special[index]], "name", ability_name2, sizeof(ability_name2));
+			if(strcmp(ability_name, ability_name2))
 			{
 				KvGoBack(BossKV[Special[index]]);
 				continue;
 			}
 			char plugin_name2[64];
-			KvGetString(BossKV[Special[index]], "plugin_name",plugin_name2,64);
+			KvGetString(BossKV[Special[index]], "plugin_name", plugin_name2, sizeof(plugin_name2));
 			if(plugin_name[0] && plugin_name2[0] && strcmp(plugin_name,plugin_name2))
 			{
 				KvGoBack(BossKV[Special[index]]);
 				continue;
 			}
-			Format(s,10,"arg%i",arg);
-			return KvGetNum(BossKV[Special[index]], s,defvalue);
+			return KvGetNum(BossKV[Special[index]], arg, defvalue);
 		}
 	}
 	return 0;
 }
 
-stock float GetAbilityArgumentFloat(int index, const char[] plugin_name, const char[] ability_name, int arg, float defvalue=0.0)
+stock float GetArgumentF(int index, const char[] plugin_name, const char[] ability_name, const char[] arg, float defvalue=0.0)
 {
 	if(index==-1 || Special[index]==-1 || !BossKV[Special[index]])
+	{
 		return 0.0;
+	}
 	KvRewind(BossKV[Special[index]]);
 	char s[10];
 	for(int i=1; i<MAXRANDOMS; i++)
 	{
-		Format(s,10,"ability%i",i);
-		if(KvJumpToKey(BossKV[Special[index]],s))
+		Format(s, sizeof(s), "ability%i", i);
+		if(KvJumpToKey(BossKV[Special[index]], s))
 		{
 			char ability_name2[64];
-			KvGetString(BossKV[Special[index]], "name",ability_name2,64);
-			if(strcmp(ability_name,ability_name2))
+			KvGetString(BossKV[Special[index]], "name", ability_name2, sizeof(ability_name2));
+			if(strcmp(ability_name, ability_name2))
 			{
 				KvGoBack(BossKV[Special[index]]);
 				continue;
 			}
 			char plugin_name2[64];
-			KvGetString(BossKV[Special[index]], "plugin_name",plugin_name2,64);
-			if(plugin_name[0] && plugin_name2[0] && strcmp(plugin_name,plugin_name2))
+			KvGetString(BossKV[Special[index]], "plugin_name", plugin_name2, sizeof(plugin_name2));
+			if(plugin_name[0] && plugin_name2[0] && strcmp(plugin_name, plugin_name2))
 			{
 				KvGoBack(BossKV[Special[index]]);
 				continue;
 			}
-			Format(s,10,"arg%i",arg);
-			float see=KvGetFloat(BossKV[Special[index]], s,defvalue);
+			float see=KvGetFloat(BossKV[Special[index]], arg, defvalue);
 			return see;
 		}
 	}
 	return 0.0;
 }
 
-stock void GetAbilityArgumentString(int index, const char[] plugin_name, const char[] ability_name, int arg, char[] buffer, int buflen, const char[] defvalue="")
+stock void GetArgumentS(int index, const char[] plugin_name, const char[] ability_name, const char[] arg, char[] buffer, int buflen, const char[] defvalue="")
 {
 	if(index==-1 || Special[index]==-1 || !BossKV[Special[index]])
 	{
-		strcopy(buffer,buflen,"");
+		strcopy(buffer, buflen, "");
 		return;
 	}
 	KvRewind(BossKV[Special[index]]);
 	char s[10];
 	for(int i=1; i<MAXRANDOMS; i++)
 	{
-		Format(s,10,"ability%i",i);
-		if(KvJumpToKey(BossKV[Special[index]],s))
+		Format(s, sizeof(s), "ability%i", i);
+		if(KvJumpToKey(BossKV[Special[index]], s))
 		{
 			char ability_name2[64];
-			KvGetString(BossKV[Special[index]], "name",ability_name2,64);
+			KvGetString(BossKV[Special[index]], "name", ability_name2, sizeof(ability_name2));
 			if(strcmp(ability_name,ability_name2))
 			{
 				KvGoBack(BossKV[Special[index]]);
 				continue;
 			}
 			char plugin_name2[64];
-			KvGetString(BossKV[Special[index]], "plugin_name",plugin_name2,64);
-			if(plugin_name[0] && plugin_name2[0] && strcmp(plugin_name,plugin_name2))
+			KvGetString(BossKV[Special[index]], "plugin_name", plugin_name2, sizeof(plugin_name2));
+			if(plugin_name[0] && plugin_name2[0] && strcmp(plugin_name, plugin_name2))
 			{
 				KvGoBack(BossKV[Special[index]]);
 				continue;
 			}
-			Format(s,10,"arg%i",arg);
-			KvGetString(BossKV[Special[index]], s,buffer,buflen,defvalue);
+			KvGetString(BossKV[Special[index]], arg, buffer, buflen, defvalue);
 		}
 	}
 }
@@ -8851,39 +8876,75 @@ public int Native_DoAbility(Handle plugin, int numParams)
 {
 	char plugin_name[64];
 	char ability_name[64];
-	GetNativeString(2,plugin_name,64);
-	GetNativeString(3,ability_name,64);
-	UseAbility(ability_name,plugin_name, GetNativeCell(1), GetNativeCell(4), GetNativeCell(5));
+	GetNativeString(2, plugin_name, sizeof(plugin_name));
+	GetNativeString(3, ability_name, sizeof(ability_name));
+	UseAbility(ability_name, plugin_name, GetNativeCell(1), GetNativeCell(4), GetNativeCell(5));
 }
 
 public int Native_GetAbilityArgument(Handle plugin, int numParams)
 {
 	char plugin_name[64];
 	char ability_name[64];
-	GetNativeString(2,plugin_name,64);
-	GetNativeString(3,ability_name,64);
-	return GetAbilityArgument(GetNativeCell(1),plugin_name,ability_name,GetNativeCell(4),GetNativeCell(5));
+	GetNativeString(2, plugin_name, sizeof(plugin_name));
+	GetNativeString(3, ability_name, sizeof(ability_name));
+	return GetAbilityArgument(GetNativeCell(1), plugin_name, ability_name, GetNativeCell(4), GetNativeCell(5));
 }
 
 public int Native_GetAbilityArgumentFloat(Handle plugin, int numParams)
 {
 	char plugin_name[64];
 	char ability_name[64];
-	GetNativeString(2,plugin_name,64);
-	GetNativeString(3,ability_name,64);
+	GetNativeString(2, plugin_name, sizeof(plugin_name));
+	GetNativeString(3, ability_name, sizeof(ability_name));
 	return view_as<int>(GetAbilityArgumentFloat(GetNativeCell(1), plugin_name, ability_name, GetNativeCell(4), GetNativeCell(5)));
 }
 
 public int Native_GetAbilityArgumentString(Handle plugin, int numParams)
 {
 	char plugin_name[64];
-	GetNativeString(2,plugin_name,64);
+	GetNativeString(2, plugin_name, sizeof(plugin_name));
 	char ability_name[64];
-	GetNativeString(3,ability_name,64);
+	GetNativeString(3, ability_name, sizeof(ability_name));
 	int dstrlen=GetNativeCell(6);
 	char[] s=new char[dstrlen+1];
-	GetAbilityArgumentString(GetNativeCell(1),plugin_name,ability_name,GetNativeCell(4),s,dstrlen);
-	SetNativeString(5,s,dstrlen);
+	GetAbilityArgumentString(GetNativeCell(1), plugin_name, ability_name, GetNativeCell(4), s, dstrlen);
+	SetNativeString(5, s, dstrlen);
+}
+
+public int Native_GetArgNamedI(Handle plugin, int numParams)
+{
+	char plugin_name[64];
+	char ability_name[64];
+	char argument[64];
+	GetNativeString(2, plugin_name, sizeof(plugin_name));
+	GetNativeString(3, ability_name, sizeof(ability_name));
+	GetNativeString(4, argument, sizeof(argument));
+	return GetArgumentI(GetNativeCell(1), plugin_name, ability_name, argument, GetNativeCell(5));
+}
+
+public int Native_GetArgNamedF(Handle plugin, int numParams)
+{
+	char plugin_name[64];
+	char ability_name[64];
+	char argument[64];
+	GetNativeString(2, plugin_name, sizeof(plugin_name));
+	GetNativeString(3, ability_name, sizeof(ability_name));
+	GetNativeString(4, argument, sizeof(argument));
+	return view_as<int>(GetArgumentF(GetNativeCell(1), plugin_name, ability_name, argument, GetNativeCell(5)));
+}
+
+public int Native_GetArgNamedS(Handle plugin, int numParams)
+{
+	char plugin_name[64];
+	char ability_name[64];
+	char argument[64];
+	GetNativeString(2, plugin_name, sizeof(plugin_name));
+	GetNativeString(3, ability_name, sizeof(ability_name));
+	GetNativeString(4, argument, sizeof(argument));
+	int dstrlen=GetNativeCell(6);
+	char[] s=new char[dstrlen+1];
+	GetArgumentS(GetNativeCell(1), plugin_name, ability_name, argument, s, dstrlen);
+	SetNativeString(5, s, dstrlen);
 }
 
 public int Native_GetDamage(Handle plugin, int numParams)
