@@ -6084,7 +6084,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 				SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 			}
 
-			if(damage<=160.0 && DmgTriple[GetBossIndex(client)])
+			if(damage<=160.0 && DmgTriple[GetBossIndex(attacker)])
 			{
 				damage*=3;
 				return Plugin_Changed;
