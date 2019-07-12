@@ -3363,14 +3363,14 @@ void EquipBoss(int boss)
 			if(attributes[0]!='\0')
 			{
 				Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1 ; %s", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2 ,attributes);
-					//68: +2 cap rate
-					//2: x3.1 damage
+				//68: +2 cap rate
+				//2: x3.1 damage
 			}
 			else
 			{
 				Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2);
-					//68: +2 cap rate
-					//2: x3.1 damage
+				//68: +2 cap rate
+				//2: x3.1 damage
 			}
 
 			int index=KvGetNum(BossKV[Special[boss]], "index");
@@ -3564,10 +3564,10 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 39, 351, 1081:  //Flaregun, Detonator, Festive Flaregun
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "25 ; 0.5 ; 58 ; 3.2 ; 144 ; 1.0 ; 207 ; 1.33", true);
-				//25: -50% ammo
-				//58: 220% self damage force
-				//144: NOPE
-				//207: +33% damage to self
+			//25: -50% ammo
+			//58: 220% self damage force
+			//144: NOPE
+			//207: +33% damage to self
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3586,9 +3586,9 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 224:  //L'etranger
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "85 ; 0.5 ; 157 ; 1.0 ; 253 ; 1.0");
-				//85: +50% time needed to regen cloak
-				//157: +1 second needed to fully disguise
-				//253: +1 second needed to fully cloak
+			//85: +50% time needed to regen cloak
+			//157: +1 second needed to fully disguise
+			//253: +1 second needed to fully cloak
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3598,11 +3598,11 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 239, 1084, 1100:  //GRU, Festive GRU, Bread Bite
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5", true);
-				//1: -50% damage
-				//107: +50% move speed
-				//128: Only when weapon is active
-				//191: -7 health/second
-				//772: Holsters 50% slower
+			//1: -50% damage
+			//107: +50% move speed
+			//128: Only when weapon is active
+			//191: -7 health/second
+			//772: Holsters 50% slower
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3612,8 +3612,8 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 56, 1005, 1092:  //Huntsman, Festive Huntsman, Fortified Compound
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.5 ; 76 ; 2");
-				//2: +50% damage
-				//76: +100% ammo
+			//2: +50% damage
+			//76: +100% ammo
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3641,8 +3641,8 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 305, 1079:  //Crusader's Crossbow, Festive Crusader's Crossbow
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.2 ; 17 ; 0.15");
-				//2: +20% damage
-				//17: +15% uber on hit
+			//2: +20% damage
+			//17: +15% uber on hit
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3652,9 +3652,9 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 331:  //Fists of Steel
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "205 ; 0.8 ; 206 ; 2.0 ; 772 ; 2.0", true);
-				//205: -80% damage from ranged while active
-				//206: +100% damage from melee while active
-				//772: Holsters 100% slower
+			//205: -80% damage from ranged while active
+			//206: +100% damage from melee while active
+			//772: Holsters 100% slower
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3664,11 +3664,11 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 415:  //Reserve Shooter
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1 ; 3 ; 0.5 ; 114 ; 1 ; 179 ; 1 ; 547 ; 0.6", true);
-				//2: +10% damage bonus
-				//3: -50% clip size
-				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
-				//179: Minicrits become crits
-				//547: Deploys 40% faster
+			//2: +10% damage bonus
+			//3: -50% clip size
+			//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
+			//179: Minicrits become crits
+			//547: Deploys 40% faster
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3687,7 +3687,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 648:  //Wrap Assassin
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "279 ; 2.0");
-				//279: 2 ornaments
+			//279: 2 ornaments
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3697,9 +3697,9 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 656:  //Holiday Punch
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "199 ; 0 ; 547 ; 0 ; 358 ; 0 ; 362 ; 0 ; 363 ; 0 ; 369 ; 0", true);
-				//199: Holsters 100% faster
-				//547: Deploys 100% faster
-				//Other attributes: Because TF2Items doesn't feel like stripping the Holiday Punch's attributes for some reason
+			//199: Holsters 100% faster
+			//547: Deploys 100% faster
+			//Other attributes: Because TF2Items doesn't feel like stripping the Holiday Punch's attributes for some reason
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3709,15 +3709,15 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 772:  //Baby Face's Blaster
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.25 ; 109 ; 0.5 ; 125 ; -25 ; 394 ; 0.85 ; 418 ; 1 ; 419 ; 100 ; 532 ; 0.5 ; 651 ; 0.5 ; 709 ; 1", true);
-				//2: +25% damage bonus
-				//109: -50% health from packs on wearer
-				//125: -25 max health
-				//394: 15% firing speed bonus hidden
-				//418: Build hype for faster speed
-				//419: Hype resets on jump
-				//532: Hype decays
-				//651: Fire rate increases as health decreases
-				//709: Weapon spread increases as health decreases
+			//2: +25% damage bonus
+			//109: -50% health from packs on wearer
+			//125: -25 max health
+			//394: 15% firing speed bonus hidden
+			//418: Build hype for faster speed
+			//419: Hype resets on jump
+			//532: Hype decays
+			//651: Fire rate increases as health decreases
+			//709: Weapon spread increases as health decreases
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3727,7 +3727,7 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		case 1103:  //Back Scatter
 		{
 			Handle itemOverride=PrepareItemHandle(item, _, _, "179 ; 1");
-				//179: Crit instead of mini-critting
+			//179: Crit instead of mini-critting
 			if(itemOverride!=INVALID_HANDLE)
 			{
 				item=itemOverride;
@@ -3742,13 +3742,13 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		if(iItemDefinitionIndex==127)  //Direct Hit
 		{
 			itemOverride=PrepareItemHandle(item, _, _, "114 ; 1 ; 179 ; 1.0");
-				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
-				//179: Mini-crits become crits
+			//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
+			//179: Mini-crits become crits
 		}
 		else
 		{
 			itemOverride=PrepareItemHandle(item, _, _, "114 ; 1");
-				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
+			//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
 		}
 
 		if(itemOverride!=INVALID_HANDLE)
@@ -3761,8 +3761,8 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	if(!StrContains(classname, "tf_weapon_syringegun_medic"))  //Syringe guns
 	{
 		Handle itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1", true);
-			//17: 5% uber on hit
-			//144: Sets weapon mode - *possibly* the overdose speed effect
+		//17: 5% uber on hit
+		//144: Sets weapon mode - *possibly* the overdose speed effect
 		if(itemOverride!=INVALID_HANDLE)
 		{
 			item=itemOverride;
@@ -3772,12 +3772,12 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 	else if(!StrContains(classname, "tf_weapon_medigun"))  //Mediguns
 	{
 		Handle itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.75 ; 11 ; 1.5 ; 144 ; 2.0 ; 199 ; 0.75 ; 314 ; 4 ; 547 ; 0.75", true);
-			//10: +75% faster charge rate
-			//11: +50% overheal bonus
-			//144: Quick-fix speed/jump effects
-			//199: Deploys 25% faster
-			//314: Ubercharge lasts 4 seconds longer (aka 50% longer)
-			//547: Holsters 25% faster
+		//10: +75% faster charge rate
+		//11: +50% overheal bonus
+		//144: Quick-fix speed/jump effects
+		//199: Deploys 25% faster
+		//314: Ubercharge lasts 4 seconds longer (aka 50% longer)
+		//547: Holsters 25% faster
 		if(itemOverride!=INVALID_HANDLE)
 		{
 			item=itemOverride;
@@ -3976,7 +3976,7 @@ public Action Timer_CheckItems(Handle timer, any userid)
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 				FF2_SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "114 ; 1");
-					//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
+				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
 				FF2_SetAmmo(client, weapon, 20);
 			}
 			case 402:  //Bazaar Bargain
@@ -4059,11 +4059,11 @@ public Action Timer_CheckItems(Handle timer, any userid)
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 				FF2_SpawnWeapon(client, "tf_weapon_fists", 239, 1, 6, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5");  //GRU
-					//1: -50% damage
-					//107: +50% move speed
-					//128: Only when weapon is active
-					//191: -7 health/second
-					//772: Holsters 50% slower
+				//1: -50% damage
+				//107: +50% move speed
+				//128: Only when weapon is active
+				//191: -7 health/second
+				//772: Holsters 50% slower
 			}
 			case 357:  //Half-Zatoichi
 			{
@@ -5106,7 +5106,13 @@ public Action BossTimer(Handle timer)
 		SetHudTextParams(-1.0, 0.88, 0.15, 255, 255, 255, 255);
 
 		SetClientGlow(client, -0.2);
+		
+		for(int i=1; i<5; i++)
+		{
+			ActivateAbilitySlot(boss, i, true);
+		}
 
+		/*
 		char lives[MAXRANDOMS][3];
 		for(int i=1; ; i++)
 		{
@@ -5151,6 +5157,7 @@ public Action BossTimer(Handle timer)
 				break;
 			}
 		}
+		*/
 
 		if(RedAlivePlayers==1)
 		{
@@ -5310,49 +5317,7 @@ public Action OnCallForMedic(int client, const char[] command, int args)
 
 	if(RoundFloat(BossCharge[boss][0])==100 && BossRageDamage[boss]<99999)
 	{
-		char ability[10], lives[MAXRANDOMS][3];
-		for(int i=1; i<MAXRANDOMS; i++)
-		{
-			Format(ability, sizeof(ability), "ability%i", i);
-			KvRewind(BossKV[Special[boss]]);
-			if(KvJumpToKey(BossKV[Special[boss]], ability))
-			{
-				if(KvGetNum(BossKV[Special[boss]], "arg0", 0))
-				{
-					continue;
-				}
-
-				KvGetString(BossKV[Special[boss]], "life", ability, sizeof(ability));
-				if(!ability[0])
-				{
-					char abilityName[64], pluginName[64];
-					KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
-					KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
-					if(!UseAbility(abilityName, pluginName, boss, 0))
-					{
-						return Plugin_Continue;
-					}
-				}
-				else
-				{
-					int count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
-					for(int j; j<count; j++)
-					{
-						if(StringToInt(lives[j])==BossLives[boss])
-						{
-							char abilityName[64], pluginName[64];
-							KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
-							KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
-							if(!UseAbility(abilityName, pluginName, boss, 0))
-							{
-								return Plugin_Continue;
-							}
-							break;
-						}
-					}
-				}
-			}
-		}
+		ActivateAbilitySlot(boss, 0);
 
 		float position[3];
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
@@ -5378,6 +5343,64 @@ public Action OnCallForMedic(int client, const char[] command, int args)
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
+}
+
+void ActivateAbilitySlot(int boss, int slot, bool buttonmodeactive=false)
+{
+	char ability[12], lives[MAXRANDOMS][3];
+	for(int i=1; i<MAXRANDOMS; i++)
+	{
+		Format(ability, sizeof(ability), "ability%i", i);
+		KvRewind(BossKV[Special[boss]]);
+		if(KvJumpToKey(BossKV[Special[boss]], ability))
+		{
+			
+			int ability_slot=KvGetNum(BossKV[Special[boss]], "slot", -2);
+			if(ability_slot==-2)
+			{
+				ability_slot=KvGetNum(BossKV[Special[boss]], "arg0", -2);
+				if(ability_slot==-2)
+				{
+					ability_slot=0;
+				}
+			}
+			if(ability_slot!=slot)
+			{
+				continue;
+			}
+			int buttonmode=(buttonmodeactive) ? (KvGetNum(BossKV[Special[boss]], "buttonmode", 0)) : 0;
+
+			KvGetString(BossKV[Special[boss]], "life", ability, sizeof(ability));
+			if(!ability[0])
+			{
+				char abilityName[64], pluginName[64];
+				KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+				KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+				if(!UseAbility(abilityName, pluginName, boss, slot, buttonmode))
+				{
+					return;
+				}
+			}
+			else
+			{
+				int count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
+				for(int j; j<count; j++)
+				{
+					if(StringToInt(lives[j])==BossLives[boss])
+					{
+						char abilityName[64], pluginName[64];
+						KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
+						KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+						if(!UseAbility(abilityName, pluginName, boss, slot, buttonmode))
+						{
+							return;
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
 }
 
 public Action OnSuicide(int client, const char[] command, int args)
@@ -5902,43 +5925,7 @@ public Action OnPlayerHurt(Handle event, const char[] name, bool dontBroadcast)
 			}
 
 			char ability[PLATFORM_MAX_PATH];
-			for(int n=1; n<MAXRANDOMS; n++)
-			{
-				Format(ability, 10, "ability%i", n);
-				KvRewind(BossKV[Special[boss]]);
-				if(KvJumpToKey(BossKV[Special[boss]], ability))
-				{
-					if(KvGetNum(BossKV[Special[boss]], "arg0", 0)!=-1)
-					{
-						continue;
-					}
-
-					KvGetString(BossKV[Special[boss]], "life", ability, 10);
-					if(!ability[0])
-					{
-						char abilityName[64], pluginName[64];
-						KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
-						KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
-						UseAbility(abilityName, pluginName, boss, -1);
-					}
-					else
-					{
-						char stringLives[MAXRANDOMS][3];
-						int count=ExplodeString(ability, " ", stringLives, MAXRANDOMS, 3);
-						for(int j; j<count; j++)
-						{
-							if(StringToInt(stringLives[j])==BossLives[boss])
-							{
-								char abilityName[64], pluginName[64];
-								KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
-								KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
-								UseAbility(abilityName, pluginName, boss, -1);
-								break;
-							}
-						}
-					}
-				}
-			}
+			ActivateAbilitySlot(boss, -1);
 			BossLives[boss]=lives;
 
 			char bossName[64];
@@ -8538,7 +8525,7 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 		FF2flags[Boss[boss]]&=~FF2FLAG_BOTRAGE;
 		Call_PushCell(3);  //Status - we're assuming here a rage ability will always be in use if it gets called
 		Call_Finish(action);
-	
+
 		if(BossRageDamage[boss]>1)	// No 0.2 second delay upon RAGE to refill meter
 		{
 			BossCharge[boss][slot]=0.0;
