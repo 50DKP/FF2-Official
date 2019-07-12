@@ -49,7 +49,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define MAXENTITIES 2048
 #define MAXSPECIALS 128
-#define MAXRANDOMS 16
+#define MAXRANDOMS 32
 
 #define SOUNDEXCEPT_MUSIC 0
 #define SOUNDEXCEPT_VOICE 1
@@ -5112,53 +5112,6 @@ public Action BossTimer(Handle timer)
 			ActivateAbilitySlot(boss, i, true);
 		}
 
-		/*
-		char lives[MAXRANDOMS][3];
-		for(int i=1; ; i++)
-		{
-			char ability[10];
-			Format(ability, sizeof(ability), "ability%i", i);
-			KvRewind(BossKV[Special[boss]]);
-			if(KvJumpToKey(BossKV[Special[boss]], ability))
-			{
-				char plugin_name[64];
-				KvGetString(BossKV[Special[boss]], "plugin_name", plugin_name, sizeof(plugin_name));
-				int slot=KvGetNum(BossKV[Special[boss]], "arg0", 0);
-				int buttonmode=KvGetNum(BossKV[Special[boss]], "buttonmode", 0);
-				if(slot<1)
-				{
-					continue;
-				}
-
-				KvGetString(BossKV[Special[boss]], "life", ability, sizeof(ability), "");
-				if(!ability[0])
-				{
-					char ability_name[64];
-					KvGetString(BossKV[Special[boss]], "name", ability_name, sizeof(ability_name));
-					UseAbility(ability_name, plugin_name, boss, slot, buttonmode);
-				}
-				else
-				{
-					int count=ExplodeString(ability, " ", lives, MAXRANDOMS, 3);
-					for(int n; n<count; n++)
-					{
-						if(StringToInt(lives[n])==BossLives[boss])
-						{
-							char ability_name[64];
-							KvGetString(BossKV[Special[boss]], "name", ability_name, sizeof(ability_name));
-							UseAbility(ability_name, plugin_name, boss, slot, buttonmode);
-							break;
-						}
-					}
-				}
-			}
-			else
-			{
-				break;
-			}
-		}
-		*/
-
 		if(RedAlivePlayers==1)
 		{
 			char message[512];  //Do not decl this
@@ -5348,7 +5301,7 @@ public Action OnCallForMedic(int client, const char[] command, int args)
 void ActivateAbilitySlot(int boss, int slot, bool buttonmodeactive=false)
 {
 	char ability[12], lives[MAXRANDOMS][3];
-	for(int i=1; i<MAXRANDOMS; i++)
+	for(int i=1; i<=MAXRANDOMS; i++)
 	{
 		Format(ability, sizeof(ability), "ability%i", i);
 		KvRewind(BossKV[Special[boss]]);
@@ -7140,7 +7093,7 @@ stock int GetArgumentI(int index, const char[] plugin_name, const char[] ability
 	}
 	KvRewind(BossKV[Special[index]]);
 	char s[10];
-	for(int i=1; i<MAXRANDOMS; i++)
+	for(int i=1; i<=MAXRANDOMS; i++)
 	{
 		Format(s, sizeof(s), "ability%i", i);
 		if(KvJumpToKey(BossKV[Special[index]], s))
@@ -7173,7 +7126,7 @@ stock float GetArgumentF(int index, const char[] plugin_name, const char[] abili
 	}
 	KvRewind(BossKV[Special[index]]);
 	char s[10];
-	for(int i=1; i<MAXRANDOMS; i++)
+	for(int i=1; i<=MAXRANDOMS; i++)
 	{
 		Format(s, sizeof(s), "ability%i", i);
 		if(KvJumpToKey(BossKV[Special[index]], s))
@@ -7208,7 +7161,7 @@ stock void GetArgumentS(int index, const char[] plugin_name, const char[] abilit
 	}
 	KvRewind(BossKV[Special[index]]);
 	char s[10];
-	for(int i=1; i<MAXRANDOMS; i++)
+	for(int i=1; i<=MAXRANDOMS; i++)
 	{
 		Format(s, sizeof(s), "ability%i", i);
 		if(KvJumpToKey(BossKV[Special[index]], s))
@@ -8783,7 +8736,7 @@ public int Native_GetRageDist(Handle plugin, int numParams)
 		return view_as<int>(KvGetFloat(BossKV[Special[index]], "ragedist", 400.0));
 	}
 	char s[10];
-	for(int i=1; i<MAXRANDOMS; i++)
+	for(int i=1; i<=MAXRANDOMS; i++)
 	{
 		Format(s,10,"ability%i",i);
 		if(KvJumpToKey(BossKV[Special[index]],s))
@@ -8826,7 +8779,7 @@ public int Native_HasAbility(Handle plugin, int numParams)
 	}
 
 	char ability[12];
-	for(int i=1; i<MAXRANDOMS; i++)
+	for(int i=1; i<=MAXRANDOMS; i++)
 	{
 		Format(ability, sizeof(ability), "ability%i", i);
 		if(KvJumpToKey(BossKV[Special[boss]], ability))  //Does this ability number exist?
