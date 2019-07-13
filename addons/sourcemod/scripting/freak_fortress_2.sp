@@ -8264,8 +8264,12 @@ public Action HookSound(int clients[64], int &numClients, char sound[PLATFORM_MA
 		return Plugin_Continue;
 	}
 
-	if(channel==SNDCHAN_VOICE && !(FF2flags[Boss[boss]] & FF2FLAG_TALKING))
+	if(channel==SNDCHAN_VOICE || (channel==SNDCHAN_STATIC && !StrContains(sound, "vo")))
 	{
+		if(FF2flags[Boss[boss]] & FF2FLAG_TALKING)
+		{
+			return Plugin_Continue;
+		}
 		char newSound[PLATFORM_MAX_PATH];
 		if(RandomSoundVo("catch_replace", newSound, PLATFORM_MAX_PATH, boss, sound))
 		{
