@@ -315,6 +315,19 @@ native float FF2_GetArgNamedF(int boss, const char[] plugin_name, const char[] a
  */
 native void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, char[] buffer, int bufferLength);
 
+/**
+ * Named arguments are used for this ability in the boss config?
+ *
+ * @param boss			Boss's index
+ * @param pluginName	Name of plugin with this ability
+ * @param abilityName 	Name of ability
+ * @return              True if named arguments are used. False if indexed arguments are used.
+ */
+stock bool FF2_NamedArgumentsUsed(int boss, const char[] pluginName, const char[] abilityName)
+{
+	return (FF2_GetArgNamedI(boss, pluginName, abilityName, "slot", -2)!=-2) ? true : false;
+}
+
 
 /**
  * Starts a random Boss sound from its config file
