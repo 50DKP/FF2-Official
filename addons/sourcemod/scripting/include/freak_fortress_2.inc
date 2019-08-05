@@ -325,6 +325,10 @@ native void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abi
  */
 stock bool FF2_NamedArgumentsUsed(int boss, const char[] pluginName, const char[] abilityName)
 {
+	if(GetFeatureStatus(FeatureType_Native, "FF2_GetArgNamedI")!=FeatureStatus_Available)
+	{
+		return false;
+	}
 	return (FF2_GetArgNamedI(boss, pluginName, abilityName, "slot", -2)!=-2) ? true : false;
 }
 
