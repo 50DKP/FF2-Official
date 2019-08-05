@@ -5108,7 +5108,7 @@ public Action BossTimer(Handle timer)
 
 		SetClientGlow(client, -0.2);
 		
-		for(int i=1; i<5; i++)
+		for(int i=1; i<4; i++)
 		{
 			ActivateAbilitySlot(boss, i, true);
 		}
@@ -5511,9 +5511,9 @@ public Action OnPlayerDeath(Handle event, const char[] eventName, bool dontBroad
 				else if(ClassKill==2)
 				{
 					char classnames[][]={"", "scout", "sniper", "soldier", "demoman", "medic", "heavy", "pyro", "spy", "engineer"};
-					char class[32];
-					Format(class, sizeof(class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
-					if(RandomSound(class, sound, sizeof(sound), boss))
+					char player_class[32];
+					Format(player_class, sizeof(player_class), "sound_kill_%s", classnames[TF2_GetPlayerClass(client)]);
+					if(RandomSound(player_class, sound, sizeof(sound), boss))
 					{
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
@@ -5543,6 +5543,8 @@ public Action OnPlayerDeath(Handle event, const char[] eventName, bool dontBroad
 			{
 				KSpreeTimer[boss]=GetGameTime()+5.0;
 			}
+			
+			ActivateAbilitySlot(boss, 4);
 		}
 	}
 	else
@@ -5558,6 +5560,8 @@ public Action OnPlayerDeath(Handle event, const char[] eventName, bool dontBroad
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 			EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 		}
+
+		ActivateAbilitySlot(boss, 5);
 
 		BossHealth[boss]=0;
 		UpdateHealthBar();
@@ -6247,6 +6251,8 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 								EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 								EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 							}
+
+							ActivateAbilitySlot(boss, 7);
 							return Plugin_Changed;
 						}
 					}
@@ -6389,6 +6395,8 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
 					}
+					
+					ActivateAbilitySlot(boss, 6);
 
 					if(Stabbed[boss]<3)
 					{
