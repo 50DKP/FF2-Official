@@ -334,6 +334,10 @@ native void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abi
  */
 stock bool FF2_NamedArgumentsUsed(int boss, const char[] pluginName, const char[] abilityName)
 {
+	if(GetFeatureStatus(FeatureType_Native, "FF2_GetArgNamedI")!=FeatureStatus_Available)
+	{
+		return false;
+	}
 	return (FF2_GetArgNamedI(boss, pluginName, abilityName, "slot", -2)!=-2) ? true : false;
 }
 
@@ -536,7 +540,7 @@ forward Action FF2_OnLoseLife(int boss, int &lives, int maxLives);
  * @param bosses	Number of alive players left on the boss team (this includes minions as well)
  * @noreturn
  */
-forward Action FF2_OnAlivePlayersChanged(int players, int bosses);
+forward void FF2_OnAlivePlayersChanged(int players, int bosses);
 
 /**
  *
