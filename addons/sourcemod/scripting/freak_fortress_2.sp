@@ -5107,7 +5107,7 @@ public Action BossTimer(Handle timer)
 
 		SetClientGlow(client, -0.2);
 		
-		for(int i=1; i<5; i++)
+		for(int i=1; i<4; i++)
 		{
 			ActivateAbilitySlot(boss, i, true);
 		}
