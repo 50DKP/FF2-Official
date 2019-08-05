@@ -531,7 +531,7 @@ forward Action FF2_OnLoseLife(int boss, int &lives, int maxLives);
  * @param bosses	Number of alive players left on the boss team (this includes minions as well)
  * @noreturn
  */
-forward Action FF2_OnAlivePlayersChanged(int players, int bosses);
+forward void FF2_OnAlivePlayersChanged(int players, int bosses);
 
 /**
  *
