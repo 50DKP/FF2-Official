@@ -74,6 +74,27 @@ public void OnPluginStart2()
 	AddCommandListener(Listener_PreventCheats, "");
 
 	LoadTranslations("ff2_1st_set.phrases");
+	
+	//Strip cheats flag from all cvars-don't reset them when sv_cheats 1 changes
+	Handle interator;
+	int flags;
+	bool isCommand;
+	char name[64];
+	interator=FindFirstConCommand(name, sizeof(name), isCommand, flags);
+	do 
+	{
+		if(!isCommand && (flags & FCVAR_CHEAT))
+		{
+			Handle cvar_ss=FindConVar(name);
+			if(cvar_ss==null)
+			{
+				continue;
+			}
+			SetConVarFlags(cvar_ss, flags&~FCVAR_CHEAT);
+			CloseHandle(cvar_ss);
+		}
+	} 
+	while(FindNextConCommand(interator, name, sizeof(name), isCommand, flags)); 
 }
 
 public void OnMapStart()
@@ -236,7 +257,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 	char classname[64]="tf_weapon_bottle";
 	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 6, classname, sizeof(classname));
 	int index=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7, 191);
-	char attributes[64]="68 ; -1";
+	char attributes[128]="68 ; -1";
 	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 8, attributes, sizeof(attributes));
 	int ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 9, -1);
 	int clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 10, -1);
