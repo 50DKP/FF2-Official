@@ -4173,7 +4173,7 @@ public Action OnObjectDestroyed(Handle event, const char[] name, bool dontBroadc
 public Action OnUberDeployed(Handle event, const char[] name, bool dontBroadcast)
 {
 	int client=GetClientOfUserId(GetEventInt(event, "userid"));
-	if(Enabled && IsValidClient(client) && IsPlayerAlive(client))
+	if(Enabled && IsValidClient(client) && IsPlayerAlive(client) && GetClientTeam(client)!=BossTeam)
 	{
 		int medigun=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
 		if(IsValidEntity(medigun))
