@@ -317,6 +317,11 @@ native void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abi
 
 /**
  * Are named arguments used for this ability in the boss config?
+ * Note: When compability with FF2 version older than 1.11.0 is wanted,
+ * add this code in AskPluginLoad2 in your subplugin:
+ * MarkNativeAsOptional("FF2_GetArgNamedI");
+ * MarkNativeAsOptional("FF2_GetArgNamedF");
+ * MarkNativeAsOptional("FF2_GetArgNamedS");
  *
  * @param boss			Boss's index
  * @param pluginName	Name of plugin with this ability
