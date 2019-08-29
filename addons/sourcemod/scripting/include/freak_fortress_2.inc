@@ -484,7 +484,6 @@ forward Action FF2_OnTriggerHurt(int boss, int triggerHurt, float &damage);
  */
 forward Action FF2_OnMusic(char[] path, float &time);
 
-
 /**
  * Called when FF2 picks a character for a Boss
  *
