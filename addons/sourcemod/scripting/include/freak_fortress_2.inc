@@ -325,7 +325,12 @@ native float FF2_GetArgNamedF(int boss, const char[] plugin_name, const char[] a
 native void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, char[] buffer, int bufferLength);
 
 /**
- * Named arguments are used for this ability in the boss config?
+ * Are named arguments used for this ability in the boss config?
+ * Note: When compability with FF2 version older than 1.11.0 is wanted,
+ * add this code in AskPluginLoad2 in your subplugin:
+ * MarkNativeAsOptional("FF2_GetArgNamedI");
+ * MarkNativeAsOptional("FF2_GetArgNamedF");
+ * MarkNativeAsOptional("FF2_GetArgNamedS");
  *
  * @param boss			Boss's index
  * @param pluginName	Name of plugin with this ability
@@ -492,7 +497,6 @@ forward Action FF2_OnTriggerHurt(int boss, int triggerHurt, float &damage);
  * @return				Plugin_Stop will prevent music, Plugin_Changed will change it.
  */
 forward Action FF2_OnMusic(char[] path, float &time);
-
 
 /**
  * Called when FF2 picks a character for a Boss

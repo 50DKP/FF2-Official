@@ -40,9 +40,9 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define STABLE_REVISION "0"
 #define DEV_REVISION "Beta"
 #if !defined DEV_REVISION
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.11.0
+#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION  //1.11.0
 #else
-	#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
+#define PLUGIN_VERSION MAJOR_REVISION..."."...MINOR_REVISION..."."...STABLE_REVISION..." "...DEV_REVISION
 #endif
 
 #define UPDATE_URL "http://50dkp.github.io/FF2-Official/update.txt"
@@ -72,6 +72,8 @@ bool tf2attributes=false;
 #if defined _goomba_included
 bool goomba=false;
 #endif
+
+bool tf2x10=false;
 
 bool smac=false;
 
@@ -148,7 +150,8 @@ ConVar cvarDeadRingerHud;
 ConVar cvarUpdater;
 ConVar cvarDebug;
 ConVar cvarPreroundBossDisconnect;
-ConVar cvarFixSkin;
+ConVar ff2_fix_boss_skin;
+ConVar ff2_attribute_manage;
 
 Handle FF2Cookies;
 
@@ -396,28 +399,28 @@ stock void FindVersionData(Handle panel, int versionIndex)
 {
 	switch(versionIndex)
 	{
-		case 77:  //1.10.14
+	case 77:  //1.10.14
 		{
 			DrawPanelText(panel, "1) Fixed minions occasionally spawning on the wrong team (Wliu from various)");
 			DrawPanelText(panel, "2) Fixed ff2_start_music at the start of the round causing music to overlap (naydef)");
 			DrawPanelText(panel, "3) Fixed new clients not hearing music in certain circumstances (naydef)");
 		}
-		case 76:  //1.10.13
+	case 76:  //1.10.13
 		{
 			DrawPanelText(panel, "1) Fixed insta-backstab issues (Wliu from tom0034)");
 			DrawPanelText(panel, "2) Fixed team-changing exploit (Wliu from Edge_)");
 			DrawPanelText(panel, "3) [Server] Fixed an error message logging the wrong values (Wliu)");
 		}
-		case 75:  //1.10.12
+	case 75:  //1.10.12
 		{
 			DrawPanelText(panel, "1) Actually fixed BGMs not looping (Wliu from WakaFlocka, again)");
 			DrawPanelText(panel, "2) Fixed new clients not respecting the current music state (Wliu from shadow93)");
 		}
-		case 74:  //1.10.11
+	case 74:  //1.10.11
 		{
 			DrawPanelText(panel, "1) Fixed BGMs not looping (Wliu from WakaFlocka)");
 		}
-		case 73:  //1.10.10
+	case 73:  //1.10.10
 		{
 			DrawPanelText(panel, "1) Fixed multiple BGM issues in 1.10.9 (Wliu, shadow93, Nopied, WakaFlocka, and others)");
 			DrawPanelText(panel, "2) Automatically start BGMs for new clients (Wliu)");
@@ -426,7 +429,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "5) [Server] Fixed an invalid client error in ff2_1st_set_abilities.sp (Wliu)");
 			DrawPanelText(panel, "6) [Server] Fixed a GetEntProp error (Wliu from Hemen353)");
 		}
-		case 72:  //1.10.9
+	case 72:  //1.10.9
 		{
 			DrawPanelText(panel, "1) Fixed a critical exploit related to sv_cheats (naydef)");
 			DrawPanelText(panel, "2) Updated weapons for the Tough Break update (Wliu)");
@@ -435,7 +438,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "3) VSH: Increase boss damage to 210% (up from 200%)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 71:  //1.10.9
+	case 71:  //1.10.9
 		{
 			DrawPanelText(panel, "4) VSH: Give scout bosses +3 capture rate instead of +4");
 			DrawPanelText(panel, "5) VSH: Don't actually call for medic when activating rage");
@@ -444,7 +447,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "8) Adjusted medgiun and Dead Ringer mechanics to provide a more native experience (Wliu)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 70:  //1.10.9
+	case 70:  //1.10.9
 		{
 			DrawPanelText(panel, "9) Prevent `autoteam` spam and possible crashes (naydef)");
 			DrawPanelText(panel, "10) Fixed boss's health not appearing correctly before round start (Wliu)");
@@ -453,7 +456,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "13) Reset clone status properly (Wliu)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 69:  //1.10.9
+	case 69:  //1.10.9
 		{
 			DrawPanelText(panel, "13) Don't allow sound_kill_* and sound_hit to overlap each other (Wliu from WakaFlocka)");
 			DrawPanelText(panel, "14) Prevent sound_lastman sounds from overlapping with regular kill sounds (Wliu from WakaFlocka)");
@@ -462,18 +465,18 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "17) [Server] Fixed invalid client errors originating from ff2_1st_set_abilities.sp (Wliu)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 68:  //1.10.9
+	case 68:  //1.10.9
 		{
 			DrawPanelText(panel, "18) [Server] Added ff2_start_music command for symmetry (Wliu from WakaFlocka)");
 			DrawPanelText(panel, "19) [Dev] Actually make FF2_OnMusic work (Wliu from shadow93)");
 			DrawPanelText(panel, "20) [Dev] Rewrote BGM code (Wliu)");
 			DrawPanelText(panel, "21) [Dev] Fixed ability sounds playing even if the ability was canceled in FF2_PreAbility (Wliu from xNanoChip)");
 		}
-		case 67:  //1.10.8
+	case 67:  //1.10.8
 		{
 			DrawPanelText(panel, "1) Fixed the Powerjack and Kunai killing the boss in one hit (naydef)");
 		}
-		case 66:  //1.10.7
+	case 66:  //1.10.7
 		{
 			DrawPanelText(panel, "1) Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)");
 			DrawPanelText(panel, "2) Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive (Shadow from Spyper)");
@@ -482,7 +485,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "5) Whitelisted the Shooting Star (Wliu)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 65:  //1.10.7
+	case 65:  //1.10.7
 		{
 			DrawPanelText(panel, "6) Fixed large amounts of lives being cut off when being displayed (Wliu)");
 			DrawPanelText(panel, "7) More living spectator fixes (naydef, Shadow)");
@@ -491,14 +494,14 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "10) [Server] Fixed 'UTIL_SetModel not precached' crashes when using 'model_projectile_replace' (Wliu from Shadow)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 64:  //1.10.7
+	case 64:  //1.10.7
 		{
 			DrawPanelText(panel, "11) [Server] 'ff2_crits' now defaults to 0 instead of 1 (Wliu from Spyper)");
 			DrawPanelText(panel, "12) [Server] Fixed divide by 0 errors (Wliu)");
 			DrawPanelText(panel, "13) [Dev] Fixed FF2_OnAlivePlayersChanged not returning the number of minions (Wliu)");
 			DrawPanelText(panel, "14) [Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)");
 		}
-		case 63:  //1.10.6
+	case 63:  //1.10.6
 		{
 			DrawPanelText(panel, "1) Updated the default health formula to match VSH's (Wliu)");
 			DrawPanelText(panel, "2) Updated for compatability with the Gunmettle update (Wliu, Shadow, Starblaster64, Chdata, sarysa, and others)");
@@ -507,7 +510,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "5) Fixed bosses rarely becoming 'living spectators' during the first round (Shadow/Wliu)");
 			DrawPanelText(panel, "See next page (press 1");
 		}
-		case 62:  //1.10.6
+	case 62:  //1.10.6
 		{
 			DrawPanelText(panel, "6) Fixed large amounts of damage insta-killing multi-life bosses (Wliu from Shadow)");
 			DrawPanelText(panel, "7) Fixed death effects triggering when FF2 wasn't active (Shadow)");
@@ -516,7 +519,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "10) Fixed bravejump sounds not playing (Wliu from Maximilian_)");
 			DrawPanelText(panel, "See next page (press 1");
 		}
-		case 61:  //1.10.6
+	case 61:  //1.10.6
 		{
 			DrawPanelText(panel, "11) Fixed end-of-round text occasionally showing random symbols and file paths (Wliu)");
 			DrawPanelText(panel, "12) Updated Russian translations (Maximilian_)");
@@ -525,7 +528,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "15) [Server] Fixed invalid client errors in easter_abilities.sp (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 60:  //1.10.6
+	case 60:  //1.10.6
 		{
 			DrawPanelText(panel, "16) [Server] Missing boss files are now logged (Shadow)");
 			DrawPanelText(panel, "17) [Dev] Added FF2_StartMusic that was missing from the include file (Wliu from Shadow)");
@@ -534,7 +537,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "20) [Dev] Prioritized exact matches in OnSpecialSelected and added a 'preset' bool (Wliu from Shadow)");
 			DrawPanelText(panel, "21) [Dev] Removed deprecated FCVAR_PLUGIN cvar flags (Wliu)");
 		}
-		case 59:  //1.10.5
+	case 59:  //1.10.5
 		{
 			DrawPanelText(panel, "1) Fixed slow-mo being extremely buggy (Wliu from various)");
 			DrawPanelText(panel, "2) Fixed the Festive SMG not getting crits (Wliu from Dalix)");
@@ -543,7 +546,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "5) [Server] Fixed multiple sounds not working after TF2 changed the default sound extension type (Wliu)");
 			DrawPanelText(panel, "6) [Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)");
 		}
-		case 58:  //1.10.4
+	case 58:  //1.10.4
 		{
 			DrawPanelText(panel, "1) Fixed players getting overheal after winning as a boss (Wliu/FlaminSarge)");
 			DrawPanelText(panel, "2) Rebalanced the Baby Face's Blaster (Shadow)");
@@ -552,7 +555,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "5) Added the Tide Turner and new festive weapons to the weapon whitelist (Wliu)");
 			DrawPanelText(panel, "See next page (press 1");
 		}
-		case 57:  //1.10.4
+	case 57:  //1.10.4
 		{
 			DrawPanelText(panel, "6) Fixed Market Gardener backstabs (Wliu)");
 			DrawPanelText(panel, "7) Improved class switching after you finish the round as a boss (Wliu)");
@@ -561,7 +564,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "10) Prevented dead companion bosses from becoming clones (Wliu)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 56:  //1.10.4
+	case 56:  //1.10.4
 		{
 			DrawPanelText(panel, "11) [Server] Fixed 'ff2_alive' never being shown (Wliu from various)");
 			DrawPanelText(panel, "12) [Server] Fixed invalid healthbar errors (Wliu from ClassicGuzzi)");
@@ -570,7 +573,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "15) [Server] Added 'ff2_base_jumper_stun' to disable the parachute on stun (Wliu from Shadow)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 55:  //1.10.4
+	case 55:  //1.10.4
 		{
 			DrawPanelText(panel, "16) [Server] Prevented FF2 from loading if it gets loaded in the /plugins/freaks/ directory (Wliu)");
 			DrawPanelText(panel, "17) [Dev] Fixed 'sound_fail' (Wliu from M76030)");
@@ -579,13 +582,13 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "20) [Dev] Added FF2_OnAlivePlayersChanged and deprecated FF2_Get{Alive|Boss}Players (Wliu from Shadow)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 54:  //1.10.4
+	case 54:  //1.10.4
 		{
 			DrawPanelText(panel, "21) [Dev] Fixed AIOOB errors in FF2_GetBossUserId (Wliu)");
 			DrawPanelText(panel, "22) [Dev] Improved FF2_OnSpecialSelected so that only part of a boss name is needed (Wliu)");
 			DrawPanelText(panel, "23) [Dev] Added FF2_{Get|Set}BossRageDamage (Wliu from WildCard65)");
 		}
-		case 53:  //1.10.3
+	case 53:  //1.10.3
 		{
 			DrawPanelText(panel, "1) Fixed bosses appearing to be overhealed (War3Evo/Wliu)");
 			DrawPanelText(panel, "2) Rebalanced many weapons based on misc. feedback (Wliu/various)");
@@ -594,7 +597,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "5) Fixed Mantreads not giving extra rocket jump height (Chdata");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 52:  //1.10.3
+	case 52:  //1.10.3
 		{
 			DrawPanelText(panel, "6) Prevented bosses from picking up ammo/health by default (friagram)");
 			DrawPanelText(panel, "7) Fixed a bug with respawning bosses (Wliu from Spyper)");
@@ -603,7 +606,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "10) Fixed not being able to suicide as boss after round end (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 51:  //1.10.3
+	case 51:  //1.10.3
 		{
 			DrawPanelText(panel, "11) Updated Russian translations (wasder) and added German translations (CooliMC)");
 			DrawPanelText(panel, "12) Fixed Dead Ringer deaths being too obvious (Wliu from AliceTaylor12)");
@@ -612,7 +615,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "15) [Server] Added new cvar 'ff2_countdown_result' (Wliu from Shadow)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 50:  //1.10.3
+	case 50:  //1.10.3
 		{
 			DrawPanelText(panel, "16) [Server] Added new cvar 'ff2_caber_detonations' (Wliu)");
 			DrawPanelText(panel, "17) [Server] Fixed a bug related to 'cvar_countdown_players' and the countdown timer (Wliu from Spyper)");
@@ -621,7 +624,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "20) [Dev] Added 'sound_first_blood' (Wliu from Mr-Bro)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 49:  //1.10.3
+	case 49:  //1.10.3
 		{
 			DrawPanelText(panel, "21) [Dev] Added 'pickups' to set what the boss can pick up (Wliu)");
 			DrawPanelText(panel, "22) [Dev] Added FF2FLAG_ALLOW_{HEALTH|AMMO}_PICKUPS (Powerlord)");
@@ -631,12 +634,12 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "26) [Dev] Fixed weapons not being hidden when asked to (friagram)");
 			DrawPanelText(panel, "27) [Dev] Fixed not being able to set constant health values for bosses (Wliu from braak0405)");
 		}
-		case 48:  //1.10.2
+	case 48:  //1.10.2
 		{
 			DrawPanelText(panel, "1) Fixed a critical bug that rendered most bosses as errors without sound (Wliu; thanks to slavko17 for reporting)");
 			DrawPanelText(panel, "2) Reverted escape sequences change, which is what caused this bug");
 		}
-		case 47:  //1.10.1
+	case 47:  //1.10.1
 		{
 			DrawPanelText(panel, "1) Fixed a rare bug where rage could go over 100% (Wliu)");
 			DrawPanelText(panel, "2) Updated to use Sourcemod 1.6.1 (Powerlord)");
@@ -645,7 +648,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "5) Fixed some possible overlapping HUD text (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 46:  //1.10.1
+	case 46:  //1.10.1
 		{
 			DrawPanelText(panel, "6) Fixed ff2_charset displaying incorrect colors (Wliu)");
 			DrawPanelText(panel, "7) Boss info text now also displays in the chat area (Wliu)");
@@ -654,7 +657,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "9) VSH: Added market gardener 'backstab'");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 45:  //1.10.1
+	case 45:  //1.10.1
 		{
 			DrawPanelText(panel, "10) VSH: Removed Darwin's Danger Shield from the blacklist (Chdata) and gave it a +50 health bonus (Wliu)");
 			DrawPanelText(panel, "11) VSH: Rebalanced Phlogistinator");
@@ -663,7 +666,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "14) VSH: Reserve Shooter now deals crits to bosses in mid-air");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 44:  //1.10.1
+	case 44:  //1.10.1
 		{
 			DrawPanelText(panel, "15) [Server] Fixed conditions still being added when FF2 was disabled (Wliu)");
 			DrawPanelText(panel, "16) [Server] Fixed a rare healthbar error (Wliu)");
@@ -672,13 +675,13 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "19) [Server] Updated translations (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 43:  //1.10.1
+	case 43:  //1.10.1
 		{
 			DrawPanelText(panel, "20) [Dev] Added FF2_GetAlivePlayers and FF2_GetBossPlayers (Wliu/AliceTaylor)");
 			DrawPanelText(panel, "21) [Dev] Fixed a bug in the main include file (Wliu)");
 			DrawPanelText(panel, "22) [Dev] Enabled escape sequences in configs (Wliu)");
 		}
-		case 42:  //1.10.0
+	case 42:  //1.10.0
 		{
 			DrawPanelText(panel, "1) Rage is now activated by calling for medic (Wliu)");
 			DrawPanelText(panel, "2) Balanced Goomba Stomp and RTD (WildCard65)");
@@ -686,7 +689,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "4) Fixed Jarate, etc. not disappearing immediately on the boss (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 41:  //1.10.0
+	case 41:  //1.10.0
 		{
 			DrawPanelText(panel, "5) Fixed ability timers not resetting when the round was over (Wliu)");
 			DrawPanelText(panel, "6) Fixed bosses losing momentum when raging in the air (Wliu)");
@@ -694,7 +697,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "8) Fixed bosses sometimes teleporting to each other if they had a companion (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 40:  //1.10.0
+	case 40:  //1.10.0
 		{
 			DrawPanelText(panel, "9) Optimized the health calculation system (WildCard65)");
 			DrawPanelText(panel, "10) Slightly tweaked default boss health formula to be more balanced (Eggman)");
@@ -702,7 +705,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "12) Fixed medic minions receiving the medigun (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 39:  //1.10.0
+	case 39:  //1.10.0
 		{
 			DrawPanelText(panel, "13) Fixed Ninja Spy slow-mo bugs (Wliu/Powerlord)");
 			DrawPanelText(panel, "14) Prevented players from changing to the incorrect team or class (Powerlord/Wliu)");
@@ -710,7 +713,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "16) Fixed a rare bug where you could get notified about being the next boss multiple times (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 38:  //1.10.0
+	case 38:  //1.10.0
 		{
 			DrawPanelText(panel, "17) Fixed gravity not resetting correctly after a weighdown if using non-standard gravity (Wliu)");
 			DrawPanelText(panel, "18) [Server] FF2 now properly disables itself when required (Wliu/Powerlord)");
@@ -718,7 +721,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "20) [Server] Changed how BossCrits works...again (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 37:  //1.10.0
+	case 37:  //1.10.0
 		{
 			DrawPanelText(panel, "21) [Server] Removed convar ff2_halloween (Wliu)");
 			DrawPanelText(panel, "22) [Server] Moved convar ff2_oldjump to the main config file (Wliu)");
@@ -726,7 +729,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "24) [Server] Added convar ff2_updater to control whether automatic updating should be turned on (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 36:  //1.10.0
+	case 36:  //1.10.0
 		{
 			DrawPanelText(panel, "25) [Server] Added convar ff2_goomba_jump to control how high players should rebound after goomba stomping the boss (WildCard65)");
 			DrawPanelText(panel, "26) [Server] Fixed hale_point_enable/disable being registered twice (Wliu)");
@@ -734,7 +737,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "28) [Server] Fixed the chances and charset systems (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 35:  //1.10.0
+	case 35:  //1.10.0
 		{
 			DrawPanelText(panel, "29) [Dev] Added more natives and one additional forward (Eggman)");
 			DrawPanelText(panel, "30) [Dev] Added sound_full_rage which plays once the boss is able to rage (Wliu/Eggman)");
@@ -742,14 +745,14 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "32) [Dev] FF2 now checks for sane values for \"lives\" and \"health_formula\" (Wliu)");
 			DrawPanelText(panel, "Big thanks to GIANT_CRAB, WildCard65, and kniL for their devotion to this release!");
 		}
-		case 34:  //1.9.3
+	case 34:  //1.9.3
 		{
 			DrawPanelText(panel, "1) Fixed a bug in 1.9.2 where the changelog was off by one version (Wliu)");
 			DrawPanelText(panel, "2) Fixed a bug in 1.9.2 where one dead player would not be cloned in rage_cloneattack (Wliu)");
 			DrawPanelText(panel, "3) Fixed a bug in 1.9.2 where sentries would be permanently disabled after a rage (Wliu)");
 			DrawPanelText(panel, "4) [Server] Removed ff2_halloween (Wliu)");
 		}
-		case 33:  //1.9.2
+	case 33:  //1.9.2
 		{
 			DrawPanelText(panel, "1) Fixed a bug in 1.9.1 that allowed the same player to be the boss over and over again (Wliu)");
 			DrawPanelText(panel, "2) Fixed a bug where last player glow was being incorrectly removed on the boss (Wliu)");
@@ -757,7 +760,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "4) Fixed having minions on the boss team interfering with certain rage calculations (Wliu)");
 			DrawPanelText(panel, "See next page for more (press 1)");
 		}
-		case 32:  //1.9.2
+	case 32:  //1.9.2
 		{
 			DrawPanelText(panel, "5) Fixed a rare bug where the rage percentage could go above 100% (Wliu)");
 			DrawPanelText(panel, "6) [Server] Fixed possible special_noanims errors (Wliu)");
@@ -765,7 +768,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "8) [Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)");
 			DrawPanelText(panel, "            Servers can now safely have smac_cvars enabled");
 		}
-		case 31:  //1.9.1
+	case 31:  //1.9.1
 		{
 			DrawPanelText(panel, "1) Fixed some minor leaderboard bugs and also improved the leaderboard text (Wliu)");
 			DrawPanelText(panel, "2) Fixed a minor round end bug (Wliu)");
@@ -773,7 +776,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "4) [Server] Removed leftover console messages (Wliu)");
 			DrawPanelText(panel, "5) [Server] Fixed sound not precached warnings (Wliu)");
 		}
-		case 30:  //1.9.0
+	case 30:  //1.9.0
 		{
 			DrawPanelText(panel, "1) Removed checkFirstHale (Wliu)");
 			DrawPanelText(panel, "2) [Server] Fixed invalid healthbar entity bug (Wliu)");
@@ -782,7 +785,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "5) [Server] Added convars to control last player glow and timer health cutoff (Wliu");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 29:  //1.9.0
+	case 29:  //1.9.0
 		{
 			DrawPanelText(panel, "6) [Dev] Added new natives/stocks: Debug, FF2_SetClientGlow and FF2_GetClientGlow (Wliu)");
 			DrawPanelText(panel, "7) Fixed a few minor !whatsnew bugs (BBG_Theory)");
@@ -790,7 +793,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "9) Minor grammar/spelling improvements (Wliu)");
 			DrawPanelText(panel, "10) [Server] Minor subplugin load/unload fixes (Wliu)");
 		}
-		case 28:  //1.0.8
+	case 28:  //1.0.8
 		{
 			DrawPanelText(panel, "Wliu, Chris, Lawd, and Carge of 50DKP have taken over FF2 development");
 			DrawPanelText(panel, "1) Prevented spy bosses from changing disguises (Powerlord)");
@@ -800,7 +803,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "5) Whitelisted some more action slot items (Powerlord)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 27:  //1.0.8
+	case 27:  //1.0.8
 		{
 			DrawPanelText(panel, "6) Festive Huntsman has the same attributes as the Huntsman now (Powerlord)");
 			DrawPanelText(panel, "7) Medigun now overheals 50% more (Powerlord)");
@@ -810,7 +813,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "11) Slight tweaks to boss health calculation (Powerlord)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 26:  //1.0.8
+	case 26:  //1.0.8
 		{
 			DrawPanelText(panel, "12) Made sure that spies couldn't quick-backstab the boss (Powerlord)");
 			DrawPanelText(panel, "13) Made sure the stab animations were correct (Powerlord)");
@@ -820,7 +823,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "17) [Dev] Added a clip argument to special_noanims.sp (Powerlord)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 25:  //1.0.8
+	case 25:  //1.0.8
 		{
 			DrawPanelText(panel, "18) [Dev] sound_bgm is now precached automagically (Powerlord)");
 			DrawPanelText(panel, "19) Seeldier's minions can no longer cap (Wliu)");
@@ -830,7 +833,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "23) [Dev] Updated item attributes code per the TF2Items update (Powerlord)");
 			DrawPanelText(panel, "See next page (press 1)");
 		}
-		case 24:  //1.0.8
+	case 24:  //1.0.8
 		{
 			DrawPanelText(panel, "24) Fixed duplicate sound downloads for Saxton Hale (Wliu)");
 			DrawPanelText(panel, "25) [Server] FF2 now require morecolors, not colors (Powerlord)");
@@ -840,40 +843,40 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "29) Changed versioning format to x.y.z and month day, year (Wliu)");
 			DrawPanelText(panel, "HAPPY HALLOWEEN!");
 		}
-		case 23:  //1.07
+	case 23:  //1.07
 		{
 			DrawPanelText(panel, "1) [Players] Holiday Punch is now replaced by Fists");
 			DrawPanelText(panel, "2) [Players] Bosses will have any disguises removed on round start");
 			DrawPanelText(panel, "3) [Players] Bosses can no longer see all players health, as it wasn't working any more");
 			DrawPanelText(panel, "4) [Server] ff2_addpoints no longer targets SourceTV or replay");
 		}
-		case 22:  //1.07 beta 6
+	case 22:  //1.07 beta 6
 		{
 			DrawPanelText(panel, "1) [Dev] Fixed issue with sound hook not stopping sound when sound_block_vo was in use");
 			DrawPanelText(panel, "2) [Dev] If ff2_charset was used, don't run the character set vote");
 			DrawPanelText(panel, "3) [Dev] If a vote is already running, Character set vote will retry every 5 seconds or until map changes ");
 		}
-		case 21:  //1.07 beta 5
+	case 21:  //1.07 beta 5
 		{
 			DrawPanelText(panel, "1) [Dev] Fixed issue with character sets not working.");
 			DrawPanelText(panel, "2) [Dev] Improved IsValidClient replay check");
 			DrawPanelText(panel, "3) [Dev] IsValidClient is now called when loading companion bosses");
 			DrawPanelText(panel, "   This should prevent GetEntProp issues with m_iClass");
 		}
-		case 20:  //1.07 beta 4
+	case 20:  //1.07 beta 4
 		{
 			DrawPanelText(panel, "1) [Players] Dead Ringers have no cloak defense buff. Normal cloaks do.");
 			DrawPanelText(panel, "2) [Players] Fixed Sniper Rifle reskin behavior");
 			DrawPanelText(panel, "3) [Players] Boss has small amount of stun resistance after rage");
 			DrawPanelText(panel, "4) [Players] Various bugfixes and changes 1.7.0 beta 1");
 		}
-		case 19:  //1.07 beta
+	case 19:  //1.07 beta
 		{
 			DrawPanelText(panel, "22) [Dev] Prevent boss rage from being activated if the boss is already taunting or is dead.");
 			DrawPanelText(panel, "23) [Dev] Cache the result of the newer backstab detection");
 			DrawPanelText(panel, "24) [Dev] Reworked Medic damage code slightly");
 		}
-		case 18:  //1.07 beta
+	case 18:  //1.07 beta
 		{
 			DrawPanelText(panel, "16) [Server] The Boss queue now accepts negative points.");
 			DrawPanelText(panel, "17) [Server] Bosses can be forced to a specific team using the new ff2_force_team cvar.");
@@ -884,7 +887,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "21) [Dev] Fixed OnLoadCharacterSet not being fired. This should fix the deadrun plugin.");
 			DrawPanelText(panel, "Continued on next page");
 		}
-		case 17:  //1.07 beta
+	case 17:  //1.07 beta
 		{
 			DrawPanelText(panel, "10) [Players] Heatmaker gains Focus on hit (varies by charge)");
 			DrawPanelText(panel, "11) [Players] Crusader's Crossbow damage has been adjusted to compensate for its speed increase.");
@@ -894,7 +897,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "15) [Server] Changing the game description now requires Steam Tools");
 			DrawPanelText(panel, "Continued on next page");
 		}
-		case 16:  //1.07 beta
+	case 16:  //1.07 beta
 		{
 			DrawPanelText(panel, "6) [Players] Removed crits from sniper rifles, now do 2.9x damage");
 			DrawPanelText(panel, "   Sydney Sleeper does 2.4x damage, 2.9x if boss's rage is >90pct");
@@ -904,7 +907,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "9) [Players] Can't Eureka+destroy dispenser to insta-teleport");
 			DrawPanelText(panel, "Continued on next page");
 		}
-		case 15:  //1.07 beta
+	case 15:  //1.07 beta
 		{
 			DrawPanelText(panel, "1) [Players] Reworked the crit code a bit. Should be more reliable.");
 			DrawPanelText(panel, "2) [Players] Help panel should stop repeatedly popping up on round start.");
@@ -913,15 +916,15 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "5) [Players] Fixed Dead Ringer spy death icon");
 			DrawPanelText(panel, "Continued on next page");
 		}
-		case 14:  //1.06h
+	case 14:  //1.06h
 		{
 			DrawPanelText(panel, "1) [Players] Remove MvM powerup_bottle on Bosses. (RavensBro)");
 		}
-		case 13:  //1.06g
+	case 13:  //1.06g
 		{
 			DrawPanelText(panel, "1) [Players] Fixed vote for charset. (RavensBro)");
 		}
-		case 12:  //1.06f
+	case 12:  //1.06f
 		{
 			DrawPanelText(panel, "1) [Players] Changelog now divided into [Players] and [Dev] sections. (Otokiru)");
 			DrawPanelText(panel, "2) [Players] Don't bother reading [Dev] changelogs because you'll have no idea what it's stated. (Otokiru)");
@@ -929,7 +932,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "4) [Players] Fixed hale HP bar. (Valve) lol?");
 			DrawPanelText(panel, "5) [Dev] Fixed \"GetEntProp\" reported: Entity XXX (XXX) is invalid on checkFirstHale(). (Otokiru)");
 		}
-		case 11:  //1.06e
+	case 11:  //1.06e
 		{
 
 			DrawPanelText(panel, "1) [Players] Remove MvM water-bottle on hales. (Otokiru)");
@@ -937,21 +940,21 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "3) [Dev] Change how FF2 check for player weapons. Now also checks when spawned in the middle of the round. (Otokiru)");
 			DrawPanelText(panel, "4) [Dev] Changed some FF2 warning messages color such as \"First-Hale Checker\" and \"Change class exploit\". (Otokiru)");
 		}
-		case 10:  //1.06d
+	case 10:  //1.06d
 		{
 			DrawPanelText(panel, "1) Fix first boss having missing health or abilities. (Otokiru)");
 			DrawPanelText(panel, "2) Health bar now goes away if the boss wins the round. (Powerlord)");
 			DrawPanelText(panel, "3) Health bar cedes control to Monoculus if he is summoned. (Powerlord)");
 			DrawPanelText(panel, "4) Health bar instantly updates if enabled or disabled via cvar mid-game. (Powerlord)");
 		}
-		case 9:  //1.06c
+	case 9:  //1.06c
 		{
 			DrawPanelText(panel, "1) Remove weapons if a player tries to switch classes when they become boss to prevent an exploit. (Otokiru)");
 			DrawPanelText(panel, "2) Reset hale's queue points to prevent the 'retry' exploit. (Otokiru)");
 			DrawPanelText(panel, "3) Better detection of backstabs. (Powerlord)");
 			DrawPanelText(panel, "4) Boss now has optional life meter on screen. (Powerlord)");
 		}
-		case 8:  //1.06
+	case 8:  //1.06
 		{
 			DrawPanelText(panel, "1) Fixed attributes key for weaponN block. Now 1 space needed for explode string.");
 			DrawPanelText(panel, "2) Disabled vote for charset when there is only 1 not hidden chatset.");
@@ -959,7 +962,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "4) Fixed ammo for special_noanims.ff2\\rage_new_weapon ability.");
 			DrawPanelText(panel, "Coming soon: weapon balance will be moved into config file.");
 		}
-		case 7:  //1.05
+	case 7:  //1.05
 		{
 			DrawPanelText(panel, "1) Added \"hidden\" key for charsets.");
 			DrawPanelText(panel, "2) Added \"sound_stabbed\" key for characters.");
@@ -967,7 +970,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "4) Minicrits will not play loud sound to all players");
 			DrawPanelText(panel, "5-11) See next page...");
 		}
-		case 6:  //1.05
+	case 6:  //1.05
 		{
 			DrawPanelText(panel, "6) For mappers: Add info_target with name 'hale_no_music'");
 			DrawPanelText(panel, "    to prevent Boss' music.");
@@ -977,7 +980,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "10) FF2FLAG_HUDDISABLED flag blocks EVERYTHING of FF2's HUD.");
 			DrawPanelText(panel, "11) Changed FF2_PreAbility native to fix bug about broken Boss' abilities.");
 		}
-		case 5:  //1.04
+	case 5:  //1.04
 		{
 			DrawPanelText(panel, "1) Seeldier's minions have protection (teleport) from pits for first 4 seconds after spawn.");
 			DrawPanelText(panel, "2) Seeldier's minions correctly dies when owner-Seeldier dies.");
@@ -986,14 +989,14 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "4) Fixed potential exploits associated with feign death.");
 			DrawPanelText(panel, "6) Added ff2_reload_subplugins command to reload FF2's subplugins.");
 		}
-		case 4:  //1.03
+	case 4:  //1.03
 		{
 			DrawPanelText(panel, "1) Finally fixed exploit about queue points.");
 			DrawPanelText(panel, "2) Fixed non-regular bug with 'UTIL_SetModel: not precached'.");
 			DrawPanelText(panel, "3) Fixed potential bug about reducing of Boss' health by healing.");
 			DrawPanelText(panel, "4) Fixed Boss' stun when round begins.");
 		}
-		case 3:  //1.02
+	case 3:  //1.02
 		{
 			DrawPanelText(panel, "1) Added isNumOfSpecial parameter into FF2_GetSpecialKV and FF2_GetBossSpecial natives");
 			DrawPanelText(panel, "2) Added FF2_PreAbility forward. Plz use it to prevent FF2_OnAbility only.");
@@ -1003,7 +1006,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "6) FF2FLAG_HUDDISABLED flag disables Boss' HUD too.");
 			DrawPanelText(panel, "7) Added FF2_GetQueuePoints and FF2_SetQueuePoints natives.");
 		}
-		case 2:  //1.01
+	case 2:  //1.01
 		{
 			DrawPanelText(panel, "1) Fixed \"classmix\" bug associated with Boss' class restoring.");
 			DrawPanelText(panel, "3) Fixed other little bugs.");
@@ -1012,14 +1015,14 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "6) Fixed exploit when dead Boss can been respawned after his reconnect.");
 			DrawPanelText(panel, "7-10) See next page...");
 		}
-		case 1:  //1.01
+	case 1:  //1.01
 		{
 			DrawPanelText(panel, "7) I've missed 2nd item.");
 			DrawPanelText(panel, "8) Fixed \"Random\" charpack, there is no vote if only one charpack.");
 			DrawPanelText(panel, "9) Fixed bug when boss' music have a chance to DON'T play.");
 			DrawPanelText(panel, "10) Fixed bug associated with ff2_enabled in cfg/sourcemod/FreakFortress2.cfg and disabling of pugin.");
 		}
-		case 0:  //1.0
+	case 0:  //1.0
 		{
 			DrawPanelText(panel, "1) Boss' health devided by 3,6 in medieval mode");
 			DrawPanelText(panel, "2) Restoring player's default class, after his round as Boss");
@@ -1030,7 +1033,7 @@ stock void FindVersionData(Handle panel, int versionIndex)
 			DrawPanelText(panel, "4) Dead Ringer will not be able to activate for 2s after backstab");
 			DrawPanelText(panel, "5) Added ff2_spec_force_boss cvar");
 		}
-		default:
+	default:
 		{
 			DrawPanelText(panel, "-- Somehow you've managed to find a glitched version page!");
 			DrawPanelText(panel, "-- Congratulations.  Now go and fight!");
@@ -1171,7 +1174,6 @@ public void OnPluginStart()
 	cvarBossTeleporter=CreateConVar("ff2_boss_teleporter", "0", "-1 to disallow all bosses from using teleporters, 0 to use TF2 logic, 1 to allow all bosses", _, true, -1.0, true, 1.0);
 	cvarBossSuicide=CreateConVar("ff2_boss_suicide", "0", "Allow the boss to suicide after the round starts?", _, true, 0.0, true, 1.0);
 	cvarPreroundBossDisconnect=CreateConVar("ff2_replace_disconnected_boss", "1", "If a boss disconnects before the round starts, use the next player in line instead? 0 - No, 1 - Yes", _, true, 0.0, true, 1.0);
-	cvarFixSkin=CreateConVar("ff2_fix_boss_skin", "1", "Make FF2 remove wearables in a new way(fixes certain buggy models having bad skin)? 0 - No, 1 - Yes", _, true, 0.0, true, 1.0);
 	cvarCaberDetonations=CreateConVar("ff2_caber_detonations", "5", "Amount of times somebody can detonate the Ullapool Caber");
 	cvarShieldCrits=CreateConVar("ff2_shield_crits", "0", "0 to disable grenade launcher crits when equipping a shield, 1 for minicrits, 2 for crits", _, true, 0.0, true, 2.0);
 	cvarDuoToggle=CreateConVar("ff2_companion_toggle", "1", "0-Disable, 1-Players can toggle being a companion", _, true, 0.0, true, 1.0);
@@ -1181,6 +1183,8 @@ public void OnPluginStart()
 	cvarDeadRingerHud=CreateConVar("ff2_deadringer_hud", "1", "Dead Ringer indicator? 0 to disable, 1 to enable", _, true, 0.0, true, 1.0);
 	cvarUpdater=CreateConVar("ff2_updater", "1", "0-Disable Updater support, 1-Enable automatic updating (recommended, requires Updater)", _, true, 0.0, true, 1.0);
 	cvarDebug=CreateConVar("ff2_debug", "0", "0-Disable FF2 debug output, 1-Enable debugging (not recommended)", _, true, 0.0, true, 1.0);
+	ff2_fix_boss_skin=CreateConVar("ff2_fix_boss_skin", "1", "Make FF2 remove wearables in a new way(fixes certain buggy models having bad skin)? 0 - No, 1 - Yes", _, true, 0.0, true, 1.0);
+	ff2_attribute_manage=CreateConVar("ff2_attribute_manage", "0", "0-FF2 will leave TF2x10 manage weapons, which have their attributes changed by FF2 1-FF2 will continue changing weapon attributes 2-Force disable weapon attribute changes(even when TF2x10 is absent)", _, true, 0.0, true, 1.0);
 
 	//The following are used in various subplugins
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
@@ -1332,6 +1336,8 @@ public void OnPluginStart()
 	#if defined _tf2attributes_included
 	tf2attributes=LibraryExists("tf2attributes");
 	#endif
+	
+	tf2x10=LibraryExists("tf2x10");
 }
 
 public bool BossTargetFilter(const char[] pattern, Handle clients)
@@ -1391,6 +1397,11 @@ public void OnLibraryAdded(const char[] name)
 		Updater_AddPlugin(UPDATE_URL);
 	}
 	#endif
+	
+	if(StrEqual(name, "tf2x10"))
+	{
+		tf2x10=true;
+	}
 }
 
 public void OnLibraryRemoved(const char[] name)
@@ -1427,6 +1438,11 @@ public void OnLibraryRemoved(const char[] name)
 		Updater_RemovePlugin();
 	}
 	#endif
+	
+	if(StrEqual(name, "tf2x10"))
+	{
+		tf2x10=false;
+	}
 }
 
 public void OnConfigsExecuted()
@@ -2143,24 +2159,24 @@ public Action Timer_Announce(Handle timer)
 	{
 		switch(announcecount)
 		{
-			case 1:
+		case 1:
 			{
 				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_group");
 			}
-			case 3:
+		case 3:
 			{
 				CPrintToChatAll("%t", "ff2_info", PLUGIN_VERSION);
 			}
-			case 4:
+		case 4:
 			{
 				CPrintToChatAll("{olive}[FF2]{default} %t", "type_ff2_to_open_menu");
 			}
-			case 5:
+		case 5:
 			{
 				announcecount=0;
 				CPrintToChatAll("{olive}[FF2]{default} %t", "ff2_last_update", PLUGIN_VERSION, ff2versiondates[maxVersion]);
 			}
-			default:
+		default:
 			{
 				CPrintToChatAll("{olive}[FF2]{default} %t", "type_ff2_to_open_menu");
 			}
@@ -2328,15 +2344,15 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 	bool blueBoss;
 	switch(GetConVarInt(cvarForceBossTeam))
 	{
-		case 1:
+	case 1:
 		{
 			blueBoss=view_as<bool>(GetRandomInt(0, 1));
 		}
-		case 2:
+	case 2:
 		{
 			blueBoss=false;
 		}
-		default:
+	default:
 		{
 			blueBoss=true;
 		}
@@ -2840,11 +2856,11 @@ public Action Timer_CalcQueuePoints(Handle timer)
 	Call_Finish(action);
 	switch(action)
 	{
-		case Plugin_Stop, Plugin_Handled:
+	case Plugin_Stop, Plugin_Handled:
 		{
 			return;
 		}
-		case Plugin_Changed:
+	case Plugin_Changed:
 		{
 			for(int client=1; client<=MaxClients; client++)
 			{
@@ -2858,7 +2874,7 @@ public Action Timer_CalcQueuePoints(Handle timer)
 				}
 			}
 		}
-		default:
+	default:
 		{
 			for(int client=1; client<=MaxClients; client++)
 			{
@@ -3022,11 +3038,11 @@ void PlayBGM(int userid)
 		Call_Finish(action);
 		switch(action)
 		{
-			case Plugin_Stop, Plugin_Handled:
+		case Plugin_Stop, Plugin_Handled:
 			{
 				return;
 			}
-			case Plugin_Changed:
+		case Plugin_Changed:
 			{
 				strcopy(music, sizeof(music), temp);
 				time=time2;
@@ -3476,15 +3492,15 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 
 	switch(KvGetNum(BossKV[Special[boss]], "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
 	{
-		case 1:
+	case 1:
 		{
 			FF2flags[client]|=FF2FLAG_ALLOW_HEALTH_PICKUPS;
 		}
-		case 2:
+	case 2:
 		{
 			FF2flags[client]|=FF2FLAG_ALLOW_AMMO_PICKUPS;
 		}
-		case 3:
+	case 3:
 		{
 			FF2flags[client]|=FF2FLAG_ALLOW_HEALTH_PICKUPS|FF2FLAG_ALLOW_AMMO_PICKUPS;
 		}
@@ -3508,11 +3524,11 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 		{
 			switch(GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex"))
 			{
-				case 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 5607:  //Action slot items
+			case 493, 233, 234, 241, 280, 281, 282, 283, 284, 286, 288, 362, 364, 365, 536, 542, 577, 599, 673, 729, 791, 839, 5607:  //Action slot items
 				{
 					//NOOP
 				}
-				default:
+			default:
 				{
 					TF2_RemoveWearable(client, entity);
 				}
@@ -3543,199 +3559,206 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 		return Plugin_Continue;
 	}
 
-	if(IsBoss(client) && StrEqual(classname, "tf_wearable", false) && GetConVarBool(cvarFixSkin))
+	if(IsBoss(client) && StrEqual(classname, "tf_wearable", false) && GetConVarBool(ff2_fix_boss_skin))
 	{
 		if(!(FF2flags[client] & FF2FLAG_ALLOW_BOSS_WEARABLES))
 		{
 			return Plugin_Handled;
 		}
 	}
-
-	switch(iItemDefinitionIndex)
+	
+	if((!ff2_attribute_manage.IntValue && tf2x10) || ff2_attribute_manage.IntValue==2)
 	{
-		case 38, 457:  //Axtinguisher, Postal Pummeler
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "", true);
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 39, 351, 1081:  //Flaregun, Detonator, Festive Flaregun
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "25 ; 0.5 ; 58 ; 3.2 ; 144 ; 1.0 ; 207 ; 1.33", true);
-			//25: -50% ammo
-			//58: 220% self damage force
-			//144: NOPE
-			//207: +33% damage to self
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 40, 1146:  //Backburner, Festive Backburner
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "165 ; 1.0");
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 224:  //L'etranger
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "85 ; 0.5 ; 157 ; 1.0 ; 253 ; 1.0");
-			//85: +50% time needed to regen cloak
-			//157: +1 second needed to fully disguise
-			//253: +1 second needed to fully cloak
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 239, 1084, 1100:  //GRU, Festive GRU, Bread Bite
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5", true);
-			//1: -50% damage
-			//107: +50% move speed
-			//128: Only when weapon is active
-			//191: -7 health/second
-			//772: Holsters 50% slower
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 56, 1005, 1092:  //Huntsman, Festive Huntsman, Fortified Compound
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.5 ; 76 ; 2");
-			//2: +50% damage
-			//76: +100% ammo
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 226:  //Battalion's Backup
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "140 ; 10.0");
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 231:  //Darwin's Danger Shield
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 50");  //+50 health
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 305, 1079:  //Crusader's Crossbow, Festive Crusader's Crossbow
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.2 ; 17 ; 0.15");
-			//2: +20% damage
-			//17: +15% uber on hit
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 331:  //Fists of Steel
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "205 ; 0.8 ; 206 ; 2.0 ; 772 ; 2.0", true);
-			//205: -80% damage from ranged while active
-			//206: +100% damage from melee while active
-			//772: Holsters 100% slower
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 415:  //Reserve Shooter
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1 ; 3 ; 0.5 ; 114 ; 1 ; 179 ; 1 ; 547 ; 0.6", true);
-			//2: +10% damage bonus
-			//3: -50% clip size
-			//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
-			//179: Minicrits become crits
-			//547: Deploys 40% faster
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 444:  //Mantreads
-		{
-			#if defined _tf2attributes_included
-			if(tf2attributes)
-			{
-				TF2Attrib_SetByDefIndex(client, 58, 1.5);
-			}
-			#endif
-		}
-		case 648:  //Wrap Assassin
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "279 ; 2.0");
-			//279: 2 ornaments
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 656:  //Holiday Punch
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "199 ; 0 ; 547 ; 0 ; 358 ; 0 ; 362 ; 0 ; 363 ; 0 ; 369 ; 0", true);
-			//199: Holsters 100% faster
-			//547: Deploys 100% faster
-			//Other attributes: Because TF2Items doesn't feel like stripping the Holiday Punch's attributes for some reason
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 772:  //Baby Face's Blaster
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.25 ; 109 ; 0.5 ; 125 ; -25 ; 394 ; 0.85 ; 418 ; 1 ; 419 ; 100 ; 532 ; 0.5 ; 651 ; 0.5 ; 709 ; 1", true);
-			//2: +25% damage bonus
-			//109: -50% health from packs on wearer
-			//125: -25 max health
-			//394: 15% firing speed bonus hidden
-			//418: Build hype for faster speed
-			//419: Hype resets on jump
-			//532: Hype decays
-			//651: Fire rate increases as health decreases
-			//709: Weapon spread increases as health decreases
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
-		case 1103:  //Back Scatter
-		{
-			Handle itemOverride=PrepareItemHandle(item, _, _, "179 ; 1");
-			//179: Crit instead of mini-critting
-			if(itemOverride!=INVALID_HANDLE)
-			{
-				item=itemOverride;
-				return Plugin_Changed;
-			}
-		}
+		return Plugin_Continue;
 	}
+	else
+	{
+		switch(iItemDefinitionIndex)
+		{
+		case 38, 457:  //Axtinguisher, Postal Pummeler
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "", true);
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 39, 351, 1081:  //Flaregun, Detonator, Festive Flaregun
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "25 ; 0.5 ; 58 ; 3.2 ; 144 ; 1.0 ; 207 ; 1.33", true);
+				//25: -50% ammo
+				//58: 220% self damage force
+				//144: NOPE
+				//207: +33% damage to self
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 40, 1146:  //Backburner, Festive Backburner
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "165 ; 1.0");
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 224:  //L'etranger
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "85 ; 0.5 ; 157 ; 1.0 ; 253 ; 1.0");
+				//85: +50% time needed to regen cloak
+				//157: +1 second needed to fully disguise
+				//253: +1 second needed to fully cloak
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 239, 1084, 1100:  //GRU, Festive GRU, Bread Bite
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5", true);
+				//1: -50% damage
+				//107: +50% move speed
+				//128: Only when weapon is active
+				//191: -7 health/second
+				//772: Holsters 50% slower
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 56, 1005, 1092:  //Huntsman, Festive Huntsman, Fortified Compound
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.5 ; 76 ; 2");
+				//2: +50% damage
+				//76: +100% ammo
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 226:  //Battalion's Backup
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "140 ; 10.0");
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 231:  //Darwin's Danger Shield
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "26 ; 50");  //+50 health
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 305, 1079:  //Crusader's Crossbow, Festive Crusader's Crossbow
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.2 ; 17 ; 0.15");
+				//2: +20% damage
+				//17: +15% uber on hit
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 331:  //Fists of Steel
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "205 ; 0.8 ; 206 ; 2.0 ; 772 ; 2.0", true);
+				//205: -80% damage from ranged while active
+				//206: +100% damage from melee while active
+				//772: Holsters 100% slower
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 415:  //Reserve Shooter
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.1 ; 3 ; 0.5 ; 114 ; 1 ; 179 ; 1 ; 547 ; 0.6", true);
+				//2: +10% damage bonus
+				//3: -50% clip size
+				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
+				//179: Minicrits become crits
+				//547: Deploys 40% faster
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 444:  //Mantreads
+			{
+				#if defined _tf2attributes_included
+				if(tf2attributes)
+				{
+					TF2Attrib_SetByDefIndex(client, 58, 1.5);
+				}
+				#endif
+			}
+		case 648:  //Wrap Assassin
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "279 ; 2.0");
+				//279: 2 ornaments
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 656:  //Holiday Punch
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "199 ; 0 ; 547 ; 0 ; 358 ; 0 ; 362 ; 0 ; 363 ; 0 ; 369 ; 0", true);
+				//199: Holsters 100% faster
+				//547: Deploys 100% faster
+				//Other attributes: Because TF2Items doesn't feel like stripping the Holiday Punch's attributes for some reason
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 772:  //Baby Face's Blaster
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "2 ; 1.25 ; 109 ; 0.5 ; 125 ; -25 ; 394 ; 0.85 ; 418 ; 1 ; 419 ; 100 ; 532 ; 0.5 ; 651 ; 0.5 ; 709 ; 1", true);
+				//2: +25% damage bonus
+				//109: -50% health from packs on wearer
+				//125: -25 max health
+				//394: 15% firing speed bonus hidden
+				//418: Build hype for faster speed
+				//419: Hype resets on jump
+				//532: Hype decays
+				//651: Fire rate increases as health decreases
+				//709: Weapon spread increases as health decreases
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		case 1103:  //Back Scatter
+			{
+				Handle itemOverride=PrepareItemHandle(item, _, _, "179 ; 1");
+				//179: Crit instead of mini-critting
+				if(itemOverride!=INVALID_HANDLE)
+				{
+					item=itemOverride;
+					return Plugin_Changed;
+				}
+			}
+		}
+	
 
 	if(TF2_GetPlayerClass(client)==TFClass_Soldier && (!StrContains(classname, "tf_weapon_rocketlauncher", false) || !StrContains(classname, "tf_weapon_shotgun", false)))
 	{
@@ -3784,6 +3807,8 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 			item=itemOverride;
 			return Plugin_Changed;
 		}
+	}
+	
 	}
 	return Plugin_Continue;
 }
@@ -3968,19 +3993,19 @@ public Action Timer_CheckItems(Handle timer, any userid)
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
 		{
-			case 41:  //Natascha
+		case 41:  //Natascha
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 				FF2_SpawnWeapon(client, "tf_weapon_minigun", 15, 1, 0, "");
 			}
-			case 237:  //Rocket Jumper
+		case 237:  //Rocket Jumper
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 				FF2_SpawnWeapon(client, "tf_weapon_rocketlauncher", 18, 1, 0, "114 ; 1");
 				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
 				FF2_SetAmmo(client, weapon, 20);
 			}
-			case 402:  //Bazaar Bargain
+		case 402:  //Bazaar Bargain
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Primary);
 				FF2_SpawnWeapon(client, "tf_weapon_sniperrifle", 14, 1, 0, "");
@@ -3998,7 +4023,7 @@ public Action Timer_CheckItems(Handle timer, any userid)
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
 		{
-			case 265:  //Stickybomb Jumper
+		case 265:  //Stickybomb Jumper
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Secondary);
 				FF2_SpawnWeapon(client, "tf_weapon_pipebomblauncher", 20, 1, 0, "");
@@ -4056,7 +4081,7 @@ public Action Timer_CheckItems(Handle timer, any userid)
 		index=GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex");
 		switch(index)
 		{
-			case 43:  //KGB
+		case 43:  //KGB
 			{
 				TF2_RemoveWeaponSlot(client, TFWeaponSlot_Melee);
 				FF2_SpawnWeapon(client, "tf_weapon_fists", 239, 1, 6, "1 ; 0.5 ; 107 ; 1.5 ; 128 ; 1 ; 191 ; -7 ; 772 ; 1.5");  //GRU
@@ -4066,11 +4091,11 @@ public Action Timer_CheckItems(Handle timer, any userid)
 				//191: -7 health/second
 				//772: Holsters 50% slower
 			}
-			case 357:  //Half-Zatoichi
+		case 357:  //Half-Zatoichi
 			{
 				CreateTimer(1.0, Timer_NoHonorBound, GetClientUserId(client), TIMER_FLAG_NO_MAPCHANGE);
 			}
-			case 589:  //Eureka Effect
+		case 589:  //Eureka Effect
 			{
 				if(!GetConVarBool(cvarEnableEurekaEffect))
 				{
@@ -4824,17 +4849,17 @@ public Action ClientTimer(Handle timer)
 
 					switch (drstatus)
 					{
-						case 1:
+					case 1:
 						{
 							SetHudTextParams(-1.0, 0.83, 0.35, 90, 255, 90, 255, 0, 0.0, 0.0, 0.0);
 							Format(s, sizeof(s), "%T", "Dead Ringer Ready", client);
 						}
-						case 2:
+					case 2:
 						{
 							SetHudTextParams(-1.0, 0.83, 0.35, 255, 64, 64, 255, 0, 0.0, 0.0, 0.0);
 							Format(s, sizeof(s), "%T", "Dead Ringer Active", client);
 						}
-						default:
+					default:
 						{
 							SetHudTextParams(-1.0, 0.83, 0.35, 255, 255, 255, 255, 0, 0.0, 0.0, 0.0);
 							Format(s, sizeof(s), "%T", "Dead Ringer Inactive", client);
@@ -4907,10 +4932,10 @@ public Action ClientTimer(Handle timer)
 				}
 			}
 			else if((!StrContains(classname, "tf_weapon_smg") && index!=751) ||  //Cleaner's Carbine
-					 !StrContains(classname, "tf_weapon_compound_bow") ||
-					 !StrContains(classname, "tf_weapon_crossbow") ||
-					 !StrContains(classname, "tf_weapon_pistol") ||
-					 !StrContains(classname, "tf_weapon_handgun_scout_secondary"))
+					!StrContains(classname, "tf_weapon_compound_bow") ||
+					!StrContains(classname, "tf_weapon_crossbow") ||
+					!StrContains(classname, "tf_weapon_pistol") ||
+					!StrContains(classname, "tf_weapon_handgun_scout_secondary"))
 			{
 				addthecrit=true;
 				if(class==TFClass_Scout && cond==TFCond_HalloweenCritCandy)
@@ -4926,7 +4951,7 @@ public Action ClientTimer(Handle timer)
 
 			switch(class)
 			{
-				case TFClass_Medic:
+			case TFClass_Medic:
 				{
 					if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
 					{
@@ -4953,7 +4978,7 @@ public Action ClientTimer(Handle timer)
 						}
 					}
 				}
-				case TFClass_DemoMan:
+			case TFClass_DemoMan:
 				{
 					if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && !IsValidEntity(GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)) && shieldCrits)  //Demoshields
 					{
@@ -4964,7 +4989,7 @@ public Action ClientTimer(Handle timer)
 						}
 					}
 				}
-				case TFClass_Spy:
+			case TFClass_Spy:
 				{
 					if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
 					{
@@ -4974,7 +4999,7 @@ public Action ClientTimer(Handle timer)
 						}
 					}
 				}
-				case TFClass_Engineer:
+			case TFClass_Engineer:
 				{
 					if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && StrEqual(classname, "tf_weapon_sentry_revenge", false))
 					{
@@ -5456,11 +5481,11 @@ public Action OnJoinTeam(int client, const char[] command, int args)
 	{
 		switch(team)
 		{
-			case TFTeam_Red:
+		case TFTeam_Red:
 			{
 				ShowVGUIPanel(client, "class_red");
 			}
-			case TFTeam_Blue:
+		case TFTeam_Blue:
 			{
 				ShowVGUIPanel(client, "class_blue");
 			}
@@ -5772,33 +5797,33 @@ public Action Timer_DrawGame(Handle timer)
 
 	switch(time)
 	{
-		case 300:
+	case 300:
 		{
 			EmitSoundToAll("vo/announcer_ends_5min.mp3");
 		}
-		case 120:
+	case 120:
 		{
 			EmitSoundToAll("vo/announcer_ends_2min.mp3");
 		}
-		case 60:
+	case 60:
 		{
 			EmitSoundToAll("vo/announcer_ends_60sec.mp3");
 		}
-		case 30:
+	case 30:
 		{
 			EmitSoundToAll("vo/announcer_ends_30sec.mp3");
 		}
-		case 10:
+	case 10:
 		{
 			EmitSoundToAll("vo/announcer_ends_10sec.mp3");
 		}
-		case 1, 2, 3, 4, 5:
+	case 1, 2, 3, 4, 5:
 		{
 			char sound[PLATFORM_MAX_PATH];
 			Format(sound, PLATFORM_MAX_PATH, "vo/announcer_ends_%isec.mp3", time);
 			EmitSoundToAll(sound);
 		}
-		case 0:
+	case 0:
 		{
 			if(!GetConVarBool(cvarCountdownResult))
 			{
@@ -6023,7 +6048,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 			}
 
 			if(TF2_GetPlayerClass(client)==TFClass_Soldier && IsValidEntity((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)))
-			&& GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
+					&& GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex")==226 && !(FF2flags[client] & FF2FLAG_ISBUFFED))  //Battalion's Backup
 			{
 				SetEntPropFloat(client, Prop_Send, "m_flRageMeter", 100.0);
 			}
@@ -6124,7 +6149,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 
 				switch(index)
 				{
-					case 61, 1006:  //Ambassador, Festive Ambassador
+				case 61, 1006:  //Ambassador, Festive Ambassador
 					{
 						if(damagecustom==TF_CUSTOM_HEADSHOT)
 						{
@@ -6132,11 +6157,11 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 							return Plugin_Changed;
 						}
 					}
-					case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander
+				case 132, 266, 482, 1082:  //Eyelander, HHHH, Nessie's Nine Iron, Festive Eyelander
 					{
 						IncrementHeadCount(attacker);
 					}
-					case 214:  //Powerjack
+				case 214:  //Powerjack
 					{
 						int health=GetClientHealth(attacker);
 						int newhealth=health+50;
@@ -6150,7 +6175,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 							TF2_RemoveCondition(attacker, TFCond_OnFire);
 						}
 					}
-					case 310:  //Warrior's Spirit
+				case 310:  //Warrior's Spirit
 					{
 						int health=GetClientHealth(attacker);
 						int newhealth=health+50;
@@ -6164,11 +6189,11 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 							TF2_RemoveCondition(attacker, TFCond_OnFire);
 						}
 					}
-					case 317:  //Candycane
+				case 317:  //Candycane
 					{
 						SpawnSmallHealthPackAt(client, GetClientTeam(attacker));
 					}
-					case 327:  //Claidheamh Mòr
+				case 327:  //Claidheamh Mòr
 					{
 						int health=GetClientHealth(attacker);
 						int newhealth=health+25;
@@ -6192,7 +6217,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 							SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", charge+25.0);
 						}
 					}
-					case 355:  //Fan O' War
+				case 355:  //Fan O' War
 					{
 						if(BossCharge[boss][0]>0.0)
 						{
@@ -6203,7 +6228,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 							}
 						}
 					}
-					case 357:  //Half-Zatoichi
+				case 357:  //Half-Zatoichi
 					{
 						SetEntProp(weapon, Prop_Send, "m_bIsBloody", 1);
 						if(GetEntProp(attacker, Prop_Send, "m_iKillCountSinceLastDeploy")<1)
@@ -6227,7 +6252,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 							TF2_RemoveCondition(attacker, TFCond_OnFire);
 						}
 					}
-					case 416:  //Market Gardener (courtesy of Chdata)
+				case 416:  //Market Gardener (courtesy of Chdata)
 					{
 						if(FF2flags[attacker] & FF2FLAG_ROCKET_JUMPING)
 						{
@@ -6256,7 +6281,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 							return Plugin_Changed;
 						}
 					}
-					case 525, 595:  //Diamondback, Manmelter
+				case 525, 595:  //Diamondback, Manmelter
 					{
 						if(GetEntProp(attacker, Prop_Send, "m_iRevengeCrits"))  //If a revenge crit was used, give a damage bonus
 						{
@@ -6264,7 +6289,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 							return Plugin_Changed;
 						}
 					}
-					case 528:  //Short Circuit
+				case 528:  //Short Circuit
 					{
 						if(circuitStun)
 						{
@@ -6273,7 +6298,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 							EmitSoundToClient(client, "weapons/barret_arm_zap.wav");
 						}
 					}
-					case 593:  //Third Degree
+				case 593:  //Third Degree
 					{
 						int healers[MAXPLAYERS];
 						int healerCount;
@@ -6308,7 +6333,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 							}
 						}
 					}
-					case 594:  //Phlogistinator
+				case 594:  //Phlogistinator
 					{
 						if(!TF2_IsPlayerInCondition(attacker, TFCond_CritMmmph))
 						{
@@ -6316,7 +6341,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 							return Plugin_Changed;
 						}
 					}
-					case 1099:  //Tide Turner
+				case 1099:  //Tide Turner
 					{
 						SetEntPropFloat(attacker, Prop_Send, "m_flChargeMeter", 100.0);
 					}
@@ -6343,11 +6368,11 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 						int animation=41;
 						switch(melee)
 						{
-							case 225, 356, 423, 461, 574, 649, 1071:  //Your Eternal Reward, Conniver's Kunai, Saxxy, Wanga Prick, Big Earner, Spy-cicle, Golden Frying Pan
+						case 225, 356, 423, 461, 574, 649, 1071:  //Your Eternal Reward, Conniver's Kunai, Saxxy, Wanga Prick, Big Earner, Spy-cicle, Golden Frying Pan
 							{
 								animation=15;
 							}
-							case 638:  //Sharp Dresser
+						case 638:  //Sharp Dresser
 							{
 								animation=31;
 							}
@@ -6536,11 +6561,11 @@ public Action TF2_OnPlayerTeleport(int client, int teleporter, bool &result)
 	{
 		switch(bossTeleportation)
 		{
-			case -1:  //No bosses are allowed to use teleporters
+		case -1:  //No bosses are allowed to use teleporters
 			{
 				result=false;
 			}
-			case 1:  //All bosses are allowed to use teleporters
+		case 1:  //All bosses are allowed to use teleporters
 			{
 				result=true;
 			}
@@ -6901,19 +6926,19 @@ stock void Operate(Handle sumArray, int &bracket, float value, Handle _operator)
 	float sum=GetArrayCell(sumArray, bracket);
 	switch(GetArrayCell(_operator, bracket))
 	{
-		case Operator_Add:
+	case Operator_Add:
 		{
 			SetArrayCell(sumArray, bracket, sum+value);
 		}
-		case Operator_Subtract:
+	case Operator_Subtract:
 		{
 			SetArrayCell(sumArray, bracket, sum-value);
 		}
-		case Operator_Multiply:
+	case Operator_Multiply:
 		{
 			SetArrayCell(sumArray, bracket, sum*value);
 		}
-		case Operator_Divide:
+	case Operator_Divide:
 		{
 			if(!value)
 			{
@@ -6923,11 +6948,11 @@ stock void Operate(Handle sumArray, int &bracket, float value, Handle _operator)
 			}
 			SetArrayCell(sumArray, bracket, sum/value);
 		}
-		case Operator_Exponent:
+	case Operator_Exponent:
 		{
 			SetArrayCell(sumArray, bracket, Pow(sum, value));
 		}
-		default:
+	default:
 		{
 			SetArrayCell(sumArray, bracket, value);  //This means we're dealing with a constant
 		}
@@ -6983,17 +7008,17 @@ stock int ParseFormula(int boss, const char[] key, const char[] defaultFormula, 
 		character[0]=formula[i];  //Find out what the next char in the formula is
 		switch(character[0])
 		{
-			case ' ', '\t':  //Ignore whitespace
+		case ' ', '\t':  //Ignore whitespace
 			{
 				continue;
 			}
-			case '(':
+		case '(':
 			{
 				bracket++;  //We've just entered a new parentheses so increment the bracket value
 				SetArrayCell(sumArray, bracket, 0.0);
 				SetArrayCell(_operator, bracket, Operator_None);
 			}
-			case ')':
+		case ')':
 			{
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 				if(GetArrayCell(_operator, bracket)!=Operator_None)  //Something like (5*)
@@ -7014,40 +7039,40 @@ stock int ParseFormula(int boss, const char[] key, const char[] defaultFormula, 
 
 				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
 			}
-			case '\0':  //End of formula
+		case '\0':  //End of formula
 			{
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 			}
-			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
+		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
 			{
 				StrCat(value, sizeof(value), character);  //Constant?  Just add it to the current value
 			}
-			case 'n', 'x':  //n and x denote player variables
+		case 'n', 'x':  //n and x denote player variables
 			{
 				Operate(sumArray, bracket, float(playing), _operator);
 			}
-			case '+', '-', '*', '/', '^':
+		case '+', '-', '*', '/', '^':
 			{
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 				switch(character[0])
 				{
-					case '+':
+				case '+':
 					{
 						SetArrayCell(_operator, bracket, Operator_Add);
 					}
-					case '-':
+				case '-':
 					{
 						SetArrayCell(_operator, bracket, Operator_Subtract);
 					}
-					case '*':
+				case '*':
 					{
 						SetArrayCell(_operator, bracket, Operator_Multiply);
 					}
-					case '/':
+				case '/':
 					{
 						SetArrayCell(_operator, bracket, Operator_Divide);
 					}
-					case '^':
+				case '^':
 					{
 						SetArrayCell(_operator, bracket, Operator_Exponent);
 					}
@@ -7838,39 +7863,39 @@ public int FF2PanelH(Handle menu, MenuAction action, int client, int selection)
 	{
 		switch(selection)
 		{
-			case 1:
+		case 1:
 			{
 				Command_GetHP(client);
 			}
-			case 2:
+		case 2:
 			{
 				HelpPanelClass(client);
 			}
-			case 3:
+		case 3:
 			{
 				NewPanel(client, maxVersion);
 			}
-			case 4:
+		case 4:
 			{
 				QueuePanelCmd(client, 0);
 			}
-			case 5:
+		case 5:
 			{
 				MusicTogglePanel(client);
 			}
-			case 6:
+		case 6:
 			{
 				VoiceTogglePanel(client);
 			}
-			case 7:
+		case 7:
 			{
 				HelpPanel3(client);
 			}
-			case 8:
+		case 8:
 			{
 				CompanionTogglePanel(client);
 			}
-			default:
+		default:
 			{
 				return;
 			}
@@ -7921,21 +7946,21 @@ public int NewPanelH(Handle menu, MenuAction action, int param1, int param2)
 	{
 		switch(param2)
 		{
-			case 1:
+		case 1:
 			{
 				if(curHelp[param1]<=0)
-					NewPanel(param1, 0);
+				NewPanel(param1, 0);
 				else
-					NewPanel(param1, --curHelp[param1]);
+				NewPanel(param1, --curHelp[param1]);
 			}
-			case 2:
+		case 2:
 			{
 				if(curHelp[param1]>=maxVersion)
-					NewPanel(param1, maxVersion);
+				NewPanel(param1, maxVersion);
 				else
-					NewPanel(param1, ++curHelp[param1]);
+				NewPanel(param1, ++curHelp[param1]);
 			}
-			default: return;
+		default: return;
 		}
 	}
 }
@@ -8075,43 +8100,43 @@ public Action HelpPanelClass(int client)
 	SetGlobalTransTarget(client);
 	switch(class)
 	{
-		case TFClass_Scout:
+	case TFClass_Scout:
 		{
 			Format(text, sizeof(text), "%t", "help_scout");
 		}
-		case TFClass_Soldier:
+	case TFClass_Soldier:
 		{
 			Format(text, sizeof(text), "%t", "help_soldier");
 		}
-		case TFClass_Pyro:
+	case TFClass_Pyro:
 		{
 			Format(text, sizeof(text), "%t", "help_pyro");
 		}
-		case TFClass_DemoMan:
+	case TFClass_DemoMan:
 		{
 			Format(text, sizeof(text), "%t", "help_demo");
 		}
-		case TFClass_Heavy:
+	case TFClass_Heavy:
 		{
 			Format(text, sizeof(text), "%t", "help_heavy");
 		}
-		case TFClass_Engineer:
+	case TFClass_Engineer:
 		{
 			Format(text, sizeof(text), "%t", "help_engineer");
 		}
-		case TFClass_Medic:
+	case TFClass_Medic:
 		{
 			Format(text, sizeof(text), "%t", "help_medic");
 		}
-		case TFClass_Sniper:
+	case TFClass_Sniper:
 		{
 			Format(text, sizeof(text), "%t", "help_sniper");
 		}
-		case TFClass_Spy:
+	case TFClass_Spy:
 		{
 			Format(text, sizeof(text), "%t", "help_spy");
 		}
-		default:
+	default:
 		{
 			Format(text, sizeof(text), "");
 		}
@@ -8503,12 +8528,12 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 		int button;
 		switch(buttonMode)
 		{
-			case 2:
+		case 2:
 			{
 				button=IN_RELOAD;
 				bossHasReloadAbility[boss]=true;
 			}
-			default:
+		default:
 			{
 				button=IN_DUCK|IN_ATTACK2;
 				bossHasRightMouseAbility[boss]=true;
@@ -8614,9 +8639,9 @@ public int Native_FF2Version(Handle plugin, int numParams)
 	version[2]=StringToInt(STABLE_REVISION);
 	SetNativeArray(1, version, sizeof(version));
 	#if !defined DEV_REVISION
-		return false;
+	return false;
 	#else
-		return true;
+	return true;
 	#endif
 }
 
@@ -9182,19 +9207,19 @@ public int CheckRoundState()
 {
 	switch(GameRules_GetRoundState())
 	{
-		case RoundState_Init, RoundState_Pregame:
+	case RoundState_Init, RoundState_Pregame:
 		{
 			return -1;
 		}
-		case RoundState_StartGame, RoundState_Preround:
+	case RoundState_StartGame, RoundState_Preround:
 		{
 			return 0;
 		}
-		case RoundState_RoundRunning, RoundState_Stalemate:  //Oh Valve.
+	case RoundState_RoundRunning, RoundState_Stalemate:  //Oh Valve.
 		{
 			return 1;
 		}
-		default:
+	default:
 		{
 			return 2;
 		}
