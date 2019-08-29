@@ -316,7 +316,7 @@ native float FF2_GetArgNamedF(int boss, const char[] plugin_name, const char[] a
 native void FF2_GetArgNamedS(int boss, const char[] pluginName, const char[] abilityName, const char[] argument, char[] buffer, int bufferLength);
 
 /**
- * Named arguments are used for this ability in the boss config?
+ * Are named arguments used for this ability in the boss config?
  *
  * @param boss			Boss's index
  * @param pluginName	Name of plugin with this ability
