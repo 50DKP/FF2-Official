@@ -728,7 +728,7 @@ stock int FF2_SpawnWeapon(int client, char[] name, int index, int level, int qua
 }
 
 /**
- * Get named int argument and fall back to numbered one
+ * Get int argument of ability in compatible way
  *
  * @param boss			Boss's index
  * @param plugin_name	Name of plugin with this ability
@@ -747,7 +747,7 @@ stock int GetArgI(int boss, const char[] plugin_name, const char[] ability_name,
 }
 
 /**
- * Get named float argument and fall back to numbered one
+ * Get float argument of ability in compatible way
  *
  * @param boss			Boss's index
  * @param plugin_name	Name of plugin with this ability
@@ -766,7 +766,7 @@ stock float GetArgF(int boss, const char[] plugin_name, const char[] ability_nam
 }
 
 /**
- * Get named string argument and fall back to numbered one
+ * Get string argument of ability in compatible way
  *
  * @param boss			Boss's index
  * @param plugin_name	Name of plugin with this ability
