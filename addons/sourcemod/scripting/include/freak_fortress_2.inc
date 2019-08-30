@@ -727,6 +727,74 @@ stock int FF2_SpawnWeapon(int client, char[] name, int index, int level, int qua
 	#endif
 }
 
+/**
+ * Get named int argument and fall back to numbered one
+ *
+ * @param boss			Boss's index
+ * @param plugin_name	Name of plugin with this ability
+ * @param ability_name 	Name of ability
+ * @param argument 		Argument name
+ * @param index         Argument number, used as fallback when the numbered arguments are used
+ * @param defValue 		Returns if argument is not defined
+ *
+ * @return         		The value of the argument or default value
+ */
+stock int GetArgI(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int index, int defValue=0)
+{
+	return FF2_NamedArgumentsUsed(boss, plugin_name, ability_name) ?
+	       FF2_GetArgNamedI(boss, plugin_name, ability_name, argument, FF2_GetAbilityArgument(boss, plugin_name, ability_name, index, defValue)) :
+	       FF2_GetAbilityArgument(boss, plugin_name, ability_name, index, defValue);
+}
+
+/**
+ * Get named float argument and fall back to numbered one
+ *
+ * @param boss			Boss's index
+ * @param plugin_name	Name of plugin with this ability
+ * @param ability_name 	Name of ability
+ * @param argument 		Argument name
+ * @param index         Argument number, used as fallback when the numbered arguments are used
+ * @param defValue 		Returns if argument is not defined
+ *
+ * @return         		The value of the argument or default value
+ */
+stock float GetArgF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int index, float defValue=0.0)
+{
+	return FF2_NamedArgumentsUsed(boss, plugin_name, ability_name) ?
+	       FF2_GetArgNamedF(boss, plugin_name, ability_name, argument, FF2_GetAbilityArgumentFloat(boss, plugin_name, ability_name, index, defValue)) :
+	       FF2_GetAbilityArgumentFloat(boss, plugin_name, ability_name, index, defValue);
+}
+
+/**
+ * Get named string argument and fall back to numbered one
+ *
+ * @param boss			Boss's index
+ * @param plugin_name	Name of plugin with this ability
+ * @param ability_name 	Name of ability
+ * @param argument 		Argument name
+ * @param index         Argument number, used as fallback when the numbered arguments are used
+ * @param buffer 		Buffer for value of the argument
+ * @param bufferLength 	Size of the buffer
+ *
+ * @return         		Number of characters stored in the provided buffer
+ */
+stock int GetArgS(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int index, char[] buffer, int bufferLength)
+{
+	if(FF2_NamedArgumentsUsed(boss, plugin_name, ability_name))
+	{
+		FF2_GetArgNamedS(boss, plugin_name, ability_name, argument, buffer, bufferLength);
+		if(!strlen(buffer))
+		{
+			FF2_GetAbilityArgumentString(boss, plugin_name, ability_name, index, buffer, bufferLength);
+		}
+	}
+	else
+	{
+		FF2_GetAbilityArgumentString(boss, plugin_name, ability_name, index, buffer, bufferLength);
+	}
+	return strlen(buffer);
+}
+
 
 
 public SharedPlugin __pl_FF2=
