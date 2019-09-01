@@ -83,7 +83,6 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 	for(int client; client<MaxClients; client++)
 	{
 		enableSuperDuperJump[client]=false;
-		UberRageCount[client]=0.0;
 	}
 	
 	CreateTimer(9.11, StartBossTimer, _, TIMER_FLAG_NO_MAPCHANGE);  //TODO: Investigate.
