@@ -95,7 +95,7 @@ public Action StartBossTimer(Handle timer)  //TODO: What.
 	{
 		if(FF2_HasAbility(boss, this_plugin_name, "charge_teleport"))
 		{
-			FF2_SetBossCharge(boss, FF2_GetArgI(boss, this_plugin_name, "charge_teleport", "slot", 0, 1), -1.0*FF2_GetArgF(boss, this_plugin_name, "charge_teleport", 2, 5.0));
+			FF2_SetBossCharge(boss, FF2_GetArgI(boss, this_plugin_name, "charge_teleport", "slot", 0, 1), -1.0*FF2_GetArgF(boss, this_plugin_name, "charge_teleport", "cooldown", 2, 5.0));
 		}
 	}
 }
@@ -278,7 +278,7 @@ void Charge_BraveJump(const char[] ability_name, int boss, int slot, int status)
 {
 	int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	float charge=FF2_GetBossCharge(boss, slot);
-	float multiplier=FF2_GetArgF(boss, this_plugin_name, ability_name, "force multiplier" 3, 1.0);
+	float multiplier=FF2_GetArgF(boss, this_plugin_name, ability_name, "force multiplier", 3, 1.0);
 
 	switch(status)
 	{
