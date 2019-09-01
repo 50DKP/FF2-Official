@@ -67,7 +67,7 @@ public Action Timer_Disable_Anims(Handle timer)
 		if(FF2_HasAbility(boss, this_plugin_name, "special_noanims"))
 		{
 			SetEntProp(client, Prop_Send, "m_bUseClassAnimations", 0);
-			SetEntProp(client, Prop_Send, "m_bCustomModelRotates", FF2_GetAbilityArgument(boss, this_plugin_name, "special_noanims", 1, 0));
+			SetEntProp(client, Prop_Send, "m_bCustomModelRotates", FF2_GetArgI(boss, this_plugin_name, "special_noanims", "custom model rotates", 1, 0));
 		}
 	}
 	return Plugin_Continue;
@@ -82,13 +82,13 @@ void Rage_New_Weapon(int boss, const char[] ability_name)
 	}
 
 	char classname[64], attributes[256];
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 1, classname, sizeof(classname));
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, attributes, sizeof(attributes));
+	FF2_GetArgS(boss, this_plugin_name, ability_name, "classname", 1, classname, sizeof(classname));
+	FF2_GetArgS(boss, this_plugin_name, ability_name, "attributes", 3, attributes, sizeof(attributes));
 
-	int slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 4);
+	int slot=FF2_GetArgI(boss, this_plugin_name, ability_name, "weapon slot", 4);
 	TF2_RemoveWeaponSlot(client, slot);
 
-	int index=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2);
+	int index=FF2_GetArgI(boss, this_plugin_name, ability_name, "index", 2);
 	int weapon=FF2_SpawnWeapon(client, classname, index, 101, 5, attributes);
 	if(StrEqual(classname, "tf_weapon_builder") && index!=735)  //PDA, normal sapper
 	{
@@ -107,13 +107,13 @@ void Rage_New_Weapon(int boss, const char[] ability_name)
 		SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 3);
 	}
 
-	if(FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 6))
+	if(FF2_GetArgI(boss, this_plugin_name, ability_name, "force switch", 6))
 	{
 		SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 	}
 
-	int ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 5, 0);
-	int clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7, 0);
+	int ammo=FF2_GetArgI(boss, this_plugin_name, ability_name, "ammo", 5, 0);
+	int clip=FF2_GetArgI(boss, this_plugin_name, ability_name, "clip", 7, 0);
 	if(ammo || clip)
 	{
 		FF2_SetAmmo(client, weapon, ammo, clip);

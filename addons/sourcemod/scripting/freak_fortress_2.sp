@@ -8505,7 +8505,7 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 	Call_PushCell(boss);
 	Call_PushString(plugin_name);
 	Call_PushString(ability_name);
-	if(slot==-1)
+	if(slot<0 || slot>3)
 	{
 		Call_PushCell(3);  //Status - we're assuming here a life-loss ability will always be in use if it gets called
 		Call_Finish(action);
@@ -8527,14 +8527,31 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 		int button;
 		switch(buttonMode)
 		{
+		case 1:
+			{
+				button=IN_DUCK|IN_ATTACK2;
+				bossHasReloadAbility[boss]=true;
+			}
 		case 2:
 			{
 				button=IN_RELOAD;
 				bossHasReloadAbility[boss]=true;
 			}
+		case 3:
+			{
+				button=IN_ATTACK3;
+			}
+		case 4:
+			{
+				button=IN_DUCK;
+			}
+		case 5:
+			{
+				button=IN_SCORE;
+			}
 		default:
 			{
-				button=IN_DUCK|IN_ATTACK2;
+				button=IN_ATTACK2;
 				bossHasRightMouseAbility[boss]=true;
 			}
 		}
@@ -8554,7 +8571,16 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 			{
 				Call_PushCell(2);  //Status
 				Call_Finish(action);
-				float charge=100.0*0.2/GetAbilityArgumentFloat(boss, plugin_name, ability_name, 1, 1.5);
+				float charge_time;
+				if(GetArgumentI(boss, plugin_name, ability_name, "slot", -2)!=-2)
+				{
+					charge_time=GetArgumentF(boss, plugin_name, ability_name, "charge time", 1.5);
+				}
+				else
+				{
+					charge_time=GetAbilityArgumentFloat(boss, plugin_name, ability_name, 1, 1.5);
+				}
+				float charge=100.0*0.2/charge_time;
 				if(BossCharge[boss][slot]+charge<100.0)
 				{
 					BossCharge[boss][slot]+=charge;
@@ -8583,7 +8609,16 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 				CreateDataTimer(0.1, Timer_UseBossCharge, data);
 				WritePackCell(data, boss);
 				WritePackCell(data, slot);
-				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(boss, plugin_name, ability_name, 2, 5.0));
+				float cooldown;
+				if(GetArgumentI(boss, plugin_name, ability_name, "slot", -2)!=-2)
+				{
+					cooldown=GetArgumentF(boss, plugin_name, ability_name, "cooldown", 5.0);
+				}
+				else
+				{
+					cooldown=GetAbilityArgumentFloat(boss, plugin_name, ability_name, 2, 5.0);
+				}
+				WritePackFloat(data, -1.0*cooldown);
 				ResetPack(data);
 			}
 			else

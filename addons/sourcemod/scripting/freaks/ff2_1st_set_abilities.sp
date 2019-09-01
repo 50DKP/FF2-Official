@@ -145,7 +145,6 @@ public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 	if(SlowMoTimer)
 	{
 		TriggerTimer(SlowMoTimer);
-		KillTimer(SlowMoTimer);
 		SlowMoTimer=INVALID_HANDLE;
 	}
 	for(int client=1; client<=MaxClients; client++)
@@ -180,7 +179,7 @@ public Action Timer_GetBossTeam(Handle timer)
 
 public Action FF2_OnAbility2(int boss, const char[] plugin_name, const char[] ability_name, int status)
 {
-	int slot=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 0);
+	int slot=FF2_GetArgI(boss, this_plugin_name, ability_name, "slot", 0);
 	if(!slot)  //Rage
 	{
 		if(!boss)
@@ -248,20 +247,20 @@ void Rage_Clone(const char[] ability_name, int boss)
 {
 	Handle bossKV[8];
 	char bossName[32];
-	bool changeModel=view_as<bool>(FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 1));
-	int weaponMode=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 2);
+	bool changeModel=view_as<bool>(FF2_GetArgI(boss, this_plugin_name, ability_name, "custom model", 1));
+	int weaponMode=FF2_GetArgI(boss, this_plugin_name, ability_name, "weapon mode", 2);
 	char model[PLATFORM_MAX_PATH];
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 3, model, sizeof(model));
-	int class=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 4);
-	float ratio=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 5, 0.0);
+	FF2_GetArgS(boss, this_plugin_name, ability_name, "model", 3, model, sizeof(model));
+	int player_class=FF2_GetArgI(boss, this_plugin_name, ability_name, "class", 4);
+	float ratio=FF2_GetArgF(boss, this_plugin_name, ability_name, "ratio", 5, 0.0);
 	char classname[64]="tf_weapon_bottle";
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 6, classname, sizeof(classname));
-	int index=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 7, 191);
+	FF2_GetArgS(boss, this_plugin_name, ability_name, "classname", 6, classname, sizeof(classname));
+	int index=FF2_GetArgI(boss, this_plugin_name, ability_name, "index", 7, 191);
 	char attributes[128]="68 ; -1";
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 8, attributes, sizeof(attributes));
-	int ammo=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 9, -1);
-	int clip=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 10, -1);
-	int health=FF2_GetAbilityArgument(boss, this_plugin_name, ability_name, 11, 0);
+	FF2_GetArgS(boss, this_plugin_name, ability_name, "attributes", 8, attributes, sizeof(attributes));
+	int ammo=FF2_GetArgI(boss, this_plugin_name, ability_name, "ammo", 9, -1);
+	int clip=FF2_GetArgI(boss, this_plugin_name, ability_name, "clip", 10, -1);
+	int health=FF2_GetArgI(boss, this_plugin_name, ability_name, "health", 11, 0);
 
 	float position[3], velocity[3];
 	GetEntPropVector(GetClientOfUserId(FF2_GetBossUserId(boss)), Prop_Data, "m_vecOrigin", position);
@@ -312,7 +311,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 		ChangeClientTeam(clone, FF2_GetBossTeam());
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=boss;
-		TF2_SetPlayerClass(clone, (class ? (view_as<TFClassType>(class)) : (view_as<TFClassType>(KvGetNum(bossKV[config], "class", 0)))), _, false);
+		TF2_SetPlayerClass(clone, (player_class ? (view_as<TFClassType>(player_class)) : (view_as<TFClassType>(KvGetNum(bossKV[config], "class", 0)))), _, false);
 
 		if(changeModel)
 		{
@@ -558,7 +557,7 @@ public Action Timer_Prepare_Explosion_Rage(Handle timer, Handle data)
 	GetEntPropVector(client, Prop_Data, "m_vecOrigin", position);
 
 	char sound[PLATFORM_MAX_PATH];
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 1, sound, PLATFORM_MAX_PATH);
+	FF2_GetArgS(boss, this_plugin_name, ability_name, "sound", 1, sound, PLATFORM_MAX_PATH);
 	if(strlen(sound))
 	{
 		EmitSoundToAll(sound, client, _, _, _, _, _, client, position);
@@ -624,9 +623,9 @@ public Action Timer_Rage_Explosive_Dance(Handle timer, any boss)
 void Rage_Slowmo(int boss, const char[] ability_name)
 {
 	FF2_SetFF2flags(boss, FF2_GetFF2flags(boss)|FF2FLAG_CHANGECVAR);
-	SetConVarFloat(cvarTimeScale, FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 2, 0.1));
-	float duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 1, 1.0)+1.0;
-	SlowMoTimer=CreateTimer(duration*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 2, 0.1), Timer_StopSlowMo, boss, TIMER_FLAG_NO_MAPCHANGE);
+	SetConVarFloat(cvarTimeScale, FF2_GetArgF(boss, this_plugin_name, ability_name, "timescale", 2, 0.1));
+	float duration=FF2_GetArgF(boss, this_plugin_name, ability_name, "duration", 1, 1.0)+1.0;
+	SlowMoTimer=CreateTimer(duration*FF2_GetArgF(boss, this_plugin_name, ability_name, "timescale", 2, 0.1), Timer_StopSlowMo, boss, TIMER_FLAG_NO_MAPCHANGE);
 	int boss_idx=GetClientOfUserId(FF2_GetBossUserId(boss));
 	FF2Flags[boss_idx]=FF2Flags[boss_idx]|FLAG_SLOWMOREADYCHANGE|FLAG_ONSLOWMO;
 	UpdateClientCheatValue(1);
@@ -634,7 +633,7 @@ void Rage_Slowmo(int boss, const char[] ability_name)
 	int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	if(client)
 	{
-		CreateTimer(duration*FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 2, 0.1), Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, FF2_GetBossTeam()==view_as<int>(TFTeam_Blue) ? "scout_dodge_blue" : "scout_dodge_red", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(duration*FF2_GetArgF(boss, this_plugin_name, ability_name, "timescale", 2, 0.1), Timer_RemoveEntity, EntIndexToEntRef(AttachParticle(client, FF2_GetBossTeam()==view_as<int>(TFTeam_Blue) ? "scout_dodge_blue" : "scout_dodge_red", 75.0)), TIMER_FLAG_NO_MAPCHANGE);
 	}
 
 	EmitSoundToAll(SOUND_SLOW_MO_START, _, _, _, _, _, _, _, _, _, false);
@@ -669,7 +668,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float veloc
 	if(buttons & IN_ATTACK)
 	{
 		FF2Flags[client]&=~FLAG_SLOWMOREADYCHANGE;
-		CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "rage_matrix_attack", 3, 0.2), Timer_SlowMoChange, boss, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(FF2_GetArgF(boss, this_plugin_name, "rage_matrix_attack", "hidden1", 3, 0.2), Timer_SlowMoChange, boss, TIMER_FLAG_NO_MAPCHANGE);
 
 		float bossPosition[3], endPosition[3], eyeAngles[3];
 		GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition);
@@ -750,7 +749,7 @@ public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 		if(FF2_HasAbility(boss, this_plugin_name, "special_dropprop"))
 		{
 			char model[PLATFORM_MAX_PATH];
-			FF2_GetAbilityArgumentString(boss, this_plugin_name, "special_dropprop", 1, model, sizeof(model));
+			FF2_GetArgS(boss, this_plugin_name, "special_dropprop", "model", 1, model, sizeof(model));
 			if(model[0]!='\0')  //Because you never know when someone is careless and doesn't specify a model...
 			{
 				if(!IsModelPrecached(model))  //Make sure the boss author precached the model (similar to above)
@@ -767,7 +766,7 @@ public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 					PrecacheModel(model);
 				}
 
-				if(FF2_GetAbilityArgument(boss, this_plugin_name, "special_dropprop", 3, 0))
+				if(FF2_GetArgI(boss, this_plugin_name, "special_dropprop", "remove ragdolls", 3, 0))
 				{
 					CreateTimer(0.01, Timer_RemoveRagdoll, GetEventInt(event, "userid"), TIMER_FLAG_NO_MAPCHANGE);
 				}
@@ -785,7 +784,7 @@ public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 					GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
 					position[2]+=20;
 					TeleportEntity(prop, position, NULL_VECTOR, NULL_VECTOR);
-					float duration=FF2_GetAbilityArgumentFloat(boss, this_plugin_name, "special_dropprop", 2, 0.0);
+					float duration=FF2_GetArgF(boss, this_plugin_name, "special_dropprop", "duration", 2, 0.0);
 					if(duration>0.5)
 					{
 						CreateTimer(duration, Timer_RemoveEntity, EntIndexToEntRef(prop), TIMER_FLAG_NO_MAPCHANGE);
@@ -821,7 +820,7 @@ public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	}
 
 	boss=FF2_GetBossIndex(client);
-	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack") && FF2_GetAbilityArgument(boss, this_plugin_name, "rage_cloneattack", 12, 1) && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
+	if(boss!=-1 && FF2_HasAbility(boss, this_plugin_name, "rage_cloneattack") && FF2_GetArgI(boss, this_plugin_name, "rage_cloneattack", "die on boss death", 12, 1) && !(GetEventInt(event, "death_flags") & TF_DEATHFLAG_DEADRINGER))
 	{
 		for(int target=1; target<=MaxClients; target++)
 		{
