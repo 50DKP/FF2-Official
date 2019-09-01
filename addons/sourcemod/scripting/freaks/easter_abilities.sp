@@ -46,7 +46,7 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 		FF2_GetArgS(boss, this_plugin_name, OBJECTS, "model", 2, model, sizeof(model));
 		int skin=FF2_GetArgI(boss, this_plugin_name, OBJECTS, "skin", 3);
 		int count=FF2_GetArgI(boss, this_plugin_name, OBJECTS, "amount", 4, 14);
-		float distance=FF2_GetArgF(boss, this_plugin_name, OBJECTS, 5, "distance", 30.0);
+		float distance=FF2_GetArgF(boss, this_plugin_name, OBJECTS, "distance", 5, 30.0);
 		SpawnManyObjects(classname, client, model, skin, count, distance);
 		return;
 	}
@@ -89,7 +89,7 @@ public void OnProjectileSpawned(int entity)
 			if(StrEqual(classname, projectile, false))
 			{
 				char model[PLATFORM_MAX_PATH];
-				FF2_GetArgs(boss, this_plugin_name, PROJECTILE, "model", 2, model, sizeof(model));
+				FF2_GetArgS(boss, this_plugin_name, PROJECTILE, "model", 2, model, sizeof(model));
 				if(model[0]=='\0')
 				{
 					char bossName[64];
