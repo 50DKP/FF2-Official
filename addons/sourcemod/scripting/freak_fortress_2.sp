@@ -8530,7 +8530,7 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 		case 1:
 			{
 				button=IN_DUCK|IN_ATTACK2;
-				bossHasReloadAbility[boss]=true;
+				bossHasRightMouseAbility[boss]=true;
 			}
 		case 2:
 			{
