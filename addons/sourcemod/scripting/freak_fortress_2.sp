@@ -3758,57 +3758,57 @@ public Action TF2Items_OnGiveNamedItem(int client, char[] classname, int iItemDe
 				}
 			}
 		}
-	
+		
 
-	if(TF2_GetPlayerClass(client)==TFClass_Soldier && (!StrContains(classname, "tf_weapon_rocketlauncher", false) || !StrContains(classname, "tf_weapon_shotgun", false)))
-	{
-		Handle itemOverride;
-		if(iItemDefinitionIndex==127)  //Direct Hit
+		if(TF2_GetPlayerClass(client)==TFClass_Soldier && (!StrContains(classname, "tf_weapon_rocketlauncher", false) || !StrContains(classname, "tf_weapon_shotgun", false)))
 		{
-			itemOverride=PrepareItemHandle(item, _, _, "114 ; 1 ; 179 ; 1.0");
-			//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
-			//179: Mini-crits become crits
-		}
-		else
-		{
-			itemOverride=PrepareItemHandle(item, _, _, "114 ; 1");
-			//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
+			Handle itemOverride;
+			if(iItemDefinitionIndex==127)  //Direct Hit
+			{
+				itemOverride=PrepareItemHandle(item, _, _, "114 ; 1 ; 179 ; 1.0");
+				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
+				//179: Mini-crits become crits
+			}
+			else
+			{
+				itemOverride=PrepareItemHandle(item, _, _, "114 ; 1");
+				//114: Mini-crits targets launched airborne by explosions, grapple hooks or enemy attacks
+			}
+
+			if(itemOverride!=INVALID_HANDLE)
+			{
+				item=itemOverride;
+				return Plugin_Changed;
+			}
 		}
 
-		if(itemOverride!=INVALID_HANDLE)
+		if(!StrContains(classname, "tf_weapon_syringegun_medic"))  //Syringe guns
 		{
-			item=itemOverride;
-			return Plugin_Changed;
+			Handle itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1", true);
+			//17: 5% uber on hit
+			//144: Sets weapon mode - *possibly* the overdose speed effect
+			if(itemOverride!=INVALID_HANDLE)
+			{
+				item=itemOverride;
+				return Plugin_Changed;
+			}
 		}
-	}
-
-	if(!StrContains(classname, "tf_weapon_syringegun_medic"))  //Syringe guns
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "17 ; 0.05 ; 144 ; 1", true);
-		//17: 5% uber on hit
-		//144: Sets weapon mode - *possibly* the overdose speed effect
-		if(itemOverride!=INVALID_HANDLE)
+		else if(!StrContains(classname, "tf_weapon_medigun"))  //Mediguns
 		{
-			item=itemOverride;
-			return Plugin_Changed;
+			Handle itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.75 ; 11 ; 1.5 ; 144 ; 2.0 ; 199 ; 0.75 ; 314 ; 4 ; 547 ; 0.75", true);
+			//10: +75% faster charge rate
+			//11: +50% overheal bonus
+			//144: Quick-fix speed/jump effects
+			//199: Deploys 25% faster
+			//314: Ubercharge lasts 4 seconds longer (aka 50% longer)
+			//547: Holsters 25% faster
+			if(itemOverride!=INVALID_HANDLE)
+			{
+				item=itemOverride;
+				return Plugin_Changed;
+			}
 		}
-	}
-	else if(!StrContains(classname, "tf_weapon_medigun"))  //Mediguns
-	{
-		Handle itemOverride=PrepareItemHandle(item, _, _, "10 ; 1.75 ; 11 ; 1.5 ; 144 ; 2.0 ; 199 ; 0.75 ; 314 ; 4 ; 547 ; 0.75", true);
-		//10: +75% faster charge rate
-		//11: +50% overheal bonus
-		//144: Quick-fix speed/jump effects
-		//199: Deploys 25% faster
-		//314: Ubercharge lasts 4 seconds longer (aka 50% longer)
-		//547: Holsters 25% faster
-		if(itemOverride!=INVALID_HANDLE)
-		{
-			item=itemOverride;
-			return Plugin_Changed;
-		}
-	}
-	
+		
 	}
 	return Plugin_Continue;
 }
@@ -8506,7 +8506,7 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 	Call_PushCell(boss);
 	Call_PushString(plugin_name);
 	Call_PushString(ability_name);
-	if(slot==-1)
+	if(slot<0 || slot>3)
 	{
 		Call_PushCell(3);  //Status - we're assuming here a life-loss ability will always be in use if it gets called
 		Call_Finish(action);
@@ -8528,14 +8528,31 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 		int button;
 		switch(buttonMode)
 		{
+		case 1:
+			{
+				button=IN_DUCK|IN_ATTACK2;
+				bossHasReloadAbility[boss]=true;
+			}
 		case 2:
 			{
 				button=IN_RELOAD;
 				bossHasReloadAbility[boss]=true;
 			}
+		case 3:
+			{
+				button=IN_ATTACK3;
+			}
+		case 4:
+			{
+				button=IN_DUCK;
+			}
+		case 5:
+			{
+				button=IN_SCORE;
+			}
 		default:
 			{
-				button=IN_DUCK|IN_ATTACK2;
+				button=IN_ATTACK2;
 				bossHasRightMouseAbility[boss]=true;
 			}
 		}
@@ -8555,7 +8572,16 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 			{
 				Call_PushCell(2);  //Status
 				Call_Finish(action);
-				float charge=100.0*0.2/GetAbilityArgumentFloat(boss, plugin_name, ability_name, 1, 1.5);
+				float charge_time;
+				if(GetArgumentI(boss, plugin_name, ability_name, "slot", -2)!=-2)
+				{
+					charge_time=GetArgumentF(boss, plugin_name, ability_name, "charge time", 1.5);
+				}
+				else
+				{
+					charge_time=GetAbilityArgumentFloat(boss, plugin_name, ability_name, 1, 1.5);
+				}
+				float charge=100.0*0.2/charge_time;
 				if(BossCharge[boss][slot]+charge<100.0)
 				{
 					BossCharge[boss][slot]+=charge;
@@ -8584,7 +8610,16 @@ bool UseAbility(const char[] ability_name, const char[] plugin_name, int boss, i
 				CreateDataTimer(0.1, Timer_UseBossCharge, data);
 				WritePackCell(data, boss);
 				WritePackCell(data, slot);
-				WritePackFloat(data, -1.0*GetAbilityArgumentFloat(boss, plugin_name, ability_name, 2, 5.0));
+				float cooldown;
+				if(GetArgumentI(boss, plugin_name, ability_name, "slot", -2)!=-2)
+				{
+					cooldown=GetArgumentF(boss, plugin_name, ability_name, "cooldown", 5.0);
+				}
+				else
+				{
+					cooldown=GetAbilityArgumentFloat(boss, plugin_name, ability_name, 2, 5.0);
+				}
+				WritePackFloat(data, -1.0*cooldown);
 				ResetPack(data);
 			}
 			else

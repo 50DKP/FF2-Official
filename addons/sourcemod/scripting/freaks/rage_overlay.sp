@@ -45,8 +45,8 @@ public Action FF2_OnAbility2(int boss, const char[] plugin_name, const char[] ab
 void Rage_Overlay(int boss, const char[] ability_name)
 {
 	char overlay[PLATFORM_MAX_PATH];
-	FF2_GetAbilityArgumentString(boss, this_plugin_name, ability_name, 1, overlay, PLATFORM_MAX_PATH);
-	Format(overlay, PLATFORM_MAX_PATH, "r_screenoverlay \"%s\"", overlay);
+	FF2_GetArgS(boss, this_plugin_name, ability_name, "path", 1, overlay, sizeof(overlay));
+	Format(overlay, sizeof(overlay), "r_screenoverlay \"%s\"", overlay);
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(int target=1; target<=MaxClients; target++)
 	{
@@ -56,7 +56,7 @@ void Rage_Overlay(int boss, const char[] ability_name)
 		}
 	}
 
-	CreateTimer(FF2_GetAbilityArgumentFloat(boss, this_plugin_name, ability_name, 2, 6.0), Timer_Remove_Overlay, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(FF2_GetArgF(boss, this_plugin_name, ability_name, "duration", 2, 6.0), Timer_Remove_Overlay, _, TIMER_FLAG_NO_MAPCHANGE);
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
 }
 

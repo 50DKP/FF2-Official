@@ -748,7 +748,7 @@ stock int FF2_SpawnWeapon(int client, char[] name, int index, int level, int qua
  *
  * @return         		The value of the argument or default value
  */
-stock int GetArgI(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int index, int defValue=0)
+stock int FF2_GetArgI(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int index, int defValue=0)
 {
 	return FF2_NamedArgumentsUsed(boss, plugin_name, ability_name) ?
 	       FF2_GetArgNamedI(boss, plugin_name, ability_name, argument, FF2_GetAbilityArgument(boss, plugin_name, ability_name, index, defValue)) :
@@ -767,7 +767,7 @@ stock int GetArgI(int boss, const char[] plugin_name, const char[] ability_name,
  *
  * @return         		The value of the argument or default value
  */
-stock float GetArgF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int index, float defValue=0.0)
+stock float FF2_GetArgF(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int index, float defValue=0.0)
 {
 	return FF2_NamedArgumentsUsed(boss, plugin_name, ability_name) ?
 	       FF2_GetArgNamedF(boss, plugin_name, ability_name, argument, FF2_GetAbilityArgumentFloat(boss, plugin_name, ability_name, index, defValue)) :
@@ -787,7 +787,7 @@ stock float GetArgF(int boss, const char[] plugin_name, const char[] ability_nam
  *
  * @return         		Number of characters stored in the provided buffer
  */
-stock int GetArgS(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int index, char[] buffer, int bufferLength)
+stock int FF2_GetArgS(int boss, const char[] plugin_name, const char[] ability_name, const char[] argument, int index, char[] buffer, int bufferLength)
 {
 	if(FF2_NamedArgumentsUsed(boss, plugin_name, ability_name))
 	{
