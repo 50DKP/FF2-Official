@@ -3486,7 +3486,6 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 		DmgTriple[boss]=true;
 	}
 	
-	SelfKnockback[boss]=false;
 	if(KvGetNum(BossKV[Special[boss]], "knockback", -1)>=0)
 	{
 		SelfKnockback[boss]=KvGetNum(BossKV[Special[boss]], "knockback", -1);
@@ -3506,7 +3505,7 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 	}
 	else
 	{
-		randomCrits[boss]=view_as<bool>(cvarCrits.IntValue);
+		randomCrits[boss]=cvarCrits.BoolValue;
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
@@ -6858,7 +6857,7 @@ stock void RandomlyDisguise(int client)	//Original code was mecha's, but the ori
 
 public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname, bool &result)
 {
-	if(IsBoss(client) && CheckRoundState()==1 && !TF2_IsPlayerCritBuffed(client) && IsBoss(client) && !randomCrits[GetBossIndex(client)])
+	if(IsBoss(client) && CheckRoundState()==1 && !TF2_IsPlayerCritBuffed(client) && !randomCrits[GetBossIndex(client)])
 	{
 		result=false;
 		return Plugin_Changed;
