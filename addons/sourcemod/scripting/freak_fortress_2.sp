@@ -116,6 +116,8 @@ bool emitRageSound[MAXPLAYERS+1];
 bool bossHasReloadAbility[MAXPLAYERS+1];
 bool bossHasRightMouseAbility[MAXPLAYERS+1];
 bool DmgTriple[MAXPLAYERS+1];
+bool SelfKnockback[MAXPLAYERS+1];
+bool randomCrits[MAXPLAYERS+1];
 
 int timeleft;
 
@@ -3484,6 +3486,28 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 	{
 		DmgTriple[boss]=true;
 	}
+	
+	if(KvGetNum(BossKV[Special[boss]], "knockback", -1)>=0)
+	{
+		SelfKnockback[boss]=KvGetNum(BossKV[Special[boss]], "knockback", -1);
+	}
+	else if(KvGetNum(BossKV[Special[boss]], "rocketjump", -1)>=0)
+	{
+		SelfKnockback[boss]=KvGetNum(BossKV[Special[boss]], "rocketjump", -1);
+	}
+	else
+	{
+		SelfKnockback[boss]=false;
+	}
+
+	if(KvGetNum(BossKV[Special[boss]], "crits", -1) >= 0)
+	{
+		randomCrits[boss]=view_as<bool>(KvGetNum(BossKV[Special[boss]], "crits", -1));
+	}
+	else
+	{
+		randomCrits[boss]=cvarCrits.BoolValue;
+	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 	TF2_RemovePlayerDisguise(client);
@@ -5857,6 +5881,12 @@ public Action OnPlayerHurt(Handle event, const char[] name, bool dontBroadcast)
 	int boss=GetBossIndex(client);
 	int damage=GetEventInt(event, "damageamount");
 	int custom=GetEventInt(event, "custom");
+
+	if(client==attacker && GetBossIndex(attacker)!=-1 && SelfKnockback[GetBossIndex(attacker)])
+	{
+		return Plugin_Continue;
+	}
+
 	if(boss==-1 || !Boss[boss] || !IsValidEntity(Boss[boss]) || client==attacker)
 	{
 		return Plugin_Continue;
@@ -5999,7 +6029,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 		return Plugin_Continue;
 	}
 
-	if((attacker<=0 || client==attacker) && IsBoss(client))
+	if((attacker<=0 || client==attacker) && IsBoss(client) && !SelfKnockback[GetBossIndex(client)])
 	{
 		return Plugin_Handled;
 	}
@@ -6828,7 +6858,7 @@ stock void RandomlyDisguise(int client)	//Original code was mecha's, but the ori
 
 public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname, bool &result)
 {
-	if(IsBoss(client) && CheckRoundState()==1 && !TF2_IsPlayerCritBuffed(client) && !BossCrits)
+	if(IsBoss(client) && CheckRoundState()==1 && !TF2_IsPlayerCritBuffed(client) && !randomCrits[GetBossIndex(client)])
 	{
 		result=false;
 		return Plugin_Changed;
