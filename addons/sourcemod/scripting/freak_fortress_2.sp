@@ -170,7 +170,6 @@ int PointDelay=6;
 float Announce=120.0;
 int AliveToEnable=5;
 int PointType;
-bool BossCrits=true;
 int arenaRounds;
 float circuitStun;
 int countdownPlayers=1;
@@ -1530,7 +1529,6 @@ public void EnableFF2()
 	canBossRTD=GetConVarBool(cvarBossRTD);
 	DeadRingerHud=GetConVarBool(cvarDeadRingerHud);
 	AliveToEnable=GetConVarInt(cvarAliveToEnable);
-	BossCrits=GetConVarBool(cvarCrits);
 	if(GetConVarInt(cvarFirstRound)!=-1)
 	{
 		arenaRounds=GetConVarInt(cvarFirstRound) ? 0 : 1;
@@ -2073,10 +2071,6 @@ public void CvarChange(Handle convar, const char[] oldValue, const char[] newVal
 	else if(convar==cvarAliveToEnable)
 	{
 		AliveToEnable=StringToInt(newValue);
-	}
-	else if(convar==cvarCrits)
-	{
-		BossCrits=view_as<bool>(StringToInt(newValue));
 	}
 	else if(convar==cvarFirstRound)  //DEPRECATED
 	{
@@ -3489,11 +3483,11 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 	
 	if(KvGetNum(BossKV[Special[boss]], "knockback", -1)>=0)
 	{
-		SelfKnockback[boss]=KvGetNum(BossKV[Special[boss]], "knockback", -1);
+		SelfKnockback[boss]=view_as<bool>(KvGetNum(BossKV[Special[boss]], "knockback", -1));
 	}
 	else if(KvGetNum(BossKV[Special[boss]], "rocketjump", -1)>=0)
 	{
-		SelfKnockback[boss]=KvGetNum(BossKV[Special[boss]], "rocketjump", -1);
+		SelfKnockback[boss]=view_as<bool>(KvGetNum(BossKV[Special[boss]], "rocketjump", -1));
 	}
 	else
 	{
@@ -4243,7 +4237,7 @@ public Action OnUberDeployed(Handle event, const char[] name, bool dontBroadcast
 				{
 					uberTarget[client]=-1;
 				}
-				CreateTimer(0.1, Timer_Uber, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(0.4, Timer_Uber, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 	}
@@ -4256,12 +4250,12 @@ public Action Timer_Uber(Handle timer, any medigunid)
 	if(medigun && IsValidEntity(medigun) && CheckRoundState()==1)
 	{
 		int client=GetEntPropEnt(medigun, Prop_Send, "m_hOwnerEntity");
-		float charge=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
+		bool uber_deployed=view_as<bool>(GetEntProp(medigun, Prop_Send, "m_bChargeRelease"));
 		if(IsValidClient(client, false) && IsPlayerAlive(client) && GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon")==medigun)
 		{
-			int target=GetHealingTarget(client);
-			if(charge>1)
+			if(uber_deployed)
 			{
+				int target=GetHealingTarget(client);
 				TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.5);
 				if(IsValidClient(target, false) && IsPlayerAlive(target))
 				{
@@ -4280,6 +4274,7 @@ public Action Timer_Uber(Handle timer, any medigunid)
 			}
 			else
 			{
+				uberTarget[client]=-1;
 				return Plugin_Stop;
 			}
 		}
