@@ -4256,7 +4256,6 @@ public Action Timer_Uber(Handle timer, any medigunid)
 	if(medigun && IsValidEntity(medigun) && CheckRoundState()==1)
 	{
 		int client=GetEntPropEnt(medigun, Prop_Send, "m_hOwnerEntity");
-		float charge=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
 		bool uber_deployed=GetEntProp(medigun, Prop_Send, "m_bChargeRelease");
 		if(IsValidClient(client, false) && IsPlayerAlive(client) && GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon")==medigun)
 		{
