@@ -4243,7 +4243,7 @@ public Action OnUberDeployed(Handle event, const char[] name, bool dontBroadcast
 				{
 					uberTarget[client]=-1;
 				}
-				CreateTimer(0.1, Timer_Uber, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+				CreateTimer(0.4, Timer_Uber, EntIndexToEntRef(medigun), TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
 		}
 	}
@@ -4257,11 +4257,12 @@ public Action Timer_Uber(Handle timer, any medigunid)
 	{
 		int client=GetEntPropEnt(medigun, Prop_Send, "m_hOwnerEntity");
 		float charge=GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel");
+		bool uber_deployed=GetEntProp(medigun, Prop_Send, "m_bChargeRelease");
 		if(IsValidClient(client, false) && IsPlayerAlive(client) && GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon")==medigun)
 		{
-			int target=GetHealingTarget(client);
-			if(charge>1)
+			if(uber_deployed)
 			{
+				int target=GetHealingTarget(client);
 				TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.5);
 				if(IsValidClient(target, false) && IsPlayerAlive(target))
 				{
@@ -4280,6 +4281,7 @@ public Action Timer_Uber(Handle timer, any medigunid)
 			}
 			else
 			{
+				uberTarget[client]=-1;
 				return Plugin_Stop;
 			}
 		}
