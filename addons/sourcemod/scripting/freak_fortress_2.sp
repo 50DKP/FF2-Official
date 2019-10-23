@@ -9235,6 +9235,10 @@ public void OnEntityDestroyed(int entity)
 		if(g_Monoculus==entity)
 		{
 			g_Monoculus=FindEntityByClassname2(entity, MONOCULUS);
+			if(!IsValidEntity(g_Monoculus) || g_Monoculus==-1)
+			{
+				FindHealthBar();
+			}
 		}
 	}
 }
