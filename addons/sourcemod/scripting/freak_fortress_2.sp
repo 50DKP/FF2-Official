@@ -6107,7 +6107,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 				if(IsValidEntity(weapon) && weapon>MaxClients && attacker<=MaxClients)
 				{
 					GetEntityClassname(weapon, classname, sizeof(classname));
-					if(!StrContains(classname, "eyeball_boss"))  //Dang spell Monoculuses
+					if(!HasEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex"))  //Dang spell Monoculuses
 					{
 						index=-1;
 						Format(classname, sizeof(classname), "");
@@ -6548,7 +6548,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 		}
 		else
 		{
-			int index=(IsValidEntity(weapon) && weapon>MaxClients && attacker<=MaxClients ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
+			int index=((IsValidEntity(weapon) && HasEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") && attacker<=MaxClients) ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
 			if(index==307)  //Ullapool Caber
 			{
 				if(detonations[attacker]<allowedDetonations)
@@ -9231,10 +9231,10 @@ public void OnEntityDestroyed(int entity)
 {
 	if(entity==g_Monoculus)
 	{
-		g_Monoculus=FindEntityByClassname(-1, MONOCULUS);
+		g_Monoculus=FindEntityByClassname2(-1, MONOCULUS);
 		if(g_Monoculus==entity)
 		{
-			g_Monoculus=FindEntityByClassname(entity, MONOCULUS);
+			g_Monoculus=FindEntityByClassname2(entity, MONOCULUS);
 		}
 	}
 }
@@ -9291,7 +9291,7 @@ public int CheckRoundState()
 
 void FindHealthBar()
 {
-	healthBar=FindEntityByClassname(-1, HEALTHBAR_CLASS);
+	healthBar=FindEntityByClassname2(-1, HEALTHBAR_CLASS);
 	if(!IsValidEntity(healthBar))
 	{
 		healthBar=CreateEntityByName(HEALTHBAR_CLASS);
