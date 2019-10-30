@@ -2269,7 +2269,7 @@ stock bool CheckToChangeMapDoors()
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/doors.cfg");
 	if(!FileExists(config))
 	{
-		if(!strncmp(currentmap, "vsh_lolcano_pb1", 15, false))
+		if(!strcmp(currentmap, "vsh_lolcano_pb1", false))
 		{
 			checkDoors=true;
 		}
@@ -2279,7 +2279,7 @@ stock bool CheckToChangeMapDoors()
 	Handle file=OpenFile(config, "r");
 	if(file==INVALID_HANDLE)
 	{
-		if(!strncmp(currentmap, "vsh_lolcano_pb1", 15, false))
+		if(!strcmp(currentmap, "vsh_lolcano_pb1", false))
 		{
 			checkDoors=true;
 		}
