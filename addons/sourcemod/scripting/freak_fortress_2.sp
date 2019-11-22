@@ -3394,7 +3394,7 @@ void EquipBoss(int boss)
 			int index=KvGetNum(BossKV[Special[boss]], "index");
 			int level=KvGetNum(BossKV[Special[boss]], "level", 101);
 			int quality=KvGetNum(BossKV[Special[boss]], "quality", 5);
-			int weapon=FF2_SpawnWeapon(client, classname, index, level, quality, attributes, KvGetNum(BossKV[Special[boss]], "show", 0));
+			int weapon=FF2_SpawnWeapon(client, classname, index, level, quality, attributes, view_as<bool>(KvGetNum(BossKV[Special[boss]], "show", 0)));
 			if(weapon==-1)
 			{
 				LogError("Tried to give weapon to boss %s, but an error occured!", bossName);
@@ -3513,7 +3513,7 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 	TF2_RemovePlayerDisguise(client);
-	TF2_SetPlayerClass(client, view_as<TFClassType>(GetClassForBoss(BossKV[Special[boss]]), _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
+	TF2_SetPlayerClass(client, GetClassForBoss(BossKV[Special[boss]]), _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
 	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	switch(KvGetNum(BossKV[Special[boss]], "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
@@ -6779,7 +6779,7 @@ public Action Timer_DisguiseBackstab(Handle timer, any userid)
 stock TFClassType GetClassForBoss(Handle keyvalue)
 {
 	char buffer[16];
-	int result=0;
+	TFClassType result=TFClass_Unknown;
 	KvGetString(keyvalue, "class", buffer, sizeof(buffer));
 	if(buffer[0]!='\0')
 	{
@@ -6789,7 +6789,7 @@ stock TFClassType GetClassForBoss(Handle keyvalue)
 			return result;
 		}
 	}
-	result=StringToInt(buffer);
+	result=view_as<TFClassType>(StringToInt(buffer));
 	
 	//Some checks because there are so many kinds of people here...
 	if(result<=TFClass_Unknown || result>TFClass_Engineer)
@@ -6806,7 +6806,7 @@ stock void AssignTeam(int client, int team)
 		FF2Dbg("%N does not have a desired class!", client);
 		if(IsBoss(client))
 		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", GetClassForBoss(BossKV[Special[Boss[client]]]);  //So we assign one to prevent living spectators
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", GetClassForBoss(BossKV[Special[Boss[client]]]));  //So we assign one to prevent living spectators
 		}
 		else
 		{
