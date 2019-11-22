@@ -1875,7 +1875,7 @@ public void LoadCharacter(const char[] character)
 		if(KvJumpToKey(BossKV[Specials], config))
 		{
 			char plugin_name[64];
-			KvGetString(BossKV[Specials], "plugin_name", plugin_name, 64);
+			KvGetString(BossKV[Specials], "plugin_name", plugin_name, sizeof(plugin_name));
 			BuildPath(Path_SM, config, sizeof(config), "plugins/freaks/%s.ff2", plugin_name);
 			if(!FileExists(config))
 			{
@@ -3375,21 +3375,26 @@ void EquipBoss(int boss)
 		{
 			KvGetString(BossKV[Special[boss]], "name", classname, sizeof(classname));
 			KvGetString(BossKV[Special[boss]], "attributes", attributes, sizeof(attributes));
-			if(attributes[0]!='\0')
+			if(!KvGetNum(BossKV[Special[boss]], "override", 0))
 			{
-				Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1 ; %s", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2 ,attributes);
-				//68: +2 cap rate
-				//2: x3.1 damage
-			}
-			else
-			{
-				Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2);
-				//68: +2 cap rate
-				//2: x3.1 damage
+				if(attributes[0]!='\0')
+				{
+					Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1 ; %s", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2 ,attributes);
+					//68: +2 cap rate
+					//2: x3.1 damage
+				}
+				else
+				{
+					Format(attributes, sizeof(attributes), "68 ; %i ; 2 ; 3.1", TF2_GetPlayerClass(client)==TFClass_Scout ? 1 : 2);
+					//68: +2 cap rate
+					//2: x3.1 damage
+				}
 			}
 
 			int index=KvGetNum(BossKV[Special[boss]], "index");
-			int weapon=FF2_SpawnWeapon(client, classname, index, 101, 5, attributes);
+			int level=KvGetNum(BossKV[Special[boss]], "level", 101);
+			int quality=KvGetNum(BossKV[Special[boss]], "quality", 5);
+			int weapon=FF2_SpawnWeapon(client, classname, index, level, quality, attributes, KvGetNum(BossKV[Special[boss]], "show", 0));
 			if(weapon==-1)
 			{
 				LogError("Tried to give weapon to boss %s, but an error occured!", bossName);
@@ -3416,10 +3421,6 @@ void EquipBoss(int boss)
 			{
 				SetEntPropFloat(weapon, Prop_Send, "m_flModelScale", 0.001);
 			}
-			else
-			{
-				SetEntProp(weapon, Prop_Send, "m_bValidatedAttachedEntity", 1);
-			}
 			SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", weapon);
 		}
 		else
@@ -3429,7 +3430,7 @@ void EquipBoss(int boss)
 	}
 
 	KvGoBack(BossKV[Special[boss]]);
-	TFClassType player_class=view_as<TFClassType>(KvGetNum(BossKV[Special[boss]], "class", 1));
+	TFClassType player_class=view_as<TFClassType>(GetClassForBoss(BossKV[Special[Boss[client]]]));
 	if(TF2_GetPlayerClass(client)!=player_class)
 	{
 		TF2_SetPlayerClass(client, player_class, _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
@@ -3512,7 +3513,7 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
 	TF2_RemovePlayerDisguise(client);
-	TF2_SetPlayerClass(client, view_as<TFClassType>(KvGetNum(BossKV[Special[boss]], "class", 1)), _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
+	TF2_SetPlayerClass(client, view_as<TFClassType>(GetClassForBoss(BossKV[Special[boss]]), _, !GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass") ? true : false);
 	SDKHook(client, SDKHook_GetMaxHealth, OnGetMaxHealth);  //Temporary:  Used to prevent boss overheal
 
 	switch(KvGetNum(BossKV[Special[boss]], "pickups", 0))  //Check if the boss is allowed to pickup health/ammo
@@ -6775,6 +6776,29 @@ public Action Timer_DisguiseBackstab(Handle timer, any userid)
 	return Plugin_Continue;
 }
 
+stock int GetClassForBoss(Handle keyvalue)
+{
+	char buffer[16];
+	int result=0;
+	KvGetString(keyvalue, "class", buffer, sizeof(buffer));
+	if(buffer[0]!='\0')
+	{
+		result=TF2_GetClass(buffer);
+		if(result)
+		{
+			return result;
+		}
+	}
+	result=StringToInt(buffer);
+	
+	//Some checks because there are so many kinds of people here...
+	if(result<=0 || result>9)
+	{
+		result=1; 
+	}
+	return result;
+}
+
 stock void AssignTeam(int client, int team)
 {
 	if(!GetEntProp(client, Prop_Send, "m_iDesiredPlayerClass"))  //Living spectator check: 0 means that no class is selected
@@ -6782,7 +6806,7 @@ stock void AssignTeam(int client, int team)
 		FF2Dbg("%N does not have a desired class!", client);
 		if(IsBoss(client))
 		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", KvGetNum(BossKV[Special[Boss[client]]], "class", 1));  //So we assign one to prevent living spectators
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", GetClassForBoss(BossKV[Special[Boss[client]]]);  //So we assign one to prevent living spectators
 		}
 		else
 		{
@@ -6799,7 +6823,7 @@ stock void AssignTeam(int client, int team)
 		FF2Dbg("%N is a living spectator!  Please report this to https://github.com/50DKP/FF2-Official", client);
 		if(IsBoss(client))
 		{
-			TF2_SetPlayerClass(client, view_as<TFClassType>(KvGetNum(BossKV[Special[Boss[client]]], "class", 1)));
+			TF2_SetPlayerClass(client, view_as<TFClassType>(GetClassForBoss(BossKV[Special[Boss[client]]])));
 		}
 		else
 		{
