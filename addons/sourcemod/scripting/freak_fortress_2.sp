@@ -2269,7 +2269,7 @@ stock bool CheckToChangeMapDoors()
 	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/doors.cfg");
 	if(!FileExists(config))
 	{
-		if(!strncmp(currentmap, "vsh_lolcano_pb1", 15, false))
+		if(!strcmp(currentmap, "vsh_lolcano_pb1", false))
 		{
 			checkDoors=true;
 		}
@@ -2279,7 +2279,7 @@ stock bool CheckToChangeMapDoors()
 	Handle file=OpenFile(config, "r");
 	if(file==INVALID_HANDLE)
 	{
-		if(!strncmp(currentmap, "vsh_lolcano_pb1", 15, false))
+		if(!strcmp(currentmap, "vsh_lolcano_pb1", false))
 		{
 			checkDoors=true;
 		}
@@ -3368,6 +3368,8 @@ void EquipBoss(int boss)
 	for(int i=1; ; i++)
 	{
 		KvRewind(BossKV[Special[boss]]);
+		char bossName[64];
+		KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName));
 		Format(key, sizeof(key), "weapon%i", i);
 		if(KvJumpToKey(BossKV[Special[boss]], key))
 		{
@@ -3388,6 +3390,11 @@ void EquipBoss(int boss)
 
 			int index=KvGetNum(BossKV[Special[boss]], "index");
 			int weapon=FF2_SpawnWeapon(client, classname, index, 101, 5, attributes);
+			if(weapon==-1)
+			{
+				LogError("Tried to give weapon to boss %s, but an error occured!", bossName);
+				return;
+			}
 			if(StrEqual(classname, "tf_weapon_builder", false) && index!=735)  //PDA, normal sapper
 			{
 				SetEntProp(weapon, Prop_Send, "m_aBuildableObjectTypes", 1, _, 0);
