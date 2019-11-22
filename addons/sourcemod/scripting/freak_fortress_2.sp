@@ -6776,7 +6776,7 @@ public Action Timer_DisguiseBackstab(Handle timer, any userid)
 	return Plugin_Continue;
 }
 
-stock int GetClassForBoss(Handle keyvalue)
+stock TFClassType GetClassForBoss(Handle keyvalue)
 {
 	char buffer[16];
 	int result=0;
@@ -6792,9 +6792,9 @@ stock int GetClassForBoss(Handle keyvalue)
 	result=StringToInt(buffer);
 	
 	//Some checks because there are so many kinds of people here...
-	if(result<=0 || result>9)
+	if(result<=TFClass_Unknown || result>TFClass_Engineer)
 	{
-		result=1; 
+		result=TFClass_Scout; 
 	}
 	return result;
 }
