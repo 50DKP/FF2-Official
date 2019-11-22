@@ -677,7 +677,7 @@ stock void TF2_RemoveAllWeapons2(int client)
  * @param index	    Definition index of the weapon
  * @param level	    Level of the weapon
  * @param qual	    Quality of the weapon
- * @param qual	   	String, containing the attributes in the following format: attr ; val ; attr ; val ; ...
+ * @param att	   	String, containing the attributes in the following format: attr ; val ; attr ; val ; ...
  * @param visible	Weapon will be visible?
  *
  * @return          Entity index of the weapon
