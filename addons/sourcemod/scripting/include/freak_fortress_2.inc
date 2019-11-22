@@ -702,6 +702,11 @@ stock int FF2_SpawnWeapon(int client, char[] name, int index, int level, int qua
 	{
 		--count;
 	}
+	if(count/2>20)
+	{
+		LogError("More than 20 attributes are tried to be applied to a weapon! Classname: %s | Index: %i | Attributes: %s", name, index, att);
+		return -1;
+	}
 
 	if(count>0)
 	{
