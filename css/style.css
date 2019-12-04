@@ -1,0 +1,26 @@
+.version_box
+{
+	margin-top: 20px;
+	margin-bottom: 20px;
+	margin-left: 160px;
+	margin-right: 160px;
+	border: 2px solid #b89525;
+	box-shadow: 10px 10px;
+	background-color: #dee0c8;
+}
+
+.version_box h3
+{
+	margin-left: 20px;
+}
+
+.version_box li
+{
+	margin: 3px;
+}
+
+#important_text
+{
+	margin: 5px;
+	font-weight: bold;
+}
