@@ -90,7 +90,6 @@ int Incoming[MAXPLAYERS+1];
 int Damage[MAXPLAYERS+1];
 int curHelp[MAXPLAYERS+1];
 int uberTarget[MAXPLAYERS+1];
-int shield[MAXPLAYERS+1];
 int detonations[MAXPLAYERS+1];
 bool playBGM[MAXPLAYERS+1]=true;
 
@@ -2665,7 +2664,6 @@ public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 		else if(IsValidClient(boss))  //Boss here is actually a client index
 		{
 			SetClientGlow(boss, 0.0, 0.0);
-			shield[boss]=0;
 			detonations[boss]=0;
 		}
 
@@ -3996,7 +3994,6 @@ public Action Timer_CheckItems(Handle timer, any userid)
 	}
 
 	SetEntityRenderColor(client, 255, 255, 255, 255);
-	shield[client]=0;
 	int index=-1;
 	int[] civilianCheck=new int[MaxClients+1];
 
@@ -4071,8 +4068,6 @@ public Action Timer_CheckItems(Handle timer, any userid)
 		civilianCheck[client]++;
 	}
 
-	int playerBack=FindPlayerBack(client, 57);  //Razorback
-	shield[client]=IsValidEntity(playerBack) ? playerBack : 0;
 	if(IsValidEntity(FindPlayerBack(client, 642)))  //Cozy Camper
 	{
 		FF2_SpawnWeapon(client, "tf_weapon_smg", 16, 1, 6, "149 ; 1.5 ; 15 ; 0.0 ; 1 ; 0.85");
@@ -4091,15 +4086,6 @@ public Action Timer_CheckItems(Handle timer, any userid)
 		}
 	}
 	#endif
-
-	int entity=-1;
-	while((entity=FindEntityByClassname2(entity, "tf_wearable_demoshield"))!=-1)  //Demoshields
-	{
-		if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
-		{
-			shield[client]=entity;
-		}
-	}
 
 	weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Melee);
 	if(IsValidEntity(weapon))
@@ -4828,7 +4814,7 @@ public Action ClientTimer(Handle timer)
 			}
 			FF2_ShowSyncHudText(client, rageHUD, "%t", "Your Damage Dealt", Damage[client]);
 
-			TFClassType class=TF2_GetPlayerClass(client);
+			TFClassType player_class=TF2_GetPlayerClass(client);
 			int weapon=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 			if(weapon<=MaxClients || !IsValidEntity(weapon) || !GetEntityClassname(weapon, classname, sizeof(classname)))
 			{
@@ -4837,7 +4823,7 @@ public Action ClientTimer(Handle timer)
 			bool validwep=!StrContains(classname, "tf_weapon", false);
 
 			int index=(validwep ? GetEntProp(weapon, Prop_Send, "m_iItemDefinitionIndex") : -1);
-			if(class==TFClass_Medic)
+			if(player_class==TFClass_Medic)
 			{
 				if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
 				{
@@ -4899,7 +4885,7 @@ public Action ClientTimer(Handle timer)
 					}
 				}
 			}
-			else if(class==TFClass_Soldier)
+			else if(player_class==TFClass_Soldier)
 			{
 				if((FF2flags[client] & FF2FLAG_ISBUFFED) && !(GetEntProp(client, Prop_Send, "m_bRageDraining")))
 				{
@@ -4910,7 +4896,7 @@ public Action ClientTimer(Handle timer)
 			if(RedAlivePlayers==1 && !TF2_IsPlayerInCondition(client, TFCond_Cloaked))
 			{
 				TF2_AddCondition(client, TFCond_HalloweenCritCandy, 0.3);
-				if(class==TFClass_Engineer && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && StrEqual(classname, "tf_weapon_sentry_revenge", false))
+				if(player_class==TFClass_Engineer && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && StrEqual(classname, "tf_weapon_sentry_revenge", false))
 				{
 					SetEntProp(client, Prop_Send, "m_iRevengeCrits", 3);
 				}
@@ -4933,7 +4919,7 @@ public Action ClientTimer(Handle timer)
 			}
 
 			cond=TFCond_HalloweenCritCandy;
-			if(TF2_IsPlayerInCondition(client, TFCond_CritCola) && (class==TFClass_Scout || class==TFClass_Heavy))
+			if(TF2_IsPlayerInCondition(client, TFCond_CritCola) && (player_class==TFClass_Scout || player_class==TFClass_Heavy))
 			{
 				TF2_AddCondition(client, cond, 0.3);
 				continue;
@@ -4965,7 +4951,7 @@ public Action ClientTimer(Handle timer)
 					!StrContains(classname, "tf_weapon_handgun_scout_secondary"))
 			{
 				addthecrit=true;
-				if(class==TFClass_Scout && cond==TFCond_HalloweenCritCandy)
+				if(player_class==TFClass_Scout && cond==TFCond_HalloweenCritCandy)
 				{
 					cond=TFCond_Buffed;
 				}
@@ -4976,7 +4962,7 @@ public Action ClientTimer(Handle timer)
 				addthecrit=false;
 			}
 
-			switch(class)
+			switch(player_class)
 			{
 			case TFClass_Medic:
 				{
@@ -5425,11 +5411,11 @@ public Action OnChangeClass(int client, const char[] command, int args)
 	if(IsBoss(client) && IsPlayerAlive(client))
 	{
 		//Don't allow the boss to switch classes but instead set their *desired* class (for the next round)
-		char class[16];
-		GetCmdArg(1, class, sizeof(class));
-		if(TF2_GetClass(class)!=TFClass_Unknown)  //Ignore cases where the client chooses an invalid class through the console
+		char player_class[16];
+		GetCmdArg(1, player_class, sizeof(player_class));
+		if(TF2_GetClass(player_class)!=TFClass_Unknown)  //Ignore cases where the client chooses an invalid class through the console
 		{
-			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", TF2_GetClass(class));
+			SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", TF2_GetClass(player_class));
 		}
 		return Plugin_Handled;
 	}
@@ -6074,7 +6060,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 				return Plugin_Changed;
 			}
 
-			if(shield[client] && damage)
+			if(damage)
 			{
 				RemoveShield(client, attacker, position);
 				return Plugin_Handled;
@@ -6617,11 +6603,10 @@ public Action OnStomp(int attacker, int victim, float &damageMultiplier, float &
 
 	if(IsBoss(attacker))
 	{
-		if(shield[victim])
+		float position[3];
+		GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
+		if(RemoveShield(victim, attacker, position))
 		{
-			float position[3];
-			GetEntPropVector(attacker, Prop_Send, "m_vecOrigin", position);
-			RemoveShield(victim, attacker, position);
 			return Plugin_Handled;
 		}
 		damageMultiplier=900.0;
@@ -6863,19 +6848,19 @@ stock void RandomlyDisguise(int client)	//Original code was mecha's, but the ori
 			}
 		}
 
-		int class=GetRandomInt(0, 4);
+		int player_class=GetRandomInt(0, 4);
 		TFClassType classArray[]={TFClass_Scout, TFClass_Pyro, TFClass_Medic, TFClass_Engineer, TFClass_Sniper};
 		CloseHandle(disguiseArray);
 
 		if(TF2_GetPlayerClass(client)==TFClass_Spy)
 		{
-			TF2_DisguisePlayer(client, view_as<TFTeam>(team), classArray[class], disguiseTarget);
+			TF2_DisguisePlayer(client, view_as<TFTeam>(team), classArray[player_class], disguiseTarget);
 		}
 		else
 		{
 			TF2_AddCondition(client, TFCond_Disguised, -1.0);
 			SetEntProp(client, Prop_Send, "m_nDisguiseTeam", team);
-			SetEntProp(client, Prop_Send, "m_nDisguiseClass", classArray[class]);
+			SetEntProp(client, Prop_Send, "m_nDisguiseClass", classArray[player_class]);
 			SetEntProp(client, Prop_Send, "m_iDisguiseTargetIndex", disguiseTarget);
 			SetEntProp(client, Prop_Send, "m_iDisguiseHealth", 200);
 		}
@@ -8152,9 +8137,9 @@ public Action HelpPanelClass(int client)
 	}
 
 	char text[512];
-	TFClassType class=TF2_GetPlayerClass(client);
+	TFClassType player_class=TF2_GetPlayerClass(client);
 	SetGlobalTransTarget(client);
-	switch(class)
+	switch(player_class)
 	{
 	case TFClass_Scout:
 		{
@@ -8198,7 +8183,7 @@ public Action HelpPanelClass(int client)
 		}
 	}
 
-	if(class!=TFClass_Sniper)
+	if(player_class!=TFClass_Sniper)
 	{
 		Format(text, sizeof(text), "%t\n%s", "help_melee", text);
 	}
@@ -8706,15 +8691,25 @@ public Action Timer_UseBossCharge(Handle timer, Handle data)
 	return Plugin_Continue;
 }
 
-stock void RemoveShield(int client, int attacker, float position[3])
+stock bool RemoveShield(int client, int attacker, float position[3])
 {
-	TF2_RemoveWearable(client, shield[client]);
-	EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-	EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-	EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-	EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-	TF2_AddCondition(client, TFCond_Bonked, 0.1); // Shows "MISS!" upon breaking shield
-	shield[client]=0;
+	char classname[64];
+	int entity=-1;
+	while((entity=FindEntityByClassname2(entity, "tf_wear*"))!=-1)
+	{
+		GetEntityClassname(entity, classname, sizeof(classname));
+		if(GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex")==57 || StrContains(classname, "demoshield")>-1)
+		{
+			TF2_RemoveWearable(client, entity);
+			EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+			EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+			TF2_AddCondition(client, TFCond_Bonked, 0.1); // Shows "MISS!" upon breaking shield
+			return true;
+		}
+	}
+	return false;
 }
 
 public int Native_IsEnabled(Handle plugin, int numParams)
