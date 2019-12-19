@@ -478,6 +478,8 @@ public void OnPluginStart()
 	RegConsoleCmd("ff2next", QueuePanelCmd);
 	RegConsoleCmd("ff2_classinfo", Command_HelpPanelClass);
 	RegConsoleCmd("ff2classinfo", Command_HelpPanelClass);
+	RegConsoleCmd("ff2_infotoggle", HelpPanel3Cmd, "Toggle viewing class or boss info");
+	RegConsoleCmd("ff2infotoggle", HelpPanel3Cmd, "Toggle viewing class or boss info");
 	RegConsoleCmd("ff2_new", NewPanelCmd);
 	RegConsoleCmd("ff2new", NewPanelCmd);
 	RegConsoleCmd("ff2music", MusicTogglePanelCmd);
@@ -496,6 +498,8 @@ public void OnPluginStart()
 	RegConsoleCmd("halenext", QueuePanelCmd);
 	RegConsoleCmd("hale_classinfo", Command_HelpPanelClass);
 	RegConsoleCmd("haleclassinfo", Command_HelpPanelClass);
+	RegConsoleCmd("hale_infotoggle", HelpPanel3Cmd, "Toggle viewing class or boss info");
+	RegConsoleCmd("haleinfotoggle", HelpPanel3Cmd, "Toggle viewing class or boss info");
 	RegConsoleCmd("hale_new", NewPanelCmd);
 	RegConsoleCmd("halenew", NewPanelCmd);
 	RegConsoleCmd("halemusic", MusicTogglePanelCmd);
@@ -2334,6 +2338,7 @@ void StopMusic(int client=0, bool permanent=false)
 			if(IsValidClient(client))
 			{
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 
 				if(MusicTimer[client]!=INVALID_HANDLE)
 				{
@@ -3547,6 +3552,7 @@ public int CompanionTogglePanelH(Menu menu, MenuAction action, int client, int s
 {
 	if(IsValidClient(client) && action==MenuAction_Select)
 	{
+		selection++;
 		if(selection==2)
 		{
 			SetClientPreferences(client, TOGGLE_COMPANION, false);
@@ -3558,10 +3564,6 @@ public int CompanionTogglePanelH(Menu menu, MenuAction action, int client, int s
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_companion_on");
 		}
 		menu.Display(client, MENU_TIME_FOREVER);
-	}
-	else if(action==MenuAction_End)
-	{
-		delete menu;
 	}
 	else if(action==MenuAction_Cancel)
 	{
@@ -5315,8 +5317,10 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 
 			if(damage)
 			{
-				RemoveShield(client, attacker, position);
-				return Plugin_Handled;
+				if(RemoveShield(client, attacker, position))
+				{
+					return Plugin_Handled;
+				}
 			}
 
 			if(TF2_GetPlayerClass(client)==TFClass_Soldier && IsValidEntity((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)))
@@ -7179,7 +7183,7 @@ public int FF2PanelH(Menu menu, MenuAction action, int client, int selection)
 			}
 		case 2:
 			{
-				HelpPanelClass(client, true);
+				HelpPanelClass(client);
 			}
 		case 3:
 			{
@@ -7199,7 +7203,7 @@ public int FF2PanelH(Menu menu, MenuAction action, int client, int selection)
 			}
 		case 7:
 			{
-				HelpPanel3(client);
+				HelpPanel3(client, true);
 			}
 		case 8:
 			{
@@ -7347,7 +7351,7 @@ public Action HelpPanel3Cmd(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action HelpPanel3(int client)
+Action HelpPanel3(int client, bool menuentered=false)
 {
 	if(!Enabled2)
 	{
@@ -7358,6 +7362,8 @@ public Action HelpPanel3(int client)
 	ff2_menu.SetTitle("Turn the Freak Fortress 2 class info...");
 	ff2_menu.AddItem("", "On");
 	ff2_menu.AddItem("", "Off");
+	ff2_menu.ExitButton=true;
+	ff2_menu.ExitBackButton=menuentered;
 	ff2_menu.Display(client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
 }
@@ -7368,6 +7374,7 @@ public int ClassInfoTogglePanelH(Menu menu, MenuAction action, int client, int s
 	{
 		if(action==MenuAction_Select)
 		{
+			selection++;
 			char cookies[24];
 			char cookieValues[8][5];
 			GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
@@ -7384,21 +7391,17 @@ public int ClassInfoTogglePanelH(Menu menu, MenuAction action, int client, int s
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_classinfo", selection==2 ? "off" : "on");
 			menu.Display(client, MENU_TIME_FOREVER);
 		}
-	}
-	else if(action==MenuAction_Cancel)
-	{
-		if(selection==MenuCancel_ExitBack)
+		else if(action==MenuAction_Cancel)
 		{
-			FF2Panel(client, 0);
+			if(selection==MenuCancel_ExitBack)
+			{
+				FF2Panel(client, 0);
+			}
+			else if(selection==MenuCancel_Exit)
+			{
+				return 0;
+			}
 		}
-		else if(selection==MenuCancel_Exit)
-		{
-			return 0;
-		}
-	}
-	else if(action==MenuAction_End)
-	{
-		delete menu;
 	}
 	return 0;
 }
@@ -7414,7 +7417,7 @@ public Action Command_HelpPanelClass(int client, int args)
 	return Plugin_Handled;
 }
 
-Action HelpPanelClass(int client, bool menuentered=false)
+Action HelpPanelClass(int client)
 {
 	if(!Enabled)
 	{
@@ -7480,11 +7483,11 @@ Action HelpPanelClass(int client, bool menuentered=false)
 		Format(text, sizeof(text), "%t\n%s", "help_melee", text);
 	}
 
-	Menu ff2_menu=new Menu(HintPanelH);
-	ff2_menu.ExitButton=true;
-	ff2_menu.ExitBackButton=menuentered;
-	ff2_menu.SetTitle(text);
-	ff2_menu.Display(client, 20);
+	Panel panel=new Panel();
+	panel.SetTitle(text);
+	panel.DrawItem("Exit");
+	panel.Send(client, HintPanelH, 20);
+	delete panel;
 	return Plugin_Continue;
 }
 
@@ -7511,10 +7514,11 @@ void HelpPanelBoss(int boss)
 	}
 	ReplaceString(text, sizeof(text), "\\n", "\n");
 
-	Menu ff2_menu=new Menu(HintPanelH);
-	ff2_menu.ExitButton=true;
-	ff2_menu.SetTitle(text);
-	ff2_menu.Display(Boss[boss], 20);
+	Panel panel=new Panel();
+	panel.SetTitle(text);
+	panel.DrawItem("Exit");
+	panel.Send(Boss[boss], HintPanelH, 20);
+	delete(panel);
 }
 
 public Action MusicTogglePanelCmd(int client, int args)
@@ -7577,12 +7581,6 @@ public int MusicTogglePanelH(Menu menu, MenuAction action, int client, int selec
 			return 0;
 		}
 	}
-	/*
-	else if(action==MenuAction_End)
-	{
-		delete menu;
-	}
-	*/
 	return 0;
 }
 
@@ -8031,6 +8029,7 @@ stock bool RemoveShield(int client, int attacker, float position[3])
 		if(GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex")==57 || StrContains(classname, "demoshield")>-1)
 		{
 			TF2_RemoveWearable(client, entity);
+			AcceptEntityInput(entity, "Kill"); //Guarantee
 			EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
 			EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
 			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
