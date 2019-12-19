@@ -60,7 +60,6 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 #define HEALTHBAR_PROPERTY "m_iBossHealthPercentageByte"
 #define HEALTHBAR_MAX 255
 #define MONOCULUS "eyeball_boss"
-#define DISABLED_PERKS "toxic,noclip,uber,ammo,instant,jump,tinyplayer"
 
 #if defined _steamtools_included
 bool steamtools=false;
@@ -479,6 +478,8 @@ public void OnPluginStart()
 	RegConsoleCmd("ff2next", QueuePanelCmd);
 	RegConsoleCmd("ff2_classinfo", Command_HelpPanelClass);
 	RegConsoleCmd("ff2classinfo", Command_HelpPanelClass);
+	RegConsoleCmd("ff2_infotoggle", HelpPanel3Cmd, "Toggle viewing class or boss info");
+	RegConsoleCmd("ff2infotoggle", HelpPanel3Cmd, "Toggle viewing class or boss info");
 	RegConsoleCmd("ff2_new", NewPanelCmd);
 	RegConsoleCmd("ff2new", NewPanelCmd);
 	RegConsoleCmd("ff2music", MusicTogglePanelCmd);
@@ -497,6 +498,8 @@ public void OnPluginStart()
 	RegConsoleCmd("halenext", QueuePanelCmd);
 	RegConsoleCmd("hale_classinfo", Command_HelpPanelClass);
 	RegConsoleCmd("haleclassinfo", Command_HelpPanelClass);
+	RegConsoleCmd("hale_infotoggle", HelpPanel3Cmd, "Toggle viewing class or boss info");
+	RegConsoleCmd("haleinfotoggle", HelpPanel3Cmd, "Toggle viewing class or boss info");
 	RegConsoleCmd("hale_new", NewPanelCmd);
 	RegConsoleCmd("halenew", NewPanelCmd);
 	RegConsoleCmd("halemusic", MusicTogglePanelCmd);
@@ -2335,6 +2338,7 @@ void StopMusic(int client=0, bool permanent=false)
 			if(IsValidClient(client))
 			{
 				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
+				StopSound(client, SNDCHAN_AUTO, currentBGM[client]);
 
 				if(MusicTimer[client]!=INVALID_HANDLE)
 				{
@@ -3527,26 +3531,28 @@ public Action CompanionTogglePanelCmd(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action CompanionTogglePanel(int client)
+Action CompanionTogglePanel(int client, bool menuentered=false)
 {
 	if(!Enabled || !IsValidClient(client) || !GetConVarBool(cvarDuoToggle))
 	{
 		return Plugin_Continue;
 	}
 
-	Handle panel=CreatePanel();
-	SetPanelTitle(panel, "Toggle being a Freak Fortress 2 companion...");
-	DrawPanelItem(panel, "On");
-	DrawPanelItem(panel, "Off");
-	SendPanelToClient(panel, client, CompanionTogglePanelH, MENU_TIME_FOREVER);
-	CloseHandle(panel);
+	Menu ff2_menu=new Menu(CompanionTogglePanelH);
+	ff2_menu.SetTitle("Toggle being a Freak Fortress 2 companion...");
+	ff2_menu.AddItem("", "On");
+	ff2_menu.AddItem("", "Off");
+	ff2_menu.ExitBackButton=menuentered;
+	ff2_menu.ExitButton=true;
+	ff2_menu.Display(client, MENU_TIME_FOREVER);
 	return Plugin_Continue;
 }
 
-public int CompanionTogglePanelH(Handle menu, MenuAction action, int client, int selection)
+public int CompanionTogglePanelH(Menu menu, MenuAction action, int client, int selection)
 {
 	if(IsValidClient(client) && action==MenuAction_Select)
 	{
+		selection++;
 		if(selection==2)
 		{
 			SetClientPreferences(client, TOGGLE_COMPANION, false);
@@ -3557,7 +3563,20 @@ public int CompanionTogglePanelH(Handle menu, MenuAction action, int client, int
 			SetClientPreferences(client, TOGGLE_COMPANION, true);
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_companion_on");
 		}
+		menu.Display(client, MENU_TIME_FOREVER);
 	}
+	else if(action==MenuAction_Cancel)
+	{
+		if(selection==MenuCancel_ExitBack)
+		{
+			FF2Panel(client, 0);
+		}
+		else if(selection==MenuCancel_Exit)
+		{
+			return 0;
+		}
+	}
+	return 0;
 }
 
 public Action Command_GetHPCmd(int client, int args)
@@ -5298,8 +5317,10 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 
 			if(damage)
 			{
-				RemoveShield(client, attacker, position);
-				return Plugin_Handled;
+				if(RemoveShield(client, attacker, position))
+				{
+					return Plugin_Handled;
+				}
 			}
 
 			if(TF2_GetPlayerClass(client)==TFClass_Soldier && IsValidEntity((weapon=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)))
@@ -6870,13 +6891,28 @@ void FindCompanion(int boss, int players, bool[] omit)
 	playersNeeded=3;  //Reset the amount of players needed back to 3 after we're done
 }
 
-public int HintPanelH(Handle menu, MenuAction action, int client, int selection)
+public int HintPanelH(Menu menu, MenuAction action, int client, int selection)
 {
 	if(IsValidClient(client) && (action==MenuAction_Select || (action==MenuAction_Cancel && selection==MenuCancel_Exit)))
 	{
 		FF2flags[client]|=FF2FLAG_CLASSHELPED;
 	}
-	return;
+	else if(action==MenuAction_End)
+	{
+		delete menu;
+	}
+	else if(action==MenuAction_Cancel)
+	{
+		if(selection==MenuCancel_ExitBack)
+		{
+			FF2Panel(client, 0);
+		}
+		else if(selection==MenuCancel_Exit)
+		{
+			return 0;
+		}
+	}
+	return 0;
 }
 
 public int QueuePanelH(Handle menu, MenuAction action, int client, int selection)
@@ -7134,10 +7170,11 @@ void DoOverlay(int client, const char[] overlay)
 	SetCommandFlags("r_screenoverlay", flags);
 }
 
-public int FF2PanelH(Handle menu, MenuAction action, int client, int selection)
+public int FF2PanelH(Menu menu, MenuAction action, int client, int selection)
 {
 	if(action==MenuAction_Select)
 	{
+		selection++;
 		switch(selection)
 		{
 		case 1:
@@ -7158,60 +7195,75 @@ public int FF2PanelH(Handle menu, MenuAction action, int client, int selection)
 			}
 		case 5:
 			{
-				MusicTogglePanel(client);
+				MusicTogglePanel(client, true);
 			}
 		case 6:
 			{
-				VoiceTogglePanel(client);
+				VoiceTogglePanel(client, true);
 			}
 		case 7:
 			{
-				HelpPanel3(client);
+				HelpPanel3(client, true);
 			}
 		case 8:
 			{
-				CompanionTogglePanel(client);
+				CompanionTogglePanel(client, true);
 			}
 		default:
 			{
-				return;
+				return 0;
 			}
 		}
 	}
+	else if(action==MenuAction_End)
+	{
+		delete menu;
+	}
+	else if(action==MenuAction_Cancel)
+	{
+		if(selection==MenuCancel_ExitBack)
+		{
+			FF2Panel(client, 0);
+		}
+		else if(selection==MenuCancel_Exit)
+		{
+			return 0;
+		}
+	}
+	return 0;
 }
 
 public Action FF2Panel(int client, int args)  //._.
 {
 	if(Enabled2 && IsValidClient(client, false))
 	{
-		Handle panel=CreatePanel();
+		Menu ff2_menu=new Menu(FF2PanelH);
+		ff2_menu.Pagination=false;
+		ff2_menu.ExitButton=true;
 		char text[256];
 		SetGlobalTransTarget(client);
 		Format(text, sizeof(text), "%t", "menu_1");  //What's up?
-		SetPanelTitle(panel, text);
+		ff2_menu.SetTitle(text);
 		Format(text, sizeof(text), "%t", "menu_2");  //Investigate the boss's current health level (/ff2hp)
-		DrawPanelItem(panel, text);
+		ff2_menu.AddItem("", text);
 		Format(text, sizeof(text), "%t", "menu_7");  //Changes to my class in FF2 (/ff2classinfo)
-		DrawPanelItem(panel, text);
+		ff2_menu.AddItem("", text);
 		Format(text, sizeof(text), "%t", "menu_4");  //What's new? (/ff2new).
-		DrawPanelItem(panel, text);
+		ff2_menu.AddItem("", text);
 		Format(text, sizeof(text), "%t", "menu_5");  //Queue points
-		DrawPanelItem(panel, text);
+		ff2_menu.AddItem("", text);
 		Format(text, sizeof(text), "%t", "menu_8");  //Toggle music (/ff2music)
-		DrawPanelItem(panel, text);
+		ff2_menu.AddItem("", text);
 		Format(text, sizeof(text), "%t", "menu_9");  //Toggle monologues (/ff2voice)
-		DrawPanelItem(panel, text);
+		ff2_menu.AddItem("", text);
 		Format(text, sizeof(text), "%t", "menu_9a");  //Toggle info about changes of classes in FF2
-		DrawPanelItem(panel, text);
+		ff2_menu.AddItem("", text);
 		if(GetConVarBool(cvarDuoToggle))
 		{
 			Format(text, sizeof(text), "%t", "menu_10");  //Toggle companions (/ff2companion)
-			DrawPanelItem(panel, text);
+			ff2_menu.AddItem("", text);
 		}
-		Format(text, sizeof(text), "%t", "menu_6");  //Exit
-		DrawPanelItem(panel, text);
-		SendPanelToClient(panel, client, FF2PanelH, MENU_TIME_FOREVER);
-		CloseHandle(panel);
+		ff2_menu.Display(client, MENU_TIME_FOREVER);
 		return Plugin_Handled;
 	}
 	return Plugin_Continue;
@@ -7258,7 +7310,7 @@ Action NewPanelChangelog(int client, bool menuentered=false)
 	return Plugin_Continue;
 }
 
-public int NewPanelH(Menu menu, MenuAction action, int param1, int param2)
+public int NewPanelH(Menu menu, MenuAction action, int client, int param2)
 {
 	if(action==MenuAction_Select)
 	{
@@ -7267,19 +7319,23 @@ public int NewPanelH(Menu menu, MenuAction action, int param1, int param2)
 		char full_url[192];
 		ff2_changelog_url.GetString(full_url, sizeof(full_url));
 		Format(full_url, sizeof(full_url), "%s#%s", full_url, buffer);
-		ShowMOTDPanel(param1, "FF2 Version Info", full_url, MOTDPANEL_TYPE_URL);
-		menu.Display(param1, MENU_TIME_FOREVER);
+		ShowMOTDPanel(client, "FF2 Version Info", full_url, MOTDPANEL_TYPE_URL);
+		menu.Display(client, MENU_TIME_FOREVER);
 	}
 	else if(action==MenuAction_Cancel)
 	{
 		if(param2==MenuCancel_ExitBack)
 		{
-			FF2Panel(param1, 0);
+			FF2Panel(client, 0);
 		}
 		else if(param2==MenuCancel_Exit)
 		{
 			return 0;
 		}
+	}
+	else if(action==MenuAction_End)
+	{
+		delete menu;
 	}
 	return 0;
 }
@@ -7295,28 +7351,30 @@ public Action HelpPanel3Cmd(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action HelpPanel3(int client)
+Action HelpPanel3(int client, bool menuentered=false)
 {
 	if(!Enabled2)
 	{
 		return Plugin_Continue;
 	}
 
-	Handle panel=CreatePanel();
-	SetPanelTitle(panel, "Turn the Freak Fortress 2 class info...");
-	DrawPanelItem(panel, "On");
-	DrawPanelItem(panel, "Off");
-	SendPanelToClient(panel, client, ClassInfoTogglePanelH, MENU_TIME_FOREVER);
-	CloseHandle(panel);
+	Menu ff2_menu=new Menu(ClassInfoTogglePanelH);
+	ff2_menu.SetTitle("Turn the Freak Fortress 2 class info...");
+	ff2_menu.AddItem("", "On");
+	ff2_menu.AddItem("", "Off");
+	ff2_menu.ExitButton=true;
+	ff2_menu.ExitBackButton=menuentered;
+	ff2_menu.Display(client, MENU_TIME_FOREVER);
 	return Plugin_Handled;
 }
 
-public int ClassInfoTogglePanelH(Handle menu, MenuAction action, int client, int selection)
+public int ClassInfoTogglePanelH(Menu menu, MenuAction action, int client, int selection)
 {
 	if(IsValidClient(client))
 	{
 		if(action==MenuAction_Select)
 		{
+			selection++;
 			char cookies[24];
 			char cookieValues[8][5];
 			GetClientCookie(client, FF2Cookies, cookies, sizeof(cookies));
@@ -7331,8 +7389,21 @@ public int ClassInfoTogglePanelH(Handle menu, MenuAction action, int client, int
 			}
 			SetClientCookie(client, FF2Cookies, cookies);
 			CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_classinfo", selection==2 ? "off" : "on");
+			menu.Display(client, MENU_TIME_FOREVER);
+		}
+		else if(action==MenuAction_Cancel)
+		{
+			if(selection==MenuCancel_ExitBack)
+			{
+				FF2Panel(client, 0);
+			}
+			else if(selection==MenuCancel_Exit)
+			{
+				return 0;
+			}
 		}
 	}
+	return 0;
 }
 
 public Action Command_HelpPanelClass(int client, int args)
@@ -7346,7 +7417,7 @@ public Action Command_HelpPanelClass(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action HelpPanelClass(int client)
+Action HelpPanelClass(int client)
 {
 	if(!Enabled)
 	{
@@ -7412,11 +7483,11 @@ public Action HelpPanelClass(int client)
 		Format(text, sizeof(text), "%t\n%s", "help_melee", text);
 	}
 
-	Handle panel=CreatePanel();
-	SetPanelTitle(panel, text);
-	DrawPanelItem(panel, "Exit");
-	SendPanelToClient(panel, client, HintPanelH, 20);
-	CloseHandle(panel);
+	Panel panel=new Panel();
+	panel.SetTitle(text);
+	panel.DrawItem("Exit");
+	panel.Send(client, HintPanelH, 20);
+	delete panel;
 	return Plugin_Continue;
 }
 
@@ -7443,11 +7514,11 @@ void HelpPanelBoss(int boss)
 	}
 	ReplaceString(text, sizeof(text), "\\n", "\n");
 
-	Handle panel=CreatePanel();
-	SetPanelTitle(panel, text);
-	DrawPanelItem(panel, "Exit");
-	SendPanelToClient(panel, Boss[boss], HintPanelH, 20);
-	CloseHandle(panel);
+	Panel panel=new Panel();
+	panel.SetTitle(text);
+	panel.DrawItem("Exit");
+	panel.Send(Boss[boss], HintPanelH, 20);
+	delete(panel);
 }
 
 public Action MusicTogglePanelCmd(int client, int args)
@@ -7461,26 +7532,27 @@ public Action MusicTogglePanelCmd(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action MusicTogglePanel(int client)
+void MusicTogglePanel(int client, bool menuentered=false)
 {
 	if(!Enabled || !IsValidClient(client))
 	{
-		return Plugin_Continue;
+		return;
 	}
 
-	Handle panel=CreatePanel();
-	SetPanelTitle(panel, "Turn the Freak Fortress 2 music...");
-	DrawPanelItem(panel, "On");
-	DrawPanelItem(panel, "Off");
-	SendPanelToClient(panel, client, MusicTogglePanelH, MENU_TIME_FOREVER);
-	CloseHandle(panel);
-	return Plugin_Continue;
+	Menu ff2_menu=new Menu(MusicTogglePanelH);
+	ff2_menu.ExitBackButton=menuentered;
+	ff2_menu.ExitButton=true;
+	ff2_menu.SetTitle("Turn the Freak Fortress 2 music...");
+	ff2_menu.AddItem("", "On");
+	ff2_menu.AddItem("", "Off");
+	ff2_menu.Display(client, MENU_TIME_FOREVER);
 }
 
-public int MusicTogglePanelH(Handle menu, MenuAction action, int client, int selection)
+public int MusicTogglePanelH(Menu menu, MenuAction action, int client, int selection)
 {
 	if(IsValidClient(client) && action==MenuAction_Select)
 	{
+		selection++;
 		if(selection==2)  //Off
 		{
 			SetClientSoundOptions(client, SOUNDEXCEPT_MUSIC, false);
@@ -7496,7 +7568,20 @@ public int MusicTogglePanelH(Handle menu, MenuAction action, int client, int sel
 			}
 		}
 		CPrintToChat(client, "{olive}[FF2]{default} %t", "ff2_music", selection==2 ? "off" : "on");
+		menu.Display(client, MENU_TIME_FOREVER);
 	}
+	else if(action==MenuAction_Cancel)
+	{
+		if(selection==MenuCancel_ExitBack)
+		{
+			FF2Panel(client, 0);
+		}
+		else if(selection==MenuCancel_Exit)
+		{
+			return 0;
+		}
+	}
+	return 0;
 }
 
 public Action VoiceTogglePanelCmd(int client, int args)
@@ -7510,28 +7595,30 @@ public Action VoiceTogglePanelCmd(int client, int args)
 	return Plugin_Handled;
 }
 
-public Action VoiceTogglePanel(int client)
+Action VoiceTogglePanel(int client, bool menuentered=false)
 {
 	if(!Enabled || !IsValidClient(client))
 	{
 		return Plugin_Continue;
 	}
 
-	Handle panel=CreatePanel();
-	SetPanelTitle(panel, "Turn the Freak Fortress 2 voices...");
-	DrawPanelItem(panel, "On");
-	DrawPanelItem(panel, "Off");
-	SendPanelToClient(panel, client, VoiceTogglePanelH, MENU_TIME_FOREVER);
-	CloseHandle(panel);
+	Menu ff2_menu=new Menu(VoiceTogglePanelH);
+	ff2_menu.SetTitle("Turn the Freak Fortress 2 voices...");
+	ff2_menu.AddItem("", "On");
+	ff2_menu.AddItem("", "Off");
+	ff2_menu.ExitBackButton=menuentered;
+	ff2_menu.ExitButton=true;
+	ff2_menu.Display(client, MENU_TIME_FOREVER);
 	return Plugin_Continue;
 }
 
-public int VoiceTogglePanelH(Handle menu, MenuAction action, int client, int selection)
+public int VoiceTogglePanelH(Menu menu, MenuAction action, int client, int selection)
 {
 	if(IsValidClient(client))
 	{
 		if(action==MenuAction_Select)
 		{
+			selection++;
 			if(selection==2)
 			{
 				SetClientSoundOptions(client, SOUNDEXCEPT_VOICE, false);
@@ -7546,8 +7633,25 @@ public int VoiceTogglePanelH(Handle menu, MenuAction action, int client, int sel
 			{
 				CPrintToChat(client, "%t", "ff2_voice2");
 			}
+			menu.Display(client, MENU_TIME_FOREVER);
+		}
+		else if(action==MenuAction_End)
+		{
+			delete menu;
+		}
+		else if(action==MenuAction_Cancel)
+		{
+			if(selection==MenuCancel_ExitBack)
+			{
+				FF2Panel(client, 0);
+			}
+			else if(selection==MenuCancel_Exit)
+			{
+				return 0;
+			}
 		}
 	}
+	return 0;
 }
 
 public Action HookSound(int clients[64], int &numClients, char sound[PLATFORM_MAX_PATH], int &client, int &channel, float &volume, int &level, int &pitch, int &flags, char soundEntry[PLATFORM_MAX_PATH], int &seed)
@@ -7570,15 +7674,15 @@ public Action HookSound(int clients[64], int &numClients, char sound[PLATFORM_MA
 			return Plugin_Continue;
 		}
 		char newSound[PLATFORM_MAX_PATH];
-		if(RandomSoundVo("catch_replace", newSound, PLATFORM_MAX_PATH, boss, sound))
+		if(RandomSoundVo("catch_replace", newSound, sizeof(newSound), boss, sound))
 		{
-			strcopy(sound, PLATFORM_MAX_PATH, newSound);
+			strcopy(sound, sizeof(sound), newSound);
 			return Plugin_Changed;
 		}
 
-		if(RandomSound("catch_phrase", newSound, PLATFORM_MAX_PATH, boss))
+		if(RandomSound("catch_phrase", newSound, sizeof(newSound), boss))
 		{
-			strcopy(sound, PLATFORM_MAX_PATH, newSound);
+			strcopy(sound, sizeof(sound), newSound);
 			return Plugin_Changed;
 		}
 
@@ -7925,6 +8029,7 @@ stock bool RemoveShield(int client, int attacker, float position[3])
 		if(GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex")==57 || StrContains(classname, "demoshield")>-1)
 		{
 			TF2_RemoveWearable(client, entity);
+			AcceptEntityInput(entity, "Kill"); //Guarantee
 			EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
 			EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
 			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
