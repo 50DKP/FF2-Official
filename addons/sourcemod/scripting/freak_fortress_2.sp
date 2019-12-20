@@ -7333,10 +7333,6 @@ public int NewPanelH(Menu menu, MenuAction action, int client, int param2)
 			return 0;
 		}
 	}
-	else if(action==MenuAction_End)
-	{
-		delete menu;
-	}
 	return 0;
 }
 
@@ -8028,14 +8024,17 @@ stock bool RemoveShield(int client, int attacker, float position[3])
 		GetEntityClassname(entity, classname, sizeof(classname));
 		if(GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex")==57 || StrContains(classname, "demoshield")>-1)
 		{
-			TF2_RemoveWearable(client, entity);
-			AcceptEntityInput(entity, "Kill"); //Guarantee
-			EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
-			TF2_AddCondition(client, TFCond_Bonked, 0.1); // Shows "MISS!" upon breaking shield
-			return true;
+			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==client && !GetEntProp(entity, Prop_Send, "m_bDisguiseWearable"))
+			{
+				TF2_RemoveWearable(client, entity);
+				AcceptEntityInput(entity, "Kill"); //Guarantee
+				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+				EmitSoundToClient(client, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+				EmitSoundToClient(attacker, "player/spy_shield_break.wav", _, _, _, _, 0.7, _, _, position, _, false);
+				TF2_AddCondition(client, TFCond_Bonked, 0.1); // Shows "MISS!" upon breaking shield
+				return true;
+			}
 		}
 	}
 	return false;
