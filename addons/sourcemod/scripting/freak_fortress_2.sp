@@ -7333,10 +7333,6 @@ public int NewPanelH(Menu menu, MenuAction action, int client, int param2)
 			return 0;
 		}
 	}
-	else if(action==MenuAction_End)
-	{
-		delete menu;
-	}
 	return 0;
 }
 
