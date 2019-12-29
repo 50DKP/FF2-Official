@@ -400,7 +400,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 		{
 			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==clone)
 			{
-				TF2_RemoveWearable(owner, entity);
+				TF2_RemoveWearable(clone, entity);
 			}
 		}
 	
@@ -408,7 +408,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 		{
 			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))==clone)
 			{
-				TF2_RemoveWearable(owner, entity);
+				TF2_RemoveWearable(clone, entity);
 			}
 		}
 	}
