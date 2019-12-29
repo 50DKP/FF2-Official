@@ -308,7 +308,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 		RemoveFromArray(players, temp);
 
 		FF2_SetFF2flags(clone, FF2_GetFF2flags(clone)|FF2FLAG_ALLOWSPAWNINBOSSTEAM|FF2FLAG_CLASSTIMERDISABLED);
-		ChangeClientTeam(clone, TF2_GetClientTeam(client));
+		TF2_ChangeClientTeam(clone, TF2_GetClientTeam(client));
 		TF2_RespawnPlayer(clone);
 		CloneOwnerIndex[clone]=boss;
 		TF2_SetPlayerClass(clone, (player_class ? (view_as<TFClassType>(player_class)) : (view_as<TFClassType>(KvGetNum(bossKV[config], "class", 0)))), _, false); //To-do: Investigate!
@@ -398,7 +398,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 		int entity=-1;
 		while((entity=FindEntityByClassname(entity, "tf_wear*"))!=-1)
 		{
-			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))==clone)
+			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==clone)
 			{
 				TF2_RemoveWearable(owner, entity);
 			}
