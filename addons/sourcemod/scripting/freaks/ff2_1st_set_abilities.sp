@@ -178,6 +178,7 @@ public Action Timer_GetBossTeam(Handle timer)
 public Action FF2_OnAbility2(int boss, const char[] plugin_name, const char[] ability_name, int status)
 {
 	int slot=FF2_GetArgI(boss, this_plugin_name, ability_name, "slot", 0);
+	int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	if(!slot)  //Rage
 	{
 		if(!boss)
@@ -203,7 +204,6 @@ public Action FF2_OnAbility2(int boss, const char[] plugin_name, const char[] ab
 	{
 		if(status>0)
 		{
-			int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 			float charge=FF2_GetBossCharge(boss, 0);
 			SetEntPropFloat(client, Prop_Send, "m_flChargeMeter", 100.0);
 			TF2_AddCondition(client, TFCond_Charging, 0.25);
@@ -219,7 +219,10 @@ public Action FF2_OnAbility2(int boss, const char[] plugin_name, const char[] ab
 	}
 	else if(!StrContains(ability_name, "rage_tradespam"))
 	{
-		CreateTimer(0.0, Timer_Demopan_Rage, 1, TIMER_FLAG_NO_MAPCHANGE);
+		DataPack data_pack=new DataPack();
+		data_pack.WriteCell(1);
+		data_pack.WriteCell(view_as<int>(FF2_GetClientTeam(client)));
+		CreateTimer(0.1, Timer_Demopan_Rage, data_pack, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else if(!StrContains(ability_name, "rage_cbs_bowrage"))
 	{
@@ -450,9 +453,9 @@ public Action SaveMinion(int client, int &attacker, int &inflictor, float &damag
 		{
 			float position[3];
 			bool otherTeamIsAlive;
-			for(int clone=1; clone<=MaxClients; clone++)
+			for(int player=1; player<=MaxClients; player++)
 			{
-				if(IsValidEntity(clone) && IsClientInGame(clone) && IsPlayerAlive(clone) && TF2_GetClientTeam(clone)!=FF2_GetBossTeam())
+				if(IsValidEntity(player) && IsClientInGame(player) && IsPlayerAlive(player) && TF2_GetClientTeam(player)!=TF2_GetClientTeam(client))
 				{
 					otherTeamIsAlive=true;
 					break;
@@ -466,7 +469,7 @@ public Action SaveMinion(int client, int &attacker, int &inflictor, float &damag
 			ArrayList player_list=new ArrayList();
 			for(int i=1; i<=MaxClients; i++)
 			{
-				if(IsClientInGame(i) && IsPlayerAlive(i) && TF2_GetClientTeam(i)!=FF2_GetBossTeam())
+				if(IsClientInGame(i) && IsPlayerAlive(i) && TF2_GetClientTeam(i)!=TF2_GetClientTeam(client))
 				{
 					player_list.Push(i);
 				}
@@ -484,11 +487,17 @@ public Action SaveMinion(int client, int &attacker, int &inflictor, float &damag
 	return Plugin_Continue;
 }
 
-public Action Timer_Demopan_Rage(Handle timer, any count)  //TODO: Make this rage configurable
+public Action Timer_Demopan_Rage(Handle timer, DataPack data)  //TODO: Make this rage configurable
 {
+	data.Reset();
+	int count=data.ReadCell();
+	TFTeam boss_team=view_as<TFTeam>(data.ReadCell());
 	if(count==13)  //Rage has finished-reset it in 6 seconds (trade_0 is 100% transparent apparently)
 	{
-		CreateTimer(6.0, Timer_Demopan_Rage, 0, TIMER_FLAG_NO_MAPCHANGE);
+		data.Reset();
+		data.WriteCell(count);
+		data.WriteCell(view_as<int>(boss_team));
+		CreateTimer(6.0, Timer_Demopan_Rage, data, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else
 	{
@@ -498,7 +507,7 @@ public Action Timer_Demopan_Rage(Handle timer, any count)  //TODO: Make this rag
 		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);  //Allow normal players to use r_screenoverlay
 		for(int client=1; client<=MaxClients; client++)
 		{
-			if(IsClientInGame(client) && IsPlayerAlive(client) && TF2_GetClientTeam(client)!=FF2_GetBossTeam())
+			if(IsClientInGame(client) && IsPlayerAlive(client) && TF2_GetClientTeam(client)!=boss_team)
 			{
 				ClientCommand(client, overlay);
 			}
@@ -508,10 +517,15 @@ public Action Timer_Demopan_Rage(Handle timer, any count)  //TODO: Make this rag
 		if(count)
 		{
 			EmitSoundToAll(SOUND_DEMOPAN_RAGE, _, _, _, _, _, _, _, _, _, false);
-			CreateTimer(count==1 ? 1.0 : 0.5/float(count), Timer_Demopan_Rage, count+1, TIMER_FLAG_NO_MAPCHANGE);  //Give a longer delay between the first and second overlay for "smoothness"
+			count++;
+			data.Reset();
+			data.WriteCell(count);
+			data.WriteCell(view_as<int>(boss_team));
+			CreateTimer(count==1 ? 1.0 : 0.5/float(count), Timer_Demopan_Rage, data, TIMER_FLAG_NO_MAPCHANGE);  //Give a longer delay between the first and second overlay for "smoothness"
 		}
 		else  //Stop the rage
 		{
+			delete data;
 			return Plugin_Stop;
 		}
 	}
