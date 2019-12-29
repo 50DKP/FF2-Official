@@ -125,40 +125,40 @@ public Action FF2_OnAbility2(int boss, const char[] plugin_name, const char[] ab
 		}
 	}
 
-	if(!strcmp(ability_name, "charge_weightdown"))
+	if(!StrContains(ability_name, "charge_weightdown"))
 	{
 		Charge_WeighDown(boss, slot);
 	}
-	else if(!strcmp(ability_name, "charge_bravejump"))
+	else if(!StrContains(ability_name, "charge_bravejump"))
 	{
 		Charge_BraveJump(ability_name, boss, slot, status);
 	}
-	else if(!strcmp(ability_name, "charge_teleport"))
+	else if(!StrContains(ability_name, "charge_teleport"))
 	{
 		Charge_Teleport(ability_name, boss, slot, status);
 	}
-	else if(!strcmp(ability_name, "rage_uber"))
+	else if(!StrContains(ability_name, "rage_uber"))
 	{
 		int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 		TF2_AddCondition(client, TFCond_Ubercharged, FF2_GetArgF(boss, this_plugin_name, ability_name, "duration", 1, 5.0));
 		SetEntProp(client, Prop_Data, "m_takedamage", 0);
 		CreateTimer(FF2_GetArgF(boss, this_plugin_name, ability_name, "duration", 1, 5.0), Timer_StopUber, boss, TIMER_FLAG_NO_MAPCHANGE);
 	}
-	else if(!strcmp(ability_name, "rage_stun"))
+	else if(!StrContains(ability_name, "rage_stun"))
 	{
 		Rage_Stun(ability_name, boss);
 	}
-	else if(!strcmp(ability_name, "rage_stunsg"))
+	else if(!StrContains(ability_name, "rage_stunsg"))
 	{
 		Rage_StunSentry(ability_name, boss);
 	}
-	else if(!strcmp(ability_name, "rage_preventtaunt"))  //DEPRECATED-to be removed in 2.0.0
+	else if(!StrContains(ability_name, "rage_preventtaunt"))  //DEPRECATED-to be removed in 2.0.0
 	{
 		char name[64];
 		FF2_GetBossSpecial(boss, name, sizeof(name));
 		PrintToServer("[FF2] Warning: \"rage_preventtaunt\" has been deprecated!  Please remove this ability from %s", name);
 	}
-	else if(!strcmp(ability_name, "rage_instant_teleport"))
+	else if(!StrContains(ability_name, "rage_instant_teleport"))
 	{
 		int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 		float position[3];
@@ -217,12 +217,13 @@ void Rage_Stun(const char[] ability_name, int boss)
 	int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	float bossPosition[3], targetPosition[3];
 	float duration=FF2_GetArgF(boss, this_plugin_name, ability_name, "duration",  1, 5.0);
-	float distance=FF2_GetRageDist(boss, this_plugin_name, ability_name);
+	float distance=FF2_GetArgF(boss, this_plugin_name, ability_name, "distance", 2, FF2_GetRageDist(boss, this_plugin_name, ability_name));
 	GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition);
+	
 
 	for(int target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=FF2_GetBossTeam())
+		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=GetClientTeam(client))
 		{
 			GetEntPropVector(target, Prop_Send, "m_vecOrigin", targetPosition);
 			if(!TF2_IsPlayerInCondition(target, TFCond_Ubercharged) && (GetVectorDistance(bossPosition, targetPosition)<=distance))
@@ -247,9 +248,10 @@ public Action Timer_StopUber(Handle timer, any boss)
 void Rage_StunSentry(const char[] ability_name, int boss)
 {
 	float bossPosition[3], sentryPosition[3];
-	GetEntPropVector(GetClientOfUserId(FF2_GetBossUserId(boss)), Prop_Send, "m_vecOrigin", bossPosition);
+	int client=GetClientOfUserId(FF2_GetBossUserId(boss));
+	GetEntPropVector(client, Prop_Send, "m_vecOrigin", bossPosition);
 	float duration=FF2_GetArgF(boss, this_plugin_name, ability_name, "duration", 1, 7.0);
-	float distance=FF2_GetRageDist(boss, this_plugin_name, ability_name);
+	float distance=FF2_GetArgF(boss, this_plugin_name, ability_name, "distance", 2, FF2_GetRageDist(boss, this_plugin_name, ability_name));
 
 	int sentry;
 	while((sentry=FindEntityByClassname(sentry, "obj_sentrygun"))!=-1)

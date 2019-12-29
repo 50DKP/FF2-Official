@@ -146,7 +146,7 @@ void SpawnManyObjects(char[] classname, int client, char[] model, int skin=0, in
 		SetEntProp(entity, Prop_Send, "m_triggerBloat", 24);
 		SetEntProp(entity, Prop_Send, "m_CollisionGroup", 1);
 		SetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity", client);
-		SetEntProp(entity, Prop_Send, "m_iTeamNum", 2);
+		SetEntProp(entity, Prop_Send, "m_iTeamNum", view_as<int>((TF2_GetClientTeam(client)==TFTeam_Blue ? TFTeam_Red : TFTeam_Blue)));
 		DispatchSpawn(entity);
 		TeleportEntity(entity, position, angle, velocity);
 		SetEntProp(entity, Prop_Data, "m_iHealth", 900);
