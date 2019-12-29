@@ -448,36 +448,25 @@ public Action SaveMinion(int client, int &attacker, int &inflictor, float &damag
 		char edict[64];
 		if(GetEntityClassname(attacker, edict, sizeof(edict)) && !strcmp(edict, "trigger_hurt", false))
 		{
-			int target;
 			float position[3];
 			bool otherTeamIsAlive;
 			for(int clone=1; clone<=MaxClients; clone++)
 			{
-				if(IsValidEntity(clone) && IsClientInGame(clone) && IsPlayerAlive(clone) && GetClientTeam(clone)!=FF2_GetBossTeam())
+				if(IsValidEntity(clone) && IsClientInGame(clone) && IsPlayerAlive(clone) && TF2_GetClientTeam(clone)!=FF2_GetBossTeam())
 				{
 					otherTeamIsAlive=true;
 					break;
 				}
 			}
-
-			/*
-			int tries;
-			do
-			{
-				tries++;
-				target=GetRandomInt(1, MaxClients);
-				if(tries==100)
-				{
-					return Plugin_Continue;
-				}
-			}
-			while(otherTeamIsAlive && (!IsValidEntity(target) || GetClientTeam(target)==FF2_GetBossTeam() || !IsPlayerAlive(target)));
-			*/
 			//Honestly I haven't noticed this code working at all. To-do: Check if not working and fix...
+			if(!otherTeamIsAlive)
+			{
+				return Plugin_Continue;
+			}
 			ArrayList player_list=new ArrayList();
 			for(int i=1; i<=MaxClients; i++)
 			{
-				if(IsClientInGame(i) && IsPlayerAlive(i) && GetClientTeam(i)!=FF2_GetBossTeam())
+				if(IsClientInGame(i) && IsPlayerAlive(i) && TF2_GetClientTeam(i)!=FF2_GetBossTeam())
 				{
 					player_list.Push(i);
 				}
@@ -509,7 +498,7 @@ public Action Timer_Demopan_Rage(Handle timer, any count)  //TODO: Make this rag
 		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);  //Allow normal players to use r_screenoverlay
 		for(int client=1; client<=MaxClients; client++)
 		{
-			if(IsClientInGame(client) && IsPlayerAlive(client) && GetClientTeam(client)!=FF2_GetBossTeam())
+			if(IsClientInGame(client) && IsPlayerAlive(client) && TF2_GetClientTeam(client)!=FF2_GetBossTeam())
 			{
 				ClientCommand(client, overlay);
 			}
@@ -540,7 +529,7 @@ void Rage_Bow(int boss)
 	int otherTeamAlivePlayers;
 	for(int target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && view_as<TFTeam>(GetClientTeam(target))==team && IsPlayerAlive(target))
+		if(IsClientInGame(target) && view_as<TFTeam>(TF2_GetClientTeam(target))==team && IsPlayerAlive(target))
 		{
 			otherTeamAlivePlayers++;
 		}
