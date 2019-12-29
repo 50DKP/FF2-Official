@@ -406,7 +406,7 @@ void Rage_Clone(const char[] ability_name, int boss)
 	
 		while((entity=FindEntityByClassname(entity, "tf_powerup_bottle"))!=-1)
 		{
-			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity"))==clone)
+			if(GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity")==clone)
 			{
 				TF2_RemoveWearable(clone, entity);
 			}
