@@ -45,7 +45,7 @@ public void OnPluginStart2()
 
 public Action FF2_OnAbility2(int client, const char[] plugin_name, const char[] ability_name, int status)
 {
-	if(!strcmp(ability_name, "rage_new_weapon"))
+	if(!StrContains(ability_name, "rage_new_weapon"))
 	{
 		Rage_New_Weapon(client, ability_name);
 	}

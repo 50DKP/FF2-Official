@@ -80,7 +80,8 @@ native int FF2_GetBossIndex(int client);
  * Gets current team of Boss
  * @return			Number of boss's team
  */
-native int FF2_GetBossTeam();
+#pragma deprecated Avoid using FF2_GetBossTeam() and instead directly get the team of the boss using TF2_GetClientTeam or similar.
+native TFTeam FF2_GetBossTeam();
 
 /**
  * Gets the character name of the Boss

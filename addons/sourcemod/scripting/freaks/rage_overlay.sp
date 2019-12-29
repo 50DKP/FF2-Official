@@ -35,7 +35,7 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 
 public Action FF2_OnAbility2(int boss, const char[] plugin_name, const char[] ability_name, int status)
 {
-	if(!strcmp(ability_name, "rage_overlay"))
+	if(!StrContains(ability_name, "rage_overlay"))
 	{
 		Rage_Overlay(boss, ability_name);
 	}
@@ -45,27 +45,28 @@ public Action FF2_OnAbility2(int boss, const char[] plugin_name, const char[] ab
 void Rage_Overlay(int boss, const char[] ability_name)
 {
 	char overlay[PLATFORM_MAX_PATH];
+	int client=GetClientOfUserId(FF2_GetBossUserId(boss));
 	FF2_GetArgS(boss, this_plugin_name, ability_name, "path", 1, overlay, sizeof(overlay));
 	Format(overlay, sizeof(overlay), "r_screenoverlay \"%s\"", overlay);
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(int target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=FF2_GetBossTeam())
+		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=FF2_GetClientTeam(client))
 		{
 			ClientCommand(target, overlay);
 		}
 	}
 
-	CreateTimer(FF2_GetArgF(boss, this_plugin_name, ability_name, "duration", 2, 6.0), Timer_Remove_Overlay, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(FF2_GetArgF(boss, this_plugin_name, ability_name, "duration", 2, 6.0), Timer_Remove_Overlay, FF2_GetClientTeam(client), TIMER_FLAG_NO_MAPCHANGE);
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
 }
 
-public Action Timer_Remove_Overlay(Handle timer)
+public Action Timer_Remove_Overlay(Handle timer, TFTeam boss_team_num)
 {
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(int target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=FF2_GetBossTeam())
+		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=boss_team_num)
 		{
 			ClientCommand(target, "r_screenoverlay off");
 		}
