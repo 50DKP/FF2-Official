@@ -51,13 +51,13 @@ void Rage_Overlay(int boss, const char[] ability_name)
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(int target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=FF2_GetClientTeam(client))
+		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=TF2_GetClientTeam(client))
 		{
 			ClientCommand(target, overlay);
 		}
 	}
 
-	CreateTimer(FF2_GetArgF(boss, this_plugin_name, ability_name, "duration", 2, 6.0), Timer_Remove_Overlay, FF2_GetClientTeam(client), TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(FF2_GetArgF(boss, this_plugin_name, ability_name, "duration", 2, 6.0), Timer_Remove_Overlay, TF2_GetClientTeam(client), TIMER_FLAG_NO_MAPCHANGE);
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);
 }
 
