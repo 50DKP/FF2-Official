@@ -838,7 +838,7 @@ public Action OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 				FF2_SetFF2flags(target, FF2_GetFF2flags(target) & ~(FF2FLAG_CLASSTIMERDISABLED|FF2FLAG_ALLOWSPAWNINBOSSTEAM));
 				if(IsClientInGame(target) && TF2_GetClientTeam(target)==TF2_GetClientTeam(client))
 				{
-					ChangeClientTeam(target, (TF2_GetClientTeam(client)==TFTeam_Blue) ? TFTeam_Red : TFTeam_Blue);
+					TF2_ChangeClientTeam(target, (TF2_GetClientTeam(client)==TFTeam_Blue) ? TFTeam_Red : TFTeam_Blue);
 				}
 			}
 		}

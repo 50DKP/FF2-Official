@@ -51,7 +51,7 @@ void Rage_Overlay(int boss, const char[] ability_name)
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(int target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=TF2_GetClientTeam(client))
+		if(IsClientInGame(target) && IsPlayerAlive(target) && TF2_GetClientTeam(target)!=TF2_GetClientTeam(client))
 		{
 			ClientCommand(target, overlay);
 		}
@@ -66,7 +66,7 @@ public Action Timer_Remove_Overlay(Handle timer, TFTeam boss_team_num)
 	SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);
 	for(int target=1; target<=MaxClients; target++)
 	{
-		if(IsClientInGame(target) && IsPlayerAlive(target) && GetClientTeam(target)!=boss_team_num)
+		if(IsClientInGame(target) && IsPlayerAlive(target) && TF2_GetClientTeam(target)!=boss_team_num)
 		{
 			ClientCommand(target, "r_screenoverlay off");
 		}
