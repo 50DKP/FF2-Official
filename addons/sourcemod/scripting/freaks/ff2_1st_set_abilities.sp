@@ -221,7 +221,7 @@ public Action FF2_OnAbility2(int boss, const char[] plugin_name, const char[] ab
 	{
 		DataPack data_pack=new DataPack();
 		data_pack.WriteCell(1);
-		data_pack.WriteCell(view_as<int>(FF2_GetClientTeam(client)));
+		data_pack.WriteCell(view_as<int>(TF2_GetClientTeam(client)));
 		CreateTimer(0.1, Timer_Demopan_Rage, data_pack, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	else if(!StrContains(ability_name, "rage_cbs_bowrage"))
