@@ -1,49 +1,124 @@
 <!DOCTYPE html>
-<html lang="en-us">
-	<head>	
-		<meta charset="UTF-8">
-		<link rel="stylesheet" href="css/style.css" type="text/css">
+<html lang="en-us"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">	
+		
+		<link rel="stylesheet" href="style.css" type="text/css">
+		
 		<title>Freak Fortress 2 Version History</title>
+
+	
 	</head>
-	<body>
-		<center><h1>Freak Fortress 2 Version History</h1></center>
-		
-		
+	<body bgcolor="#D3D3D3">
+	<header>
+<table border="0" WIDTH=90% bgcolor="#D3D3D3">
+<tr>
+<td align="center"><h1>Freak Fortress 2 Version History</h1></td>
+<td align="left"><a href="https://github.com/50DKP/FF2-Official/commits/stable">GitHub Commits</a></td>
+<td align="left"><a href="https://github.com/50DKP/FF2-Official/tree/stable">GitHub Code</a></td>
+</tr>
+</table>
+</header>
+
+
 		<div class="version_box">
-			<h3><a id="1.10.14">Freak Fortress 2 1.10.14 - October 21, 2016</a></h3>
+<button type="button" class="collapsible"><h3><a name="1.11.0">Freak Fortress 2 1.11.0  October 9 - December 20, 2019</a></h3></button>
+		<div class="content">	
+			<ol>
+				<li>More uber fixes (naydef)</li>
+				<li>Slight changes to freak_fortress_2.sp to fix several warnings (naydef)</li>
+				<li>Fixed errors when a Monoculus is active (naydef)</li>
+				<li>Made sure the HP bar reappears when all Monoculuses are dead (naydef)</li>
+				<li>Added a warning when attribute limit is reached (naydef)</li>
+				<li>"class" key now can accept human readable names of tf2 classes (naydef from Unofficial Freak Fortress)</li>
+				<li>"class" is renamed into "player_class" to ensure a possible SM update doesn't break the code (naydef)</li>
+				<li>Changes to shield code (naydef))</li>
+				<li>Replaced internal FF2 changelog with HTML one, shown via MOTD (naydef)</li>
+				<li>FF2 menus now use menu objects (naydef)</li>
+				<li>Fixes to demoman shield code (naydef))</li>
+				<li>Improved HTML changelog page (Nolo001)</li>
+			</ol>
+		</div>	</div>	
+
+		<div class="version_box">
+<button type="button" class="collapsible"><h3><a id="1.10.15">Freak Fortress 2 1.10.15  March 1 - October 9, 2019</a></h3></button>
+		<div class="content">	
+			<ol>
+				<li>Added !ff2companion duo toggle menu (Lucario Batfoxkid)</li>
+				<li>Fixed disabled FF2 pickups (Lucario Batfoxkid)</li>
+				<li>[Dev] Added RTD2 includes (Lucario Batfoxkid)</li>
+				<li>Added ability to specify minimun required version of Freak Fortress for a boss to work (naydef)</li>
+				<li>Changed max bosses per character set to 128 (naydef)</li>
+				<li>[Dev] Removed unneeded code (naydef)</li>	
+				<li>Fixed certain models having incorrect skins when the player has a voodo-cursed soul equipped (naydef)</li>
+				<li>Ragedamage can now be specified with a formula (naydef from Unofficial Freak Fortress)</li>
+				<li>[Dev] Converted all source code files and includes to SourceMod 1.7+ syntax (Lucario Batfoxkid)</li>	
+				<li>Fixed slowmotion ability not working as intended on Windows servers (naydef)</li>
+				<li>[Dev] Renamed Debug to FF2Dbg (naydef, Lucario Batfoxkid)</li>
+				<li>Added "triple", catch_replace boss settings to toggle damage tripling(default 1) and replace certain voicelines, respectively (Lucario Batfoxkid)</li>
+				<li>Added infinite and disabled rage options, "ragedamage" being 0 or 1 enables infinite rage, -1 disables RAGE hud (Lucario Batfoxkid)</li>
+				<li>[Dev] Added FF2_GetForkVersion native (Lucario Batfoxkid)</li>
+				<li>[Dev] Improved subplugins code (naydef)</li>	
+				<li>[Dev] FF2_SpawnWeapon is now a stock (naydef)</li>	
+				<li>[Dev] Added support for named arguments in boss configs (naydef)</li>
+				<li>[Dev] Slightly changed slot system: "arg0" -> "slot", arg0 kept for backwards compatibility (naydef)</li>
+				<li>Ablity limit per boss is now 32 (naydef)</li>
+				<li>Updates to sound code, (almost) all voicelines can now be catched (naydef)</li>
+				<li>[Dev] Added FF2_NamedArgumentsUsed (naydef)</li>
+				<li>[Dev] More slots for subplugins: 4 - on kill, 5 - on boss killed, 6 - boss backstabbed, 7 - boss market'ed (naydef)</li>	
+				<li>Fixed some cvars changing when matrix attack is used (naydef)</li>
+				<li>Fixed Medigun giving crits and uber, ignoring attributes (naydef)</li>
+				<li>Added cvar to disable FF2 attribute management when TF2x10 is active (naydef)</li>
+				<li>[Dev] Updates to include files (naydef)</li>
+				<li>Attempted to fix uberchain exploit (naydef)</li>
+				<li>[Dev] Added GetArgI, GetArgF and GetArgS functions for easy and compatible retrieval of ability arguments (Lucario Batfoxkid from Unofficial Freak Fortress)</li>
+				<li>Updates to include files (naydef)</li>
+				<li>Attempted to fix uberchain exploit (naydef)</li>
+				<li>Updates to easter_abilities (naydef)</li>
+				<li>[Dev] Subplugins now support named arguments (naydef)</li>
+				<li>Added "crits" and "knockback" for bosses (naydef from Unofficial Freak Fortress)</li>				
+			</ol>
+		</div>	</div>	
+				
+		<div class="version_box">
+		
+		<button type="button" class="collapsible"><h3><a id="1.10.14">Freak Fortress 2 1.10.14 - October 21, 2016</a></h3></button>
+		<div class="content">
 			<ol>
 				<li>Fixed minions occasionally spawning on the wrong team (Wliu from various)</li>
 				<li>Fixed ff2_start_music at the start of the round causing music to overlap (naydef)</li>
 				<li>Fixed new clients not hearing music in certain circumstances (naydef)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.13">Freak Fortress 2 1.10.13 - September 1, 2016</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.13">Freak Fortress 2 1.10.13 - September 1, 2016</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed insta-backstab issues (Wliu from tom0034)</li>
 				<li>Fixed team-changing exploit (Wliu from Edge_)</li>
 				<li>[Server] Fixed an error message logging the wrong values (Wliu)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.12">Freak Fortress 2 1.10.12 - August 4, 2016</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.12">Freak Fortress 2 1.10.12 - August 4, 2016</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Actually fixed BGMs not looping (Wliu from WakaFlocka, again)</li>
 				<li>Fixed new clients not respecting the current music state (Wliu from shadow93)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.11">Freak Fortress 2 1.10.11 - August 1, 2016</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.11">Freak Fortress 2 1.10.11 - August 1, 2016</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed BGMs not looping (Wliu from WakaFlocka)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.10">Freak Fortress 2 1.10.10 - August 1, 2016</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.10">Freak Fortress 2 1.10.10 - August 1, 2016</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed multiple BGM issues in 1.10.9 (Wliu, shadow93, Nopied, WakaFlocka, and others)</li>
 				<li>Automatically start BGMs for new clients (Wliu)</li>
@@ -52,16 +127,17 @@
 				<li>[Server] Fixed an invalid client error in ff2_1st_set_abilities.sp (Wliu)</li>
 				<li>[Server] Fixed a GetEntProp error (Wliu from Hemen353)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.9">Freak Fortress 2 1.10.9 - May 7, 2016</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.9">Freak Fortress 2 1.10.9 - May 7, 2016</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed a critical exploit related to sv_cheats (naydef)</li>
 				<li>Updated weapons for the Tough Break update (Wliu)</li>
-				<p>Partially synced with VSH (all changes listed courtesy of VSH contributors and shadow93)</p>
-				<li>VSH: Don't play end-of-round announcer sounds/li>
-				<li>VSH: Increase boss damage to 210% (up from 200%)</li>
+				<li>Partially synced with VSH (all changes listed courtesy of VSH contributors and shadow93)</li>
+				<li>VSH: Don't play end-of-round announcer sounds/li&gt;
+				</li><li>VSH: Increase boss damage to 210% (up from 200%)</li>
 				<li>VSH: Give scout bosses +3 capture rate instead of +4</li>
 				<li>VSH: Don't actually call for medic when activating rage</li>
 				<li>VSH: Override attributes for all mediguns and syringe guns</li>
@@ -82,17 +158,19 @@
 				<li>[Dev] Rewrote BGM code (Wliu)</li>
 				<li>[Dev] Fixed ability sounds playing even if the ability was canceled in FF2_PreAbility (Wliu from xNanoChip)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.8">Freak Fortress 2 1.10.8 - November 24, 2015</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.8">Freak Fortress 2 1.10.8 - November 24, 2015</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed the Powerjack and Kunai killing the boss in one hit (naydef)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.7">Freak Fortress 2 1.10.7 - November 19, 2015</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.7">Freak Fortress 2 1.10.7 - November 19, 2015</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed companions always having default rage damage and lives, even if specified otherwise (Wliu from Shadow)</li>
 				<li>Fixed bosses instantly losing if a boss disconnected while there were still other bosses alive (Shadow from Spyper)</li>
@@ -109,10 +187,11 @@
 				<li>[Dev] Fixed FF2_OnAlivePlayersChanged not returning the number of minions (Wliu)</li>
 				<li>[Dev] Fixed PDAs and sappers not being usable when given to bosses (Shadow)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.6">Freak Fortress 2 1.10.6 - August 10, 2015</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.6">Freak Fortress 2 1.10.6 - August 10, 2015</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Updated the default health formula to match VSH's (Wliu)</li>
 				<li>Updated for compatability with the Gunmettle update (Wliu, Shadow, Starblaster64, Chdata, sarysa, and others)</li>
@@ -136,10 +215,11 @@
 				<li>[Dev] Prioritized exact matches in OnSpecialSelected and added a 'preset' bool (Wliu from Shadow)</li>
 				<li>[Dev] Removed deprecated FCVAR_PLUGIN cvar flags (Wliu)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.5">Freak Fortress 2 1.10.5 - March 13, 2015</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.5">Freak Fortress 2 1.10.5 - March 13, 2015</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed slow-mo being extremely buggy (Wliu from various)</li>
 				<li>Fixed the Festive SMG not getting crits (Wliu from Dalix)</li>
@@ -148,10 +228,11 @@
 				<li>[Server] Fixed multiple sounds not working after TF2 changed the default sound extension type (Wliu)</li>
 				<li>[Dev] Fixed rage damage not resetting after using FF2_SetBossRageDamage (Wliu from WildCard65)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.4">Freak Fortress 2 1.10.4 - March 1, 2015</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.4">Freak Fortress 2 1.10.4 - March 1, 2015</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed players getting overheal after winning as a boss (Wliu/FlaminSarge)</li>
 				<li>Rebalanced the Baby Face's Blaster (Shadow)</li>
@@ -177,10 +258,11 @@
 				<li>[Dev] Improved FF2_OnSpecialSelected so that only part of a boss name is needed (Wliu)</li>
 				<li>[Dev] Added FF2_{Get|Set}BossRageDamage (Wliu from WildCard65)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.3">Freak Fortress 2 1.10.3 - November 6, 2014</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.3">Freak Fortress 2 1.10.3 - November 6, 2014</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed bosses appearing to be overhealed (War3Evo/Wliu)</li>
 				<li>Rebalanced many weapons based on misc. feedback (Wliu/various)</li>
@@ -210,18 +292,20 @@
 				<li>[Dev] Fixed weapons not being hidden when asked to (friagram)</li>
 				<li>[Dev] Fixed not being able to set constant health values for bosses (Wliu from braak0405)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.2">Freak Fortress 2 1.10.2 - August 28, 2014</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.">Freak Fortress 2 1.10.2 - August 28, 2014</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed a critical bug that rendered most bosses as errors without sound (Wliu; thanks to slavko17 for reporting)</li>
 				<li>Reverted escape sequences change, which is what caused this bug</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.1">Freak Fortress 2 1.10.1 - August 28, 2014</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.1">Freak Fortress 2 1.10.1 - August 28, 2014</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed a rare bug where rage could go over 100% (Wliu)</li>
 				<li>Updated to use Sourcemod 1.6.1 (Powerlord)</li>
@@ -247,10 +331,11 @@
 				<li>[Dev] Fixed a bug in the main include file (Wliu)</li>
 				<li>[Dev] Enabled escape sequences in configs (Wliu)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.10.0">Freak Fortress 2 1.10.0 - July 26, 2014</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.10.0">Freak Fortress 2 1.10.0 - July 26, 2014</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Rage is now activated by calling for medic (Wliu)</li>
 				<li>Balanced Goomba Stomp and RTD (WildCard65)</li>
@@ -286,20 +371,22 @@
 				<li>[Dev] FF2 now checks for sane values for "lives" and "health_formula" (Wliu)</li>
 				<p>Big thanks to GIANT_CRAB, WildCard65, and kniL for their devotion to this release!</p>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.9.3">Freak Fortress 2 1.9.3 - April 5, 2014</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.9.3">Freak Fortress 2 1.9.3 - April 5, 2014</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed a bug in 1.9.2 where the changelog was off by one version (Wliu)</li>
 				<li>Fixed a bug in 1.9.2 where one dead player would not be cloned in rage_cloneattack (Wliu)</li>
 				<li>Fixed a bug in 1.9.2 where sentries would be permanently disabled after a rage (Wliu)</li>
 				<li>[Server] Removed ff2_halloween (Wliu)"</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.9.2">Freak Fortress 2 1.9.2 - March 22, 2014</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.9.2">Freak Fortress 2 1.9.2 - March 22, 2014</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed a bug in 1.9.1 that allowed the same player to be the boss over and over again (Wliu)</li>
 				<li>Fixed a bug where last player glow was being incorrectly removed on the boss (Wliu)</li>
@@ -308,12 +395,13 @@
 				<li>Fixed a rare bug where the rage percentage could go above 100% (Wliu)</li>
 				<li>[Server] Fixed possible special_noanims errors (Wliu)</li>
 				<li>[Server] Added new arguments to rage_cloneattack-no updates necessary (friagram/Wliu)</li>
-				<li>[Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)</br>Servers can now safely have smac_cvars enabled</li>
+				<li>[Server] Certain cvars that SMAC detects are now automatically disabled while FF2 is running (Wliu)<br>Servers can now safely have smac_cvars enabled</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.9.1">Freak Fortress 2 1.9.1 - March 18, 2014</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.9.1">Freak Fortress 2 1.9.1 - March 18, 2014</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed some minor leaderboard bugs and also improved the leaderboard text (Wliu)</li>
 				<li>Fixed a minor round end bug (Wliu)</li>
@@ -321,10 +409,11 @@
 				<li>[Server] Removed leftover console messages (Wliu)</li>
 				<li>[Server] Fixed sound not precached warnings (Wliu)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.9.0">Freak Fortress 2 1.9.0 - March 6, 2014</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.9.0">Freak Fortress 2 1.9.0 - March 6, 2014</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Removed checkFirstHale (Wliu)</li>
 				<li>[Server] Fixed invalid healthbar entity bug (Wliu)</li>
@@ -337,10 +426,11 @@
 				<li>Minor grammar/spelling improvements (Wliu)</li>
 				<li>[Server] Minor subplugin load/unload fixes (Wliu)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.0.8">Freak Fortress 2 1.0.8 - October 30, 2013</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.0.8">Freak Fortress 2 1.0.8 - October 30, 2013</a></h3></button>
+					<div class="content">
 			<ol>
 				<p>Wliu, Chris, Lawd, and Carge of 50DKP have taken over FF2 development</p>
 				<li>Prevented spy bosses from changing disguises (Powerlord)</li>
@@ -374,55 +464,60 @@
 				<li>Changed versioning format to x.y.z and month day, year (Wliu)</li>
 				<p>HAPPY HALLOWEEN!</p>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.07">Freak Fortress 2 1.07 - 14 Dec 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.07">Freak Fortress 2 1.07 - 14 Dec 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>[Players] Holiday Punch is now replaced by Fists</li>
 				<li>[Players] Bosses will have any disguises removed on round start</li>
 				<li>[Players] Bosses can no longer see all players health, as it wasn't working any more</li>
 				<li>[Server] ff2_addpoints no longer targets SourceTV or replay</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.07 beta 6">Freak Fortress 2 1.07 beta 6 - 9 Nov 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.07 beta 6">Freak Fortress 2 1.07 beta 6 - 9 Nov 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>[Dev] Fixed issue with sound hook not stopping sound when sound_block_vo was in use</li>
 				<li>[Dev] If ff2_charset was used, don't run the character set vote</li>
 				<li>[Dev] If a vote is already running, Character set vote will retry every 5 seconds or until map changes</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.07 beta 5 - 18 Oct 2012">Freak Fortress 2 1.07 beta 5</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.07 beta 5">Freak Fortress 2 1.07 beta 5 - 18 Oct 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>[Dev] Fixed issue with character sets not working.</li>
 				<li>[Dev] Improved IsValidClient replay check</li>
-				<li>[Dev] IsValidClient is now called when loading companion bosses</br>This should prevent GetEntProp issues with m_iClass</li>
+				<li>[Dev] IsValidClient is now called when loading companion bosses<br>This should prevent GetEntProp issues with m_iClass</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.07 beta 4 - 11 Oct 2012">Freak Fortress 2 1.07 beta 4</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.07 beta 4">Freak Fortress 2 1.07 beta 4 - 11 Oct 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>[Players] Dead Ringers have no cloak defense buff. Normal cloaks do.</li>
 				<li>[Players] Fixed Sniper Rifle reskin behavior</li>
 				<li>[Players] Boss has small amount of stun resistance after rage</li>
 				<li>[Players] Various bugfixes and changes 1.7.0 beta 1</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.07 beta - 8 Oct 2012">Freak Fortress 2 1.07 beta</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.07 beta 1">Freak Fortress 2 1.07 beta 1 - 8 Oct 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>[Players] Reworked the crit code a bit. Should be more reliable.</li>
 				<li>[Players] Help panel should stop repeatedly popping up on round start.</li>
 				<li>[Players] Backstab disguising should be smoother/less obvious</li>
 				<li>[Players] Scaled sniper rifle glow time a bit better</li>
 				<li>[Players] Fixed Dead Ringer spy death icon</li>
-				<li>[Players] Removed crits from sniper rifles, now do 2.9x damage.</br>Sydney Sleeper does 2.4x damage, 2.9x if boss's rage is >90pct</br>Minicrit- less damage, more knockback</li>
+				<li>[Players] Removed crits from sniper rifles, now do 2.9x damage.<br>Sydney Sleeper does 2.4x damage, 2.9x if boss's rage is &gt;90pct<br>Minicrit- less damage, more knockback</li>
 				<li>[Players] Baby Face's Blaster will fill boost normally, but will hit 100 and drain+minicrits.</li>
 				<li>[Players] Phlogistinator Pyros are invincible while activating the crit-boost taunt.</li>
 				<li>[Players] Can't Eureka+destroy dispenser to insta-teleport</li>
@@ -440,24 +535,27 @@
 				<li>[Dev] Cache the result of the newer backstab detection</li>
 				<li>[Dev] Reworked Medic damage code slightly</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.06h">Freak Fortress 2 1.06h - 6 Sep 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.06h">Freak Fortress 2 1.07 beta 4 - 6 Sep 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>[Players] Remove MvM powerup_bottle on Bosses. (RavensBro)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.06g">Freak Fortress 2 1.06g - 5 Sep 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.06g">Freak Fortress 2 1.06g - 5 Sep 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>[Players] Fixed vote for charset. (RavensBro)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.06f">Freak Fortress 2 1.06f - 5 Sep 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.06f">Freak Fortress 2 1.06f - 5 Sep 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>[Players] Changelog now divided into [Players] and [Dev] sections. (Otokiru)</li>
 				<li>[Players] Don't bother reading [Dev] changelogs because you'll have no idea what it's stated. (Otokiru)</li>
@@ -465,40 +563,44 @@
 				<li>[Players] Fixed hale HP bar. (Valve) lol?</li>
 				<li>[Dev] Fixed "GetEntProp" reported: Entity XXX (XXX) is invalid on checkFirstHale(). (Otokiru)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.06e">Freak Fortress 2 1.06e - 24 Aug 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.06e">Freak Fortress 2 1.06e - 24 Aug 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>[Players] Remove MvM water-bottle on hales. (Otokiru)</li>
 				<li>[Dev] Fixed "GetEntProp" reported: Property "m_iClass" not found (entity 0/worldspawn) error on checkFirstHale(). (Otokiru)</li>
 				<li>[Dev] Change how FF2 check for player weapons. Now also checks when spawned in the middle of the round. (Otokiru)</li>
 				<li>[Dev] Changed some FF2 warning messages color such as "First-Hale Checker" and "Change class exploit". (Otokiru)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.06d">Freak Fortress 2 1.06d - 3 July 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.06d">Freak Fortress 2 1.06d - 3 July 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fix first boss having missing health or abilities. (Otokiru)</li>
 				<li>Health bar now goes away if the boss wins the round. (Powerlord)</li>
 				<li>Health bar cedes control to Monoculus if he is summoned. (Powerlord)</li>
 				<li>Health bar instantly updates if enabled or disabled via cvar mid-game. (Powerlord))</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.06c">Freak Fortress 2 1.06c - 22 June 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.06c">Freak Fortress 2 1.06c - 22 June 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Remove weapons if a player tries to switch classes when they become boss to prevent an exploit. (Otokiru)</li>
 				<li>Reset hale's queue points to prevent the 'retry' exploit. (Otokiru)</li>
 				<li>Better detection of backstabs. (Powerlord)</li>
 				<li>Boss now has optional life meter on screen. (Powerlord)</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.06">Freak Fortress 2 1.06 - 1 May 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.06">Freak Fortress 2 1.06 - 1 May 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed attributes key for weaponN block. Now 1 space needed for explode string.</li>
 				<li>Disabled vote for charset when there is only 1 not hidden chatset.</li>
@@ -506,10 +608,11 @@
 				<li>Fixed ammo for special_noanims.ff2\rage_new_weapon ability.</li>
 				<p>Coming soon: weapon balance will be moved into config file.</p>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.05">Freak Fortress 2 1.05 - 29 April 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.05">Freak Fortress 2 1.05 - 29 April 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Added "hidden" key for charsets.</li>
 				<li>Added "sound_stabbed" key for characters.</li>
@@ -522,10 +625,11 @@
 				<li>FF2FLAG_HUDDISABLED flag blocks EVERYTHING of FF2's HUD.</li>
 				<li>Changed FF2_PreAbility native to fix bug about broken Boss' abilities.</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.04">Freak Fortress 2 1.04 - 21 April 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.04">Freak Fortress 2 1.04 - 21 April 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Seeldier's minions have protection (teleport) from pits for first 4 seconds after spawn.</li>
 				<li>Seeldier's minions correctly dies when owner-Seeldier dies.</li>
@@ -534,20 +638,22 @@
 				<li>Fixed potential exploits associated with feign death.</li>
 				<li>Added ff2_reload_subplugins command to reload FF2's subplugins.</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.03">Freak Fortress 2 1.03 - 19 April 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.03">Freak Fortress 2 1.03 - 19 April 2012</a></h3></button>
+					<div class="content"> 
 			<ol>
 				<li>Finally fixed exploit about queue points.</li>
 				<li>Fixed non-regular bug with 'UTIL_SetModel: not precached'.</li>
 				<li>Fixed potential bug about reducing of Boss' health by healing.</li>
 				<li>Fixed Boss' stun when round begins.</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.02">Freak Fortress 2 1.02 - 17 April 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.02">Freak Fortress 2 1.02 - 17 April 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Added isNumOfSpecial parameter into FF2_GetSpecialKV and FF2_GetBossSpecial natives</li>
 				<li>Added FF2_PreAbility forward. Plz use it to prevent FF2_OnAbility only.</li>
@@ -557,10 +663,11 @@
 				<li>FF2FLAG_HUDDISABLED flag disables Boss' HUD too.</li>
 				<li>Added FF2_GetQueuePoints and FF2_SetQueuePoints natives.</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.01">Freak Fortress 2 1.01 - 14 April 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.01">Freak Fortress 2 1.01 - 14 April 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Fixed "classmix" bug associated with Boss' class restoring.</li>
 				<li>Fixed other little bugs.</li>
@@ -572,10 +679,11 @@
 				<li>Fixed bug when boss' music have a chance to DON'T play.</li>
 				<li>Fixed bug associated with ff2_enabled in cfg/sourcemod/FreakFortress2.cfg and disabling of plugin.</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
 		<div class="version_box">
-			<h3><a id="1.0">Freak Fortress 2 1.0 - 6 April 2012</a></h3>
+			<button type="button" class="collapsible"><h3><a id="1.0">Freak Fortress 2 1.0 - 6 April 2012</a></h3></button>
+					<div class="content">
 			<ol>
 				<li>Boss' health devided by 3,6 in medieval mode</li>
 				<li>Restoring player's default class, after his round as Boss</li>
@@ -586,7 +694,23 @@
 				<li>Dead Ringer will not be able to activate for 2s after backstab</li>
 				<li>Added ff2_spec_force_boss cvar</li>
 			</ol>
-		</div>
+		</div>		</div>
 		
-	</body>
-</html>
+<script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
+  });
+}
+</script>
+	
+</body></html>

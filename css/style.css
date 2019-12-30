@@ -1,14 +1,18 @@
 .version_box
 {
-	margin-top: 20px;
-	margin-bottom: 20px;
+	margin-top: 30px;
+	margin-bottom: 30px;
 	margin-left: 70px;
 	margin-right: 70px;
-	border: 2px solid #b89525;
-	box-shadow: 10px 10px;
+	border: 2px solid #2F4F4F;
 	background-color: #dee0c8;
+    text-decoration: none;
 }
 
+a 
+{ 
+    text-decoration: none; 
+} 
 .version_box h3
 {
 	margin-left: 20px;
@@ -17,6 +21,25 @@
 .version_box li
 {
 	margin: 3px;
+}
+
+.collapsible 
+{
+  background-color: #777;
+  color: white;
+  cursor: pointer;
+  padding: 8px;
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+}
+
+.content 
+{
+  padding: 0 18px;
+  display: none;
+  overflow: hidden;
+  background-color: #dee0c8;
 }
 
 #important_text
