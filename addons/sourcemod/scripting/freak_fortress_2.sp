@@ -4998,16 +4998,16 @@ public Action Timer_CheckAlivePlayers(Handle timer)
 		PrintHintTextToAll("%t", "point_enable", AliveToEnable);
 		if(RedAlivePlayers==AliveToEnable)
 		{
-			char sound[64];
 			if(GetRandomInt(0, 1))
 			{
-				Format(sound, sizeof(sound), "vo/announcer_am_capenabled0%i.mp3", GetRandomInt(1, 4));
+				EmitGameSoundToAll("Announcer.AM_CapEnabledRandom");
 			}
 			else
 			{
-				Format(sound, sizeof(sound), "vo/announcer_am_capincite0%i.mp3", GetRandomInt(0, 1) ? 1 : 3);
+				char sound[64];
+				Format(sound, sizeof(sound), "Announcer.AM_CapIncite0%i", GetRandomInt(1, 4));
+				EmitGameSoundToAll(sound);
 			}
-			EmitSoundToAll(sound);
 		}
 		SetControlPoint(true);
 		executed=true;
@@ -5067,29 +5067,30 @@ public Action Timer_DrawGame(Handle timer)
 	{
 	case 300:
 		{
-			EmitSoundToAll("vo/announcer_ends_5min.mp3");
+			//EmitSoundToAll("vo/announcer_ends_5min.mp3");
+			EmitGameSoundToAll("Announcer.RoundEnds5minutes");
 		}
 	case 120:
 		{
-			EmitSoundToAll("vo/announcer_ends_2min.mp3");
+			EmitGameSoundToAll("Announcer.RoundEnds2minutes");
 		}
 	case 60:
 		{
-			EmitSoundToAll("vo/announcer_ends_60sec.mp3");
+			EmitGameSoundToAll("Announcer.RoundEnds60seconds");
 		}
 	case 30:
 		{
-			EmitSoundToAll("vo/announcer_ends_30sec.mp3");
+			EmitGameSoundToAll("Announcer.RoundEnds30seconds");
 		}
 	case 10:
 		{
-			EmitSoundToAll("vo/announcer_ends_10sec.mp3");
+			EmitGameSoundToAll("Announcer.RoundEnds10seconds");
 		}
 	case 1, 2, 3, 4, 5:
 		{
 			char sound[PLATFORM_MAX_PATH];
-			Format(sound, PLATFORM_MAX_PATH, "vo/announcer_ends_%isec.mp3", time);
-			EmitSoundToAll(sound);
+			Format(sound, sizeof(sound), "Announcer.RoundEnds%iseconds", time);
+			EmitGameSoundToAll(sound);
 		}
 	case 0:
 		{
