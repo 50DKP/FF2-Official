@@ -814,6 +814,14 @@ public void EnableFF2()
 	bMedieval=FindEntityByClassname(-1, "tf_logic_medieval")!=-1 || view_as<bool>(GetConVarInt(FindConVar("tf_medieval")));
 	FindHealthBar();
 
+	for(int client=1; client<=MaxClients; client++)
+	{
+		if(IsValidClient(client))
+		{
+			OnClientPostAdminCheck(client);
+		}
+	}
+
 	#if defined _steamtools_included
 	if(steamtools)
 	{
