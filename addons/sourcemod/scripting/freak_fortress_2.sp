@@ -153,6 +153,9 @@ ConVar cvarPreroundBossDisconnect;
 ConVar ff2_fix_boss_skin;
 ConVar ff2_attribute_manage;
 ConVar ff2_changelog_url;
+ConVar ff2_telefrag_damage;
+ConVar ff2_market_garden;
+ConVar ff2_backstab;
 
 Handle FF2Cookies;
 
@@ -420,6 +423,9 @@ public void OnPluginStart()
 	ff2_fix_boss_skin=CreateConVar("ff2_fix_boss_skin", "1", "Make FF2 remove wearables in a new way(fixes certain buggy models having bad skin)? 0 - No, 1 - Yes", _, true, 0.0, true, 1.0);
 	ff2_attribute_manage=CreateConVar("ff2_attribute_manage", "0", "0-FF2 will leave TF2x10 manage weapons, which have their attributes changed by FF2 1-FF2 will continue changing weapon attributes 2-Force disable weapon attribute changes(even when TF2x10 is absent)", _, true, 0.0, true, 1.0);
 	ff2_changelog_url=CreateConVar("ff2_changelog_url", CHANGELOG_URL, "FF2 Changelog URL. Normally you are not supposed to change this...");
+	ff2_telefrag_damage=CreateConVar("ff2_telefrag_damage", "9001.0", "Damage dealt upon a Telefrag", _, true, 0.0);
+	ff2_market_garden=CreateConVar("ff2_market_garden", "1.0", "0-Disable market gardens, #-Damage ratio of market gardens", _, true, 0.0);
+	ff2_backstab=CreateConVar("ff2_backstab", "1.0", "#-Damage ratio of market gardens. Note: values equal or less than 0 are forbidden", _, true, 0.01);
 
 	//The following are used in various subplugins
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
@@ -4202,7 +4208,7 @@ public Action ClientTimer(Handle timer)
 			if(validwep && weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Melee) && StrContains(classname, "tf_weapon_knife", false)==-1)  //Every melee except knives
 			{
 				addthecrit=true;
-				if(index==416)  //Market Gardener
+				if(index==416 && ff2_market_garden.FloatValue>0.01)  //Market Gardener
 				{
 					addthecrit=FF2flags[client] & FF2FLAG_ROCKET_JUMPING ? true : false;
 				}
@@ -5539,9 +5545,10 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 					}
 				case 416:  //Market Gardener (courtesy of Chdata)
 					{
-						if(FF2flags[attacker] & FF2FLAG_ROCKET_JUMPING)
+						if(FF2flags[attacker] & FF2FLAG_ROCKET_JUMPING && ff2_market_garden.FloatValue>0.01)
 						{
 							damage=(Pow(float(BossHealthMax[boss]), 0.74074)+512.0-(Marketed[client]/128.0*float(BossHealthMax[boss])))/3.0;
+							damage*=ff2_market_garden.FloatValue;
 							damagetype|=DMG_CRIT;
 
 							if(Marketed[client]<5)
@@ -5635,6 +5642,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 				if(bIsBackstab)
 				{
 					damage=BossHealthMax[boss]*(LastBossIndex()+1)*BossLivesMax[boss]*(0.12-Stabbed[boss]/90)/3;
+					damage*=ff2_backstab.FloatValue;
 					damagetype|=DMG_CRIT;
 					damagecustom=0;
 
@@ -5722,7 +5730,7 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 						damage=1.0;
 						return Plugin_Changed;
 					}
-					damage=(BossHealth[boss]>9001 ? 9001.0 : float(GetEntProp(Boss[boss], Prop_Send, "m_iHealth"))+90.0);
+					damage=(BossHealth[boss]>ff2_telefrag_damage.FloatValue ? ff2_telefrag_damage.FloatValue : float(GetEntProp(Boss[boss], Prop_Send, "m_iHealth"))+90.0);
 
 					int teleowner=FindTeleOwner(attacker);
 					if(IsValidClient(teleowner) && teleowner!=attacker)
