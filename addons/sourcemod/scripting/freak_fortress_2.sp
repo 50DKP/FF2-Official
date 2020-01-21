@@ -899,20 +899,27 @@ public void DisableFF2()
 	changeGamemode=0;
 }
 
-public void FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextKey
+public void FindCharacters()
 {
 	char config[PLATFORM_MAX_PATH], key[4], charset[42];
+	bool new_file_format=true;
 	Specials=0;
-	BuildPath(Path_SM, config, PLATFORM_MAX_PATH, "configs/freak_fortress_2/characters.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "configs/data/freak_fortress_2/characters.cfg");
 
 	if(!FileExists(config))
 	{
-		LogError("[FF2] Freak Fortress 2 disabled-can not find characters.cfg!");
+		LogMessage("[FF2] Freak Fortress 2 - File %s was not found! Continuing...", config);
 		Enabled2=false;
-		return;
+		BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
+		if(!FileExists(config))
+		{
+			LogError("[FF2] Freak Fortress 2 disabled - File %s was not found!", config);
+			return;
+		}
+		new_file_format=false;
 	}
 
-	Handle Kv=CreateKeyValues("");
+	KeyValues Kv=new KeyValues("");
 	FileToKeyValues(Kv, config);
 	int NumOfCharSet=FF2CharSet;
 
@@ -927,19 +934,19 @@ public void FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextK
 		int i=-1;
 		if(strlen(charset))
 		{
-			KvRewind(Kv);
+			Kv.Rewind();
 			for(i=0; ; i++)
 			{
-				KvGetSectionName(Kv, config, sizeof(config));
+				Kv.GetSectionName(Kv, config, sizeof(config));
 				if(!strcmp(config, charset, false))
 				{
 					FF2CharSet=i;
 					strcopy(FF2CharSetString, PLATFORM_MAX_PATH, charset);
-					KvGotoFirstSubKey(Kv);
+					Kv.GotoFirstSubKey();
 					break;
 				}
 
-				if(!KvGotoNextKey(Kv))
+				if(!Kv.GotoNextKey())
 				{
 					i=-1;
 					break;
@@ -952,34 +959,53 @@ public void FindCharacters()  //TODO: Investigate KvGotoFirstSubKey; KvGotoNextK
 			FF2CharSet=NumOfCharSet;
 			for(i=0; i<FF2CharSet; i++)
 			{
-				KvGotoNextKey(Kv);
+				Kv.GotoNextKey();
 			}
-			KvGotoFirstSubKey(Kv);
-			KvGetSectionName(Kv, FF2CharSetString, sizeof(FF2CharSetString));
+			Kv.GotoFirstSubKey();
+			Kv.GetSectionName(FF2CharSetString, sizeof(FF2CharSetString));
 		}
 	}
 
-	KvRewind(Kv);
+	Kv.Rewind();
 	for(int i; i<FF2CharSet; i++)
 	{
-		KvGotoNextKey(Kv);
+		Kv.GotoNextKey();
 	}
-
-	for(int i=1; i<MAXSPECIALS; i++)
+	
+	if(!new_file_format)
 	{
-		IntToString(i, key, sizeof(key));
-		KvGetString(Kv, key, config, PLATFORM_MAX_PATH);
-		if(!config[0])  //TODO: Make this more user-friendly (don't immediately break-they might have missed a number)
+		for(int i=1; i<MAXSPECIALS; i++)
 		{
-			break;
+			IntToString(i, key, sizeof(key));
+			Kv.GetString(key, config, PLATFORM_MAX_PATH);
+			if(!config[0])
+			{
+				break;
+			}
+			LoadCharacter(config);
 		}
-		LoadCharacter(config);
+	}
+	else
+	{
+		Kv.GotoFirstSubKey();
+		do
+		{
+			Kv.GetSectionName(config, sizeof(config));
+			if(!config[0])
+			{
+				break;
+			}
+			LoadCharacter(config);
+		}
+		while(Kv.GotoNextKey())
+		Kv.GoBack();
 	}
 
-	KvGetString(Kv, "chances", ChancesString, sizeof(ChancesString));
-	CloseHandle(Kv);
+	Kv.GetString("chances", ChancesString, sizeof(ChancesString));
+	delete Kv;
 
-	if(ChancesString[0])
+	//To-do: Add completely new code for chances later...
+	if(ChancesString[0] && !new_file_format)
 	{
 		char stringChances[MAXSPECIALS*2][8];
 
