@@ -7362,7 +7362,15 @@ public int NewPanelH(Menu menu, MenuAction action, int client, int param2)
 		char full_url[192];
 		ff2_changelog_url.GetString(full_url, sizeof(full_url));
 		Format(full_url, sizeof(full_url), "%s#%s", full_url, buffer);
-		ShowMOTDPanel(client, "FF2 Version Info", full_url, MOTDPANEL_TYPE_URL);
+
+		KeyValues kv = CreateKeyValues("data");
+		kv.SetString("title", "FF2 Changelog");
+		kv.SetString("msg", full_url);
+		kv.SetNum("customsvr", 1);
+		kv.SetNum("type", MOTDPANEL_TYPE_URL);
+		ShowVGUIPanel(client, "info", kv, true);
+		delete kv;
+
 		menu.Display(client, MENU_TIME_FOREVER);
 	}
 	else if(action==MenuAction_Cancel)
