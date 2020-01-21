@@ -273,10 +273,12 @@ static const char ff2versiontitles[][]=
 	"1.10.11",
 	"1.10.12",
 	"1.10.13",
-	"1.10.14"
+	"1.10.14",
+	"1.10.15",
+	"1.11.0"
 };
 
-static const char ff2versiondates[]="October 21, 2016";		//1.10.14
+static const char ff2versiondates[]="--Unknown--";		//1.11.0
 
 static const int maxVersion=sizeof(ff2versiontitles)-1;
 
