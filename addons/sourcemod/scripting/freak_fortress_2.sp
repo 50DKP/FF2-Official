@@ -186,6 +186,7 @@ float GoombaDamage=0.05;
 float reboundPower=300.0;
 bool canBossRTD;
 bool DeadRingerHud;
+bool b_isCapping;
 
 Handle MusicTimer[MAXPLAYERS+1];
 Handle BossInfoTimer[MAXPLAYERS+1][2];
@@ -444,6 +445,8 @@ public void OnPluginStart()
 	HookEvent("object_destroyed", OnObjectDestroyed, EventHookMode_Pre);
 	HookEvent("object_deflected", OnObjectDeflected, EventHookMode_Pre);
 	HookEvent("deploy_buff_banner", OnDeployBackup);
+	HookEvent("teamplay_point_startcapture", OnStartCapture);
+	HookEvent("teamplay_capture_broken", OnBreakCapture);
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), OnJarate);  //Used to subtract rage when a boss is jarated (not through Sydney Sleeper)
 
@@ -5109,7 +5112,6 @@ public Action Timer_DrawGame(Handle timer)
 	{
 	case 300:
 		{
-			//EmitSoundToAll("vo/announcer_ends_5min.mp3");
 			EmitGameSoundToAll("Announcer.RoundEnds5minutes");
 		}
 	case 120:
@@ -5136,23 +5138,82 @@ public Action Timer_DrawGame(Handle timer)
 		}
 	case 0:
 		{
-			if(!GetConVarBool(cvarCountdownResult))
+			
+			if(countdownOvertime && isCapping)
 			{
-				for(int client=1; client<=MaxClients; client++)  //Thx MasterOfTheXP
-				{
-					if(IsClientInGame(client) && IsPlayerAlive(client))
-					{
-						ForcePlayerSuicide(client);
-					}
-				}
+				CreateTimer(1.0, OverTimeAlert, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
 			else
 			{
-				ForceTeamWin(0);  //Stalemate
+				EndBossRound();
+				//return Plugin_Stop;
 			}
 			return Plugin_Stop;
 		}
 	}
+	return Plugin_Continue;
+}
+
+public Action OverTimeAlert(Handle timer)
+{
+	static int OTCount;
+	if(CheckRoundState()!=1)
+	{
+		OTCount=0;
+		return Plugin_Stop;
+	}
+
+	if(!isCapping)
+	{
+		EndBossRound();
+		OTCount=0;
+		return Plugin_Stop;
+	}
+
+	if(OTCount>0)
+	{
+		EmitGameSoundToAll("Game.Overtime");
+		if(GetConVarInt(FindConVar("tf_overtime_nag")))
+		{
+			OTCount = GetRandomInt(-3, 0);
+		}
+		return Plugin_Continue;
+	}
+
+	OTCount++;
+	return Plugin_Continue;
+}
+
+public void EndBossRound()
+{
+	if(!cvarCountdownResult.BoolValue)
+	{
+		for(int client=1; client<=MaxClients; client++)  //Thx MasterOfTheXP
+		{
+			if(IsClientInGame(client) && IsPlayerAlive(client))
+			{
+				ForcePlayerSuicide(client);
+			}
+		}
+	}
+	else
+	{
+		ForceTeamWin(0);  //Stalemate
+	}
+}
+
+
+public Action OnStartCapture(Handle event, const char[] eventName, bool dontBroadcast)
+{
+	b_isCapping=true;
+	return Plugin_Continue;
+}
+
+public Action OnBreakCapture(Handle event, const char[] eventName, bool dontBroadcast)
+{
+	if(!GetEventFloat(event, "time_remaining"))
+		b_isCapping=false;
+
 	return Plugin_Continue;
 }
 
