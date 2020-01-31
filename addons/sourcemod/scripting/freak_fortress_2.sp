@@ -430,7 +430,7 @@ public void OnPluginStart()
 	ff2_changelog_url=CreateConVar("ff2_changelog_url", CHANGELOG_URL, "FF2 Changelog URL. Normally you are not supposed to change this...");
 	ff2_telefrag_damage=CreateConVar("ff2_telefrag_damage", "9001.0", "Damage dealt upon a Telefrag", _, true, 0.0);
 	ff2_market_garden=CreateConVar("ff2_market_garden", "1.0", "0-Disable market gardens, #-Damage ratio of market gardens", _, true, 0.0);
-	ff2_backstab=CreateConVar("ff2_backstab", "1.0", "#-Damage ratio of market gardens. Note: values equal or less than 0 are forbidden", _, true, 0.01);
+	ff2_backstab=CreateConVar("ff2_backstab", "1.0", "#-Damage ratio of backstabs. Note: values equal or less than 0 are forbidden", _, true, 0.01);
 	ff2_countdown_overtime = CreateConVar("ff2_countdown_overtime", "0", "0-Disable, 1-Delay 'ff2_countdown_result' action until control point is no longer being captured", _, true, 0.0, true, 1.0);
 
 	//The following are used in various subplugins
