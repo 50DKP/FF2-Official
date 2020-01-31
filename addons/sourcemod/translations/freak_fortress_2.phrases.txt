@@ -431,4 +431,12 @@
 	{
 		"en"        "Status: Deadringed"
 	}
+	"Overtime"	// HUD, Annotation
+	{
+		"en"		"OVERTIME!"
+	}
+	"Round Timer Disabled"
+	{
+		"en"        "Boss health too low.\n TIMER DISABLED!"
+	}
 }

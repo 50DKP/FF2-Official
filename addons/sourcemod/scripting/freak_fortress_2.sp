@@ -156,6 +156,7 @@ ConVar ff2_changelog_url;
 ConVar ff2_telefrag_damage;
 ConVar ff2_market_garden;
 ConVar ff2_backstab;
+ConVar ff2_countdown_overtime;
 
 Handle FF2Cookies;
 
@@ -199,6 +200,7 @@ char currentmap[99];
 bool checkDoors=false;
 bool bMedieval;
 bool firstBlood;
+int countdownOvertime;
 
 int tf_arena_use_queue;
 int mp_teams_unbalance_limit;
@@ -429,6 +431,7 @@ public void OnPluginStart()
 	ff2_telefrag_damage=CreateConVar("ff2_telefrag_damage", "9001.0", "Damage dealt upon a Telefrag", _, true, 0.0);
 	ff2_market_garden=CreateConVar("ff2_market_garden", "1.0", "0-Disable market gardens, #-Damage ratio of market gardens", _, true, 0.0);
 	ff2_backstab=CreateConVar("ff2_backstab", "1.0", "#-Damage ratio of market gardens. Note: values equal or less than 0 are forbidden", _, true, 0.01);
+	ff2_countdown_overtime = CreateConVar("ff2_countdown_overtime", "0", "0-Disable, 1-Delay 'ff2_countdown_result' action until control point is no longer being captured", _, true, 0.0, true, 1.0);
 
 	//The following are used in various subplugins
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
@@ -914,11 +917,11 @@ public void FindCharacters()
 	if(!FileExists(config))
 	{
 		LogMessage("[FF2] Freak Fortress 2 - File %s was not found! Continuing...", config);
-		Enabled2=false;
 		BuildPath(Path_SM, config, sizeof(config), "configs/freak_fortress_2/characters.cfg");
 		if(!FileExists(config))
 		{
 			LogError("[FF2] Freak Fortress 2 disabled - File %s was not found!", config);
+			Enabled2=false;
 			return;
 		}
 		new_file_format=false;
@@ -942,7 +945,7 @@ public void FindCharacters()
 			Kv.Rewind();
 			for(i=0; ; i++)
 			{
-				Kv.GetSectionName(Kv, config, sizeof(config));
+				Kv.GetSectionName(config, sizeof(config));
 				if(!strcmp(config, charset, false))
 				{
 					FF2CharSet=i;
@@ -1002,7 +1005,7 @@ public void FindCharacters()
 			}
 			LoadCharacter(config);
 		}
-		while(Kv.GotoNextKey())
+		while(Kv.GotoNextKey());
 		Kv.GoBack();
 	}
 
@@ -2792,6 +2795,24 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 	else
 	{
 		randomCrits[boss]=cvarCrits.BoolValue;
+	}
+	
+	if(KvGetNum(BossKV[Special[boss]], "countdownovertime", -1) >= 0)	// OVERTIME!
+	{
+		countdownOvertime = view_as<bool>(KvGetNum(BossKV[Special[boss]], "countdownovertime", -1));
+	}
+	else
+	{
+		countdownOvertime = ff2_countdown_overtime.BoolValue;
+	}
+
+	if(KvGetNum(BossKV[Special[boss]], "countdowntime", -1) >= 0)	// .w.
+	{
+		countdownTime = KvGetNum(BossKV[Special[boss]], "countdowntime", -1);
+	}
+	else
+	{
+		countdownTime = cvarCountdownTime.IntValue;
 	}
 
 	SetEntProp(client, Prop_Send, "m_bGlowEnabled", 0);
@@ -5074,6 +5095,18 @@ public Action Timer_DrawGame(Handle timer)
 {
 	if(BossHealth[0]<countdownHealth || CheckRoundState()!=1 || RedAlivePlayers>countdownPlayers)
 	{
+		SetHudTextParams(-1.0, 0.17, 5.0, 255, 255, 255, 255);
+		if(CheckRoundState()==1)
+		{
+			for(int client; client<=MaxClients; client++)
+			{
+				if(IsValidClient(client))
+				{
+					SetGlobalTransTarget(client);
+					FF2_ShowSyncHudText(client, timeleftHUD, "%t", "Round Timer Disabled");
+				}
+			}
+		}
 		executed2=false;
 		return Plugin_Stop;
 	}
@@ -5139,8 +5172,9 @@ public Action Timer_DrawGame(Handle timer)
 	case 0:
 		{
 			
-			if(countdownOvertime && isCapping)
+			if(countdownOvertime && b_isCapping)
 			{
+				EmitGameSoundToAll("Game.Overtime");
 				CreateTimer(1.0, OverTimeAlert, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 			}
 			else
@@ -5163,20 +5197,25 @@ public Action OverTimeAlert(Handle timer)
 		return Plugin_Stop;
 	}
 
-	if(!isCapping)
+	if(!b_isCapping)
 	{
 		EndBossRound();
 		OTCount=0;
 		return Plugin_Stop;
 	}
-
-	if(OTCount>0)
+	SetHudTextParams(-1.0, 0.17, 2.0, 255, 255, 255, 255);
+	for(int client; client<=MaxClients; client++)
+	{
+		if(IsValidClient(client))
+		{
+			SetGlobalTransTarget(client);
+			FF2_ShowSyncHudText(client, timeleftHUD, "%t", "Overtime");
+		}
+	}
+	if(GetConVarInt(FindConVar("tf_overtime_nag")) && OTCount>0)
 	{
 		EmitGameSoundToAll("Game.Overtime");
-		if(GetConVarInt(FindConVar("tf_overtime_nag")))
-		{
-			OTCount = GetRandomInt(-3, 0);
-		}
+		OTCount = GetRandomInt(-3, 0);
 		return Plugin_Continue;
 	}
 
@@ -5212,8 +5251,9 @@ public Action OnStartCapture(Handle event, const char[] eventName, bool dontBroa
 public Action OnBreakCapture(Handle event, const char[] eventName, bool dontBroadcast)
 {
 	if(!GetEventFloat(event, "time_remaining"))
+	{
 		b_isCapping=false;
-
+	}
 	return Plugin_Continue;
 }
 
