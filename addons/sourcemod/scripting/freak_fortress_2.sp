@@ -912,7 +912,7 @@ public void FindCharacters()
 	char config[PLATFORM_MAX_PATH], key[4], charset[42];
 	bool new_file_format=true;
 	Specials=0;
-	BuildPath(Path_SM, config, sizeof(config), "configs/data/freak_fortress_2/characters.cfg");
+	BuildPath(Path_SM, config, sizeof(config), "data/freak_fortress_2/characters.cfg");
 
 	if(!FileExists(config))
 	{
