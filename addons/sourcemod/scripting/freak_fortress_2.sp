@@ -157,6 +157,7 @@ ConVar ff2_telefrag_damage;
 ConVar ff2_market_garden;
 ConVar ff2_backstab;
 ConVar ff2_countdown_overtime;
+ConVar ff2_medieval_scale;
 
 Handle FF2Cookies;
 
@@ -431,8 +432,9 @@ public void OnPluginStart()
 	ff2_telefrag_damage=CreateConVar("ff2_telefrag_damage", "9001.0", "Damage dealt upon a Telefrag", _, true, 0.0);
 	ff2_market_garden=CreateConVar("ff2_market_garden", "1.0", "0-Disable market gardens, #-Damage ratio of market gardens", _, true, 0.0);
 	ff2_backstab=CreateConVar("ff2_backstab", "1.0", "#-Damage ratio of backstabs. Note: values equal or less than 0 are forbidden", _, true, 0.01);
-	ff2_countdown_overtime = CreateConVar("ff2_countdown_overtime", "0", "0-Disable, 1-Delay 'ff2_countdown_result' action until control point is no longer being captured", _, true, 0.0, true, 1.0);
-
+	ff2_countdown_overtime=CreateConVar("ff2_countdown_overtime", "0", "0-Disable, 1-Delay 'ff2_countdown_result' action until control point is no longer being captured", _, true, 0.0, true, 1.0);
+	ff2_medieval_scale=CreateConVar("ff2_medieval_scale", "3.6", "Health scaling when medieval mode is active. Divide health by this amount", _, true, 0.1);
+	
 	//The following are used in various subplugins
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
@@ -2596,34 +2598,36 @@ public Action MessageTimer(Handle timer)
 	char textChat[512];
 	char lives[8];
 	char name[64];
-	for(int client; client<=MaxClients; client++)
+	for(int i=1; i<=MaxClients; i++)
 	{
-		if(IsBoss(client))
+		if(IsValidClient(i))
 		{
-			int boss=Boss[client];
-			KvRewind(BossKV[Special[boss]]);
-			KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
-			if(BossLives[boss]>1)
+			SetGlobalTransTarget(i);
+			for(int client=1; client<=MaxClients; client++)
 			{
-				Format(lives, sizeof(lives), "x%i", BossLives[boss]);
-			}
-			else
-			{
-				strcopy(lives, 2, "");
-			}
-
-			for(int i=1; i<=MaxClients; i++)
-			{
-				if(IsValidClient(i))
+				if(IsBoss(client))
 				{
-					SetGlobalTransTarget(i);
+					int boss=Boss[client];
+					KvRewind(BossKV[Special[boss]]);
+					KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
+					if(BossLives[boss]>1)
+					{
+						Format(lives, sizeof(lives), "x%i", BossLives[boss]);
+					}
+					else
+					{
+						strcopy(lives, 2, "");
+					}
+
 					Format(text, sizeof(text), "%s\n%t", text, "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
 					Format(textChat, sizeof(textChat), "{olive}[FF2]{default} %t!", "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
 					ReplaceString(textChat, sizeof(textChat), "\n", "");  //Get rid of newlines
-					FF2_ShowSyncHudText(i, infoHUD, text);
 					CPrintToChat(i, textChat);
 				}
 			}
+			FF2_ShowSyncHudText(i, infoHUD, text);
+			text[0]='\0';
+			textChat[0]='\0';
 		}
 	}
 	return Plugin_Continue;
@@ -6536,7 +6540,7 @@ stock int ParseFormula(int boss, const char[] key, const char[] defaultFormula, 
 	//To-do: Make this even more configurable
 	if(bMedieval && StrEqual(key, "health_formula", false))
 	{
-		return RoundFloat(result/3.6);
+		return RoundFloat(result/ff2_medieval_scale.FloatValue);
 	}
 	return result;
 }
