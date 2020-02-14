@@ -58,6 +58,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define HEALTHBAR_CLASS "monster_resource"
 #define HEALTHBAR_PROPERTY "m_iBossHealthPercentageByte"
+#define HEALTHBAR_COLOR "m_iBossState"
 #define HEALTHBAR_MAX 255
 #define MONOCULUS "eyeball_boss"
 
@@ -191,6 +192,7 @@ bool DeadRingerHud;
 bool b_isCapping;
 bool ReloadConfigs;
 bool LoadCharset;
+bool HealthBarMode;
 
 Handle MusicTimer[MAXPLAYERS+1];
 Handle BossInfoTimer[MAXPLAYERS+1][2];
@@ -5768,6 +5770,8 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 								EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 								EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 							}
+							HealthBarMode=true;
+							CreateTimer(1.5, Timer_HealthBarMode, false, TIMER_FLAG_NO_MAPCHANGE);
 
 							ActivateAbilitySlot(boss, 7);
 							return Plugin_Changed;
@@ -5913,6 +5917,8 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
 					}
+					HealthBarMode=true;
+					CreateTimer(1.5, Timer_HealthBarMode, false, TIMER_FLAG_NO_MAPCHANGE);
 					
 					ActivateAbilitySlot(boss, 6);
 
@@ -5958,6 +5964,8 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 					}
+					HealthBarMode=true;
+					CreateTimer(1.5, Timer_HealthBarMode, false, TIMER_FLAG_NO_MAPCHANGE);
 					return Plugin_Changed;
 				}
 			}
@@ -6000,6 +6008,8 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 						{
 							BossCharge[boss][0]=100.0;
 						}
+						HealthBarMode=true;
+						CreateTimer(1.5, Timer_HealthBarMode, false, TIMER_FLAG_NO_MAPCHANGE);
 						return Plugin_Changed;
 					}
 					else
@@ -8803,6 +8813,21 @@ public void OnTakeDamagePost(int client, int attacker, int inflictor, float dama
 	}
 }
 
+public Action Timer_HealthBarMode(Handle timer, bool set)
+{
+	if(set && !HealthBarMode)
+	{
+		HealthBarMode=true;
+		UpdateHealthBar();
+	}
+	else if(!set && HealthBarMode)
+	{
+		HealthBarMode=false;
+		UpdateHealthBar();
+	}
+	return Plugin_Continue;
+}
+
 public void OnEntityCreated(int entity, const char[] classname)
 {
 	if(GetConVarBool(cvarHealthBar))
@@ -8919,6 +8944,7 @@ void UpdateHealthBar()
 	}
 
 	int healthAmount, maxHealthAmount, bosses, healthPercent;
+	int healing = HealthBarMode ? 1 : 0;
 	for(int boss; boss<=MaxClients; boss++)
 	{
 		if(IsValidClient(Boss[boss]) && IsPlayerAlive(Boss[boss]))
@@ -8942,6 +8968,7 @@ void UpdateHealthBar()
 		}
 	}
 	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);
+	SetEntProp(healthBar, Prop_Send, HEALTHBAR_COLOR, healing);
 }
 
 void SetClientGlow(int client, float time1, float time2=-1.0)
