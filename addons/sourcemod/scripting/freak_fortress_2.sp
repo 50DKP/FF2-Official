@@ -7439,7 +7439,10 @@ Action NewPanelChangelog(int client, bool menuentered=false)
 	Menu version_menu=new Menu(NewPanelH);
 	version_menu.ExitButton=true;
 	version_menu.ExitBackButton=menuentered;
-	version_menu.SetTitle("FF2 Changelog - Current version: %s\n", ff2versiontitles[maxVersion]);
+	char buffer[64];
+	SetGlobalTransTarget(client);
+	Format(buffer, sizeof(buffer), "%t", "FF2 Changelog Current Version", ff2versiontitles[maxVersion]);
+	version_menu.SetTitle(buffer);
 	char text_buffer[32];
 
 	SetGlobalTransTarget(client);
@@ -7447,11 +7450,11 @@ Action NewPanelChangelog(int client, bool menuentered=false)
 	{
 		if(i!=maxVersion)
 		{
-			Format(text_buffer, sizeof(text_buffer), "FF2 %s", ff2versiontitles[i]);
+			Format(text_buffer, sizeof(text_buffer), "%t", "FF2 Version", ff2versiontitles[i]);
 		}
 		else
 		{
-			Format(text_buffer, sizeof(text_buffer), "FF2 %s <- Current version", ff2versiontitles[i]);
+			Format(text_buffer, sizeof(text_buffer), "%t", "FF2 Version Current", ff2versiontitles[i]);
 		}
 		version_menu.AddItem(ff2versiontitles[i], text_buffer);
 	}
@@ -7512,9 +7515,14 @@ Action HelpPanel3(int client, bool menuentered=false)
 	}
 
 	Menu ff2_menu=new Menu(ClassInfoTogglePanelH);
-	ff2_menu.SetTitle("Turn the Freak Fortress 2 class info...");
-	ff2_menu.AddItem("", "On");
-	ff2_menu.AddItem("", "Off");
+	char buffer[64];
+	SetGlobalTransTarget(client);
+	Format(buffer, sizeof(buffer), "%t", "FF2 Class Info Menu");
+	ff2_menu.SetTitle(buffer);
+	Format(buffer, sizeof(buffer), "%t", "On");
+	ff2_menu.AddItem("", buffer);
+	Format(buffer, sizeof(buffer), "%t", "Off");
+	ff2_menu.AddItem("", buffer);
 	ff2_menu.ExitButton=true;
 	ff2_menu.ExitBackButton=menuentered;
 	ff2_menu.Display(client, MENU_TIME_FOREVER);
@@ -7695,9 +7703,14 @@ void MusicTogglePanel(int client, bool menuentered=false)
 	Menu ff2_menu=new Menu(MusicTogglePanelH);
 	ff2_menu.ExitBackButton=menuentered;
 	ff2_menu.ExitButton=true;
-	ff2_menu.SetTitle("Turn the Freak Fortress 2 music...");
-	ff2_menu.AddItem("", "On");
-	ff2_menu.AddItem("", "Off");
+	char buffer[64];
+	SetGlobalTransTarget(client);
+	Format(buffer, sizeof(buffer), "%t", "FF2 Music Menu");
+	ff2_menu.SetTitle(buffer);
+	Format(buffer, sizeof(buffer), "%t", "On");
+	ff2_menu.AddItem("", buffer);
+	Format(buffer, sizeof(buffer), "%t", "Off");
+	ff2_menu.AddItem("", buffer);
 	ff2_menu.Display(client, MENU_TIME_FOREVER);
 }
 
@@ -7756,9 +7769,14 @@ Action VoiceTogglePanel(int client, bool menuentered=false)
 	}
 
 	Menu ff2_menu=new Menu(VoiceTogglePanelH);
-	ff2_menu.SetTitle("Turn the Freak Fortress 2 voices...");
-	ff2_menu.AddItem("", "On");
-	ff2_menu.AddItem("", "Off");
+	char buffer[64];
+	SetGlobalTransTarget(client);
+	Format(buffer, sizeof(buffer), "%t", "FF2 Voices Menu");
+	ff2_menu.SetTitle(buffer);
+	Format(buffer, sizeof(buffer), "%t", "On");
+	ff2_menu.AddItem("", buffer);
+	Format(buffer, sizeof(buffer), "%t", "Off");
+	ff2_menu.AddItem("", buffer);
 	ff2_menu.ExitBackButton=menuentered;
 	ff2_menu.ExitButton=true;
 	ff2_menu.Display(client, MENU_TIME_FOREVER);
