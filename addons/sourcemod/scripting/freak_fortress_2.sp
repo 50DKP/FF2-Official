@@ -3608,9 +3608,14 @@ Action CompanionTogglePanel(int client, bool menuentered=false)
 	}
 
 	Menu ff2_menu=new Menu(CompanionTogglePanelH);
-	ff2_menu.SetTitle("Toggle being a Freak Fortress 2 companion...");
-	ff2_menu.AddItem("", "On");
-	ff2_menu.AddItem("", "Off");
+	char buffer[64];
+	SetGlobalTransTarget(client);
+	Format(buffer, sizeof(buffer), "%t", "FF2 Companion Menu");
+	ff2_menu.SetTitle(buffer);
+	Format(buffer, sizeof(buffer), "%t", "On");
+	ff2_menu.AddItem("", buffer);
+	Format(buffer, sizeof(buffer), "%t", "Off");
+	ff2_menu.AddItem("", buffer);
 	ff2_menu.ExitBackButton=menuentered;
 	ff2_menu.ExitButton=true;
 	ff2_menu.Display(client, MENU_TIME_FOREVER);

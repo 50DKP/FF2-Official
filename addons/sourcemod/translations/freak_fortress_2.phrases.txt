@@ -456,6 +456,10 @@
 		"#format"	"{1:s}"
 		"en"        "FF2 Changelog - Current version: {1}\n"
 	}
+	"FF2 Companion Menu"
+	{
+		"en"        "Toggle being a Freak Fortress 2 companion..."
+	}
 	"FF2 Version"
 	{
 		"#format"	"{1:s}"
