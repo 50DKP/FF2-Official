@@ -189,6 +189,8 @@ float reboundPower=300.0;
 bool canBossRTD;
 bool DeadRingerHud;
 bool b_isCapping;
+bool ReloadConfigs;
+bool LoadCharset;
 
 Handle MusicTimer[MAXPLAYERS+1];
 Handle BossInfoTimer[MAXPLAYERS+1][2];
@@ -541,6 +543,8 @@ public void OnPluginStart()
 	RegAdminCmd("ff2_resetq", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 	RegAdminCmd("ff2_charset", Command_Charset, ADMFLAG_CHEATS, "Usage:  ff2_charset <charset>.  Forces FF2 to use a given character set");
 	RegAdminCmd("ff2_reload_subplugins", Command_ReloadSubPlugins, ADMFLAG_RCON, "Reload FF2's subplugins.");
+	RegAdminCmd("ff2_reloadconfigs", Command_ReloadFF2Configs, ADMFLAG_RCON, "Reloads ALL FF2 configs safely and quietly");
+	RegAdminCmd("ff2_reloadcharset", Command_ReloadCharset, ADMFLAG_RCON, "Reloads ALL FF2 configs safely and quietly");
 
 	RegAdminCmd("hale_select", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
 	RegAdminCmd("hale_special", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
@@ -2065,6 +2069,23 @@ public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 			}
 		}
 	}
+	
+	
+	if(ReloadConfigs)
+	{
+		FindCharacters();
+		CheckToChangeMapDoors();
+		FF2CharSetString[0]='\0';
+		ReloadConfigs=false;
+	}
+	
+	if(LoadCharset)
+	{
+		FindCharacters();
+		FF2CharSetString[0] = 0;
+		LoadCharset = false;
+	}
+
 
 	CreateTimer(3.0, Timer_CalcQueuePoints, _, TIMER_FLAG_NO_MAPCHANGE);
 	UpdateHealthBar();
@@ -3926,6 +3947,48 @@ public Action Command_Charset(int client, int args)
 		}
 	}
 	CloseHandle(Kv);
+	return Plugin_Handled;
+}
+
+public Action Command_ReloadFF2Configs(int client, int args)
+{
+	if(ReloadConfigs)
+	{
+		CReplyToCommand(client, "All configs are no longer set to be reloaded!");
+		ReloadConfigs=false;
+		return Plugin_Handled;
+	}
+	ReloadConfigs = true;
+	if(!CheckRoundState() || CheckRoundState()==1)
+	{
+		CReplyToCommand(client, "All configs are set to be reloaded!");
+		return Plugin_Handled;
+	}
+	FindCharacters();
+	CheckToChangeMapDoors();
+	FF2CharSetString[0]='\0';
+	ReloadConfigs=false;
+	return Plugin_Handled;
+}
+
+public Action Command_ReloadCharset(int client, int args)
+{
+	if(LoadCharset)
+	{
+		CReplyToCommand(client, "Current character set no longer set to reload!");
+		LoadCharset=false;
+		return Plugin_Handled;
+	}
+	LoadCharset=true;
+	if(!CheckRoundState() || CheckRoundState()==1)
+	{
+		CReplyToCommand(client, "Current character set is set to reload!");
+		return Plugin_Handled;
+	}
+	CReplyToCommand(client, "Current character set has been reloaded!");
+	FindCharacters();
+	FF2CharSetString[0]='\0';
+	LoadCharset=false;
 	return Plugin_Handled;
 }
 
