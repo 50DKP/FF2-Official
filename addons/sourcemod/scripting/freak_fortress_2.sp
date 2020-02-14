@@ -58,6 +58,7 @@ Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 #define HEALTHBAR_CLASS "monster_resource"
 #define HEALTHBAR_PROPERTY "m_iBossHealthPercentageByte"
+#define HEALTHBAR_COLOR "m_iBossState"
 #define HEALTHBAR_MAX 255
 #define MONOCULUS "eyeball_boss"
 
@@ -157,6 +158,7 @@ ConVar ff2_telefrag_damage;
 ConVar ff2_market_garden;
 ConVar ff2_backstab;
 ConVar ff2_countdown_overtime;
+ConVar ff2_medieval_scale;
 
 Handle FF2Cookies;
 
@@ -188,6 +190,9 @@ float reboundPower=300.0;
 bool canBossRTD;
 bool DeadRingerHud;
 bool b_isCapping;
+bool ReloadConfigs;
+bool LoadCharset;
+bool HealthBarMode;
 
 Handle MusicTimer[MAXPLAYERS+1];
 Handle BossInfoTimer[MAXPLAYERS+1][2];
@@ -431,8 +436,9 @@ public void OnPluginStart()
 	ff2_telefrag_damage=CreateConVar("ff2_telefrag_damage", "9001.0", "Damage dealt upon a Telefrag", _, true, 0.0);
 	ff2_market_garden=CreateConVar("ff2_market_garden", "1.0", "0-Disable market gardens, #-Damage ratio of market gardens", _, true, 0.0);
 	ff2_backstab=CreateConVar("ff2_backstab", "1.0", "#-Damage ratio of backstabs. Note: values equal or less than 0 are forbidden", _, true, 0.01);
-	ff2_countdown_overtime = CreateConVar("ff2_countdown_overtime", "0", "0-Disable, 1-Delay 'ff2_countdown_result' action until control point is no longer being captured", _, true, 0.0, true, 1.0);
-
+	ff2_countdown_overtime=CreateConVar("ff2_countdown_overtime", "0", "0-Disable, 1-Delay 'ff2_countdown_result' action until control point is no longer being captured", _, true, 0.0, true, 1.0);
+	ff2_medieval_scale=CreateConVar("ff2_medieval_scale", "3.6", "Health scaling when medieval mode is active. Divide health by this amount", _, true, 0.1);
+	
 	//The following are used in various subplugins
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
@@ -539,6 +545,8 @@ public void OnPluginStart()
 	RegAdminCmd("ff2_resetq", ResetQueuePointsCmd, ADMFLAG_CHEATS, "Reset a player's queue points");
 	RegAdminCmd("ff2_charset", Command_Charset, ADMFLAG_CHEATS, "Usage:  ff2_charset <charset>.  Forces FF2 to use a given character set");
 	RegAdminCmd("ff2_reload_subplugins", Command_ReloadSubPlugins, ADMFLAG_RCON, "Reload FF2's subplugins.");
+	RegAdminCmd("ff2_reloadconfigs", Command_ReloadFF2Configs, ADMFLAG_RCON, "Reloads ALL FF2 configs safely and quietly");
+	RegAdminCmd("ff2_reloadcharset", Command_ReloadCharset, ADMFLAG_RCON, "Reloads ALL FF2 configs safely and quietly");
 
 	RegAdminCmd("hale_select", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
 	RegAdminCmd("hale_special", Command_SetNextBoss, ADMFLAG_CHEATS, "Usage:  hale_select <boss>.  Forces next round to use that boss");
@@ -2063,6 +2071,23 @@ public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 			}
 		}
 	}
+	
+	
+	if(ReloadConfigs)
+	{
+		FindCharacters();
+		CheckToChangeMapDoors();
+		FF2CharSetString[0]='\0';
+		ReloadConfigs=false;
+	}
+	
+	if(LoadCharset)
+	{
+		FindCharacters();
+		FF2CharSetString[0] = 0;
+		LoadCharset = false;
+	}
+
 
 	CreateTimer(3.0, Timer_CalcQueuePoints, _, TIMER_FLAG_NO_MAPCHANGE);
 	UpdateHealthBar();
@@ -2596,35 +2621,36 @@ public Action MessageTimer(Handle timer)
 	char textChat[512];
 	char lives[8];
 	char name[64];
-	for(int client; client<=MaxClients; client++)
+	for(int i=1; i<=MaxClients; i++)
 	{
-		if(IsBoss(client))
+		if(IsValidClient(i))
 		{
-			int boss=Boss[client];
-			KvRewind(BossKV[Special[boss]]);
-			KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
-			if(BossLives[boss]>1)
+			SetGlobalTransTarget(i);
+			for(int client=1; client<=MaxClients; client++)
 			{
-				Format(lives, sizeof(lives), "x%i", BossLives[boss]);
-			}
-			else
-			{
-				strcopy(lives, 2, "");
-			}
+				if(IsBoss(client))
+				{
+					int boss=Boss[client];
+					KvRewind(BossKV[Special[boss]]);
+					KvGetString(BossKV[Special[boss]], "name", name, sizeof(name), "=Failed name=");
+					if(BossLives[boss]>1)
+					{
+						Format(lives, sizeof(lives), "x%i", BossLives[boss]);
+					}
+					else
+					{
+						strcopy(lives, 2, "");
+					}
 
-			Format(text, sizeof(text), "%s\n%t", text, "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
-			Format(textChat, sizeof(textChat), "{olive}[FF2]{default} %t!", "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
-			ReplaceString(textChat, sizeof(textChat), "\n", "");  //Get rid of newlines
-			CPrintToChatAll("%s", textChat);
-		}
-	}
-
-	for(int client; client<=MaxClients; client++)
-	{
-		if(IsValidClient(client))
-		{
-			SetGlobalTransTarget(client);
-			FF2_ShowSyncHudText(client, infoHUD, text);
+					Format(text, sizeof(text), "%s\n%t", text, "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
+					Format(textChat, sizeof(textChat), "{olive}[FF2]{default} %t!", "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
+					ReplaceString(textChat, sizeof(textChat), "\n", "");  //Get rid of newlines
+					CPrintToChat(i, textChat);
+				}
+			}
+			FF2_ShowSyncHudText(i, infoHUD, text);
+			text[0]='\0';
+			textChat[0]='\0';
 		}
 	}
 	return Plugin_Continue;
@@ -3605,9 +3631,14 @@ Action CompanionTogglePanel(int client, bool menuentered=false)
 	}
 
 	Menu ff2_menu=new Menu(CompanionTogglePanelH);
-	ff2_menu.SetTitle("Toggle being a Freak Fortress 2 companion...");
-	ff2_menu.AddItem("", "On");
-	ff2_menu.AddItem("", "Off");
+	char buffer[64];
+	SetGlobalTransTarget(client);
+	Format(buffer, sizeof(buffer), "%t", "FF2 Companion Menu");
+	ff2_menu.SetTitle(buffer);
+	Format(buffer, sizeof(buffer), "%t", "On");
+	ff2_menu.AddItem("", buffer);
+	Format(buffer, sizeof(buffer), "%t", "Off");
+	ff2_menu.AddItem("", buffer);
 	ff2_menu.ExitBackButton=menuentered;
 	ff2_menu.ExitButton=true;
 	ff2_menu.Display(client, MENU_TIME_FOREVER);
@@ -3918,6 +3949,48 @@ public Action Command_Charset(int client, int args)
 		}
 	}
 	CloseHandle(Kv);
+	return Plugin_Handled;
+}
+
+public Action Command_ReloadFF2Configs(int client, int args)
+{
+	if(ReloadConfigs)
+	{
+		CReplyToCommand(client, "All configs are no longer set to be reloaded!");
+		ReloadConfigs=false;
+		return Plugin_Handled;
+	}
+	ReloadConfigs = true;
+	if(!CheckRoundState() || CheckRoundState()==1)
+	{
+		CReplyToCommand(client, "All configs are set to be reloaded!");
+		return Plugin_Handled;
+	}
+	FindCharacters();
+	CheckToChangeMapDoors();
+	FF2CharSetString[0]='\0';
+	ReloadConfigs=false;
+	return Plugin_Handled;
+}
+
+public Action Command_ReloadCharset(int client, int args)
+{
+	if(LoadCharset)
+	{
+		CReplyToCommand(client, "Current character set no longer set to reload!");
+		LoadCharset=false;
+		return Plugin_Handled;
+	}
+	LoadCharset=true;
+	if(!CheckRoundState() || CheckRoundState()==1)
+	{
+		CReplyToCommand(client, "Current character set is set to reload!");
+		return Plugin_Handled;
+	}
+	CReplyToCommand(client, "Current character set has been reloaded!");
+	FindCharacters();
+	FF2CharSetString[0]='\0';
+	LoadCharset=false;
 	return Plugin_Handled;
 }
 
@@ -5697,6 +5770,8 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 								EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 								EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 							}
+							HealthBarMode=true;
+							CreateTimer(1.5, Timer_HealthBarMode, false, TIMER_FLAG_NO_MAPCHANGE);
 
 							ActivateAbilitySlot(boss, 7);
 							return Plugin_Changed;
@@ -5842,6 +5917,8 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, Boss[boss], _, _, false);
 					}
+					HealthBarMode=true;
+					CreateTimer(1.5, Timer_HealthBarMode, false, TIMER_FLAG_NO_MAPCHANGE);
 					
 					ActivateAbilitySlot(boss, 6);
 
@@ -5887,6 +5964,8 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 						EmitSoundToAllExcept(SOUNDEXCEPT_VOICE, sound, _, _, _, _, _, _, _, _, _, false);
 					}
+					HealthBarMode=true;
+					CreateTimer(1.5, Timer_HealthBarMode, false, TIMER_FLAG_NO_MAPCHANGE);
 					return Plugin_Changed;
 				}
 			}
@@ -5929,6 +6008,8 @@ public Action OnTakeDamage(int client, int &attacker, int &inflictor, float &dam
 						{
 							BossCharge[boss][0]=100.0;
 						}
+						HealthBarMode=true;
+						CreateTimer(1.5, Timer_HealthBarMode, false, TIMER_FLAG_NO_MAPCHANGE);
 						return Plugin_Changed;
 					}
 					else
@@ -6537,7 +6618,7 @@ stock int ParseFormula(int boss, const char[] key, const char[] defaultFormula, 
 	//To-do: Make this even more configurable
 	if(bMedieval && StrEqual(key, "health_formula", false))
 	{
-		return RoundFloat(result/3.6);
+		return RoundFloat(result/ff2_medieval_scale.FloatValue);
 	}
 	return result;
 }
@@ -7436,7 +7517,10 @@ Action NewPanelChangelog(int client, bool menuentered=false)
 	Menu version_menu=new Menu(NewPanelH);
 	version_menu.ExitButton=true;
 	version_menu.ExitBackButton=menuentered;
-	version_menu.SetTitle("FF2 Changelog - Current version: %s\n", ff2versiontitles[maxVersion]);
+	char buffer[64];
+	SetGlobalTransTarget(client);
+	Format(buffer, sizeof(buffer), "%t", "FF2 Changelog Current Version", ff2versiontitles[maxVersion]);
+	version_menu.SetTitle(buffer);
 	char text_buffer[32];
 
 	SetGlobalTransTarget(client);
@@ -7444,11 +7528,11 @@ Action NewPanelChangelog(int client, bool menuentered=false)
 	{
 		if(i!=maxVersion)
 		{
-			Format(text_buffer, sizeof(text_buffer), "FF2 %s", ff2versiontitles[i]);
+			Format(text_buffer, sizeof(text_buffer), "%t", "FF2 Version", ff2versiontitles[i]);
 		}
 		else
 		{
-			Format(text_buffer, sizeof(text_buffer), "FF2 %s <- Current version", ff2versiontitles[i]);
+			Format(text_buffer, sizeof(text_buffer), "%t", "FF2 Version Current", ff2versiontitles[i]);
 		}
 		version_menu.AddItem(ff2versiontitles[i], text_buffer);
 	}
@@ -7509,9 +7593,14 @@ Action HelpPanel3(int client, bool menuentered=false)
 	}
 
 	Menu ff2_menu=new Menu(ClassInfoTogglePanelH);
-	ff2_menu.SetTitle("Turn the Freak Fortress 2 class info...");
-	ff2_menu.AddItem("", "On");
-	ff2_menu.AddItem("", "Off");
+	char buffer[64];
+	SetGlobalTransTarget(client);
+	Format(buffer, sizeof(buffer), "%t", "FF2 Class Info Menu");
+	ff2_menu.SetTitle(buffer);
+	Format(buffer, sizeof(buffer), "%t", "On");
+	ff2_menu.AddItem("", buffer);
+	Format(buffer, sizeof(buffer), "%t", "Off");
+	ff2_menu.AddItem("", buffer);
 	ff2_menu.ExitButton=true;
 	ff2_menu.ExitBackButton=menuentered;
 	ff2_menu.Display(client, MENU_TIME_FOREVER);
@@ -7692,9 +7781,14 @@ void MusicTogglePanel(int client, bool menuentered=false)
 	Menu ff2_menu=new Menu(MusicTogglePanelH);
 	ff2_menu.ExitBackButton=menuentered;
 	ff2_menu.ExitButton=true;
-	ff2_menu.SetTitle("Turn the Freak Fortress 2 music...");
-	ff2_menu.AddItem("", "On");
-	ff2_menu.AddItem("", "Off");
+	char buffer[64];
+	SetGlobalTransTarget(client);
+	Format(buffer, sizeof(buffer), "%t", "FF2 Music Menu");
+	ff2_menu.SetTitle(buffer);
+	Format(buffer, sizeof(buffer), "%t", "On");
+	ff2_menu.AddItem("", buffer);
+	Format(buffer, sizeof(buffer), "%t", "Off");
+	ff2_menu.AddItem("", buffer);
 	ff2_menu.Display(client, MENU_TIME_FOREVER);
 }
 
@@ -7753,9 +7847,14 @@ Action VoiceTogglePanel(int client, bool menuentered=false)
 	}
 
 	Menu ff2_menu=new Menu(VoiceTogglePanelH);
-	ff2_menu.SetTitle("Turn the Freak Fortress 2 voices...");
-	ff2_menu.AddItem("", "On");
-	ff2_menu.AddItem("", "Off");
+	char buffer[64];
+	SetGlobalTransTarget(client);
+	Format(buffer, sizeof(buffer), "%t", "FF2 Voices Menu");
+	ff2_menu.SetTitle(buffer);
+	Format(buffer, sizeof(buffer), "%t", "On");
+	ff2_menu.AddItem("", buffer);
+	Format(buffer, sizeof(buffer), "%t", "Off");
+	ff2_menu.AddItem("", buffer);
 	ff2_menu.ExitBackButton=menuentered;
 	ff2_menu.ExitButton=true;
 	ff2_menu.Display(client, MENU_TIME_FOREVER);
@@ -8714,6 +8813,21 @@ public void OnTakeDamagePost(int client, int attacker, int inflictor, float dama
 	}
 }
 
+public Action Timer_HealthBarMode(Handle timer, bool set)
+{
+	if(set && !HealthBarMode)
+	{
+		HealthBarMode=true;
+		UpdateHealthBar();
+	}
+	else if(!set && HealthBarMode)
+	{
+		HealthBarMode=false;
+		UpdateHealthBar();
+	}
+	return Plugin_Continue;
+}
+
 public void OnEntityCreated(int entity, const char[] classname)
 {
 	if(GetConVarBool(cvarHealthBar))
@@ -8830,6 +8944,7 @@ void UpdateHealthBar()
 	}
 
 	int healthAmount, maxHealthAmount, bosses, healthPercent;
+	int healing = HealthBarMode ? 1 : 0;
 	for(int boss; boss<=MaxClients; boss++)
 	{
 		if(IsValidClient(Boss[boss]) && IsPlayerAlive(Boss[boss]))
@@ -8853,6 +8968,7 @@ void UpdateHealthBar()
 		}
 	}
 	SetEntProp(healthBar, Prop_Send, HEALTHBAR_PROPERTY, healthPercent);
+	SetEntProp(healthBar, Prop_Send, HEALTHBAR_COLOR, healing);
 }
 
 void SetClientGlow(int client, float time1, float time2=-1.0)

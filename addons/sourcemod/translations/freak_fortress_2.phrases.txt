@@ -439,4 +439,35 @@
 	{
 		"en"        "Boss health too low.\n TIMER DISABLED!"
 	}
+	"FF2 Voices Menu"
+	{
+		"en"        "Turn the Freak Fortress 2 voices..."
+	}
+	"FF2 Music Menu"
+	{
+		"en"        "Turn the Freak Fortress 2 music..."
+	}
+	"FF2 Class Info Menu"
+	{
+		"en"        "Turn the Freak Fortress 2 class info..."
+	}
+	"FF2 Changelog Current Version"
+	{
+		"#format"	"{1:s}"
+		"en"        "FF2 Changelog - Current version: {1}\n"
+	}
+	"FF2 Companion Menu"
+	{
+		"en"        "Toggle being a Freak Fortress 2 companion..."
+	}
+	"FF2 Version"
+	{
+		"#format"	"{1:s}"
+		"en"        "FF2 {1}"
+	}
+	"FF2 Version Current"
+	{
+		"#format"	"{1:s}"
+		"en"        "FF2 {1} <- Current version"
+	}
 }
