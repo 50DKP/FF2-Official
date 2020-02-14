@@ -2612,19 +2612,18 @@ public Action MessageTimer(Handle timer)
 				strcopy(lives, 2, "");
 			}
 
-			Format(text, sizeof(text), "%s\n%t", text, "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
-			Format(textChat, sizeof(textChat), "{olive}[FF2]{default} %t!", "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
-			ReplaceString(textChat, sizeof(textChat), "\n", "");  //Get rid of newlines
-			CPrintToChatAll("%s", textChat);
-		}
-	}
-
-	for(int client; client<=MaxClients; client++)
-	{
-		if(IsValidClient(client))
-		{
-			SetGlobalTransTarget(client);
-			FF2_ShowSyncHudText(client, infoHUD, text);
+			for(int i=1; i<=MaxClients; i++)
+			{
+				if(IsValidClient(i))
+				{
+					SetGlobalTransTarget(i);
+					Format(text, sizeof(text), "%s\n%t", text, "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
+					Format(textChat, sizeof(textChat), "{olive}[FF2]{default} %t!", "ff2_start", Boss[boss], name, BossHealth[boss]-BossHealthMax[boss]*(BossLives[boss]-1), lives);
+					ReplaceString(textChat, sizeof(textChat), "\n", "");  //Get rid of newlines
+					FF2_ShowSyncHudText(i, infoHUD, text);
+					CPrintToChat(i, textChat);
+				}
+			}
 		}
 	}
 	return Plugin_Continue;
