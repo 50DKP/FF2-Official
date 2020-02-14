@@ -97,6 +97,7 @@ char currentBGM[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
 int FF2flags[MAXPLAYERS+1];
 
+int Healing[MAXPLAYERS+1];
 int Boss[MAXPLAYERS+1];
 int BossHealthMax[MAXPLAYERS+1];
 int BossHealth[MAXPLAYERS+1];
@@ -159,6 +160,7 @@ ConVar ff2_market_garden;
 ConVar ff2_backstab;
 ConVar ff2_countdown_overtime;
 ConVar ff2_medieval_scale;
+ConVar cvarHealingHud;
 
 Handle FF2Cookies;
 
@@ -438,7 +440,7 @@ public void OnPluginStart()
 	ff2_backstab=CreateConVar("ff2_backstab", "1.0", "#-Damage ratio of backstabs. Note: values equal or less than 0 are forbidden", _, true, 0.01);
 	ff2_countdown_overtime=CreateConVar("ff2_countdown_overtime", "0", "0-Disable, 1-Delay 'ff2_countdown_result' action until control point is no longer being captured", _, true, 0.0, true, 1.0);
 	ff2_medieval_scale=CreateConVar("ff2_medieval_scale", "3.6", "Health scaling when medieval mode is active. Divide health by this amount", _, true, 0.1);
-	
+	cvarHealingHud = CreateConVar("ff2_hud_heal", "0", "0-Disable, 1-Show when you/your spectating target have at least 1 healed HP", _, true, 0.0, true, 1.0);	
 	//The following are used in various subplugins
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
@@ -1716,6 +1718,7 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 	for(int client; client<=MaxClients; client++)
 	{
 		Boss[client]=0;
+		Healing[client]=0;
 		if(IsValidClient(client) && IsPlayerAlive(client) && !(FF2flags[client] & FF2FLAG_HASONGIVED))
 		{
 			TF2_RespawnPlayer(client);
@@ -4178,6 +4181,27 @@ public Action Timer_RegenPlayer(Handle timer, any userid)
 		TF2_RegeneratePlayer(client);
 	}
 }
+public Action OnPlayerHealed(Handle event, const char[] name, bool dontBroadcast)
+{
+	if(!Enabled || CheckRoundState()!=1)
+		return Plugin_Continue;
+
+	int client = GetClientOfUserId(GetEventInt(event, "patient"));
+	int healer = GetClientOfUserId(GetEventInt(event, "healer"));
+	int heals = GetEventInt(event, "amount");
+
+	if(client == healer)
+		return Plugin_Continue;
+
+	int extrahealth = GetClientHealth(client)-GetEntProp(client, Prop_Data, "m_iMaxHealth");
+	if(extrahealth > 0)
+		heals -= extrahealth;
+
+	if(heals > 0)
+		Healing[healer] += heals;
+
+	return Plugin_Continue;
+}
 
 public Action ClientTimer(Handle timer)
 {
@@ -4185,7 +4209,7 @@ public Action ClientTimer(Handle timer)
 	{
 		return Plugin_Stop;
 	}
-
+	int HealHud = cvarHealingHud.IntValue;
 	char classname[32];
 	TFCond cond;
 	for(int client=1; client<=MaxClients; client++)
@@ -4198,16 +4222,30 @@ public Action ClientTimer(Handle timer)
 				int observer=GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
 				if(IsValidClient(observer) && !IsBoss(observer) && observer!=client)
 				{
-					FF2_ShowSyncHudText(client, rageHUD, "%t-%t", "Your Damage Dealt", Damage[client], "Spectator Damage Dealt", observer, Damage[observer]);
+					if(HealHud == 1 && (Healing[client] != 0 || Healing[observer] != 0))
+					{
+						FF2_ShowSyncHudText(client, rageHUD, "%t-%t-%t-%t", "Your Damage Dealt", Damage[client], "Spectator Damage Dealt", observer, Damage[observer], "Your FF2 Healing", Healing[client], "FF2 SpecHealing", observer, Healing[observer]);
+					}
+					else
+					{
+						FF2_ShowSyncHudText(client, rageHUD, "%t-%t", "Your Damage Dealt", Damage[client], "Spectator Damage Dealt", observer, Damage[observer]);
+					}
+				}
+			}
+			else
+			{
+				if(HealHud == 1 && Healing[client] != 0)
+				{
+					FF2_ShowSyncHudText(client, rageHUD, "%t | %t", "Your Damage Dealt", Damage[client], "Your FF2 Healing", Healing[client]);
 				}
 				else
 				{
 					FF2_ShowSyncHudText(client, rageHUD, "%t", "Your Damage Dealt", Damage[client]);
 				}
-				continue;
 			}
-			FF2_ShowSyncHudText(client, rageHUD, "%t", "Your Damage Dealt", Damage[client]);
-
+			
+			if(!IsPlayerAlive(client))
+				continue;
 			TFClassType player_class=TF2_GetPlayerClass(client);
 			int weapon=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 			if(weapon<=MaxClients || !IsValidEntity(weapon) || !GetEntityClassname(weapon, classname, sizeof(classname)))
