@@ -1929,7 +1929,7 @@ public void CheckArena()
 public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 {
 	RoundCount++;
-	SapperMinion = false;
+	SapperMinion=false;
 	
 	if(!Enabled)
 	{
@@ -4219,19 +4219,19 @@ public Action OnPlayerHealed(Handle event, const char[] name, bool dontBroadcast
 	if(!Enabled || CheckRoundState()!=1)
 		return Plugin_Continue;
 
-	int client = GetClientOfUserId(GetEventInt(event, "patient"));
-	int healer = GetClientOfUserId(GetEventInt(event, "healer"));
-	int heals = GetEventInt(event, "amount");
+	int client=GetClientOfUserId(GetEventInt(event, "patient"));
+	int healer=GetClientOfUserId(GetEventInt(event, "healer"));
+	int heals=GetEventInt(event, "amount");
 
-	if(client == healer)
+	if(client==healer)
 		return Plugin_Continue;
 
 	int extrahealth = GetClientHealth(client)-GetEntProp(client, Prop_Data, "m_iMaxHealth");
 	if(extrahealth > 0)
-		heals -= extrahealth;
+		heals-=extrahealth;
 
 	if(heals > 0)
-		Healing[healer] += heals;
+		Healing[healer]+=heals;
 
 	return Plugin_Continue;
 }
