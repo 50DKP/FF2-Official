@@ -1982,7 +1982,7 @@ public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 		{
 			SapperBoss[client]=false;
 			if(IsValidClient(client))
-				SapperCooldown[client] = cvarSapperStart.FloatValue;	
+				SapperCooldown[client]=cvarSapperStart.FloatValue;	
 		}
 
 		for(int timer; timer<=1; timer++)
@@ -2856,16 +2856,16 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 	}
 	if((KvGetNum(BossKV[Special[boss]], "sapper", -1)<0 && (cvarSappers.IntValue==1 || cvarSappers.IntValue>2)) || KvGetNum(BossKV[Special[boss]], "sapper", -1)==1 || KvGetNum(BossKV[Special[boss]], "sapper", -1)>2)
 	{
-		SapperBoss[client] = true;
+		SapperBoss[client]=true;
 	}
 	else
 	{
-		SapperBoss[client] = false;
+		SapperBoss[client]=false;
 	}
 
 	if((KvGetNum(BossKV[Special[boss]], "sapper", -1)<0 && cvarSappers.IntValue>1) || KvGetNum(BossKV[Special[boss]], "sapper", -1)>1)
 	{
-		SapperMinion = true;
+		SapperMinion=true;
 	}	
 
 	if(KvGetNum(BossKV[Special[boss]], "countdowntime", -1) >= 0)	// .w.
@@ -4242,8 +4242,8 @@ public Action ClientTimer(Handle timer)
 	{
 		return Plugin_Stop;
 	}
-	bool SapperEnabled = SapperMinion;
-	int HealHud = cvarHealingHud.IntValue;
+	bool SapperEnabled=SapperMinion;
+	int HealHud=cvarHealingHud.IntValue;
 	char classname[32];
 	TFCond cond;
 	for(int client=1; client<=MaxClients; client++)
@@ -4253,7 +4253,7 @@ public Action ClientTimer(Handle timer)
 			if(IsBoss(client))
 			{
 				if(!SapperEnabled)
-					SapperEnabled = SapperBoss[client];
+					SapperEnabled=SapperBoss[client];
 
 				continue;
 			}
@@ -4263,7 +4263,7 @@ public Action ClientTimer(Handle timer)
 				int observer=GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
 				if(IsValidClient(observer) && !IsBoss(observer) && observer!=client)
 				{
-					if(HealHud == 1 && (Healing[client] != 0 || Healing[observer] != 0))
+					if(HealHud==1 && (Healing[client] != 0 || Healing[observer] != 0))
 					{
 						FF2_ShowSyncHudText(client, rageHUD, "%t-%t-%t-%t", "Your Damage Dealt", Damage[client], "Spectator Damage Dealt", observer, Damage[observer], "Your FF2 Healing", Healing[client], "FF2 SpecHealing", observer, Healing[observer]);
 					}
@@ -4275,7 +4275,7 @@ public Action ClientTimer(Handle timer)
 			}
 			else
 			{
-				if(HealHud == 1 && Healing[client] != 0)
+				if(HealHud==1 && Healing[client] != 0)
 				{
 					FF2_ShowSyncHudText(client, rageHUD, "%t | %t", "Your Damage Dealt", Damage[client], "Your FF2 Healing", Healing[client]);
 				}
