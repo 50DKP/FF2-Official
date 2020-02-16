@@ -12,6 +12,8 @@ Plugin thread on AlliedMods: http://forums.alliedmods.net/showthread.php?t=18210
 Updated by Otokiru, Powerlord, and RavensBro after Rainbolt Dash got sucked into DOTA2
 
 Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
+
+Later updated by Naydef and Batfoxkid
 */
 #pragma semicolon 1
 
@@ -97,6 +99,7 @@ char currentBGM[MAXPLAYERS+1][PLATFORM_MAX_PATH];
 
 int FF2flags[MAXPLAYERS+1];
 
+int Healing[MAXPLAYERS+1];
 int Boss[MAXPLAYERS+1];
 int BossHealthMax[MAXPLAYERS+1];
 int BossHealth[MAXPLAYERS+1];
@@ -117,6 +120,7 @@ bool bossHasRightMouseAbility[MAXPLAYERS+1];
 bool DmgTriple[MAXPLAYERS+1];
 bool SelfKnockback[MAXPLAYERS+1];
 bool randomCrits[MAXPLAYERS+1];
+float SapperCooldown[MAXPLAYERS+1];
 
 int timeleft;
 
@@ -159,6 +163,11 @@ ConVar ff2_market_garden;
 ConVar ff2_backstab;
 ConVar ff2_countdown_overtime;
 ConVar ff2_medieval_scale;
+ConVar cvarHealingHud;
+ConVar cvarSappers;
+ConVar cvarSapperCooldown;
+ConVar cvarSapperStart;
+ConVar cvarSapperDuration;
 
 Handle FF2Cookies;
 
@@ -193,6 +202,8 @@ bool b_isCapping;
 bool ReloadConfigs;
 bool LoadCharset;
 bool HealthBarMode;
+bool SapperBoss[MAXPLAYERS+1];
+bool SapperMinion;
 
 Handle MusicTimer[MAXPLAYERS+1];
 Handle BossInfoTimer[MAXPLAYERS+1][2];
@@ -438,10 +449,15 @@ public void OnPluginStart()
 	ff2_backstab=CreateConVar("ff2_backstab", "1.0", "#-Damage ratio of backstabs. Note: values equal or less than 0 are forbidden", _, true, 0.01);
 	ff2_countdown_overtime=CreateConVar("ff2_countdown_overtime", "0", "0-Disable, 1-Delay 'ff2_countdown_result' action until control point is no longer being captured", _, true, 0.0, true, 1.0);
 	ff2_medieval_scale=CreateConVar("ff2_medieval_scale", "3.6", "Health scaling when medieval mode is active. Divide health by this amount", _, true, 0.1);
-	
+	cvarHealingHud = CreateConVar("ff2_hud_heal", "0", "0-Disable, 1-Show when you/your spectating target have at least 1 healed HP", _, true, 0.0, true, 1.0);	
+	cvarSappers = CreateConVar("ff2_sapper", "0", "0-Disable, 1-Can sap the boss, 2-Can sap minions, 3-Can sap both", _, true, 0.0, true, 3.0);
+	cvarSapperCooldown = CreateConVar("ff2_sapper_cooldown", "2500", "0-No Cooldown, #-Damage needed to be able to use again", _, true, 0.0);
+	cvarSapperStart = CreateConVar("ff2_sapper_starting", "1000", "#-Damage needed for first usage (Not used if ff2_sapper or ff2_sapper_cooldown is 0)", _, true, 0.0);
+	cvarSapperDuration = CreateConVar("ff2_sapper_duration", "3.5", "#-For how long should the sapper stun?", _, true, 0.0);	
 	//The following are used in various subplugins
 	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
 	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
+
 
 	HookEvent("teamplay_round_start", OnRoundStart);
 	HookEvent("teamplay_round_win", OnRoundEnd);
@@ -1716,6 +1732,7 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 	for(int client; client<=MaxClients; client++)
 	{
 		Boss[client]=0;
+		Healing[client]=0;
 		if(IsValidClient(client) && IsPlayerAlive(client) && !(FF2flags[client] & FF2FLAG_HASONGIVED))
 		{
 			TF2_RespawnPlayer(client);
@@ -1913,7 +1930,8 @@ public void CheckArena()
 public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 {
 	RoundCount++;
-
+	SapperMinion=false;
+	
 	if(!Enabled)
 	{
 		return Plugin_Continue;
@@ -1952,7 +1970,7 @@ public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 			{
 				BossCharge[boss][slot]=0.0;
 			}
-
+			SapperCooldown[boss]=0.0;
 			bossHasReloadAbility[boss]=false;
 			bossHasRightMouseAbility[boss]=false;
 		}
@@ -1960,6 +1978,12 @@ public Action OnRoundEnd(Handle event, const char[] name, bool dontBroadcast)
 		{
 			SetClientGlow(boss, 0.0, 0.0);
 			detonations[boss]=0;
+		}
+		for(int client=1;client<=MaxClients;client++)
+		{
+			SapperBoss[client]=false;
+			if(IsValidClient(client))
+				SapperCooldown[client]=cvarSapperStart.FloatValue;	
 		}
 
 		for(int timer; timer<=1; timer++)
@@ -2831,6 +2855,19 @@ public Action Timer_MakeBoss(Handle timer, any boss)
 	{
 		countdownOvertime = ff2_countdown_overtime.BoolValue;
 	}
+	if((KvGetNum(BossKV[Special[boss]], "sapper", -1)<0 && (cvarSappers.IntValue==1 || cvarSappers.IntValue>2)) || KvGetNum(BossKV[Special[boss]], "sapper", -1)==1 || KvGetNum(BossKV[Special[boss]], "sapper", -1)>2)
+	{
+		SapperBoss[client]=true;
+	}
+	else
+	{
+		SapperBoss[client]=false;
+	}
+
+	if((KvGetNum(BossKV[Special[boss]], "sapper", -1)<0 && cvarSappers.IntValue>1) || KvGetNum(BossKV[Special[boss]], "sapper", -1)>1)
+	{
+		SapperMinion=true;
+	}	
 
 	if(KvGetNum(BossKV[Special[boss]], "countdowntime", -1) >= 0)	// .w.
 	{
@@ -4178,6 +4215,27 @@ public Action Timer_RegenPlayer(Handle timer, any userid)
 		TF2_RegeneratePlayer(client);
 	}
 }
+public Action OnPlayerHealed(Handle event, const char[] name, bool dontBroadcast)
+{
+	if(!Enabled || CheckRoundState()!=1)
+		return Plugin_Continue;
+
+	int client=GetClientOfUserId(GetEventInt(event, "patient"));
+	int healer=GetClientOfUserId(GetEventInt(event, "healer"));
+	int heals=GetEventInt(event, "amount");
+
+	if(client==healer)
+		return Plugin_Continue;
+
+	int extrahealth = GetClientHealth(client)-GetEntProp(client, Prop_Data, "m_iMaxHealth");
+	if(extrahealth > 0)
+		heals-=extrahealth;
+
+	if(heals > 0)
+		Healing[healer]+=heals;
+
+	return Plugin_Continue;
+}
 
 public Action ClientTimer(Handle timer)
 {
@@ -4185,29 +4243,51 @@ public Action ClientTimer(Handle timer)
 	{
 		return Plugin_Stop;
 	}
-
+	bool SapperEnabled=SapperMinion;
+	int HealHud=cvarHealingHud.IntValue;
 	char classname[32];
 	TFCond cond;
 	for(int client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && !IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
+		if(IsValidClient(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
 		{
+			if(IsBoss(client))
+			{
+				if(!SapperEnabled)
+					SapperEnabled=SapperBoss[client];
+
+				continue;
+			}
 			SetHudTextParams(-1.0, 0.88, 0.35, 90, 255, 90, 255, 0, 0.35, 0.0, 0.1);
 			if(!IsPlayerAlive(client))
 			{
 				int observer=GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
 				if(IsValidClient(observer) && !IsBoss(observer) && observer!=client)
 				{
-					FF2_ShowSyncHudText(client, rageHUD, "%t-%t", "Your Damage Dealt", Damage[client], "Spectator Damage Dealt", observer, Damage[observer]);
+					if(HealHud==1 && (Healing[client] != 0 || Healing[observer] != 0))
+					{
+						FF2_ShowSyncHudText(client, rageHUD, "%t-%t-%t-%t", "Your Damage Dealt", Damage[client], "Spectator Damage Dealt", observer, Damage[observer], "Your FF2 Healing", Healing[client], "FF2 SpecHealing", observer, Healing[observer]);
+					}
+					else
+					{
+						FF2_ShowSyncHudText(client, rageHUD, "%t-%t", "Your Damage Dealt", Damage[client], "Spectator Damage Dealt", observer, Damage[observer]);
+					}
+				}
+			}
+			else
+			{
+				if(HealHud==1 && Healing[client] != 0)
+				{
+					FF2_ShowSyncHudText(client, rageHUD, "%t | %t", "Your Damage Dealt", Damage[client], "Your FF2 Healing", Healing[client]);
 				}
 				else
 				{
 					FF2_ShowSyncHudText(client, rageHUD, "%t", "Your Damage Dealt", Damage[client]);
 				}
-				continue;
 			}
-			FF2_ShowSyncHudText(client, rageHUD, "%t", "Your Damage Dealt", Damage[client]);
-
+			
+			if(!IsPlayerAlive(client))
+				continue;
 			TFClassType player_class=TF2_GetPlayerClass(client);
 			int weapon=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
 			if(weapon<=MaxClients || !IsValidEntity(weapon) || !GetEntityClassname(weapon, classname, sizeof(classname)))
@@ -4245,6 +4325,24 @@ public Action ClientTimer(Handle timer)
 					}
 				}
 			}
+			else if(TF2_GetPlayerClass(client)==TFClass_Spy && cvarSappers)
+			{
+				if(IsPlayerAlive(client))
+				{
+					if(SapperCooldown[client]>0.0)
+					{
+						SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255, 0);
+						FF2_ShowHudText(client, -1, "%t", "Sapper Cooldown", RoundToFloor((SapperCooldown[client]-cvarSapperCooldown.FloatValue)*(Pow(cvarSapperCooldown.FloatValue, -1.0)*-100.0)));
+					}
+					else
+					{
+						SetHudTextParams(-1.0, 0.83, 0.15, 90, 255, 90, 255);
+						FF2_ShowHudText(client, -1, "%t", "Sapper Ready");	
+					}
+				}
+					
+			}			
+			
 			// Chdata's Deadringer Notifier
 			else if(DeadRingerHud && TF2_GetPlayerClass(client)==TFClass_Spy)
 			{
@@ -5361,6 +5459,11 @@ public Action OnPlayerHurt(Handle event, const char[] name, bool dontBroadcast)
 	{
 		damage*=5;
 	}
+	
+	if(SapperCooldown[attacker]>0.0)
+	{
+		SapperCooldown[attacker]-=damage;
+	}	
 
 	if(GetEventBool(event, "minicrit") && GetEventBool(event, "allseecrit"))
 	{
@@ -5479,6 +5582,82 @@ public Action OnPlayerHurt(Handle event, const char[] name, bool dontBroadcast)
 	if(BossCharge[boss][0]>100.0)
 	{
 		BossCharge[boss][0]=100.0;
+	}
+	return Plugin_Continue;
+}
+
+public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon)
+{
+	if(!Enabled || CheckRoundState()!=1)
+		return Plugin_Continue;
+
+	int index=-1;
+	int entity=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+	if(IsValidEntity(entity) && IsValidEntity(weapon) && GetClientTeam(client)==OtherTeam && SapperCooldown[client]<=0)
+	{
+		index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
+
+		if((buttons & IN_ATTACK) && !TF2_IsPlayerInCondition(client, TFCond_Cloaked) && !GetEntProp(client, Prop_Send, "m_bFeignDeathReady") && (index==735 || index==736 || index==810 || index==831 || index==933 || index==1080 || index==1102))
+		{
+			float position[3], position2[3], distance;
+			int boss;
+			GetEntPropVector(client, Prop_Send, "m_vecOrigin", position);
+			for(int target=1; target<=MaxClients; target++)
+			{
+				if(IsValidClient(target) && IsPlayerAlive(target) && GetClientTeam(target)==BossTeam)
+				{
+					boss=FF2_GetBossIndex(target);
+					GetEntPropVector(target, Prop_Send, "m_vecOrigin", position2);
+					distance=GetVectorDistance(position, position2);
+					if(distance<120 && target!=client &&
+					  !TF2_IsPlayerInCondition(target, TFCond_Dazed) &&
+					  !TF2_IsPlayerInCondition(target, TFCond_Sapped) &&
+					  !TF2_IsPlayerInCondition(target, TFCond_UberchargedHidden) &&
+					  !TF2_IsPlayerInCondition(target, TFCond_Ubercharged) &&
+					  !TF2_IsPlayerInCondition(target, TFCond_Bonked) &&
+					  !TF2_IsPlayerInCondition(target, TFCond_MegaHeal))
+					{
+						if(boss>=0 && SapperBoss[target])
+						{
+							if(index==810 || index==831)
+							{
+								TF2_AddCondition(target, TFCond_PasstimePenaltyDebuff, cvarSapperDuration.FloatValue);
+								TF2_AddCondition(target, TFCond_Sapped, cvarSapperDuration.FloatValue);
+							}
+							else
+							{
+								TF2_StunPlayer(target, cvarSapperDuration.FloatValue, 0.0, TF_STUNFLAGS_SMALLBONK|TF_STUNFLAG_NOSOUNDOREFFECT, client);
+								TF2_AddCondition(target, TFCond_Sapped, cvarSapperDuration.FloatValue);
+							}
+							SapperCooldown[client]=GetConVarFloat(cvarSapperCooldown);
+							SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, TFWeaponSlot_Melee));
+							SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime()+1.5);
+							SetEntPropFloat(client, Prop_Send, "m_flStealthNextChangeTime", GetGameTime()+1.5);
+							return Plugin_Handled;
+						}
+						else if(SapperMinion)
+						{
+							if(index==810 || index==831)
+							{
+								TF2_AddCondition(target, TFCond_PasstimePenaltyDebuff, cvarSapperDuration.FloatValue);
+								TF2_StunPlayer(target, cvarSapperDuration.FloatValue, 0.0, TF_STUNFLAGS_SMALLBONK|TF_STUNFLAG_NOSOUNDOREFFECT, client);
+								TF2_AddCondition(target, TFCond_Sapped, cvarSapperDuration.FloatValue);
+							}
+							else
+							{
+								TF2_StunPlayer(target, cvarSapperDuration.FloatValue, 0.0, TF_STUNFLAGS_NORMALBONK|TF_STUNFLAG_NOSOUNDOREFFECT, client);
+								TF2_AddCondition(target, TFCond_Sapped, cvarSapperDuration.FloatValue);
+							}
+							SapperCooldown[client]=cvarSapperCooldown.FloatValue;
+							SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, TFWeaponSlot_Melee));
+							SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime()+1.5);
+							SetEntPropFloat(client, Prop_Send, "m_flStealthNextChangeTime", GetGameTime()+1.5);
+							return Plugin_Handled;
+						}
+					}
+				}
+			}
+		}
 	}
 	return Plugin_Continue;
 }
