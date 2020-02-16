@@ -5593,7 +5593,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 
 	int index=-1;
 	int entity=GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-	if(IsValidEntity(entity) && IsValidEdict(entity) && IsValidEntity(weapon) && IsValidEdict(weapon) && GetClientTeam(client)==OtherTeam && SapperCooldown[client]<=0)
+	if(IsValidEntity(entity) && IsValidEntity(weapon) && GetClientTeam(client)==OtherTeam && SapperCooldown[client]<=0)
 	{
 		index=GetEntProp(entity, Prop_Send, "m_iItemDefinitionIndex");
 
