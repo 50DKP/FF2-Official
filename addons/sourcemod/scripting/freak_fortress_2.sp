@@ -472,6 +472,7 @@ public void OnPluginStart()
 	HookEvent("deploy_buff_banner", OnDeployBackup);
 	HookEvent("teamplay_point_startcapture", OnStartCapture);
 	HookEvent("teamplay_capture_broken", OnBreakCapture);
+	HookEvent("player_healed", OnPlayerHealed, EventHookMode_Pre);
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), OnJarate);  //Used to subtract rage when a boss is jarated (not through Sydney Sleeper)
 
@@ -4227,7 +4228,7 @@ public Action OnPlayerHealed(Handle event, const char[] name, bool dontBroadcast
 	if(client==healer)
 		return Plugin_Continue;
 
-	int extrahealth = GetClientHealth(client)-GetEntProp(client, Prop_Data, "m_iMaxHealth");
+	int extrahealth = GetClientHealth(client)-GetEntProp(GetPlayerResourceEntity(), Prop_Send, "m_iMaxHealth", _, client);
 	if(extrahealth > 0)
 		heals-=extrahealth;
 
