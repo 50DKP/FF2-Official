@@ -4331,7 +4331,7 @@ public Action ClientTimer(Handle timer)
 					if(SapperCooldown[client]>0.0)
 					{
 						SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255, 0);
-						FF2_ShowHudText(client, -1, "%t", "Sapper Cooldown", RoundToFloor((SapperCooldown[client]-GetConVarFloat(cvarSapperCooldown))*(Pow(GetConVarFloat(cvarSapperCooldown), -1.0)*-100.0)));
+						FF2_ShowHudText(client, -1, "%t", "Sapper Cooldown", RoundToFloor((SapperCooldown[client]-cvarSapperCooldown.FloatValue)*(Pow(cvarSapperCooldown.FloatValue, -1.0)*-100.0)));
 					}
 					else
 					{
