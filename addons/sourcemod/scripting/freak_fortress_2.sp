@@ -450,13 +450,14 @@ public void OnPluginStart()
 	ff2_countdown_overtime=CreateConVar("ff2_countdown_overtime", "0", "0-Disable, 1-Delay 'ff2_countdown_result' action until control point is no longer being captured", _, true, 0.0, true, 1.0);
 	ff2_medieval_scale=CreateConVar("ff2_medieval_scale", "3.6", "Health scaling when medieval mode is active. Divide health by this amount", _, true, 0.1);
 	cvarHealingHud = CreateConVar("ff2_hud_heal", "0", "0-Disable, 1-Show when you/your spectating target have at least 1 healed HP", _, true, 0.0, true, 1.0);	
-	//The following are used in various subplugins
-	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
-	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
 	cvarSappers = CreateConVar("ff2_sapper", "0", "0-Disable, 1-Can sap the boss, 2-Can sap minions, 3-Can sap both", _, true, 0.0, true, 3.0);
 	cvarSapperCooldown = CreateConVar("ff2_sapper_cooldown", "2500", "0-No Cooldown, #-Damage needed to be able to use again", _, true, 0.0);
 	cvarSapperStart = CreateConVar("ff2_sapper_starting", "1000", "#-Damage needed for first usage (Not used if ff2_sapper or ff2_sapper_cooldown is 0)", _, true, 0.0);
-	cvarSapperDuration = CreateConVar("ff2_sapper_duration", "3.5", "#-For how long should the sapper stun?", _, true, 0.0);
+	cvarSapperDuration = CreateConVar("ff2_sapper_duration", "3.5", "#-For how long should the sapper stun?", _, true, 0.0);	
+	//The following are used in various subplugins
+	CreateConVar("ff2_oldjump", "0", "Use old Saxton Hale jump equations", _, true, 0.0, true, 1.0);
+	CreateConVar("ff2_base_jumper_stun", "0", "Whether or not the Base Jumper should be disabled when a player gets stunned", _, true, 0.0, true, 1.0);
+
 
 	HookEvent("teamplay_round_start", OnRoundStart);
 	HookEvent("teamplay_round_win", OnRoundEnd);
