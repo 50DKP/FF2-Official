@@ -472,7 +472,7 @@ public void OnPluginStart()
 	HookEvent("deploy_buff_banner", OnDeployBackup);
 	HookEvent("teamplay_point_startcapture", OnStartCapture);
 	HookEvent("teamplay_capture_broken", OnBreakCapture);
-	HookEvent("player_healed", OnPlayerHealed, EventHookMode_Pre);
+	HookEvent("player_healed", OnPlayerHealed);
 
 	HookUserMessage(GetUserMessageId("PlayerJarated"), OnJarate);  //Used to subtract rage when a boss is jarated (not through Sydney Sleeper)
 
