@@ -5638,7 +5638,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 						{
 							if(index==810 || index==831)
 							{
-								TF2_AddCondition(target, TFCond_PasstimePenaltyDebuff, 8.0);
+								TF2_AddCondition(target, TFCond_PasstimePenaltyDebuff, cvarSapperDuration.FloatValue);
 								TF2_StunPlayer(target, cvarSapperDuration.FloatValue, 0.0, TF_STUNFLAGS_SMALLBONK|TF_STUNFLAG_NOSOUNDOREFFECT, client);
 								TF2_AddCondition(target, TFCond_Sapped, cvarSapperDuration.FloatValue);
 							}
