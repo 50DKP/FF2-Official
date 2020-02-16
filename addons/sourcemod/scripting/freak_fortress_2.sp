@@ -5647,7 +5647,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 								TF2_StunPlayer(target, cvarSapperDuration.FloatValue, 0.0, TF_STUNFLAGS_NORMALBONK|TF_STUNFLAG_NOSOUNDOREFFECT, client);
 								TF2_AddCondition(target, TFCond_Sapped, cvarSapperDuration.FloatValue);
 							}
-							SapperCooldown[client]=GetConVarFloat(cvarSapperCooldown);
+							SapperCooldown[client]=cvarSapperCooldown.FloatValue;
 							SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", GetPlayerWeaponSlot(client, TFWeaponSlot_Melee));
 							SetEntPropFloat(client, Prop_Send, "m_flNextAttack", GetGameTime()+1.5);
 							SetEntPropFloat(client, Prop_Send, "m_flStealthNextChangeTime", GetGameTime()+1.5);
