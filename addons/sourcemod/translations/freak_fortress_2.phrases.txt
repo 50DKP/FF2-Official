@@ -474,23 +474,19 @@
 	{
 		"#format"	"{1:i}"
 		"en"	"Your Healing: {1}"
-		"ru"	"Ваше лечение: {1}"
 	}
 	"FF2 SpecHealing"
 	{
 		"#format"	"{1:N},{2:i}"
 		"en"	"{1}'s Healing: {2}"
-		"ru"	"Лечение {1}: {2}"
 	}
 	"Sapper Cooldown"	
 	{
 		"#format"	"{1:i}"
 		"en"		"Sapper Power: {1}%%"
-		"ru"		"Заряд Жучка: {1}%%"
 	}
 	"Sapper Ready"	
 	{
 		"en"		"Sapper is ready!"
-		"ru"		"Жучок готов!"
 	}
 }
