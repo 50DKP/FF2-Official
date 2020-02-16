@@ -4248,7 +4248,7 @@ public Action ClientTimer(Handle timer)
 	TFCond cond;
 	for(int client=1; client<=MaxClients; client++)
 	{
-		if(IsValidClient(client) && !IsBoss(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
+		if(IsValidClient(client) && !(FF2flags[client] & FF2FLAG_CLASSTIMERDISABLED))
 		{
 			if(IsBoss(client))
 			{
