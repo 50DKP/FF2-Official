@@ -4457,33 +4457,6 @@ public Action ClientTimer(Handle timer)
 
 			switch(player_class)
 			{
-			case TFClass_Medic:
-				{
-					if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary))
-					{
-						int medigun=GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary);
-						char mediclassname[64];
-						if(IsValidEntity(medigun) && GetEntityClassname(medigun, mediclassname, sizeof(mediclassname)) && !StrContains(mediclassname, "tf_weapon_medigun", false))
-						{
-							SetHudTextParams(-1.0, 0.83, 0.15, 255, 255, 255, 255, 0, 0.2, 0.0, 0.1);
-							int charge=RoundToFloor(GetEntPropFloat(medigun, Prop_Send, "m_flChargeLevel")*100);
-							FF2_ShowHudText(client, -1, "%T: %i", "uber-charge", client, charge);
-							if(charge==100 && !(FF2flags[client] & FF2FLAG_UBERREADY))
-							{
-								FakeClientCommand(client, "voicemenu 1 7");  //"I am fully charged!"
-								FF2flags[client]|= FF2FLAG_UBERREADY;
-							}
-						}
-					}
-					else if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary))
-					{
-						int healtarget=GetHealingTarget(client, true);
-						if(IsValidClient(healtarget) && TF2_GetPlayerClass(healtarget)==TFClass_Scout)
-						{
-							TF2_AddCondition(client, TFCond_SpeedBuffAlly, 0.3);
-						}
-					}
-				}
 			case TFClass_DemoMan:
 				{
 					if(weapon==GetPlayerWeaponSlot(client, TFWeaponSlot_Primary) && !IsValidEntity(GetPlayerWeaponSlot(client, TFWeaponSlot_Secondary)) && shieldCrits)  //Demoshields
