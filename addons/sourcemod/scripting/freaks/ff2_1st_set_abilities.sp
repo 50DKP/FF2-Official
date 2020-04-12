@@ -489,6 +489,19 @@ public Action SaveMinion(int client, int &attacker, int &inflictor, float &damag
 
 public Action Timer_Demopan_Rage(Handle timer, DataPack data)  //TODO: Make this rage configurable
 {
+	if(data==null)
+	{
+		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & ~FCVAR_CHEAT);  //Allow normal players to use r_screenoverlay
+		for(int client=1; client<=MaxClients; client++)
+		{
+			if(IsClientInGame(client) && IsPlayerAlive(client) && TF2_GetClientTeam(client)!=boss_team)
+			{
+				ClientCommand(client, "r_screenoverlay off");
+			}
+		}
+		SetCommandFlags("r_screenoverlay", GetCommandFlags("r_screenoverlay") & FCVAR_CHEAT);  //Reset the cheat permissions
+		return Plugin_Stop;
+	}
 	data.Reset();
 	int count=data.ReadCell();
 	TFTeam boss_team=view_as<TFTeam>(data.ReadCell());
@@ -497,7 +510,8 @@ public Action Timer_Demopan_Rage(Handle timer, DataPack data)  //TODO: Make this
 		data.Reset();
 		data.WriteCell(count);
 		data.WriteCell(view_as<int>(boss_team));
-		CreateTimer(6.0, Timer_Demopan_Rage, data, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(6.0, Timer_Demopan_Rage, null, TIMER_FLAG_NO_MAPCHANGE);
+		delete data;
 	}
 	else
 	{
