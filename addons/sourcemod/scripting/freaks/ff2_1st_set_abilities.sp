@@ -104,7 +104,7 @@ public void OnPluginStart2()
             }
         } 
         while(FindNextConCommand(interator, name, sizeof(name), isCommand, flags));
-    {
+    }
 }
 
 public void OnMapStart()
