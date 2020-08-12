@@ -33,13 +33,13 @@ int CloneOwnerIndex[MAXPLAYERS+1]=-1;
 
 Handle SlowMoTimer;
 int oldTarget;
+bool disableSlowMotionFix;
 
 Handle OnHaleRage=INVALID_HANDLE;
 
 ConVar cvarTimeScale;
 ConVar cvarCheats;
 ConVar cvarKAC;
-ConVar ftz_cheats_version;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -63,36 +63,48 @@ public void OnPluginStart2()
 	cvarTimeScale=FindConVar("host_timescale");
 	cvarCheats=FindConVar("sv_cheats");
 	cvarKAC=FindConVar("kac_enable");
-	ftz_cheats_version=FindConVar("ftz_cheats_version");
-	if(ftz_cheats_version!=INVALID_HANDLE)
+    
+    if(FindConVar("ftz_cheats_version"))
+    {
+        disableSlowMotionFix=true;
+        LogMessage("[FF2] rage_matrix_attack won't work correctly when Cheats plugin is installed!");
+    }
+	if(FindConVar("sm_timescale_win_fix__version"))
 	{
-		LogMessage("[FF2] rage_matrix_attack won't work correctly when Cheats plugin is installed!");
+        disableSlowMotionFix=true;
 	}
+    else
+    {
+        LogMessage("[FF2] It's recommended to use https://forums.alliedmods.net/showthread.php?t=324264 for proper Windows slowmotion fix");
+    }
 	
 	AddCommandListener(Listener_PreventCheats, "");
 
 	LoadTranslations("ff2_1st_set.phrases");
 	
-	//Strip cheats flag from all cvars-don't reset them when sv_cheats 1 changes
-	Handle interator;
-	int flags;
-	bool isCommand;
-	char name[64];
-	interator=FindFirstConCommand(name, sizeof(name), isCommand, flags);
-	do 
-	{
-		if(!isCommand && (flags & FCVAR_CHEAT))
-		{
-			Handle cvar_ss=FindConVar(name);
-			if(cvar_ss==null)
-			{
-				continue;
-			}
-			SetConVarFlags(cvar_ss, flags&~FCVAR_CHEAT);
-			CloseHandle(cvar_ss);
-		}
-	} 
-	while(FindNextConCommand(interator, name, sizeof(name), isCommand, flags)); 
+    if(disableSlowMotionFix)
+    {
+        //Strip cheats flag from all cvars-don't reset them when sv_cheats 1 changes
+        Handle interator;
+        int flags;
+        bool isCommand;
+        char name[64];
+        interator=FindFirstConCommand(name, sizeof(name), isCommand, flags);
+        do 
+        {
+            if(!isCommand && (flags & FCVAR_CHEAT))
+            {
+                Handle cvar_ss=FindConVar(name);
+                if(cvar_ss==null)
+                {
+                    continue;
+                }
+                SetConVarFlags(cvar_ss, flags&~FCVAR_CHEAT);
+                CloseHandle(cvar_ss);
+            }
+        } 
+        while(FindNextConCommand(interator, name, sizeof(name), isCommand, flags));
+    {
 }
 
 public void OnMapStart()
@@ -916,7 +928,7 @@ stock int AttachParticle(int entity, char[] particleType, float offset=0.0, bool
 stock void UpdateClientCheatValue(int value)
 {
 	//Bugfix: Slowmotion rage not working most of the time as intended
-	if(ftz_cheats_version==INVALID_HANDLE)
+	if(!disableSlowMotionFix)
 	{
 		int flags=GetConVarFlags(cvarCheats);
 		SetConVarFlags(cvarCheats, flags & ~FCVAR_NOTIFY);
