@@ -6654,7 +6654,24 @@ stock int ParseFormula(int boss, const char[] key, const char[] defaultFormula, 
 	KvGetString(BossKV[Special[boss]], "name", bossName, sizeof(bossName), "=Failed name=");
 	KvGetString(BossKV[Special[boss]], key, formula, sizeof(formula), defaultFormula);
 
-	int size=1;
+	int result=EvaluateFormula(formula);
+	if(result<=0)
+	{
+		LogError("[FF2] %s has an invalid %s formula, using default!", bossName, key);
+		return defaultValue;
+	}
+
+	//To-do: Make this even more configurable
+	if(bMedieval && StrEqual(key, "health_formula", false))
+	{
+		return RoundFloat(result/ff2_medieval_scale.FloatValue);
+	}
+	return result;
+}
+
+float EvaluateFormula(const char[] formula)
+{
+    int size=1;
 	int matchingBrackets;
 	for(int i; i<=strlen(formula); i++)  //Resize the arrays once so we don't have to worry about it later on
 	{
@@ -6762,18 +6779,7 @@ stock int ParseFormula(int boss, const char[] key, const char[] defaultFormula, 
 	int result=RoundFloat(GetArrayCell(sumArray, 0));
 	CloseHandle(sumArray);
 	CloseHandle(_operator);
-	if(result<=0)
-	{
-		LogError("[FF2] %s has an invalid %s formula, using default!", bossName, key);
-		return defaultValue;
-	}
-
-	//To-do: Make this even more configurable
-	if(bMedieval && StrEqual(key, "health_formula", false))
-	{
-		return RoundFloat(result/ff2_medieval_scale.FloatValue);
-	}
-	return result;
+    return result;
 }
 
 stock int GetAbilityArgument(int index, const char[] plugin_name, const char[] ability_name, int arg, int defvalue=0)
