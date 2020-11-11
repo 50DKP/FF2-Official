@@ -6673,6 +6673,7 @@ float EvaluateFormula(const char[] formula)
 {
     int size=1;
 	int matchingBrackets;
+    int zeroBrackets;
 	for(int i; i<=strlen(formula); i++)  //Resize the arrays once so we don't have to worry about it later on
 	{
 		if(formula[i]=='(')
@@ -6685,12 +6686,19 @@ float EvaluateFormula(const char[] formula)
 			{
 				matchingBrackets--;
 			}
+            zeroBrackets++:
 		}
 		else if(formula[i]==')')
 		{
 			matchingBrackets++;
+            zeroBrackets--;
 		}
 	}
+    if(zeroBrackets)
+    {
+        LogError("[FF2 Bosses] Formula %s has unbalanced amount of opening and closing brackets", formula);
+        return -1;
+    }
 
 	Handle sumArray=CreateArray(_, size), _operator=CreateArray(_, size);
 	int bracket;  //Each bracket denotes a separate sum (within parentheses).  At the end, they're all added together to achieve the actual sum
@@ -6718,18 +6726,18 @@ float EvaluateFormula(const char[] formula)
 				OperateString(sumArray, bracket, value, sizeof(value), _operator);
 				if(GetArrayCell(_operator, bracket)!=Operator_None)  //Something like (5*)
 				{
-					LogError("[FF2 Bosses] %s's %s formula has an invalid operator at character %i", bossName, key, i+1);
+					LogError("[FF2 Bosses] Formula %s has an invalid operator at character %i", formula, i+1);
 					CloseHandle(sumArray);
 					CloseHandle(_operator);
-					return defaultValue;
+					return -1;
 				}
 
 				if(--bracket<0)  //Something like (5))
 				{
-					LogError("[FF2 Bosses] %s's %s formula has an unbalanced parentheses at character %i", bossName, key, i+1);
+					LogError("[FF2 Bosses] Formula %s has an unbalanced parentheses at character %i", formula, i+1);
 					CloseHandle(sumArray);
 					CloseHandle(_operator);
-					return defaultValue;
+					return -1;
 				}
 
 				Operate(sumArray, bracket, GetArrayCell(sumArray, bracket+1), _operator);
