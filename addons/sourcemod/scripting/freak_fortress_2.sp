@@ -729,7 +729,7 @@ public void OnConfigsExecuted()
 	mp_teams_unbalance_limit=GetConVarInt(FindConVar("mp_teams_unbalance_limit"));
 	tf_arena_first_blood=GetConVarInt(FindConVar("tf_arena_first_blood"));
 	mp_forcecamera=GetConVarInt(FindConVar("mp_forcecamera"));
-	tf_dropped_weapon_lifetime=view_as<bool>(GetConVarInt(FindConVar("tf_dropped_weapon_lifetime")));
+	tf_dropped_weapon_lifetime=GetConVarInt(FindConVar("tf_dropped_weapon_lifetime"));
 	tf_feign_death_activate_damage_scale=GetConVarFloat(FindConVar("tf_feign_death_activate_damage_scale"));
 	tf_feign_death_damage_scale=GetConVarFloat(FindConVar("tf_feign_death_damage_scale"));
 	GetConVarString(FindConVar("mp_humans_must_join_team"), mp_humans_must_join_team, sizeof(mp_humans_must_join_team));
