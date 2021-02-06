@@ -8541,6 +8541,7 @@ public int Native_GetBossHealth(Handle plugin, int numParams)
 public int Native_SetBossHealth(Handle plugin, int numParams)
 {
 	BossHealth[GetNativeCell(1)]=GetNativeCell(2);
+    UpdateHealthBar();
 }
 
 public int Native_GetBossMaxHealth(Handle plugin, int numParams)
@@ -8551,6 +8552,7 @@ public int Native_GetBossMaxHealth(Handle plugin, int numParams)
 public int Native_SetBossMaxHealth(Handle plugin, int numParams)
 {
 	BossHealthMax[GetNativeCell(1)]=GetNativeCell(2);
+    UpdateHealthBar();
 }
 
 public int Native_GetBossLives(Handle plugin, int numParams)
@@ -8561,6 +8563,7 @@ public int Native_GetBossLives(Handle plugin, int numParams)
 public int Native_SetBossLives(Handle plugin, int numParams)
 {
 	BossLives[GetNativeCell(1)]=GetNativeCell(2);
+    UpdateHealthBar();
 }
 
 public int Native_GetBossMaxLives(Handle plugin, int numParams)
