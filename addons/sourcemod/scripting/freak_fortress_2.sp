@@ -4834,6 +4834,8 @@ void ActivateAbilitySlot(int boss, int slot, bool buttonmodeactive=false)
 				char abilityName[64], pluginName[64];
 				KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
 				KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+
+				StrCat(pluginName, sizeof(pluginName), ".smx");
 				if(!UseAbility(abilityName, pluginName, boss, slot, buttonmode))
 				{
 					return;
@@ -4849,6 +4851,8 @@ void ActivateAbilitySlot(int boss, int slot, bool buttonmodeactive=false)
 						char abilityName[64], pluginName[64];
 						KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
 						KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
+
+                    	StrCat(pluginName, sizeof(pluginName), ".smx");
 						if(!UseAbility(abilityName, pluginName, boss, slot, buttonmode))
 						{
 							return;
@@ -8609,9 +8613,9 @@ public int Native_GetRageDist(Handle plugin, int numParams)
 {
 	int index=GetNativeCell(1);
 	char plugin_name[64];
-	GetNativeString(2,plugin_name,64);
+	GetNativeString(2, plugin_name, sizeof(plugin_name));
 	char ability_name[64];
-	GetNativeString(3,ability_name,64);
+	GetNativeString(3, ability_name, sizeof(ability_name));
 
 	if(!BossKV[Special[index]]) return view_as<int>(0.0);
 	KvRewind(BossKV[Special[index]]);
@@ -8623,20 +8627,20 @@ public int Native_GetRageDist(Handle plugin, int numParams)
 	char s[10];
 	for(int i=1; i<=MAXRANDOMS; i++)
 	{
-		Format(s,10,"ability%i",i);
-		if(KvJumpToKey(BossKV[Special[index]],s))
+		Format(s, sizeof(s), "ability%i", i);
+		if(KvJumpToKey(BossKV[Special[index]], s))
 		{
 			char ability_name2[64];
-			KvGetString(BossKV[Special[index]], "name",ability_name2,64);
-			if(strcmp(ability_name,ability_name2))
+			KvGetString(BossKV[Special[index]], "name", ability_name2, sizeof(ability_name2));
+			if(strcmp(ability_name, ability_name2))
 			{
 				KvGoBack(BossKV[Special[index]]);
 				continue;
 			}
-			if((see=KvGetFloat(BossKV[Special[index]],"dist",-1.0))<0)
+			if((see=KvGetFloat(BossKV[Special[index]], "dist", -1.0))<0)
 			{
 				KvRewind(BossKV[Special[index]]);
-				see=KvGetFloat(BossKV[Special[index]],"ragedist",400.0);
+				see=KvGetFloat(BossKV[Special[index]], "ragedist", 400.0);
 			}
 			return view_as<int>(see);
 		}
@@ -8679,6 +8683,12 @@ public int Native_HasAbility(Handle plugin, int numParams)
 				{
 					return true;
 				}
+
+				StrCat(pluginName2, sizeof(pluginName2), ".smx"); //Now append plugin extension and check again
+                if(StrEqual(pluginName, pluginName2))
+				{
+					return true;
+				}
 			}
 			KvGoBack(BossKV[Special[boss]]);
 		}
@@ -8692,6 +8702,11 @@ public int Native_DoAbility(Handle plugin, int numParams)
 	char ability_name[64];
 	GetNativeString(2, plugin_name, sizeof(plugin_name));
 	GetNativeString(3, ability_name, sizeof(ability_name));
+
+	if(StrContains(plugin_name, ".smx", true)==-1)
+    {
+		StrCat(plugin_name, sizeof(plugin_name), ".smx");
+    }
 	UseAbility(ability_name, plugin_name, GetNativeCell(1), GetNativeCell(4), GetNativeCell(5));
 }
 
@@ -8701,6 +8716,11 @@ public int Native_GetAbilityArgument(Handle plugin, int numParams)
 	char ability_name[64];
 	GetNativeString(2, plugin_name, sizeof(plugin_name));
 	GetNativeString(3, ability_name, sizeof(ability_name));
+
+	if(StrContains(plugin_name, ".smx", true)==-1)
+    {
+		StrCat(plugin_name, sizeof(plugin_name), ".smx");
+    }
 	return GetAbilityArgument(GetNativeCell(1), plugin_name, ability_name, GetNativeCell(4), GetNativeCell(5));
 }
 
@@ -8710,6 +8730,11 @@ public int Native_GetAbilityArgumentFloat(Handle plugin, int numParams)
 	char ability_name[64];
 	GetNativeString(2, plugin_name, sizeof(plugin_name));
 	GetNativeString(3, ability_name, sizeof(ability_name));
+
+	if(StrContains(plugin_name, ".smx", true)==-1)
+    {
+		StrCat(plugin_name, sizeof(plugin_name), ".smx");
+    }
 	return view_as<int>(GetAbilityArgumentFloat(GetNativeCell(1), plugin_name, ability_name, GetNativeCell(4), GetNativeCell(5)));
 }
 
@@ -8721,6 +8746,11 @@ public int Native_GetAbilityArgumentString(Handle plugin, int numParams)
 	GetNativeString(3, ability_name, sizeof(ability_name));
 	int dstrlen=GetNativeCell(6);
 	char[] s=new char[dstrlen+1];
+
+	if(StrContains(plugin_name, ".smx", true)==-1)
+    {
+		StrCat(plugin_name, sizeof(plugin_name), ".smx");
+    }
 	GetAbilityArgumentString(GetNativeCell(1), plugin_name, ability_name, GetNativeCell(4), s, dstrlen);
 	SetNativeString(5, s, dstrlen);
 }
@@ -8733,6 +8763,11 @@ public int Native_GetArgNamedI(Handle plugin, int numParams)
 	GetNativeString(2, plugin_name, sizeof(plugin_name));
 	GetNativeString(3, ability_name, sizeof(ability_name));
 	GetNativeString(4, argument, sizeof(argument));
+
+	if(StrContains(plugin_name, ".smx", true)==-1)
+    {
+		StrCat(plugin_name, sizeof(plugin_name), ".smx");
+    }
 	return GetArgumentI(GetNativeCell(1), plugin_name, ability_name, argument, GetNativeCell(5));
 }
 
@@ -8744,6 +8779,11 @@ public int Native_GetArgNamedF(Handle plugin, int numParams)
 	GetNativeString(2, plugin_name, sizeof(plugin_name));
 	GetNativeString(3, ability_name, sizeof(ability_name));
 	GetNativeString(4, argument, sizeof(argument));
+
+	if(StrContains(plugin_name, ".smx", true)==-1)
+    {
+		StrCat(plugin_name, sizeof(plugin_name), ".smx");
+    }
 	return view_as<int>(GetArgumentF(GetNativeCell(1), plugin_name, ability_name, argument, GetNativeCell(5)));
 }
 
@@ -8757,6 +8797,11 @@ public int Native_GetArgNamedS(Handle plugin, int numParams)
 	GetNativeString(4, argument, sizeof(argument));
 	int dstrlen=GetNativeCell(6);
 	char[] s=new char[dstrlen+1];
+    
+	if(StrContains(plugin_name, ".smx", true)==-1)
+    {
+		StrCat(plugin_name, sizeof(plugin_name), ".smx");
+    }
 	GetArgumentS(GetNativeCell(1), plugin_name, ability_name, argument, s, dstrlen);
 	SetNativeString(5, s, dstrlen);
 }
