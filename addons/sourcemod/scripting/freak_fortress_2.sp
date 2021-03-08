@@ -332,7 +332,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 {
 	char plugin[PLATFORM_MAX_PATH];
 	GetPluginFilename(myself, plugin, sizeof(plugin));
-	if(!StrContains(plugin, "freaks/"))  //Prevent plugins/freaks/freak_fortress_2.ff2 from loading if it exists -.-
+	if(!StrContains(plugin, "freaks/"))  //Prevent plugins/freaks/freak_fortress_2.smx from loading if it exists -.-
 	{
 		strcopy(error, err_max, "There is a duplicate copy of Freak Fortress 2 inside the /plugins/freaks folder.  Please remove it");
 		return APLRes_Failure;
@@ -1103,12 +1103,12 @@ void EnableSubPlugins(bool force=false)
 	Handle directory=OpenDirectory(path);
 	while(ReadDirEntry(directory, filename, sizeof(filename), filetype))
 	{
-		if(filetype==FileType_File && StrContains(filename, ".smx", false)!=-1)
+		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
 		{
 			Format(filename_old, sizeof(filename_old), "%s/%s", path, filename);
-			ReplaceString(filename, sizeof(filename), ".smx", ".ff2", false);
+			ReplaceString(filename, sizeof(filename), ".ff2", ".smx", false);
 			Format(filename, sizeof(filename), "%s/%s", path, filename);
-			DeleteFile(filename); // Just in case filename.ff2 also exists: delete it and replace it with the new .smx version
+			DeleteFile(filename); // Just in case filename.smx also exists: delete it and replace it with the new .smx version
 			RenameFile(filename, filename_old);
 		}
 	}
@@ -1116,7 +1116,7 @@ void EnableSubPlugins(bool force=false)
 	directory=OpenDirectory(path);
 	while(ReadDirEntry(directory, filename, sizeof(filename), filetype))
 	{
-		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
+		if(filetype==FileType_File && StrContains(filename, ".smx", false)!=-1)
 		{
 			ServerCommand("sm plugins load freaks/%s", filename);
 		}
@@ -1136,7 +1136,7 @@ void DisableSubPlugins(bool force=false)
 	Handle directory=OpenDirectory(path);
 	while(ReadDirEntry(directory, filename, sizeof(filename), filetype))
 	{
-		if(filetype==FileType_File && StrContains(filename, ".ff2", false)!=-1)
+		if(filetype==FileType_File && StrContains(filename, ".smx", false)!=-1)
 		{
 			InsertServerCommand("sm plugins unload freaks/%s", filename);  //ServerCommand will not work when switching maps
 		}
@@ -1187,7 +1187,7 @@ public void LoadCharacter(const char[] character)
 		{
 			char plugin_name[64];
 			KvGetString(BossKV[Specials], "plugin_name", plugin_name, sizeof(plugin_name));
-			BuildPath(Path_SM, config, sizeof(config), "plugins/freaks/%s.ff2", plugin_name);
+			BuildPath(Path_SM, config, sizeof(config), "plugins/freaks/%s.smx", plugin_name);
 			if(!FileExists(config))
 			{
 				LogError("[FF2 Bosses] Character %s needs plugin %s!", character, plugin_name);
@@ -6833,7 +6833,7 @@ stock int GetArgumentI(int index, const char[] plugin_name, const char[] ability
 			}
 			char plugin_name2[64];
 			KvGetString(BossKV[Special[index]], "plugin_name", plugin_name2, sizeof(plugin_name2));
-			if(plugin_name[0] && plugin_name2[0] && strcmp(plugin_name,plugin_name2))
+			if(plugin_name[0] && plugin_name2[0] && strcmp(plugin_name, plugin_name2))
 			{
 				KvGoBack(BossKV[Special[index]]);
 				continue;
