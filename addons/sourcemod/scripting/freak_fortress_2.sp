@@ -1748,7 +1748,7 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 	Boss[0]=GetClientWithMostQueuePoints(omit);
 	omit[Boss[0]]=true;
 
-	bool teamHasPlayers[TFTeam];
+	bool teamHasPlayers[4];
 	for(int client=1; client<=MaxClients; client++)  //Find out if each team has at least one player on it
 	{
 		if(IsValidClient(client))
@@ -4852,7 +4852,7 @@ void ActivateAbilitySlot(int boss, int slot, bool buttonmodeactive=false)
 						KvGetString(BossKV[Special[boss]], "plugin_name", pluginName, sizeof(pluginName));
 						KvGetString(BossKV[Special[boss]], "name", abilityName, sizeof(abilityName));
 
-                    	StrCat(pluginName, sizeof(pluginName), ".smx");
+						StrCat(pluginName, sizeof(pluginName), ".smx");
 						if(!UseAbility(abilityName, pluginName, boss, slot, buttonmode))
 						{
 							return;
@@ -8685,7 +8685,7 @@ public int Native_HasAbility(Handle plugin, int numParams)
 				}
 
 				StrCat(pluginName2, sizeof(pluginName2), ".smx"); //Now append plugin extension and check again
-                if(StrEqual(pluginName, pluginName2))
+				if(StrEqual(pluginName, pluginName2))
 				{
 					return true;
 				}
