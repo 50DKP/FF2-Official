@@ -64,47 +64,50 @@ public void OnPluginStart2()
 	cvarCheats=FindConVar("sv_cheats");
 	cvarKAC=FindConVar("kac_enable");
     
-    if(FindConVar("ftz_cheats_version"))
-    {
-        disableSlowMotionFix=true;
-        LogMessage("[FF2] rage_matrix_attack won't work correctly when Cheats plugin is installed!");
-    }
+	if(FindConVar("ftz_cheats_version"))
+	{
+		disableSlowMotionFix=true;
+		LogMessage("[FF2] rage_matrix_attack won't work correctly when Cheats plugin is installed!");
+	}
 	if(FindConVar("sm_timescale_win_fix__version"))
 	{
-        disableSlowMotionFix=true;
+		disableSlowMotionFix=true;
 	}
-    else
-    {
-        LogMessage("[FF2] It's recommended to use https://forums.alliedmods.net/showthread.php?t=324264 for proper Windows slowmotion fix");
-    }
-	
-	AddCommandListener(Listener_PreventCheats, "");
+	else
+	{
+		LogMessage("[FF2] It's recommended to use https://forums.alliedmods.net/showthread.php?t=324264 for proper Windows slowmotion fix");
+	}
+
+	if(!disableSlowMotionFix)
+	{
+		AddCommandListener(Listener_PreventCheats, "");
+	}
 
 	LoadTranslations("ff2_1st_set.phrases");
-	
-    if(disableSlowMotionFix)
-    {
-        //Strip cheats flag from all cvars-don't reset them when sv_cheats 1 changes
-        Handle interator;
-        int flags;
-        bool isCommand;
-        char name[64];
-        interator=FindFirstConCommand(name, sizeof(name), isCommand, flags);
-        do 
-        {
-            if(!isCommand && (flags & FCVAR_CHEAT))
-            {
-                Handle cvar_ss=FindConVar(name);
-                if(cvar_ss==null)
-                {
-                    continue;
-                }
-                SetConVarFlags(cvar_ss, flags&~FCVAR_CHEAT);
-                CloseHandle(cvar_ss);
-            }
-        } 
-        while(FindNextConCommand(interator, name, sizeof(name), isCommand, flags));
-    }
+
+	if(!disableSlowMotionFix)
+	{
+		 //Strip cheats flag from all cvars-don't reset them when sv_cheats 1 changes
+		Handle interator;
+		int flags;
+		bool isCommand;
+		char name[64];
+		interator=FindFirstConCommand(name, sizeof(name), isCommand, flags);
+		do
+		{
+			if(!isCommand && (flags & FCVAR_CHEAT))
+			{
+				Handle cvar_ss=FindConVar(name);
+				if(cvar_ss==null)
+				{
+					continue;
+				}
+				SetConVarFlags(cvar_ss, flags&~FCVAR_CHEAT);
+				CloseHandle(cvar_ss);
+			}
+		}
+		while(FindNextConCommand(interator, name, sizeof(name), isCommand, flags));
+	}
 }
 
 public void OnMapStart()
