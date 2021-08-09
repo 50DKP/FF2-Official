@@ -27,6 +27,7 @@ Later updated by Naydef and Batfoxkid
 #include <tf2items>
 #undef REQUIRE_EXTENSIONS
 #tryinclude <steamtools>
+#tryinclude <steamworks>
 #define REQUIRE_EXTENSIONS
 #undef REQUIRE_PLUGIN
 //#tryinclude <smac>
@@ -66,6 +67,10 @@ Later updated by Naydef and Batfoxkid
 
 #if defined _steamtools_included
 bool steamtools=false;
+#endif
+
+#if defined _SteamWorks_Included
+bool steamworks = false;
 #endif
 
 #if defined _tf2attributes_included
@@ -399,6 +404,10 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	MarkNativeAsOptional("Steam_SetGameDescription");
 	#endif
 
+	#if defined _SteamWorks_Included
+	MarkNativeAsOptional("SteamWorks_SetGameDescription");
+	#endif
+
 	#if defined _tf2attributes_included
 	MarkNativeAsOptional("TF2Attrib_SetByDefIndex");
 	MarkNativeAsOptional("TF2Attrib_RemoveByDefIndex");
@@ -607,6 +616,10 @@ public void OnPluginStart()
 	steamtools=LibraryExists("SteamTools");
 	#endif
 
+	#if defined _SteamWorks_Included
+	steamworks = LibraryExists("SteamWorks");
+	#endif
+
 	#if defined _goomba_included
 	goomba=LibraryExists("goomba");
 	#endif
@@ -650,6 +663,13 @@ public void OnLibraryAdded(const char[] name)
 	}
 	#endif
 
+	#if defined _SteamWorks_Included
+	if(StrEqual(name, "SteamWorks", false))
+	{
+		steamworks = true;
+	}
+	#endif
+
 	#if defined _tf2attributes_included
 	if(!strcmp(name, "tf2attributes", false))
 	{
@@ -688,6 +708,13 @@ public void OnLibraryRemoved(const char[] name)
 	if(!strcmp(name, "SteamTools", false))
 	{
 		steamtools=false;
+	}
+	#endif
+
+	#if defined _SteamWorks_Included
+	if(StrEqual(name, "SteamWorks", false))
+	{
+		steamworks = false;
 	}
 	#endif
 
@@ -861,16 +888,30 @@ public void EnableFF2()
 		}
 	}
 
+	#if defined _SteamWorks_Included
+	if(steamworks)
+	{
+		SteamWorks_SetGameDescription(gameDesc);
+		return;
+	}
+	#endif
+
+	changeGamemode=0;
+
 	#if defined _steamtools_included
 	if(steamtools)
 	{
+		#if defined _SteamWorks_Included
+		if(steamworks)
+		{
+			return;
+		}
+		#endif
 		char gameDesc[64];
 		Format(gameDesc, sizeof(gameDesc), "Freak Fortress 2 (%s)", PLUGIN_VERSION);
 		Steam_SetGameDescription(gameDesc);
 	}
 	#endif
-
-	changeGamemode=0;
 }
 
 public void DisableFF2()
