@@ -14,6 +14,7 @@ Updated by Otokiru, Powerlord, and RavensBro after Rainbolt Dash got sucked into
 Updated by Wliu, Chris, Lawd, and Carge after Powerlord quit FF2
 
 Later updated by Naydef and Batfoxkid
+
 */
 #pragma semicolon 1
 
